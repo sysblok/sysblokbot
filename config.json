@@ -1,0 +1,19 @@
+{
+    "telegram": {
+        "token": "",
+        "is_silent": true
+    },
+    "trello": {
+        "api_key": "",
+        "token": ""
+    },
+    "sheets": {
+        "api_key": ""
+    },
+    "jobs": {
+        "sample_job": {
+            "day": "any",
+            "time": "10:00"
+        }
+    }
+}
