@@ -1,14 +1,14 @@
 {
     "telegram": {
-        "token": "",
+        "token": "do_not_set_here_please_go_to_config_override",
         "is_silent": true
     },
     "trello": {
-        "api_key": "",
-        "token": ""
+        "api_key": "do_not_set_here_please_go_to_config_override",
+        "token": "do_not_set_here_please_go_to_config_override"
     },
     "sheets": {
-        "api_key": ""
+        "api_key": "do_not_set_here_please_go_to_config_override"
     },
     "jobs": {
         "sample_job": {

@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 
-import json
 import logging
 import os
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 from scheduler import JobScheduler
+from config_manager import ConfigManager
 
-CONFIG_PATH = os.path.join(
-    os.path.abspath(os.path.dirname(__file__)),
-    'config.json'
-)
+ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
+CONFIG_PATH = os.path.join(ROOT_DIR, 'config.json')
+CONFIG_OVERRIDE_PATH = os.path.join(ROOT_DIR, 'config_override.json')
+
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -38,20 +38,13 @@ def error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
-def load_config() -> dict:
-    try:
-        with open(CONFIG_PATH) as fin:
-            try:
-                return json.loads(fin.read())
-            except json.JSONDecodeError as e:
-                logger.error(e)
-    except IOError:
-        logger.error(f'Config file at {CONFIG_PATH} not found')
 
 def main():
-    config = load_config()
-    if config is None:
-        raise ValueError(f"Could not load {CONFIG_PATH}, can't go on")
+    config = ConfigManager(
+        CONFIG_PATH, CONFIG_OVERRIDE_PATH
+    ).load_config_with_override()
+    if not config:
+        raise ValueError(f"Could not load config, can't go on")
 
     updater = Updater(config['telegram']['token'], use_context=True)
     dp = updater.dispatcher
