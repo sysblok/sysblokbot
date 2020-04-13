@@ -8,6 +8,7 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 BASE_URL = 'https://api.trello.com/1/'
+TIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 
 class TrelloBoard:
@@ -89,7 +90,7 @@ class TrelloCard:
             card.name = data['name']
             card.labels = [label['name'] for label in data['labels']]
             card.url = data['shortUrl']
-            card.due = datetime.strptime(data['due'], '%Y-%m-%dT%H:%M:%S.%fZ') if data['due'] else None
+            card.due = datetime.strptime(data['due'], TIME_FORMAT) if data['due'] else None
         except:
             card._ok = False
             logger.error(f"Bad card json {data}")
@@ -125,24 +126,24 @@ class TrelloClient:
         }
 
     def get_board(self):
-        response = self._make_request(f'boards/{self.board_id}')
-        return TrelloBoard.from_json(response.json())
+        _, data = self._make_request(f'boards/{self.board_id}')
+        return TrelloBoard.from_json(data)
 
     def get_lists(self):
-        response = self._make_request(f'boards/{self.board_id}/lists')
-        lists = [TrelloList.from_json(trello_list) for trello_list in response.json()]
+        _, data = self._make_request(f'boards/{self.board_id}/lists')
+        lists = [TrelloList.from_json(trello_list) for trello_list in data]
         return lists
 
     def get_cards(self, list_id=None):
         if list_id:
-            response = self._make_request(f'lists/{list_id}/cards')
+            _, data = self._make_request(f'lists/{list_id}/cards')
         else:
-            response = self._make_request(f'boards/{self.board_id}/cards') 
+            _, data = self._make_request(f'boards/{self.board_id}/cards') 
         cards = []
         # TODO: move this to app state
         members = self.get_members()
         lists = self.get_lists()
-        for card_dict in response.json():
+        for card_dict in data:
             card = TrelloCard.from_json(card_dict)
             # TODO: move this to app state
             for trello_list in lists:
@@ -163,9 +164,10 @@ class TrelloClient:
         return cards
 
     def get_members(self):
-        response = self._make_request(f'boards/{self.board_id}/members')
-        members = [TrelloMember.from_json(member) for member in response.json()]
+        _, data = self._make_request(f'boards/{self.board_id}/members')
+        members = [TrelloMember.from_json(member) for member in data]
         return members
 
     def _make_request(self, uri):
-        return requests.get(f'{BASE_URL}{uri}', params=self.default_payload)
+        response = requests.get(f'{BASE_URL}{uri}', params=self.default_payload)
+        return response.status_code, response.json()

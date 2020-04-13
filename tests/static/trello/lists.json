@@ -1,0 +1,29 @@
+[
+    {
+      "id": "list_1",
+      "name": "Готовая тема",
+      "closed": false,
+      "pos": 811007,
+      "softLimit": null,
+      "idBoard": "board_id",
+      "subscribed": false
+    },
+    {
+      "id": "list_2",
+      "name": "Редактору",
+      "closed": false,
+      "pos": 841215,
+      "softLimit": null,
+      "idBoard": "board_id",
+      "subscribed": false
+    },
+    {
+      "id": "list_3",
+      "name": "Долгий Ящик",
+      "closed": false,
+      "pos": 1155071,
+      "softLimit": null,
+      "idBoard": "board_id",
+      "subscribed": false
+    }
+]
