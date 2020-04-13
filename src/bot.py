@@ -6,15 +6,16 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from .scheduler import JobScheduler
 from .config_manager import ConfigManager
 
-ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
-CONFIG_PATH = os.path.join(ROOT_DIR, '../config.json')
-CONFIG_OVERRIDE_PATH = os.path.join(ROOT_DIR, '../config_override.json')
+ROOT_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+CONFIG_PATH = os.path.join(ROOT_DIR, 'config.json')
+CONFIG_OVERRIDE_PATH = os.path.join(ROOT_DIR, 'config_override.json')
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+# TODO: move to another module
 # Command handlers
 def start(update, context):
     # TODO: register a new user somewhere, e.g. Google Sheet
@@ -37,7 +38,7 @@ def error(update, context):
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
 
-def main():
+def run():
     config = ConfigManager(
         CONFIG_PATH, CONFIG_OVERRIDE_PATH
     ).load_config_with_override()
