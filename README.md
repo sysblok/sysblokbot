@@ -2,9 +2,9 @@
 Бот для автоматизации работы редакции
 
 Deployment:
-- Add sensitive tokens to `config_override.json` (you can copypaste from `config.json` first). Do not push `config_override.json` to the repo, let's keep it empty!
+- Create `config_override.json` and put sensitive tokens there (you can copypaste from `config.json` first). Do not push `config_override.json` to the repo, let's keep it empty!
 - `pip install -r requirements.txt`
-- `python3 run_bot.py`
+- `python3 app.py`
 
 Adding a regular job:
 - implement a method in jobs.py
