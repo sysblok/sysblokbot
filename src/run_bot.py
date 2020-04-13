@@ -5,12 +5,12 @@ import os
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
-from scheduler import JobScheduler
-from config_manager import ConfigManager
+from .scheduler import JobScheduler
+from .config_manager import ConfigManager
 
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
-CONFIG_PATH = os.path.join(ROOT_DIR, 'config.json')
-CONFIG_OVERRIDE_PATH = os.path.join(ROOT_DIR, 'config_override.json')
+CONFIG_PATH = os.path.join(ROOT_DIR, '../config.json')
+CONFIG_OVERRIDE_PATH = os.path.join(ROOT_DIR, '../config_override.json')
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -68,7 +68,3 @@ def main():
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT. start_polling() is non-blocking and will stop the bot gracefully.
     updater.idle()
-
-
-if __name__ == '__main__':
-    main()
