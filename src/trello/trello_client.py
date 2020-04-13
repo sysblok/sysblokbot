@@ -15,6 +15,7 @@ class TrelloBoard:
         self.id = None
         self.name = None
         self.url = None
+
         self._ok = True
 
     def __bool__(self):
@@ -40,6 +41,7 @@ class TrelloList:
     def __init__(self):
         self.id = None
         self.name = None
+
         self._ok = True
 
     def __bool__(self):
