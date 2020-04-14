@@ -1,20 +1,15 @@
 import schedule
+import telegram
 
 from .jobs import jobs
-from .tg_sender.sender import TelegramSender
-from .sheets.sheets_client import GoogleSheetsClient
-from .trello.trello_client import TrelloClient
+
 
 class JobScheduler:
-    def __init__(self, config: dict):
+    def __init__(self, config: dict, trello_client, sheets_client, telegram_sender):
         self.config = config
-        self.telegram_sender = TelegramSender()
-        self.trello_client = TrelloClient(
-            config=config['trello']
-        )
-        self.sheets_client = GoogleSheetsClient(
-            api_key=config['sheets']['api_key']
-        )
+        self.telegram_sender = telegram_sender
+        self.trello_client = trello_client
+        self.sheets_client = sheets_client
 
     def init_jobs(self):
         # TODO: parse config for scheduled time

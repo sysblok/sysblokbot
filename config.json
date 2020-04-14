@@ -1,7 +1,7 @@
 {
     "telegram": {
         "token": "do_not_set_here_please_go_to_config_override",
-        "is_silent": true
+        "is_silent": false
     },
     "trello": {
         "api_key": "do_not_set_here_please_go_to_config_override",
@@ -16,5 +16,8 @@
             "day": "any",
             "time": "10:00"
         }
+    },
+    "chats": {
+        "manager_chat_id": 0
     }
 }

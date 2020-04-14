@@ -5,6 +5,10 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 from .scheduler import JobScheduler
 from .config_manager import ConfigManager
+from .tg import handlers
+from .tg.sender import TelegramSender
+from .sheets.sheets_client import GoogleSheetsClient
+from .trello.trello_client import TrelloClient
 
 ROOT_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 CONFIG_PATH = os.path.join(ROOT_DIR, 'config.json')
@@ -15,27 +19,11 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 
-# TODO: move to another module
-# Command handlers
-def start(update, context):
-    # TODO: register a new user somewhere, e.g. Google Sheet
-    update.message.reply_text('Welcome text will be here!')
-
-
-def help(update, context):
-    # TODO: add some help text
-    update.message.reply_text('Help text will be here')
-
-# Other handlers
-def handle_user_message(update, context):
-    # TODO: depending on user state, do anything (postpone the task, etc)
-    # Now echoes the message
-    update.message.reply_text(update.message.text)
-
-
-def error(update, context):
-    """Log Errors caused by Updates."""
-    logger.warning('Update "%s" caused error "%s"', update, context.error)
+# Global client instances
+# TODO: Consider making them singletones instead
+trello_client = None
+sheets_client = None
+telegram_sender = None
 
 
 def run():
@@ -48,20 +36,31 @@ def run():
     updater = Updater(config['telegram']['token'], use_context=True)
     dp = updater.dispatcher
 
-    scheduler = JobScheduler(config)
+    global trello_client, sheets_client, telegram_sender
+    telegram_sender = TelegramSender(
+        dp.bot,
+        config['chats'],
+        config['telegram'].get('is_silent', True)
+    )
+    trello_client = TrelloClient(config=config['trello'])
+    sheets_client = GoogleSheetsClient(api_key=config['sheets']['api_key'])
+
+    scheduler = JobScheduler(config, trello_client, sheets_client, telegram_sender)
     scheduler.init_jobs()
 
     # all command handlers defined here
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("help", help))
+    dp.add_handler(CommandHandler("start", handlers.start))
+    dp.add_handler(CommandHandler("help", handlers.help))
+    dp.add_handler(CommandHandler("test", handlers.test_handler))
 
     # on user message
-    dp.add_handler(MessageHandler(Filters.text, handle_user_message))
+    dp.add_handler(MessageHandler(Filters.text, handlers.handle_user_message))
 
     # log all errors
-    dp.add_error_handler(error)
+    dp.add_error_handler(handlers.error)
 
     # Start the Bot
+    logger.info("Starting polling...")
     updater.start_polling()
 
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
