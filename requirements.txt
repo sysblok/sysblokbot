@@ -4,6 +4,8 @@ chardet==3.0.4
 cryptography==2.9
 decorator==4.4.2
 future==0.18.2
+google-auth==1.13.1
+gspread==3.4.2
 idna==2.9
 pycparser==2.20
 python-telegram-bot==12.6.1

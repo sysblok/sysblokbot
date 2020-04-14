@@ -43,7 +43,7 @@ def run():
         config['telegram'].get('is_silent', True)
     )
     trello_client = TrelloClient(config=config['trello'])
-    sheets_client = GoogleSheetsClient(api_key=config['sheets']['api_key'])
+    sheets_client = GoogleSheetsClient(api_key_path=config['sheets']['api_key_path'])
 
     scheduler = JobScheduler(config, trello_client, sheets_client, telegram_sender)
     scheduler.init_jobs()
