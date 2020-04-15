@@ -9,7 +9,9 @@
         "board_id": "5e91d48a9e9d947b95fb0df7"
     },
     "sheets": {
-        "api_key": "do_not_set_here_please_go_to_config_override"
+        "api_key_path": "do_not_set_here_please_go_to_config_override",
+        "authors_sheet_key": "1-oU86gg1dYI4qfYlh-DBK5_X61dENa0Iw4IRBQ_aoWk",
+        "curators_sheet_key":"1Ydmd-qTrO4_6lsu-onuIal91MnQU8Qx4Z-Td21MzcME"
     },
     "jobs": {
         "sample_job": {

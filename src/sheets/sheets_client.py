@@ -8,9 +8,6 @@ from google.oauth2.service_account import Credentials
 logger = logging.getLogger(__name__)
 
 UNDEFINED_STATES = ['', '-', '#N/A']
-authors_sheet_key = "1-oU86gg1dYI4qfYlh-DBK5_X61dENa0Iw4IRBQ_aoWk"
-curators_sheet_key = "1Ydmd-qTrO4_6lsu-onuIal91MnQU8Qx4Z-Td21MzcME"
-
 scope = [
     "https://spreadsheets.google.com/feeds",
     "https://www.googleapis.com/auth/drive",
@@ -18,14 +15,11 @@ scope = [
 
 
 class GoogleSheetsClient:
-    def __init__(self, api_key_path: str):
+    def __init__(self, api_key_path: str, authors_sheet_key: str, curators_sheet_key: str):
         credentials = Credentials.from_service_account_file(api_key_path, scopes=scope)
         self.client = gspread.authorize(credentials)
-
-    def _get_sheet_values(self, sheet_key: str) -> List:
-        sheet = self.client.open_by_key(sheet_key)
-        worksheet = sheet.get_worksheet(0)
-        return worksheet.get_all_values()
+        self.authors_sheet_key = authors_sheet_key
+        self.curators_sheet_key = curators_sheet_key
 
     def find_author_curators(self, find_by: str, val: str) -> Optional[List[Dict]]:
         authors = self.fetch_authors()
@@ -69,7 +63,7 @@ class GoogleSheetsClient:
             "Телеграм": "telegram",
             "Трелло": "trello",
         }
-        return self._parse_gs_res(title_key_map, authors_sheet_key)
+        return self._parse_gs_res(title_key_map, self.authors_sheet_key)
 
     def fetch_curators(self) -> List[Dict]:
         title_key_map = {
@@ -80,7 +74,7 @@ class GoogleSheetsClient:
             "Название рубрики в трелло": "trello_section",
             "Телеграм": "telegram",
         }
-        return self._parse_gs_res(title_key_map, curators_sheet_key)
+        return self._parse_gs_res(title_key_map, self.curators_sheet_key)
 
     def _parse_gs_res(self, title_key_map: Dict, sheet_key: str) -> List[Dict]:
         titles, *rows = self._get_sheet_values(sheet_key)
@@ -95,6 +89,11 @@ class GoogleSheetsClient:
             res.append(item)
         return res
 
+    def _get_sheet_values(self, sheet_key: str) -> List:
+        sheet = self.client.open_by_key(sheet_key)
+        worksheet = sheet.get_worksheet(0)
+        return worksheet.get_all_values()
+
     @classmethod
     def _parse_cell_value(cls, value: str) -> Optional[str]:
         if value in UNDEFINED_STATES:
@@ -103,7 +102,8 @@ class GoogleSheetsClient:
 
 
 if __name__ == "__main__":
-    gs = GoogleSheetsClient('sysblokbot.json')
+    gs = GoogleSheetsClient('sysblokbot.json', '1-oU86gg1dYI4qfYlh-DBK5_X61dENa0Iw4IRBQ_aoWk',
+                            '1Ydmd-qTrO4_6lsu-onuIal91MnQU8Qx4Z-Td21MzcME')
 
     pprint(gs.fetch_authors())
     pprint(gs.fetch_curators())
@@ -113,5 +113,3 @@ if __name__ == "__main__":
 
     pprint(gs.find_curator_authors('telegram', '@irinoise'))
     pprint(gs.find_author_curators('telegram', '@alexeyqu'))
-
-
