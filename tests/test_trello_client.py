@@ -73,7 +73,7 @@ def test_cards(monkeypatch):
         'token': 'token',
         'board_id': 'board_1'
     })
-    cards = trello.get_cards()
+    cards = trello.get_cards(['list_1', 'list_2', 'list_4'])
     assert len(cards) == 2
     print(cards[0], cards[1]._ok)
     assert cards[0] and cards[1]
@@ -94,7 +94,7 @@ def test_cards(monkeypatch):
     assert len(card.labels) == 0
     assert card.url == 'https://trello.com/c/card_2'
     assert card.due is None
-    assert card.list_name == 'Долгий Ящик'
+    assert card.list_name == 'Редактору'
     assert card.members == ['paulinmatavina']
 
 

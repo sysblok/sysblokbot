@@ -134,11 +134,16 @@ class TrelloClient:
         lists = [TrelloList.from_json(trello_list) for trello_list in data]
         return lists
 
-    def get_cards(self, list_id=None):
-        if list_id:
-            _, data = self._make_request(f'lists/{list_id}/cards')
+    def get_cards(self, list_ids=[]):
+        if len(list_ids) == 1:
+            _, data = self._make_request(f'lists/{list_ids[0]}/cards')
         else:
-            _, data = self._make_request(f'boards/{self.board_id}/cards') 
+            _, data = self._make_request(f'boards/{self.board_id}/cards')
+            if len(list_ids) > 0:
+                data = [
+                    card_dict for card_dict in data
+                    if card_dict['idList'] in list_ids
+                ]
         cards = []
         # TODO: move this to app state
         members = self.get_members()

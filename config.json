@@ -6,7 +6,21 @@
     "trello": {
         "api_key": "do_not_set_here_please_go_to_config_override",
         "token": "do_not_set_here_please_go_to_config_override",
-        "board_id": "5e91d48a9e9d947b95fb0df7"
+        "board_id": "5e91d48a9e9d947b95fb0df7",
+        "_tmp_": {
+            "list_aliases": {
+                "topic_suggestion": "5e91d48a9e9d947b95fb0df8",
+                "topic_ready": "5e91d48a9e9d947b95fb0df9",
+                "in_progress": "5e91d48a9e9d947b95fb0dfa",
+                "editor": "5e91d48a9e9d947b95fb0dfb",
+                "edited_next_week": "5e91d48a9e9d947b95fb0dfc",
+                "edited_sometimes": "5e91d48a9e9d947b95fb0dfd",
+                "chief_editor": "5e91d48a9e9d947b95fb0dfe",
+                "proofreading": "5e91d48a9e9d947b95fb0dff",
+                "done": "5e91d48a9e9d947b95fb0e00",
+                "back_burner": "5e91d48a9e9d947b95fb0e01"
+            }
+        }
     },
     "sheets": {
         "api_key": "do_not_set_here_please_go_to_config_override"
