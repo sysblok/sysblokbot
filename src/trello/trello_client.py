@@ -134,12 +134,12 @@ class TrelloClient:
         lists = [TrelloList.from_json(trello_list) for trello_list in data]
         return lists
 
-    def get_cards(self, list_ids=[]):
-        if len(list_ids) == 1:
+    def get_cards(self, list_ids=None):
+        if list_ids is not None and len(list_ids) == 1:
             _, data = self._make_request(f'lists/{list_ids[0]}/cards')
         else:
             _, data = self._make_request(f'boards/{self.board_id}/cards')
-            if len(list_ids) > 0:
+            if list_ids:
                 data = [
                     card_dict for card_dict in data
                     if card_dict['idList'] in list_ids
