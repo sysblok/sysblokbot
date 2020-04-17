@@ -7,29 +7,27 @@ Jobs can be ran from scheduler or from anywhere else for a one-off action.
 
 import logging
 
-from ..trello.trello_client import TrelloClient
-from ..tg.sender import TelegramSender
+from ..bot import SysBlokBot
 
 logger = logging.getLogger(__name__)
 
 
-def sample_job(trello_client, sheets_client, telegram_sender):
+def sample_job(bot):
     # Logic here could include retrieving data from trello/sheets
     # and sending a notification to corresponding user.
     print("I am a job and I'm done")
 
 
 def manager_stats_job(
-        trello_client: TrelloClient,
-        telegram_sender: TelegramSender,
-        lists_config: dict
+        bot: SysBlokBot,
+        lists_config: dict  # move that to db
 ):
     # TODO: make it a decorator
     logger.info('Starting manager_stats_job...')
 
     cards_no_author = list(filter(
         lambda card: not card.members,
-        trello_client.get_cards(
+        bot.trello_client.get_cards(
             (
                 lists_config['in_progress'],
                 lists_config['editor'],
@@ -47,16 +45,16 @@ def manager_stats_job(
         if not card:
             parse_failure_counter += 1
         cards_no_author_text += f'\n\n{_format_card(card, due=False, members=False)}'
-    telegram_sender.send_to_manager(cards_no_author_text[:4096])
+    bot.telegram_sender.send_to_manager(cards_no_author_text[:4096])
 
     if parse_failure_counter > 0:
-        telegram_sender.send_to_manager(
+        bot.telegram_sender.send_to_manager(
             f'Ошибок парсинга карточек: {parse_failure_counter}!'
         )
 
     cards_no_due_in_progress = list(filter(
         lambda card: not card.due,
-        trello_client.get_cards(lists_config['in_progress'])
+        bot.trello_client.get_cards(lists_config['in_progress'])
     ))
     
     logger.info('Finished manager_stats_job')
