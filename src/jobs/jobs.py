@@ -53,8 +53,7 @@ def manager_stats_job(app_context: AppContext, sender: TelegramSender):
         title='Не указан срок в карточке',
         list_ids=(app_context.lists_config['in_progress']),
         filter_func=lambda card: not card.due,
-        show_due=False,
-        show_members=False,
+        show_due=False
     )
 
     stats_paragraphs += _retrieve_trello_card_stats(
@@ -70,8 +69,7 @@ def manager_stats_job(app_context: AppContext, sender: TelegramSender):
             app_context.lists_config['done'],
         ),
         filter_func=lambda card: not card.labels,
-        show_due=False,
-        show_members=False,
+        show_due=False
     )
 
     all_cards = app_context.trello_client.get_cards()
@@ -90,7 +88,6 @@ def manager_stats_job(app_context: AppContext, sender: TelegramSender):
         title='Пропущен дедлайн',
         list_ids=(app_context.lists_config['in_progress']),
         filter_func=_is_deadline_missed,
-        show_members=False,
     )
 
     for i, message in enumerate(_paragraphs_to_messages(stats_paragraphs)):
@@ -149,7 +146,8 @@ def _retrieve_trello_members_stats(
     logger.info(f'Started counting: "{title}"')
     members = list(filter(filter_func, trello_client.get_members()))
     paragraphs = [f'<b>{title}: {len(members)}</b>']
-    paragraphs.append(', '.join(map(str, sorted(members))))
+    if members:
+        paragraphs.append('👤 ' + ', '.join(map(str, sorted(members))))
     return paragraphs
 
 
@@ -164,12 +162,12 @@ def _format_card(card, show_due=True, show_members=True) -> str:
     # Avoiding message overflow, strip explanations in ()
     list_name = card.list_name + '('
     list_name = list_name[:list_name.find('(')].strip()
-    card_text += f'📍 {list_name}'
+    card_text += f'📍 {list_name} '
 
     if show_due:
         card_text = f'<b>{card.due.strftime("%d.%m")}</b> — {card_text}'
-    if show_members:
-        card_text += f'\nУчастники: {card.members}'
+    if show_members and card.members:
+        card_text += f'👤 {", ".join(list(map(str, card.members)))}'
     return card_text.strip()
 
 
