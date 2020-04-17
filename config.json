@@ -29,8 +29,8 @@
     },
     "jobs": {
         "sample_job": {
-            "day": "any",
-            "time": "10:00"
+            "every": "wednesday",
+            "at": "10:00"
         }
     },
     "chats": {
