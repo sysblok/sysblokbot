@@ -4,9 +4,7 @@ import os
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 from .tg import handlers
-from .tg.sender import TelegramSender
-from .sheets.sheets_client import GoogleSheetsClient
-from .trello.trello_client import TrelloClient
+from .app_context import AppContext
 
 
 logger = logging.getLogger(__name__)
@@ -16,24 +14,14 @@ class SysBlokBot:
     def __init__(self, config):
         self.updater = Updater(config['telegram']['token'], use_context=True)
         self.dp = self.updater.dispatcher
-        # TODO: Consider making them singletones
-        self.telegram_sender = TelegramSender(
-            self.dp.bot,
-            config['chats'],
-            config['telegram'].get('is_silent', True)
-        )
-        self.trello_client = TrelloClient(config=config['trello'])
-        self.sheets_client = GoogleSheetsClient(
-            api_key_path=config['sheets']['api_key_path'],
-            curators_sheet_key=config['sheets']['curators_sheet_key'],
-            authors_sheet_key=config['sheets']['authors_sheet_key']
-        )
+        self.app_context = AppContext(config)
 
     def init_handlers(self):
         # all command handlers defined here
         self.dp.add_handler(CommandHandler("start", handlers.start))
         self.dp.add_handler(CommandHandler("help", handlers.help))
         self.dp.add_handler(CommandHandler("test", handlers.test_handler))
+        self.dp.add_handler(CommandHandler("admin", handlers.admin_handler))
 
         # on user message
         self.dp.add_handler(MessageHandler(Filters.text, handlers.handle_user_message))
