@@ -104,7 +104,19 @@ class TrelloMember:
         self.full_name = None
 
     def __str__(self):
+        return self.username
+
+    def __repr__(self):
         return f'Member<id={self.id}, name={self.username}, full name={self.full_name}>'
+
+    def __eq__(self, other):
+        return isinstance(other, TrelloMember) and self.username == other.username
+    
+    def __lt__(self, other):
+        return isinstance(other, TrelloMember) and self.username < other.username
+
+    def __hash__(self):
+        return hash(self.username)
 
     @classmethod
     def from_json(cls, data):
