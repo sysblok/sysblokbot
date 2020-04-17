@@ -25,6 +25,6 @@ def test_scheduler(monkeypatch, jobs_config, num_jobs):
         setattr(jobs, job_id, lambda _: 0)
 
     scheduler.schedule.clear()
-    job_scheduler = scheduler.JobScheduler({'jobs': jobs_config}, None, None, None)
+    job_scheduler = scheduler.JobScheduler({'jobs': jobs_config}, bot=None)
     job_scheduler.init_jobs()
     assert len(scheduler.schedule.jobs) == num_jobs
