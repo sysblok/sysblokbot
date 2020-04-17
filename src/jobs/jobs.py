@@ -7,35 +7,34 @@ Jobs can be ran from scheduler or from anywhere else for a one-off action.
 
 import logging
 
-from ..bot import SysBlokBot
+from ..app_context import AppContext
+from ..tg.sender import TelegramSender
+
 
 logger = logging.getLogger(__name__)
 
 
-def sample_job(bot):
+def sample_job(app_context: AppContext, sender: TelegramSender):
     # Logic here could include retrieving data from trello/sheets
     # and sending a notification to corresponding user.
     print("I am a job and I'm done")
 
 
-def manager_stats_job(
-        bot: SysBlokBot,
-        lists_config: dict  # move that to db
-):
+def manager_stats_job(app_context: AppContext, sender: TelegramSender):
     # TODO: make it a decorator
     logger.info('Starting manager_stats_job...')
 
     cards_no_author = list(filter(
         lambda card: not card.members,
-        bot.trello_client.get_cards(
+        app_context.trello_client.get_cards(
             (
-                lists_config['in_progress'],
-                lists_config['editor'],
-                lists_config['edited_next_week'],
-                lists_config['edited_sometimes'],
-                lists_config['chief_editor'],
-                lists_config['proofreading'],
-                lists_config['done'],
+                app_context.lists_config['in_progress'],
+                app_context.lists_config['editor'],
+                app_context.lists_config['edited_next_week'],
+                app_context.lists_config['edited_sometimes'],
+                app_context.lists_config['chief_editor'],
+                app_context.lists_config['proofreading'],
+                app_context.lists_config['done'],
             )
         )
     ))
@@ -45,16 +44,16 @@ def manager_stats_job(
         if not card:
             parse_failure_counter += 1
         cards_no_author_text += f'\n\n{_format_card(card, due=False, members=False)}'
-    bot.telegram_sender.send_to_manager(cards_no_author_text[:4096])
+    sender.send_to_manager(cards_no_author_text[:4096])
 
     if parse_failure_counter > 0:
-        bot.telegram_sender.send_to_manager(
+        sender.send_to_manager(
             f'Ошибок парсинга карточек: {parse_failure_counter}!'
         )
 
     cards_no_due_in_progress = list(filter(
         lambda card: not card.due,
-        bot.trello_client.get_cards(lists_config['in_progress'])
+        app_context.trello_client.get_cards(app_context.lists_config['in_progress'])
     ))
     
     logger.info('Finished manager_stats_job')
