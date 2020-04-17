@@ -10,40 +10,38 @@ import logging
 import time
 from typing import Callable, List
 
-from ..bot import SysBlokBot
+from ..app_context import AppContext
+from ..tg.sender import TelegramSender
 from ..trello.trello_client import TrelloClient
+
 
 logger = logging.getLogger(__name__)
 
 # Delay to ensure messages come in right order.
 MESSAGE_DELAY_SEC = 0.1
 
-
-def sample_job(bot: SysBlokBot):
+def sample_job(app_context: AppContext, sender: TelegramSender):
     # Logic here could include retrieving data from trello/sheets
     # and sending a notification to corresponding user.
     print("I am a job and I'm done")
 
 
-def manager_stats_job(
-        bot: SysBlokBot,
-        lists_config: dict  # move that to db
-):
+def manager_stats_job(app_context: AppContext, sender: TelegramSender):
     # TODO: make it a decorator
     logger.info('Starting manager_stats_job...')
 
     stats_paragraphs = []  # list of paragraph strings
     stats_paragraphs += _retrieve_trello_card_stats(
-        trello_client=bot.trello_client,
+        trello_client=app_context.trello_client,
         title='Не указан автор в карточке',
         list_ids=(
-            lists_config['in_progress'],
-            lists_config['editor'],
-            lists_config['edited_next_week'],
-            lists_config['edited_sometimes'],
-            lists_config['chief_editor'],
-            lists_config['proofreading'],
-            lists_config['done'],
+            app_context.lists_config['in_progress'],
+            app_context.lists_config['editor'],
+            app_context.lists_config['edited_next_week'],
+            app_context.lists_config['edited_sometimes'],
+            app_context.lists_config['chief_editor'],
+            app_context.lists_config['proofreading'],
+            app_context.lists_config['done'],
         ),
         filter_func=lambda card: not card.members,
         show_due=False,
@@ -51,46 +49,46 @@ def manager_stats_job(
     )
 
     stats_paragraphs += _retrieve_trello_card_stats(
-        trello_client=bot.trello_client,
+        trello_client=app_context.trello_client,
         title='Не указан срок в карточке',
-        list_ids=(lists_config['in_progress']),
+        list_ids=(app_context.lists_config['in_progress']),
         filter_func=lambda card: not card.due,
         show_due=False,
         show_members=False,
     )
 
     stats_paragraphs += _retrieve_trello_card_stats(
-        trello_client=bot.trello_client,
+        trello_client=app_context.trello_client,
         title='Не указан тег рубрики в карточке',
         list_ids=(
-            lists_config['in_progress'],
-            lists_config['editor'],
-            lists_config['edited_next_week'],
-            lists_config['edited_sometimes'],
-            lists_config['chief_editor'],
-            lists_config['proofreading'],
-            lists_config['done'],
+            app_context.lists_config['in_progress'],
+            app_context.lists_config['editor'],
+            app_context.lists_config['edited_next_week'],
+            app_context.lists_config['edited_sometimes'],
+            app_context.lists_config['chief_editor'],
+            app_context.lists_config['proofreading'],
+            app_context.lists_config['done'],
         ),
         filter_func=lambda card: not card.labels,
         show_due=False,
         show_members=False,
     )
 
-    all_cards = bot.trello_client.get_cards()
+    all_cards = app_context.trello_client.get_cards()
     members_with_cards = set()
     for card in all_cards:
         members_with_cards = members_with_cards.union(set(card.members))
 
     stats_paragraphs += _retrieve_trello_members_stats(
-        trello_client=bot.trello_client,
+        trello_client=app_context.trello_client,
         title='Авторы без карточек',
         filter_func=lambda member: member.username not in members_with_cards,
     )
 
     stats_paragraphs += _retrieve_trello_card_stats(
-        trello_client=bot.trello_client,
+        trello_client=app_context.trello_client,
         title='Пропущен дедлайн',
-        list_ids=(lists_config['in_progress']),
+        list_ids=(app_context.lists_config['in_progress']),
         filter_func=_is_deadline_missed,
         show_members=False,
     )
@@ -98,7 +96,7 @@ def manager_stats_job(
     for i, message in enumerate(_paragraphs_to_messages(stats_paragraphs)):
         if i > 0:
             time.sleep(MESSAGE_DELAY_SEC)
-        bot.telegram_sender.send_to_manager(message)
+        sender.send_to_manager(message)
     
     logger.info('Finished manager_stats_job')
 
@@ -134,7 +132,7 @@ def _retrieve_trello_card_stats(
 
     if parse_failure_counter > 0:
         logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
-        bot.telegram_sender.send_to_manager(
+        sender.send_to_manager(
             f'Ошибок парсинга карточек: {parse_failure_counter}!'
         )
     return paragraphs
