@@ -30,7 +30,8 @@ class TelegramSender:
             self.bot.send_message(
                 text=message_text,
                 chat_id=chat_id,
-                disable_notification=self.is_silent
+                disable_notification=self.is_silent,
+                parse_mode=telegram.ParseMode.HTML
             )
         except telegram.TelegramError as e:
             logger.error(f'Could not send a message: {e}')

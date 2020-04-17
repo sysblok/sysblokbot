@@ -24,9 +24,11 @@ logger = logging.getLogger(__name__)
 trello_client = None
 sheets_client = None
 telegram_sender = None
-
+config = {}
 
 def run():
+    # TODO: remove global after lists are in db
+    global config
     config = ConfigManager(
         CONFIG_PATH, CONFIG_OVERRIDE_PATH
     ).load_config_with_override()
