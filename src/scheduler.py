@@ -8,7 +8,7 @@ import telegram
 
 from .bot import SysBlokBot
 from .config_manager import ConfigManager
-from .consts import CONFIG_PATH, CONFIG_OVERRIDE_PATH, TELEGRAM_CONFIG
+from .consts import CONFIG_PATH, CONFIG_OVERRIDE_PATH, TELEGRAM_CONFIG, TRELLO_CONFIG
 from .jobs import jobs
 from .tg.sender import TelegramSender
 
@@ -23,12 +23,12 @@ class JobScheduler:
     def __init__(self):
         logger.info('Created empty JobScheduler, call initialize(config, bot)')
         
-    def initialize(self, config: dict, bot: SysBlokBot):
+    def initialize(self, config: dict, sysblok_bot: SysBlokBot):
         logger.info('Initializing JobScheduler...')
         self.config = config
-        self.app_context = bot.app_context
+        self.app_context = sysblok_bot.app_context
         self.sender = TelegramSender(
-            bot,
+            sysblok_bot.dp.bot,
             config[TELEGRAM_CONFIG]
         )
         # re-read config
@@ -60,8 +60,12 @@ class JobScheduler:
         diff = DeepDiff(self.config, new_config)
         if diff:
             logger.info(f'Config was changed, diff: {diff}')
+            # update config['jobs']
             self.reschedule_jobs(new_config)
+            # update config['telegram']
             self.sender.update_config(new_config[TELEGRAM_CONFIG])
+            # update config['trello']
+            self.app_context.trello_client.update_config(new_config[TRELLO_CONFIG])
         else:
             logger.info('No config changes detected')
 

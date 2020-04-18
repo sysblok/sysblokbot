@@ -129,13 +129,8 @@ class TrelloMember:
 
 class TrelloClient:
     def __init__(self, config):
-        self.api_key = config['api_key']
-        self.token = config['token']
-        self.board_id = config['board_id']
-        self.default_payload = {
-            'key': self.api_key,
-            'token': self.token,
-        }
+        self._trello_config = config
+        self._update_from_config()        
 
     def get_board(self):
         _, data = self._make_request(f'boards/{self.board_id}')
@@ -184,6 +179,23 @@ class TrelloClient:
         _, data = self._make_request(f'boards/{self.board_id}/members')
         members = [TrelloMember.from_json(member) for member in data]
         return members
+
+    def update_config(self, new_trello_config):
+        """
+        To be called after config automatic update.
+        """
+        self._trello_config = new_trello_config
+        self._update_from_config()
+
+    def _update_from_config(self):
+        """Update attributes according to current self._trello_config"""
+        self.api_key = self._trello_config['api_key']
+        self.token = self._trello_config['token']
+        self.board_id = self._trello_config['board_id']
+        self.default_payload = {
+            'key': self.api_key,
+            'token': self.token,
+        }
 
     def _make_request(self, uri):
         response = requests.get(f'{BASE_URL}{uri}', params=self.default_payload)

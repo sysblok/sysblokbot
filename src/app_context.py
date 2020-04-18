@@ -1,5 +1,7 @@
 import threading
 
+from .consts import TRELLO_CONFIG
+
 from .sheets.sheets_client import GoogleSheetsClient
 from .trello.trello_client import TrelloClient
 
@@ -23,7 +25,7 @@ class AppContext:
         self._was_initialized = True
         self.config = config
         # TODO: Consider making them singletones too
-        self.trello_client = TrelloClient(config=config['trello'])
+        self.trello_client = TrelloClient(config=config[TRELLO_CONFIG])
         self.sheets_client = GoogleSheetsClient(
             api_key_path=config['sheets']['api_key_path'],
             curators_sheet_key=config['sheets']['curators_sheet_key'],
