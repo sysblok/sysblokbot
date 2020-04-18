@@ -14,12 +14,6 @@ from ..app_context import AppContext
 from ..tg.sender import TelegramSender
 from ..trello.trello_client import TrelloClient
 
-<<<<<<< HEAD
-from ..app_context import AppContext
-from ..tg.sender import TelegramSender
-
-=======
->>>>>>> 72f2dbe07cbf5c8c480cd033ed6f565d78dbc6f8
 
 logger = logging.getLogger(__name__)
 
@@ -128,12 +122,6 @@ def _retrieve_trello_card_stats(
     for card in cards:
         if not card:
             parse_failure_counter += 1
-<<<<<<< HEAD
-        cards_no_author_text += f'\n\n{_format_card(card, due=False, members=False)}'
-    sender.send_to_manager(cards_no_author_text[:4096])
-
-    if parse_failure_counter > 0:
-=======
             continue
         paragraphs.append(
             _format_card(card, show_due=show_due, show_members=show_members)
@@ -141,7 +129,6 @@ def _retrieve_trello_card_stats(
 
     if parse_failure_counter > 0:
         logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
->>>>>>> 72f2dbe07cbf5c8c480cd033ed6f565d78dbc6f8
         sender.send_to_manager(
             f'Ошибок парсинга карточек: {parse_failure_counter}!'
         )
@@ -163,15 +150,6 @@ def _retrieve_trello_members_stats(
         paragraphs.append('👤 ' + ', '.join(map(str, sorted(members))))
     return paragraphs
 
-<<<<<<< HEAD
-    cards_no_due_in_progress = list(filter(
-        lambda card: not card.due,
-        app_context.trello_client.get_cards(app_context.lists_config['in_progress'])
-    ))
-    
-    logger.info('Finished manager_stats_job')
-=======
->>>>>>> 72f2dbe07cbf5c8c480cd033ed6f565d78dbc6f8
 
 def _format_card(card, show_due=True, show_members=True) -> str:
     # Name and url always present.
