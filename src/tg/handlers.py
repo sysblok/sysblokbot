@@ -22,7 +22,15 @@ def admin_only(func):
 # Command handlers
 def start(update, tg_context):
     # TODO: register a new user somewhere, e.g. Google Sheet
-    update.message.reply_text('Ура! Теперь ты можешь получать обновления от этого бота!')
+    update.message.reply_text('''
+Привет! 
+
+Я — бот Системного Блока. Меня создали для того, чтобы я помогал авторам, редакторам, кураторам и другим участникам проекта. 
+
+Например, я умею проводить субботники в Trello-доске и сообщать о найденных неточностях: карточках без авторов, сроков и тегов рубрик, а также авторах без карточек и карточках с пропущенным дедлайном. Для их исправления мне понадобится ваша помощь, без кожаных мешков пока не справляюсь. 
+
+Хорошего дня! Не болейте!
+'''.strip())
 
 
 def help(update, tg_context):
@@ -42,8 +50,7 @@ def test_handler(update, tg_context):
         app_context,
         TelegramSender(
             tg_context.bot,
-            app_context.config['chats'],
-            app_context.config['telegram'].get('is_silent', True)
+            app_context.config['telegram']
         )
     )
 
