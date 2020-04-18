@@ -1,16 +1,21 @@
-import os
+import threading
 
 from .sheets.sheets_client import GoogleSheetsClient
 from .trello.trello_client import TrelloClient
 
 
+# Avoid creating 2 singleton instances
+lock = threading.Lock()
+
+
 class AppContext:
     _instance = None
     def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super(AppContext, cls).__new__(cls)
-            cls._instance._was_initialized = False
-        return cls._instance
+        with lock:
+            if cls._instance is None:
+                cls._instance = super(AppContext, cls).__new__(cls)
+                cls._instance._was_initialized = False
+            return cls._instance
 
     def __init__(self, config=None):
         if self._was_initialized:
