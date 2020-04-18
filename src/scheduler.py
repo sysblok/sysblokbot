@@ -8,7 +8,7 @@ import telegram
 
 from .bot import SysBlokBot
 from .config_manager import ConfigManager
-from .consts import CONFIG_PATH, CONFIG_OVERRIDE_PATH
+from .consts import CONFIG_PATH, CONFIG_OVERRIDE_PATH, TELEGRAM_CONFIG
 from .jobs import jobs
 from .tg.sender import TelegramSender
 
@@ -29,8 +29,7 @@ class JobScheduler:
         self.app_context = bot.app_context
         self.sender = TelegramSender(
             bot,
-            config['chats'],
-            config['telegram'].get('is_silent', True)
+            config[TELEGRAM_CONFIG]
         )
         # re-read config
         schedule.every(15).minutes.do(self.config_checker_job).tag(TECHNICAL_JOB_TAG)
@@ -62,6 +61,7 @@ class JobScheduler:
         if diff:
             logger.info(f'Config was changed, diff: {diff}')
             self.reschedule_jobs(new_config)
+            self.sender.update_config(new_config[TELEGRAM_CONFIG])
         else:
             logger.info('No config changes detected')
 

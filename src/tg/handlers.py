@@ -42,8 +42,7 @@ def test_handler(update, tg_context):
         app_context,
         TelegramSender(
             tg_context.bot,
-            app_context.config['chats'],
-            app_context.config['telegram'].get('is_silent', True)
+            app_context.config['telegram']
         )
     )
 

@@ -3,7 +3,8 @@
         "token": "do_not_set_here_please_go_to_config_override",
         "is_silent": false,
         "_tmp_": {
-            "admin_chat_ids": []
+            "admin_chat_ids": [],
+            "manager_chat_id": 0
         }
     },
     "trello": {
@@ -35,8 +36,5 @@
             "every": "wednesday",
             "at": "10:00"
         }
-    },
-    "chats": {
-        "manager_chat_id": 0
     }
 }
