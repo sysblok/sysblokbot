@@ -1,0 +1,6 @@
+.git
+.vscode
+tests/
+env
+config_override.json
+config_gs.json
