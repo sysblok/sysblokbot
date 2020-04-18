@@ -11,8 +11,12 @@ logger = logging.getLogger(__name__)
 
 
 class SysBlokBot:
-    def __init__(self, config):
-        self.updater = Updater(config['telegram']['token'], use_context=True)
+    def __init__(self, config, signal_handler):
+        self.updater = Updater(
+            config['telegram']['token'],
+            use_context=True,
+            user_sig_handler=signal_handler,
+        )
         self.dp = self.updater.dispatcher
         self.app_context = AppContext(config)
 

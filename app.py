@@ -1,20 +1,15 @@
 #!/usr/bin/env python3
 
 import logging
-import os
 
 from src.bot import SysBlokBot
+from src.consts import CONFIG_PATH, CONFIG_OVERRIDE_PATH
 from src.scheduler import JobScheduler
 from src.config_manager import ConfigManager
 
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
-
-# Global constants
-ROOT_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-CONFIG_PATH = os.path.join(ROOT_DIR, 'config.json')
-CONFIG_OVERRIDE_PATH = os.path.join(ROOT_DIR, 'config_override.json')
 
 
 def get_bot():
@@ -24,10 +19,12 @@ def get_bot():
     if not config:
         raise ValueError(f"Could not load config, can't go on")
 
-    bot = SysBlokBot(config)
+    scheduler = JobScheduler()
+
+    bot = SysBlokBot(config, signal_handler=lambda signum, frame: scheduler.stop_running())
     bot.init_handlers()
 
-    scheduler = JobScheduler(config, bot)
+    scheduler.initialize(config, bot)
     scheduler.init_jobs()
 
     return bot
