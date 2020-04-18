@@ -11,15 +11,16 @@ class ConfigManager:
     def load_config_with_override(self) -> dict:
         main_config = self._load_config(self.config_path) or {}
         override_config = self._load_config(self.config_override_path) or {}
-        self._join_configs(main_config, override_config)
+        ConfigManager.join_configs(main_config, override_config)
         return main_config
         
-    def _join_configs(self, main_config: dict, override_config: dict):
+    @staticmethod
+    def join_configs(main_config: dict, override_config: dict):
         """Recursively override values from the main config (in place)"""
         for key in override_config:
             if key in main_config and isinstance(main_config[key], dict):
                 # recursively do the same
-                self._join_configs(main_config[key], override_config[key])
+                ConfigManager.join_configs(main_config[key], override_config[key])
             else:
                 # rewrite if key is absent, or is list/str/int/bool
                 main_config[key] = override_config[key]
