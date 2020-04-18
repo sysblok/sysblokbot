@@ -25,3 +25,7 @@ How to deploy it to DigitalOcean droplet
 - Untar it with `docker load --input sysblokbot.tar`
 - Possibly change config roots in `docker_run.sh`
 - Run it!
+
+How to user Trello API
+- Get API Key and Token: https://trello.com/app-key
+- Get ID of main board: curl 'https://api.trello.com/1/members/me/boards?key={yourKey}&token={yourToken}'
