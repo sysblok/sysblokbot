@@ -22,5 +22,6 @@ How to Docker
 How to deploy it to DigitalOcean droplet
 - Run `docker save --output sysblokbot.tar sysblokbot` to serialize the docker image (about 300MB)
 - `scp` it to the droplet along with `config_gs.json` and `config_override.json`
+- Untar it with `docker load --input sysblokbot.tar`
 - Possibly change config roots in `docker_run.sh`
 - Run it!
