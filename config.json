@@ -4,7 +4,7 @@
         "is_silent": false,
         "_tmp_": {
             "admin_chat_ids": [],
-            "manager_chat_id": 0
+            "manager_chat_ids": []
         }
     },
     "trello": {
