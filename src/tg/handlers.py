@@ -40,12 +40,20 @@ def help(update, tg_context):
 
 
 @admin_only
-def admin_handler(update, tg_context):
-    update.message.reply_text('You are admin')
-
-
 def test_handler(update, tg_context):
     """Handler for /test command, feel free to use it for one-off job testing"""
+    app_context = AppContext()
+    jobs.sample_job(
+        app_context,
+        TelegramSender(
+            tg_context.bot,
+            app_context.config['telegram']
+        )
+    )
+
+
+@admin_only
+def manager_stats_handler(update, tg_context):
     app_context = AppContext()
     jobs.manager_stats_job(
         app_context,
