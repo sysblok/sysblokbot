@@ -24,10 +24,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: pytest
-        run: |
-          pytest
+        
+      - name: Python Pytest Github Action
+        uses: fylein/python-pytest-github-action@v2
 
       - name: Docker build
         run: |
