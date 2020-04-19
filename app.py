@@ -21,13 +21,13 @@ def get_bot():
     if not config:
         raise ValueError(f"Could not load config, can't go on")
 
-    scheduler = JobScheduler()
+    scheduler = JobScheduler(config)
 
     bot = SysBlokBot(config, signal_handler=lambda signum,
                      frame: scheduler.stop_running())
     bot.init_handlers()
 
-    scheduler.initialize(config, bot)
+    scheduler.run(bot)
     scheduler.init_jobs()
 
     return bot

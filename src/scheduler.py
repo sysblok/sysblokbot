@@ -20,20 +20,24 @@ TECHNICAL_JOB_TAG = 'technical'
 
 
 class JobScheduler:
-    def __init__(self):
-        logger.info('Created empty JobScheduler, call initialize(config, bot)')
-
-    def initialize(self, config: dict, sysblok_bot: SysBlokBot):
-        logger.info('Initializing JobScheduler...')
+    """
+    Don't forget to call run() after initializing.
+    """
+    def __init__(self, config: dict):
+        logger.info("Creating JobScheduler instance")
         self.config = config
+        # re-read config
+        schedule.every(15).minutes.do(
+            self.config_checker_job
+        ).tag(TECHNICAL_JOB_TAG)
+
+    def run(self, sysblok_bot: SysBlokBot):
+        logger.info('Starting JobScheduler...')
         self.app_context = sysblok_bot.app_context
         self.sender = TelegramSender(
             sysblok_bot.dp.bot,
-            config[TELEGRAM_CONFIG]
+            self.config[TELEGRAM_CONFIG]
         )
-        # re-read config
-        schedule.every(15).minutes.do(
-            self.config_checker_job).tag(TECHNICAL_JOB_TAG)
 
         cease_continuous_run = threading.Event()
 
