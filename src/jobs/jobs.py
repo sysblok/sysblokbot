@@ -31,6 +31,8 @@ def manager_stats_job(app_context: AppContext, sender: TelegramSender):
     logger.info('Starting manager_stats_job...')
 
     stats_paragraphs = []  # list of paragraph strings
+    stats_paragraphs.append('Всем привет! Еженедельная сводка о состоянии Trello-доски.\n#доскаживи')
+
     stats_paragraphs += _retrieve_trello_card_stats(
         trello_client=app_context.trello_client,
         title='Не указан автор в карточке',
