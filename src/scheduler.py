@@ -6,7 +6,7 @@ from deepdiff import DeepDiff
 import schedule
 import telegram
 
-import consts
+from . import consts
 from .bot import SysBlokBot
 from .config_manager import ConfigManager
 from .jobs import jobs
@@ -36,7 +36,7 @@ class JobScheduler:
         self.app_context = sysblok_bot.app_context
         self.sender = TelegramSender(
             sysblok_bot.dp.bot,
-            self.config[TELEGRAM_CONFIG]
+            self.config[consts.TELEGRAM_CONFIG]
         )
 
         cease_continuous_run = threading.Event()
