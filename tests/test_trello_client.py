@@ -9,7 +9,8 @@ from src.trello.trello_client import TrelloClient
 
 
 ROOT_TEST_DIR = os.path.abspath(os.path.dirname(__file__))
-TRELLO_TEST_PATH = os.path.join(os.path.join(ROOT_TEST_DIR, 'static'), 'trello')
+TRELLO_TEST_PATH = os.path.join(
+    os.path.join(ROOT_TEST_DIR, 'static'), 'trello')
 
 # TODO check milliseconds :)
 TIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
@@ -87,7 +88,7 @@ def test_cards(monkeypatch):
     assert datetime.strftime(card.due, TIME_FORMAT) == '2020-06-18T09:00:00Z'
     assert card.list_name == 'Готовая тема'
     assert len(card.members) == 0
-    
+
     card = cards[1]
     assert card.id == 'card_2'
     assert card.name == 'тестовая карточка'

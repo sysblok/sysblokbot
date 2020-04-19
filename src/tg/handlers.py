@@ -15,7 +15,8 @@ def admin_only(func):
         app_context = AppContext()
         if update.message.chat_id in app_context.admin_chat_ids:
             return func(update, tg_context, *args, **kwargs)
-        logger.warning(f'Admin-only handler {func.__name__} was invoked by {update.message.chat_id}')
+        logger.warning(
+            f'Admin-only handler {func.__name__} was invoked by {update.message.chat_id}')
     return wrapper
 
 
@@ -23,11 +24,11 @@ def admin_only(func):
 def start(update, tg_context):
     # TODO: register a new user somewhere, e.g. Google Sheet
     update.message.reply_text('''
-Привет! 
+Привет!
 
-Я — бот Системного Блока. Меня создали для того, чтобы я помогал авторам, редакторам, кураторам и другим участникам проекта. 
+Я — бот Системного Блока. Меня создали для того, чтобы я помогал авторам, редакторам, кураторам и другим участникам проекта.
 
-Например, я умею проводить субботники в Trello-доске и сообщать о найденных неточностях: карточках без авторов, сроков и тегов рубрик, а также авторах без карточек и карточках с пропущенным дедлайном. Для их исправления мне понадобится ваша помощь, без кожаных мешков пока не справляюсь. 
+Например, я умею проводить субботники в Trello-доске и сообщать о найденных неточностях: карточках без авторов, сроков и тегов рубрик, а также авторах без карточек и карточках с пропущенным дедлайном. Для их исправления мне понадобится ваша помощь, без кожаных мешков пока не справляюсь.
 
 Хорошего дня! Не болейте!
 '''.strip())

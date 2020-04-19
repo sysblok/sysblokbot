@@ -28,7 +28,10 @@ class SysBlokBot:
         self.dp.add_handler(CommandHandler("manager_stats", handlers.manager_stats_handler))
 
         # on user message
-        self.dp.add_handler(MessageHandler(Filters.text, handlers.handle_user_message))
+        self.dp.add_handler(MessageHandler(
+            Filters.text,
+            handlers.handle_user_message)
+        )
 
         # log all errors
         self.dp.add_error_handler(handlers.error)
@@ -39,5 +42,6 @@ class SysBlokBot:
         self.updater.start_polling()
 
         # Run the bot until you press Ctrl-C or the process receives SIGINT,
-        # SIGTERM or SIGABRT. start_polling() is non-blocking and will stop the bot gracefully.
+        # SIGTERM or SIGABRT. start_polling() is non-blocking and will
+        # stop the bot gracefully.
         self.updater.idle()

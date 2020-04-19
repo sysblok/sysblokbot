@@ -36,6 +36,7 @@ class JobScheduler:
             sysblok_bot.dp.bot,
             self.config[TELEGRAM_CONFIG]
         )
+
         cease_continuous_run = threading.Event()
 
         class ScheduleThread(threading.Thread):
@@ -45,7 +46,8 @@ class JobScheduler:
                     try:
                         schedule.run_pending()
                     except Exception as e:
-                        logger.error(f'Error while running scheduled jobs: {e}')
+                        logger.error(
+                            f'Error while running scheduled jobs: {e}')
                     time.sleep(1)
                 return cease_continuous_run
 
@@ -55,7 +57,8 @@ class JobScheduler:
 
     def config_checker_job(self):
         """A very special job checking config for recent changes"""
-        new_config = ConfigManager(CONFIG_PATH, CONFIG_OVERRIDE_PATH).load_config_with_override()
+        new_config = ConfigManager(
+            CONFIG_PATH, CONFIG_OVERRIDE_PATH).load_config_with_override()
 
         # If anything at all changed in config
         # TODO: can be more precise here
@@ -67,7 +70,8 @@ class JobScheduler:
             # update config['telegram']
             self.sender.update_config(new_config[TELEGRAM_CONFIG])
             # update config['trello']
-            self.app_context.trello_client.update_config(new_config[TRELLO_CONFIG])
+            self.app_context.trello_client.update_config(
+                new_config[TRELLO_CONFIG])
         else:
             logger.info('No config changes detected')
 
@@ -88,16 +92,20 @@ class JobScheduler:
                     job, app_context=self.app_context, sender=self.sender
                 ).tag(CUSTOM_JOB_TAG)
             except Exception as e:
-                logger.error(f'Failed to schedule job {job_id} with params {schedule_dict}: {e}')
+                logger.error(
+                    f'Failed to schedule job {job_id} with params {schedule_dict}: {e}')
         logger.info('Finished setting jobs')
 
     def reschedule_jobs(self, new_config: dict):
         logger.info('Clearing all scheduled jobs...')
-        schedule.clear(CUSTOM_JOB_TAG)  # clear only jobs originating from config
-        ConfigManager.join_configs(self.config, new_config) # join in place to config object
+        # clear only jobs originating from config
+        schedule.clear(CUSTOM_JOB_TAG)
+        # join in place to config object
+        ConfigManager.join_configs(self.config, new_config)
         self.init_jobs()
 
     def stop_running(self):
         '''Set a stopping event so we can finish last job gracefully'''
-        logger.info('Scheduler received a signal. Will terminate after ongoing jobs end')
+        logger.info(
+            'Scheduler received a signal. Will terminate after ongoing jobs end')
         self.stop_run_event.set()

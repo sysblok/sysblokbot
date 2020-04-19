@@ -21,7 +21,8 @@ def get_bot():
 
     scheduler = JobScheduler(config)
 
-    bot = SysBlokBot(config, signal_handler=lambda signum, frame: scheduler.stop_running())
+    bot = SysBlokBot(config, signal_handler=lambda signum,
+                     frame: scheduler.stop_running())
     bot.init_handlers()
 
     scheduler.run(bot)
