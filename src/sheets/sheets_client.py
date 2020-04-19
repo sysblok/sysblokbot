@@ -15,14 +15,23 @@ scope = [
 
 
 class GoogleSheetsClient:
-    def __init__(self, api_key_path: str, authors_sheet_key: str, curators_sheet_key: str):
+    def __init__(
+            self,
+            api_key_path: str,
+            authors_sheet_key: str,
+            curators_sheet_key: str
+    ):
         credentials = Credentials.from_service_account_file(
             api_key_path, scopes=scope)
         self.client = gspread.authorize(credentials)
         self.authors_sheet_key = authors_sheet_key
         self.curators_sheet_key = curators_sheet_key
 
-    def find_author_curators(self, find_by: str, val: str) -> Optional[List[Dict]]:
+    def find_author_curators(
+            self,
+            find_by: str,
+            val: str
+    ) -> Optional[List[Dict]]:
         authors = self.fetch_authors()
         author = next(
             (author for author in authors if author[find_by] == val), None)
@@ -36,7 +45,11 @@ class GoogleSheetsClient:
                 found_curators.append(curator)
         return found_curators
 
-    def find_curator_authors(self, find_by: str, val: str) -> Optional[List[Dict]]:
+    def find_curator_authors(
+            self,
+            find_by: str,
+            val: str
+    ) -> Optional[List[Dict]]:
         curators = self.fetch_curators()
         curator = next(
             (curator for curator in curators if curator[find_by] == val), None)
@@ -52,11 +65,19 @@ class GoogleSheetsClient:
 
     def find_telegram_id_by_trello_id(self, trello: str) -> Optional[str]:
         authors = self.fetch_authors()
-        return next((author['telegram'] for author in authors if author['trello'] == trello), None)
+        return next(
+            (author['telegram']
+                for author in authors if author['trello'] == trello),
+            None
+        )
 
     def find_trello_id_by_telegram_id(self, telegram: str) -> Optional[str]:
         authors = self.fetch_authors()
-        return next((author['telegram'] for author in authors if author['trello'] == telegram), None)
+        return next(
+            (author['telegram']
+                for author in authors if author['trello'] == telegram),
+            None
+        )
 
     def fetch_authors(self) -> List[Dict]:
         title_key_map = {
@@ -107,8 +128,11 @@ class GoogleSheetsClient:
 
 
 if __name__ == "__main__":
-    gs = GoogleSheetsClient('sysblokbot.json', '1-oU86gg1dYI4qfYlh-DBK5_X61dENa0Iw4IRBQ_aoWk',
-                            '1Ydmd-qTrO4_6lsu-onuIal91MnQU8Qx4Z-Td21MzcME')
+    gs = GoogleSheetsClient(
+        'sysblokbot.json',
+        '1-oU86gg1dYI4qfYlh-DBK5_X61dENa0Iw4IRBQ_aoWk',
+        '1Ydmd-qTrO4_6lsu-onuIal91MnQU8Qx4Z-Td21MzcME'
+    )
 
     pprint(gs.fetch_authors())
     pprint(gs.fetch_curators())
