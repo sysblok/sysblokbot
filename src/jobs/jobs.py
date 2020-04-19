@@ -93,7 +93,7 @@ def manager_stats_job(app_context: AppContext, sender: TelegramSender):
     for i, message in enumerate(_paragraphs_to_messages(stats_paragraphs)):
         if i > 0:
             time.sleep(MESSAGE_DELAY_SEC)
-        sender.send_to_manager(message)
+        sender.send_to_managers(message)
     
     logger.info('Finished manager_stats_job')
 
@@ -129,7 +129,7 @@ def _retrieve_trello_card_stats(
 
     if parse_failure_counter > 0:
         logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
-        sender.send_to_manager(
+        sender.send_to_managers(
             f'Ошибок парсинга карточек: {parse_failure_counter}!'
         )
     return paragraphs

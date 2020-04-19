@@ -16,7 +16,7 @@ class TelegramSender:
         self._tg_config = tg_config
         self._update_from_config()
 
-    def send_to_manager(self, message_text: str):
+    def send_to_managers(self, message_text: str):
         for manager_chat_id in self.manager_chat_ids:
             if not manager_chat_id:
                 logger.error(f'Can\'t send message to manager, check config: \
