@@ -1,4 +1,6 @@
 # SysBlokBot
+![Docker](https://github.com/sysblok/SysBlokBot/workflows/Docker/badge.svg)
+
 Бот для автоматизации работы редакции
 
 Deployment:
