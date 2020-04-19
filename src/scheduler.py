@@ -6,9 +6,9 @@ from deepdiff import DeepDiff
 import schedule
 import telegram
 
+import consts
 from .bot import SysBlokBot
 from .config_manager import ConfigManager
-from .consts import CONFIG_PATH, CONFIG_OVERRIDE_PATH, TELEGRAM_CONFIG, TRELLO_CONFIG
 from .jobs import jobs
 from .tg.sender import TelegramSender
 
@@ -27,8 +27,10 @@ class JobScheduler:
         logger.info("Creating JobScheduler instance")
         self.config = config
         # re-read config
-        schedule.every(15).minutes.do(self.config_checker_job).tag(TECHNICAL_JOB_TAG)
-        
+        schedule.every(15).minutes.do(
+            self.config_checker_job
+        ).tag(TECHNICAL_JOB_TAG)
+
     def run(self, sysblok_bot: SysBlokBot):
         logger.info('Starting JobScheduler...')
         self.app_context = sysblok_bot.app_context
@@ -58,7 +60,8 @@ class JobScheduler:
     def config_checker_job(self):
         """A very special job checking config for recent changes"""
         new_config = ConfigManager(
-            CONFIG_PATH, CONFIG_OVERRIDE_PATH).load_config_with_override()
+            consts.CONFIG_PATH, consts.CONFIG_OVERRIDE_PATH
+        ).load_config_with_override()
 
         # If anything at all changed in config
         # TODO: can be more precise here
@@ -68,10 +71,10 @@ class JobScheduler:
             # update config['jobs']
             self.reschedule_jobs(new_config)
             # update config['telegram']
-            self.sender.update_config(new_config[TELEGRAM_CONFIG])
+            self.sender.update_config(new_config[consts.TELEGRAM_CONFIG])
             # update config['trello']
             self.app_context.trello_client.update_config(
-                new_config[TRELLO_CONFIG])
+                new_config[consts.TRELLO_CONFIG])
         else:
             logger.info('No config changes detected')
 
@@ -92,8 +95,8 @@ class JobScheduler:
                     job, app_context=self.app_context, sender=self.sender
                 ).tag(CUSTOM_JOB_TAG)
             except Exception as e:
-                logger.error(
-                    f'Failed to schedule job {job_id} with params {schedule_dict}: {e}')
+                logger.error(f'Failed to schedule job {job_id} \
+                    with params {schedule_dict}: {e}')
         logger.info('Finished setting jobs')
 
     def reschedule_jobs(self, new_config: dict):
@@ -106,6 +109,6 @@ class JobScheduler:
 
     def stop_running(self):
         '''Set a stopping event so we can finish last job gracefully'''
-        logger.info(
-            'Scheduler received a signal. Will terminate after ongoing jobs end')
+        logger.info('Scheduler received a signal. \
+            Will terminate after ongoing jobs end')
         self.stop_run_event.set()

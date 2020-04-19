@@ -25,7 +25,10 @@ class SysBlokBot:
         self.dp.add_handler(CommandHandler("start", handlers.start))
         self.dp.add_handler(CommandHandler("help", handlers.help))
         self.dp.add_handler(CommandHandler("test", handlers.test_handler))
-        self.dp.add_handler(CommandHandler("manager_stats", handlers.manager_stats_handler))
+        self.dp.add_handler(CommandHandler(
+            "manager_stats",
+            handlers.manager_stats_handler
+        ))
 
         # on user message
         self.dp.add_handler(MessageHandler(

@@ -8,8 +8,10 @@ from src.scheduler import JobScheduler
 from src.config_manager import ConfigManager
 
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=logging.INFO)
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
 
 
 def get_bot():

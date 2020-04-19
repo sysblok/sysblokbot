@@ -15,8 +15,8 @@ def admin_only(func):
         app_context = AppContext()
         if update.message.chat_id in app_context.admin_chat_ids:
             return func(update, tg_context, *args, **kwargs)
-        logger.warning(
-            f'Admin-only handler {func.__name__} was invoked by {update.message.chat_id}')
+        logger.warning(f'Admin-only handler {func.__name__} \
+            was invoked by {update.message.chat_id}')
     return wrapper
 
 
@@ -31,7 +31,7 @@ def start(update, tg_context):
 Например, я умею проводить субботники в Trello-доске и сообщать о найденных неточностях: карточках без авторов, сроков и тегов рубрик, а также авторах без карточек и карточках с пропущенным дедлайном. Для их исправления мне понадобится ваша помощь, без кожаных мешков пока не справляюсь.
 
 Хорошего дня! Не болейте!
-'''.strip())
+'''.strip())  # noqa
 
 
 def help(update, tg_context):
@@ -41,7 +41,9 @@ def help(update, tg_context):
 
 @admin_only
 def test_handler(update, tg_context):
-    """Handler for /test command, feel free to use it for one-off job testing"""
+    """
+    Handler for /test command, feel free to use it for one-off job testing
+    """
     app_context = AppContext()
     jobs.sample_job(
         app_context,
