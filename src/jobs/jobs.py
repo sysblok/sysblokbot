@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 # Delay to ensure messages come in right order.
 MESSAGE_DELAY_SEC = 0.1
 
+
 def sample_job(app_context: AppContext, sender: TelegramSender):
     # Logic here could include retrieving data from trello/sheets
     # and sending a notification to corresponding user.
@@ -31,7 +32,8 @@ def manager_stats_job(app_context: AppContext, sender: TelegramSender):
     logger.info('Starting manager_stats_job...')
 
     stats_paragraphs = []  # list of paragraph strings
-    stats_paragraphs.append('Всем привет! Еженедельная сводка о состоянии Trello-доски.\n#доскаживи')
+    stats_paragraphs.append('Всем привет! Еженедельная сводка \
+        о состоянии Trello-доски.\n#доскаживи')
 
     stats_paragraphs += _retrieve_trello_card_stats(
         trello_client=app_context.trello_client,
@@ -96,7 +98,7 @@ def manager_stats_job(app_context: AppContext, sender: TelegramSender):
         if i > 0:
             time.sleep(MESSAGE_DELAY_SEC)
         sender.send_to_manager(message)
-    
+
     logger.info('Finished manager_stats_job')
 
 
@@ -160,7 +162,7 @@ def _format_card(card, show_due=True, show_members=True) -> str:
     # If no labels assigned, don't render them to text.
     if card.labels:
         card_text = f'{card_text}📘 {", ".join(card.labels)} '
-    
+
     # Avoiding message overflow, strip explanations in ()
     list_name = card.list_name + '('
     list_name = list_name[:list_name.find('(')].strip()
@@ -197,7 +199,7 @@ def _paragraphs_to_messages(
             # Overflow, starting a new message
             messages.append(delimiter.join(message_paragraphs))
 
-            assert len(paragraph) < char_limit # should not fire
+            assert len(paragraph) < char_limit  # should not fire
             message_paragraphs = [paragraph]
             char_counter = len(paragraph)
     messages.append(delimiter.join(message_paragraphs))

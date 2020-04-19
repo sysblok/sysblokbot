@@ -3,6 +3,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class ConfigManager:
     def __init__(self, config_path: str, config_override_path: str):
         self.config_path = config_path
@@ -13,14 +14,16 @@ class ConfigManager:
         override_config = self._load_config(self.config_override_path) or {}
         ConfigManager.join_configs(main_config, override_config)
         return main_config
-        
+
     @staticmethod
     def join_configs(main_config: dict, override_config: dict):
         """Recursively override values from the main config (in place)"""
         for key in override_config:
             if key in main_config and isinstance(main_config[key], dict):
                 # recursively do the same
-                ConfigManager.join_configs(main_config[key], override_config[key])
+                ConfigManager.join_configs(
+                    main_config[key], override_config[key]
+                )
             else:
                 # rewrite if key is absent, or is list/str/int/bool
                 main_config[key] = override_config[key]

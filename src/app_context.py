@@ -12,6 +12,7 @@ lock = threading.Lock()
 
 class AppContext:
     _instance = None
+
     def __new__(cls, *args, **kwargs):
         with lock:
             if cls._instance is None:

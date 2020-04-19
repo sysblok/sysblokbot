@@ -6,6 +6,7 @@ import telegram
 
 logger = logging.getLogger(__name__)
 
+
 class TelegramSender:
     def __init__(
             self,
@@ -35,7 +36,6 @@ class TelegramSender:
         except telegram.TelegramError as e:
             logger.error(f'Could not send a message: {e}')
 
-
     def update_config(self, new_tg_config):
         """
         To be called after config automatic update.
@@ -46,5 +46,9 @@ class TelegramSender:
 
     def _update_from_config(self):
         """Update attributes according to current self._tg_config"""
-        self.manager_chat_id = self._tg_config.get('_tmp_', {}).get('manager_chat_id')
+        self.manager_chat_id = self._tg_config.get(
+            '_tmp_', {}
+        ).get(
+            'manager_chat_id'
+        )
         self.is_silent = self._tg_config.get('is_silent', True)

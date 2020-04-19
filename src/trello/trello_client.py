@@ -32,7 +32,7 @@ class TrelloBoard:
             board.id = data['id']
             board.name = data['name']
             board.url = data['shortUrl']
-        except:
+        except Exception:
             board._ok = False
             logger.error(f"Bad board json {data}")
         return board
@@ -57,7 +57,7 @@ class TrelloList:
         try:
             trello_list.id = data['id']
             trello_list.name = data['name']
-        except:
+        except Exception:
             trello_list._ok = False
             logger.error(f"Bad list json {data}")
         return trello_list
@@ -90,8 +90,9 @@ class TrelloCard:
             card.name = data['name']
             card.labels = [label['name'] for label in data['labels']]
             card.url = data['shortUrl']
-            card.due = datetime.strptime(data['due'], TIME_FORMAT) if data['due'] else None
-        except:
+            card.due = (datetime.strptime(data['due'], TIME_FORMAT)
+                        if data['due'] else None)
+        except Exception:
             card._ok = False
             logger.error(f"Bad card json {data}")
         return card
@@ -107,13 +108,16 @@ class TrelloMember:
         return self.username
 
     def __repr__(self):
-        return f'Member<id={self.id}, name={self.username}, full name={self.full_name}>'
+        return f'Member<id={self.id}, name={self.username}, \
+            full name={self.full_name}>'
 
     def __eq__(self, other):
-        return isinstance(other, TrelloMember) and self.username == other.username
-    
+        return (isinstance(other, TrelloMember) and
+                self.username == other.username)
+
     def __lt__(self, other):
-        return isinstance(other, TrelloMember) and self.username < other.username
+        return (isinstance(other, TrelloMember) and
+                self.username < other.username)
 
     def __hash__(self):
         return hash(self.username)
@@ -130,7 +134,7 @@ class TrelloMember:
 class TrelloClient:
     def __init__(self, config):
         self._trello_config = config
-        self._update_from_config()        
+        self._update_from_config()
 
     def get_board(self):
         _, data = self._make_request(f'boards/{self.board_id}')
@@ -198,5 +202,8 @@ class TrelloClient:
         }
 
     def _make_request(self, uri):
-        response = requests.get(f'{BASE_URL}{uri}', params=self.default_payload)
+        response = requests.get(
+            f'{BASE_URL}{uri}',
+            params=self.default_payload
+        )
         return response.status_code, response.json()

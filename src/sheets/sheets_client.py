@@ -16,14 +16,16 @@ scope = [
 
 class GoogleSheetsClient:
     def __init__(self, api_key_path: str, authors_sheet_key: str, curators_sheet_key: str):
-        credentials = Credentials.from_service_account_file(api_key_path, scopes=scope)
+        credentials = Credentials.from_service_account_file(
+            api_key_path, scopes=scope)
         self.client = gspread.authorize(credentials)
         self.authors_sheet_key = authors_sheet_key
         self.curators_sheet_key = curators_sheet_key
 
     def find_author_curators(self, find_by: str, val: str) -> Optional[List[Dict]]:
         authors = self.fetch_authors()
-        author = next((author for author in authors if author[find_by] == val), None)
+        author = next(
+            (author for author in authors if author[find_by] == val), None)
         if author is None:
             return
 
@@ -36,7 +38,8 @@ class GoogleSheetsClient:
 
     def find_curator_authors(self, find_by: str, val: str) -> Optional[List[Dict]]:
         curators = self.fetch_curators()
-        curator = next((curator for curator in curators if curator[find_by] == val), None)
+        curator = next(
+            (curator for curator in curators if curator[find_by] == val), None)
         if curator is None:
             return
 
@@ -81,11 +84,13 @@ class GoogleSheetsClient:
         for title in titles:
             if title not in title_key_map.keys():
                 logger.error(f'Update title_key_map. "{title}" caused error.')
-        title_idx_map = {idx: title_key_map[title] for idx, title in enumerate(titles)}
+        title_idx_map = {idx: title_key_map[title]
+                         for idx, title in enumerate(titles)}
 
         res = []
         for row in rows:
-            item = {title_idx_map[key]: self._parse_cell_value(val) for key, val in enumerate(row)}
+            item = {title_idx_map[key]: self._parse_cell_value(
+                val) for key, val in enumerate(row)}
             res.append(item)
         return res
 
