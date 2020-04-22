@@ -57,27 +57,28 @@ jobs:
       - name: Build image
         run: docker build . --file Dockerfile --tag image
 
-      - name: Log into registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+      - name: Publish to Github Packages Registry
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: ${{ github.actor }}/${{ github.repository }}/$IMAGE_NAME
+          registry: docker.pkg.github.com
+          username: ${{ secrets.GITHUB_USERNAME }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          dockerfile: Dockerfile
+          tags: latest
 
-      - name: Push image
-        run: |
-          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
-          
-          # Change all uppercase to lowercase
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-
-          # Strip git ref prefix from version
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-
-          # Strip "v" prefix from tag name
-          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-
-          # Use Docker `latest` tag convention
-          [ "$VERSION" == "master" ] && VERSION=latest
-
-          echo IMAGE_ID=$IMAGE_ID
-          echo VERSION=$VERSION
-
-          docker tag image $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:$VERSION
+      - name: Deploy package to digitalocean
+        uses: appleboy/ssh-action@master
+        env:
+          GITHUB_USERNAME: ${{ secrets.GITHUB_USERNAME }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          host: ${{ secrets.MASTER_HOST }}
+          username: ${{ secrets.MASTER_USER }}
+          key: ${{ secrets.MASTER_SSH_KEY }}
+          port: ${{ secrets.MASTER_PORT }}
+          envs: GITHUB_USERNAME, GITHUB_TOKEN
+          script: |
+            docker stop $(docker ps -a -q)
+            docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
+            docker run -dit -p 80:80 docker.pkg.github.com/${{ github.actor }}/${{ github.repository }}/$IMAGE_NAME:latest
