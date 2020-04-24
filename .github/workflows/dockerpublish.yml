@@ -33,15 +33,6 @@ jobs:
         with:
           args: pip3 install -e . && pip3 install -r requirements.txt && pytest
 
-      - name: Docker build
-        run: |
-          if [ -f docker-compose.test.yml ]; then
-            docker-compose --file docker-compose.test.yml build
-            docker-compose --file docker-compose.test.yml run sut
-          else
-            docker build . --file Dockerfile
-          fi
-
   # Push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
   push:
@@ -54,31 +45,34 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build image
-        run: docker build . --file Dockerfile --tag image
-
       - name: Publish to Github Packages Registry
         uses: elgohr/Publish-Docker-Github-Action@master
+        env:
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
         with:
-          name: ${{ github.actor }}/${{ github.repository }}/$IMAGE_NAME
+          name: ${{ github.repository }}/${{ env.IMAGE_NAME }}
           registry: docker.pkg.github.com
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: Dockerfile
-          tags: latest
+          tags: latesе
 
       - name: Deploy package to digitalocean
         uses: appleboy/ssh-action@master
         env:
-          GITHUB_USERNAME: ${{ secrets.GITHUB_USERNAME }}
+          GITHUB_USERNAME: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
         with:
           host: ${{ secrets.MASTER_HOST }}
-          username: ${{ secrets.MASTER_USER }}
-          key: ${{ secrets.MASTER_SSH_KEY }}
+          username: ${{ secrets.MASTER_DO_USER }}
+          passphrase: ${{ secrets.MASTER_DO_SSH_KEY_PASSWORD }}
+          key: ${{ secrets.MASTER_DO_SSH_KEY }}
           port: ${{ secrets.MASTER_PORT }}
-          envs: GITHUB_USERNAME, GITHUB_TOKEN
+          envs: GITHUB_USERNAME, GITHUB_TOKEN, IMAGE_NAME
           script: |
             docker stop $(docker ps -a -q)
+            docker rm $(docker ps -a -q)
+            docker rmi $(docker images -q)
             docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
-            docker run -dit -p 80:80 docker.pkg.github.com/${{ github.actor }}/${{ github.repository }}/$IMAGE_NAME:latest
+            docker run -dit docker.pkg.github.com/${{ github.actor }}/${{ github.repository }}/${{ env.IMAGE_NAME }}:latest
