@@ -75,4 +75,4 @@ jobs:
             docker rm $(docker ps -a -q)
             docker rmi $(docker images -q)
             docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
-            docker run -dit docker.pkg.github.com/sysblok/${{ github.repository }}/${{ env.IMAGE_NAME }}:latest
+            docker run -dit docker.pkg.github.com/sysblok/sysblokbot/${{ env.IMAGE_NAME }}:latest
