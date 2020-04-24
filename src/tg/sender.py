@@ -46,7 +46,7 @@ class TelegramSender:
 
     def _update_from_config(self):
         """Update attributes according to current self._tg_config"""
-        self.manager_chat_id = self._tg_config.get(
+        self.manager_chat_ids = self._tg_config.get(
             '_tmp_', {}
         ).get(
             'manager_chat_ids'
