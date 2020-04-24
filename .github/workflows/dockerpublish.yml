@@ -63,18 +63,19 @@ jobs:
           GITHUB_USERNAME: sysblok
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          DO_USERNAME: ${{ secrets.MASTER_DO_USER }}
         with:
           host: ${{ secrets.MASTER_HOST }}
           username: ${{ secrets.MASTER_DO_USER }}
           passphrase: ${{ secrets.MASTER_DO_SSH_KEY_PASSWORD }}
           key: ${{ secrets.MASTER_DO_SSH_KEY }}
           port: ${{ secrets.MASTER_PORT }}
-          envs: GITHUB_USERNAME, GITHUB_TOKEN, IMAGE_NAME
+          envs: GITHUB_USERNAME, GITHUB_TOKEN, IMAGE_NAME, DO_USERNAME
           script: |
             docker stop $(docker ps -a -q)
             docker rm $(docker ps -a -q)
             docker rmi $(docker images -q)
             docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
-            docker run -v /home/${{ secrets.DO_USERNAME }}/config_override.json:/app/config_override.json \
-              -v /home/${{ secrets.DO_USERNAME }}/config_gs.json:/app/config_gs.json \
+            docker run -v /home/${{ env.DO_USERNAME }}/config_override.json:/app/config_override.json \
+              -v /home/${{ env.DO_USERNAME }}/config_gs.json:/app/config_gs.json \
               -dit docker.pkg.github.com/sysblok/sysblokbot/${{ env.IMAGE_NAME }}:latest
