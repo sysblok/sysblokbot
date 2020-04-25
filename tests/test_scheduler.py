@@ -26,10 +26,10 @@ def test_scheduler(monkeypatch, jobs_config, num_jobs):
         setattr(jobs, job_id, lambda _: 0)
 
     scheduler.schedule.clear()
-    job_scheduler = scheduler.JobScheduler({'jobs': jobs_config})
-    # Instead of: job_scheduler.run(sysblok_bot=None)
-    job_scheduler.app_context = None
-    job_scheduler.sender = None
 
+    scheduler.JobScheduler.drop_instance()
+    job_scheduler = scheduler.JobScheduler({'jobs': jobs_config})
+    job_scheduler.app_context = None
     job_scheduler.init_jobs()
+
     assert len(scheduler.schedule.jobs) == num_jobs + 1

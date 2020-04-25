@@ -13,8 +13,12 @@ class TelegramSender(Singleton):
     def __init__(
             self,
             bot: telegram.Bot = None,
-            tg_config: dict = None
+            tg_config: dict = None,
+            should_initialize: bool = True
     ):
+        if not should_initialize:
+            # create an instance but don't mark as initialized yet
+            return
         if self.was_initialized():
             return
 

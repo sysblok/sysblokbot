@@ -11,6 +11,7 @@ from .bot import SysBlokBot
 from .config_manager import ConfigManager
 from .jobs import jobs
 from .tg.sender import TelegramSender
+from .utils.singleton import Singleton
 
 
 logger = logging.getLogger(__name__)
@@ -19,11 +20,16 @@ CUSTOM_JOB_TAG = 'custom'
 TECHNICAL_JOB_TAG = 'technical'
 
 
-class JobScheduler:
+class JobScheduler(Singleton):
     """
     Don't forget to call run() after initializing.
     """
-    def __init__(self, config: dict):
+    def __init__(self, config: dict = None):
+        if self.was_initialized():
+            if config:
+                self.reschedule_jobs(config)
+            return
+
         logger.info("Creating JobScheduler instance")
         self.config = config
         # re-read config
@@ -34,10 +40,6 @@ class JobScheduler:
     def run(self, sysblok_bot: SysBlokBot):
         logger.info('Starting JobScheduler...')
         self.app_context = sysblok_bot.app_context
-        self.sender = TelegramSender(
-            sysblok_bot.dp.bot,
-            self.config[consts.TELEGRAM_CONFIG]
-        )
 
         cease_continuous_run = threading.Event()
 
@@ -71,10 +73,13 @@ class JobScheduler:
             # update config['jobs']
             self.reschedule_jobs(new_config)
             # update config['telegram']
-            self.sender.update_config(new_config[consts.TELEGRAM_CONFIG])
+            self.app_context.sender.update_config(
+                new_config[consts.TELEGRAM_CONFIG]
+            )
             # update config['trello']
             self.app_context.trello_client.update_config(
                 new_config[consts.TRELLO_CONFIG])
+            # TODO: update GS client too
         else:
             logger.info('No config changes detected')
 
@@ -92,7 +97,7 @@ class JobScheduler:
                 if 'at' in schedule_dict:
                     scheduled = scheduled.at(schedule_dict['at'])
                 scheduled.do(
-                    job, app_context=self.app_context, sender=self.sender
+                    job, app_context=self.app_context
                 ).tag(CUSTOM_JOB_TAG)
             except Exception as e:
                 logger.error(f'Failed to schedule job {job_id} \
@@ -109,6 +114,7 @@ class JobScheduler:
 
     def stop_running(self):
         '''Set a stopping event so we can finish last job gracefully'''
-        logger.info('Scheduler received a signal. \
-            Will terminate after ongoing jobs end')
+        logger.info((
+            'Scheduler received a signal. '
+            'Will terminate after ongoing jobs end'))
         self.stop_run_event.set()

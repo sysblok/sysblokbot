@@ -26,3 +26,10 @@ class Singleton:
             return True
         self._was_initialized = True
         return False
+
+    @classmethod
+    def drop_instance(cls):
+        """
+        To be used in testing purposes (testing proper instance creation)
+        """
+        cls._instance = None
