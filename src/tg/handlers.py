@@ -69,7 +69,8 @@ def manager_stats_handler(update, tg_context):
 # Other handlers
 def handle_user_message(update, tg_context):
     # TODO: depending on user state, do anything (postpone the task, etc)
-    logger.info(f'Got {update.message.text} from {update.message.chat_id}')
+    if update.message is not None:
+        logger.debug(f'Got {update.message.text} from {update.message.chat_id}')
 
 
 def error(update, tg_context):

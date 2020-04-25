@@ -33,7 +33,7 @@ def manager_stats_job(app_context: AppContext, sender: TelegramSender):
 
     stats_paragraphs = []  # list of paragraph strings
     stats_paragraphs.append('Всем привет! Еженедельная сводка \
-        о состоянии Trello-доски.\n#доскаживи')
+о состоянии Trello-доски.\n#доскаживи')
 
     stats_paragraphs += _retrieve_trello_card_stats(
         trello_client=app_context.trello_client,
@@ -132,9 +132,6 @@ def _retrieve_trello_card_stats(
 
     if parse_failure_counter > 0:
         logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
-        sender.send_to_managers(
-            f'Ошибок парсинга карточек: {parse_failure_counter}!'
-        )
     return paragraphs
 
 
@@ -194,6 +191,7 @@ def _paragraphs_to_messages(
     for paragraph in paragraphs:
         if len(paragraph) + char_counter + delimiter_len < char_limit:
             message_paragraphs.append(paragraph)
+            char_counter += len(paragraph) + delimiter_len
         else:
             # Overflow, starting a new message
             messages.append(delimiter.join(message_paragraphs))
