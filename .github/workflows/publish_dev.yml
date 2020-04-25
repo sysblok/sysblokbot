@@ -1,17 +1,14 @@
-name: Docker
+name: Docker testing
 
 on:
   push:
-    # Publish `master` as Docker `latest` image.
+    # Publish `dev` as Docker `testing` image.
     branches:
-      - master
+      - dev
 
     # Publish `v1.2.3` tags as releases.
     tags:
       - v*
-
-  # Run tests for any PRs.
-  pull_request:
 
 env:
   IMAGE_NAME: sysblokbot
@@ -55,7 +52,7 @@ jobs:
           username: sysblok
           password: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: Dockerfile
-          tags: latest
+          tags: testing
 
       - name: Deploy package to digitalocean
         uses: appleboy/ssh-action@master
@@ -72,10 +69,11 @@ jobs:
           port: ${{ secrets.MASTER_PORT }}
           envs: GITHUB_USERNAME, GITHUB_TOKEN, IMAGE_NAME, DO_USERNAME
           script: |
-            docker stop $(docker ps -a -q)
-            docker rm $(docker ps -a -q)
-            docker rmi $(docker images -q)
+            docker stop $(docker ps -aq --filter name=testing)
+            docker rm $(docker ps -aq --filter name=testing)
+            docker rmi $(docker images -a --filter reference='sysblok*:*testing')
             docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
-            docker run -v /home/${{ env.DO_USERNAME }}/config_override.json:/app/config_override.json \
-              -v /home/${{ env.DO_USERNAME }}/config_gs.json:/app/config_gs.json \
-              -dit docker.pkg.github.com/sysblok/sysblokbot/${{ env.IMAGE_NAME }}:latest
+            docker run -dit --name sysblokbot-testing \
+              -v /home/${{ env.DO_USERNAME }}/config_override_testing.json:/app/config_override.json \
+              -v /home/${{ env.DO_USERNAME }}/config_gs_testing.json:/app/config_gs.json \
+              docker.pkg.github.com/sysblok/sysblokbot/${{ env.IMAGE_NAME }}:testing
