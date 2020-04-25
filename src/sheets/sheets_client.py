@@ -2,6 +2,7 @@ import logging
 from pprint import pprint
 from typing import List, Dict, Optional
 
+from ..utils.singleton import Singleton
 import gspread
 from google.oauth2.service_account import Credentials
 
@@ -14,13 +15,16 @@ scope = [
 ]
 
 
-class GoogleSheetsClient:
+class GoogleSheetsClient(Singleton):
     def __init__(
             self,
-            api_key_path: str,
-            authors_sheet_key: str,
-            curators_sheet_key: str
+            api_key_path: str = '',
+            authors_sheet_key: str = '',
+            curators_sheet_key: str = ''
     ):
+        if self.was_initialized():
+            return
+
         credentials = Credentials.from_service_account_file(
             api_key_path, scopes=scope)
         self.client = gspread.authorize(credentials)

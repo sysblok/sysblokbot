@@ -1,11 +1,16 @@
 import json
 import logging
 
+from src.utils.singleton import Singleton
+
 logger = logging.getLogger(__name__)
 
 
-class ConfigManager:
-    def __init__(self, config_path: str, config_override_path: str):
+class ConfigManager(Singleton):
+    def __init__(self, config_path: str = '', config_override_path: str = ''):
+        if self.was_initialized():
+            return
+
         self.config_path = config_path
         self.config_override_path = config_override_path
 

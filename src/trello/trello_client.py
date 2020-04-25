@@ -5,6 +5,9 @@ import requests
 from datetime import datetime
 
 
+from ..utils.singleton import Singleton
+
+
 logger = logging.getLogger(__name__)
 
 BASE_URL = 'https://api.trello.com/1/'
@@ -141,8 +144,11 @@ class TrelloMember:
         return member
 
 
-class TrelloClient:
-    def __init__(self, config):
+class TrelloClient(Singleton):
+    def __init__(self, config=None):
+        if self.was_initialized():
+            return
+
         self._trello_config = config
         self._update_from_config()
 

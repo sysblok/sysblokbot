@@ -4,15 +4,20 @@ import logging
 
 import telegram
 
+from ..utils.singleton import Singleton
+
 logger = logging.getLogger(__name__)
 
 
-class TelegramSender:
+class TelegramSender(Singleton):
     def __init__(
             self,
-            bot: telegram.Bot,
-            tg_config: dict
+            bot: telegram.Bot = None,
+            tg_config: dict = None
     ):
+        if self.was_initialized():
+            return
+
         self.bot = bot
         self._tg_config = tg_config
         self._update_from_config()
