@@ -81,11 +81,12 @@ def manager_stats_job(app_context: AppContext, sender: TelegramSender):
     for card in all_cards:
         members_with_cards = members_with_cards.union(set(card.members))
 
-    stats_paragraphs += _retrieve_trello_members_stats(
-        trello_client=app_context.trello_client,
-        title='Авторы без карточек',
-        filter_func=lambda member: member.username not in members_with_cards,
-    )
+    # TODO: probably move to another cmd, @ibulgakov has thoughts on that
+    # stats_paragraphs += _retrieve_trello_members_stats(
+    #     trello_client=app_context.trello_client,
+    #     title='Авторы без карточек',
+    #     filter_func=lambda member: member.username not in members_with_cards,
+    # )
 
     stats_paragraphs += _retrieve_trello_card_stats(
         trello_client=app_context.trello_client,
