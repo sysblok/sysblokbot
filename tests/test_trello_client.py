@@ -96,7 +96,7 @@ def test_cards(monkeypatch):
     assert card.url == 'https://trello.com/c/card_2'
     assert card.due is None
     assert card.list_name == 'Редактору'
-    assert card.members == ['paulinmatavina']
+    assert card.members == ['Paulin Matavina']
 
 
 def test_members(monkeypatch):
