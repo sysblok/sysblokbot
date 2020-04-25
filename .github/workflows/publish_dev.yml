@@ -74,6 +74,6 @@ jobs:
             docker rmi $(docker images -a --filter reference='sysblok*:*testing')
             docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
             docker run -dit --name sysblokbot-testing \
-              -v /home/${{ env.DO_USERNAME }}/config_override.json:/app/config_override.json \
-              -v /home/${{ env.DO_USERNAME }}/config_gs.json:/app/config_gs.json \
+              -v /home/${{ env.DO_USERNAME }}/config_override_testing.json:/app/config_override.json \
+              -v /home/${{ env.DO_USERNAME }}/config_gs_testing.json:/app/config_gs.json \
               docker.pkg.github.com/sysblok/sysblokbot/${{ env.IMAGE_NAME }}:testing
