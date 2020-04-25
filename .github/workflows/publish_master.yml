@@ -52,7 +52,7 @@ jobs:
           username: sysblok
           password: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: Dockerfile
-          tags: prod
+          tags: "prod,latest"
 
       - name: Deploy package to digitalocean
         uses: appleboy/ssh-action@master
