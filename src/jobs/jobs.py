@@ -191,6 +191,7 @@ def _paragraphs_to_messages(
     for paragraph in paragraphs:
         if len(paragraph) + char_counter + delimiter_len < char_limit:
             message_paragraphs.append(paragraph)
+            char_counter += len(paragraph) + delimiter_len
         else:
             # Overflow, starting a new message
             messages.append(delimiter.join(message_paragraphs))
