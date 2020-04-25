@@ -9,8 +9,7 @@ from src.config_manager import ConfigManager
 
 
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.DEBUG
 )
 
 
@@ -23,8 +22,9 @@ def get_bot():
 
     scheduler = JobScheduler(config)
 
-    bot = SysBlokBot(config, signal_handler=lambda signum,
-                     frame: scheduler.stop_running())
+    bot = SysBlokBot(
+        config, signal_handler=lambda signum, frame: scheduler.stop_running()
+    )
     bot.init_handlers()
 
     scheduler.run(bot)
@@ -33,5 +33,5 @@ def get_bot():
     return bot
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     get_bot().run()

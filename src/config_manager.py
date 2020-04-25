@@ -21,9 +21,7 @@ class ConfigManager:
         for key in override_config:
             if key in main_config and isinstance(main_config[key], dict):
                 # recursively do the same
-                ConfigManager.join_configs(
-                    main_config[key], override_config[key]
-                )
+                ConfigManager.join_configs(main_config[key], override_config[key])
             else:
                 # rewrite if key is absent, or is list/str/int/bool
                 main_config[key] = override_config[key]
@@ -36,4 +34,4 @@ class ConfigManager:
                 except json.JSONDecodeError as e:
                     logger.error(e)
         except IOError:
-            logger.warning(f'Config file at {config_path} not found')
+            logger.warning(f"Config file at {config_path} not found")

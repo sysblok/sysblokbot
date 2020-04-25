@@ -7,7 +7,7 @@ from google.oauth2.service_account import Credentials
 
 logger = logging.getLogger(__name__)
 
-UNDEFINED_STATES = ['', '-', '#N/A']
+UNDEFINED_STATES = ["", "-", "#N/A"]
 scope = [
     "https://spreadsheets.google.com/feeds",
     "https://www.googleapis.com/auth/drive",
@@ -16,67 +16,53 @@ scope = [
 
 class GoogleSheetsClient:
     def __init__(
-            self,
-            api_key_path: str,
-            authors_sheet_key: str,
-            curators_sheet_key: str
+        self, api_key_path: str, authors_sheet_key: str, curators_sheet_key: str
     ):
-        credentials = Credentials.from_service_account_file(
-            api_key_path, scopes=scope)
+        credentials = Credentials.from_service_account_file(api_key_path, scopes=scope)
         self.client = gspread.authorize(credentials)
         self.authors_sheet_key = authors_sheet_key
         self.curators_sheet_key = curators_sheet_key
 
-    def find_author_curators(
-            self,
-            find_by: str,
-            val: str
-    ) -> Optional[List[Dict]]:
+    def find_author_curators(self, find_by: str, val: str) -> Optional[List[Dict]]:
         authors = self.fetch_authors()
-        author = next(
-            (author for author in authors if author[find_by] == val), None)
+        author = next((author for author in authors if author[find_by] == val), None)
         if author is None:
             return
 
         curators = self.fetch_curators()
         found_curators = []
         for curator in curators:
-            if curator['section'] in author['curator']:
+            if curator["section"] in author["curator"]:
                 found_curators.append(curator)
         return found_curators
 
-    def find_curator_authors(
-            self,
-            find_by: str,
-            val: str
-    ) -> Optional[List[Dict]]:
+    def find_curator_authors(self, find_by: str, val: str) -> Optional[List[Dict]]:
         curators = self.fetch_curators()
         curator = next(
-            (curator for curator in curators if curator[find_by] == val), None)
+            (curator for curator in curators if curator[find_by] == val), None
+        )
         if curator is None:
             return
 
         authors = self.fetch_authors()
         found_authors = []
         for author in authors:
-            if curator['section'] in author['curator']:
+            if curator["section"] in author["curator"]:
                 found_authors.append(curator)
         return found_authors
 
     def find_telegram_id_by_trello_id(self, trello: str) -> Optional[str]:
         authors = self.fetch_authors()
         return next(
-            (author['telegram']
-                for author in authors if author['trello'] == trello),
-            None
+            (author["telegram"] for author in authors if author["trello"] == trello),
+            None,
         )
 
     def find_trello_id_by_telegram_id(self, telegram: str) -> Optional[str]:
         authors = self.fetch_authors()
         return next(
-            (author['telegram']
-                for author in authors if author['trello'] == telegram),
-            None
+            (author["telegram"] for author in authors if author["trello"] == telegram),
+            None,
         )
 
     def fetch_authors(self) -> List[Dict]:
@@ -105,13 +91,14 @@ class GoogleSheetsClient:
         for title in titles:
             if title not in title_key_map.keys():
                 logger.error(f'Update title_key_map. "{title}" caused error.')
-        title_idx_map = {idx: title_key_map[title]
-                         for idx, title in enumerate(titles)}
+        title_idx_map = {idx: title_key_map[title] for idx, title in enumerate(titles)}
 
         res = []
         for row in rows:
-            item = {title_idx_map[key]: self._parse_cell_value(
-                val) for key, val in enumerate(row)}
+            item = {
+                title_idx_map[key]: self._parse_cell_value(val)
+                for key, val in enumerate(row)
+            }
             res.append(item)
         return res
 
@@ -129,16 +116,16 @@ class GoogleSheetsClient:
 
 if __name__ == "__main__":
     gs = GoogleSheetsClient(
-        'sysblokbot.json',
-        '1-oU86gg1dYI4qfYlh-DBK5_X61dENa0Iw4IRBQ_aoWk',
-        '1Ydmd-qTrO4_6lsu-onuIal91MnQU8Qx4Z-Td21MzcME'
+        "sysblokbot.json",
+        "1-oU86gg1dYI4qfYlh-DBK5_X61dENa0Iw4IRBQ_aoWk",
+        "1Ydmd-qTrO4_6lsu-onuIal91MnQU8Qx4Z-Td21MzcME",
     )
 
     pprint(gs.fetch_authors())
     pprint(gs.fetch_curators())
 
-    pprint(gs.find_telegram_id_by_trello_id('@irinoise'))
-    pprint(gs.find_trello_id_by_telegram_id('@irinoise'))
+    pprint(gs.find_telegram_id_by_trello_id("@irinoise"))
+    pprint(gs.find_trello_id_by_telegram_id("@irinoise"))
 
-    pprint(gs.find_curator_authors('telegram', '@irinoise'))
-    pprint(gs.find_author_curators('telegram', '@alexeyqu'))
+    pprint(gs.find_curator_authors("telegram", "@irinoise"))
+    pprint(gs.find_author_curators("telegram", "@alexeyqu"))

@@ -29,23 +29,25 @@ def sample_job(app_context: AppContext, sender: TelegramSender):
 
 def manager_stats_job(app_context: AppContext, sender: TelegramSender):
     # TODO: make it a decorator
-    logger.info('Starting manager_stats_job...')
+    logger.info("Starting manager_stats_job...")
 
     stats_paragraphs = []  # list of paragraph strings
-    stats_paragraphs.append('Всем привет! Еженедельная сводка \
-о состоянии Trello-доски.\n#доскаживи')
+    stats_paragraphs.append(
+        "Всем привет! Еженедельная сводка \
+о состоянии Trello-доски.\n#доскаживи"
+    )
 
     stats_paragraphs += _retrieve_trello_card_stats(
         trello_client=app_context.trello_client,
-        title='Не указан автор в карточке',
+        title="Не указан автор в карточке",
         list_ids=(
-            app_context.lists_config['in_progress'],
-            app_context.lists_config['editor'],
-            app_context.lists_config['edited_next_week'],
-            app_context.lists_config['edited_sometimes'],
-            app_context.lists_config['chief_editor'],
-            app_context.lists_config['proofreading'],
-            app_context.lists_config['done'],
+            app_context.lists_config["in_progress"],
+            app_context.lists_config["editor"],
+            app_context.lists_config["edited_next_week"],
+            app_context.lists_config["edited_sometimes"],
+            app_context.lists_config["chief_editor"],
+            app_context.lists_config["proofreading"],
+            app_context.lists_config["done"],
         ),
         filter_func=lambda card: not card.members,
         show_due=False,
@@ -54,26 +56,26 @@ def manager_stats_job(app_context: AppContext, sender: TelegramSender):
 
     stats_paragraphs += _retrieve_trello_card_stats(
         trello_client=app_context.trello_client,
-        title='Не указан срок в карточке',
-        list_ids=(app_context.lists_config['in_progress']),
+        title="Не указан срок в карточке",
+        list_ids=(app_context.lists_config["in_progress"]),
         filter_func=lambda card: not card.due,
-        show_due=False
+        show_due=False,
     )
 
     stats_paragraphs += _retrieve_trello_card_stats(
         trello_client=app_context.trello_client,
-        title='Не указан тег рубрики в карточке',
+        title="Не указан тег рубрики в карточке",
         list_ids=(
-            app_context.lists_config['in_progress'],
-            app_context.lists_config['editor'],
-            app_context.lists_config['edited_next_week'],
-            app_context.lists_config['edited_sometimes'],
-            app_context.lists_config['chief_editor'],
-            app_context.lists_config['proofreading'],
-            app_context.lists_config['done'],
+            app_context.lists_config["in_progress"],
+            app_context.lists_config["editor"],
+            app_context.lists_config["edited_next_week"],
+            app_context.lists_config["edited_sometimes"],
+            app_context.lists_config["chief_editor"],
+            app_context.lists_config["proofreading"],
+            app_context.lists_config["done"],
         ),
         filter_func=lambda card: not card.labels,
-        show_due=False
+        show_due=False,
     )
 
     all_cards = app_context.trello_client.get_cards()
@@ -90,8 +92,8 @@ def manager_stats_job(app_context: AppContext, sender: TelegramSender):
 
     stats_paragraphs += _retrieve_trello_card_stats(
         trello_client=app_context.trello_client,
-        title='Пропущен дедлайн',
-        list_ids=(app_context.lists_config['in_progress']),
+        title="Пропущен дедлайн",
+        list_ids=(app_context.lists_config["in_progress"]),
         filter_func=_is_deadline_missed,
     )
 
@@ -99,7 +101,7 @@ def manager_stats_job(app_context: AppContext, sender: TelegramSender):
         if i > 0:
             time.sleep(MESSAGE_DELAY_SEC)
         sender.send_to_managers(message)
-    logger.info('Finished manager_stats_job')
+    logger.info("Finished manager_stats_job")
 
 
 def _is_deadline_missed(card) -> bool:
@@ -107,21 +109,21 @@ def _is_deadline_missed(card) -> bool:
 
 
 def _retrieve_trello_card_stats(
-        trello_client: TrelloClient,
-        title: str,
-        list_ids: List[str],
-        filter_func: Callable,
-        show_due=True,
-        show_members=True,
+    trello_client: TrelloClient,
+    title: str,
+    list_ids: List[str],
+    filter_func: Callable,
+    show_due=True,
+    show_members=True,
 ) -> List[str]:
-    '''
+    """
     Returns a list of paragraphs that should always go in a single message.
-    '''
+    """
     logger.info(f'Started counting: "{title}"')
     cards = list(filter(filter_func, trello_client.get_cards(list_ids)))
     parse_failure_counter = 0
 
-    paragraphs = [f'<b>{title}: {len(cards)}</b>']
+    paragraphs = [f"<b>{title}: {len(cards)}</b>"]
 
     for card in cards:
         if not card:
@@ -132,23 +134,21 @@ def _retrieve_trello_card_stats(
         )
 
     if parse_failure_counter > 0:
-        logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
+        logger.error(f"Unparsed cards encountered: {parse_failure_counter}")
     return paragraphs
 
 
 def _retrieve_trello_members_stats(
-        trello_client: TrelloClient,
-        title: str,
-        filter_func: Callable,
+    trello_client: TrelloClient, title: str, filter_func: Callable,
 ) -> List[str]:
-    '''
+    """
     Returns a list of paragraphs that should always go in a single message.
-    '''
+    """
     logger.info(f'Started counting: "{title}"')
     members = list(filter(filter_func, trello_client.get_members()))
-    paragraphs = [f'<b>{title}: {len(members)}</b>']
+    paragraphs = [f"<b>{title}: {len(members)}</b>"]
     if members:
-        paragraphs.append('👤 ' + ', '.join(map(str, sorted(members))))
+        paragraphs.append("👤 " + ", ".join(map(str, sorted(members))))
     return paragraphs
 
 
@@ -161,9 +161,9 @@ def _format_card(card, show_due=True, show_members=True) -> str:
         card_text = f'{card_text}📘 {", ".join(card.labels)} '
 
     # Avoiding message overflow, strip explanations in ()
-    list_name = card.list_name + '('
-    list_name = list_name[:list_name.find('(')].strip()
-    card_text += f'📍 {list_name} '
+    list_name = card.list_name + "("
+    list_name = list_name[: list_name.find("(")].strip()
+    card_text += f"📍 {list_name} "
 
     if show_due:
         card_text = f'<b>{card.due.strftime("%d.%m")}</b> — {card_text}'
@@ -173,15 +173,13 @@ def _format_card(card, show_due=True, show_members=True) -> str:
 
 
 def _paragraphs_to_messages(
-        paragraphs: List[str],
-        char_limit=4096,
-        delimiter='\n\n',
+    paragraphs: List[str], char_limit=4096, delimiter="\n\n",
 ) -> List[str]:
-    '''
+    """
     Makes as few message texts as possible from given paragraph list.
-    '''
+    """
     if not paragraphs:
-        logger.warning('No paragraphs to process, exiting')
+        logger.warning("No paragraphs to process, exiting")
         return
 
     delimiter_len = len(delimiter)
@@ -203,5 +201,5 @@ def _paragraphs_to_messages(
     messages.append(delimiter.join(message_paragraphs))
 
     # first message is empty by design.
-    assert messages[0] == ''
+    assert messages[0] == ""
     return messages[1:]
