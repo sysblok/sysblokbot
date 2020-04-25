@@ -89,7 +89,8 @@ class TrelloCard:
         return self.url
 
     def __repr__(self):
-        return f'Card<id={self.id}, name={self.name}, url={self.url} members={self.members}>'
+        return f'Card<id={self.id}, name={self.name}, url={self.url} \
+members={self.members}>'
 
     @classmethod
     def from_json(cls, data):
