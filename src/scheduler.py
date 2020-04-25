@@ -6,9 +6,9 @@ from deepdiff import DeepDiff
 import schedule
 import telegram
 
-from . import consts
 from .bot import SysBlokBot
 from .config_manager import ConfigManager
+from .consts import CONFIG_RELOAD_MINUTES
 from .jobs import jobs
 from .tg.sender import TelegramSender
 from .utils.singleton import Singleton
@@ -26,14 +26,15 @@ class JobScheduler(Singleton):
     """
     def __init__(self, config: dict = None):
         if self.was_initialized():
-            if config:
-                self.reschedule_jobs(config)
             return
 
         logger.info("Creating JobScheduler instance")
+        # save current config to track changes
         self.config = config
-        # re-read config
-        schedule.every(15).minutes.do(
+        # use config manager to receive current config states
+        self.config_manager = ConfigManager()
+        # re-read config on schedule
+        schedule.every(CONFIG_RELOAD_MINUTES).minutes.do(
             self.config_checker_job
         ).tag(TECHNICAL_JOB_TAG)
 
@@ -61,31 +62,33 @@ class JobScheduler(Singleton):
 
     def config_checker_job(self):
         """A very special job checking config for recent changes"""
-        new_config = ConfigManager(
-            consts.CONFIG_PATH, consts.CONFIG_OVERRIDE_PATH
-        ).load_config_with_override()
-
-        # If anything at all changed in config
-        # TODO: can be more precise here
-        diff = DeepDiff(self.config, new_config)
+        # if anything at all changed in config
+        diff = DeepDiff(
+            self.config,
+            self.config_manager.load_config_with_override()
+        )
         if diff:
             logger.info(f'Config was changed, diff: {diff}')
             # update config['jobs']
-            self.reschedule_jobs(new_config)
+            self.reschedule_jobs()
             # update config['telegram']
-            self.app_context.sender.update_config(
-                new_config[consts.TELEGRAM_CONFIG]
+            self.app_context.telegram_sender.update_config(
+                self.config_manager.get_telegram_config()
             )
             # update config['trello']
             self.app_context.trello_client.update_config(
-                new_config[consts.TRELLO_CONFIG])
+                self.config_manager.get_trello_config())
             # TODO: update GS client too
         else:
             logger.info('No config changes detected')
 
     def init_jobs(self):
+        """
+        Initializing jobs on latest config state.
+        """
         logger.info('Starting setting job schedules...')
-        for job_id, schedule_dict in self.config['jobs'].items():
+        jobs_config = self.config_manager.get_jobs_config()
+        for job_id, schedule_dict in jobs_config.items():
             try:
                 job = getattr(jobs, job_id)
             except Exception as e:
@@ -104,12 +107,11 @@ class JobScheduler(Singleton):
                     with params {schedule_dict}: {e}')
         logger.info('Finished setting jobs')
 
-    def reschedule_jobs(self, new_config: dict):
+    def reschedule_jobs(self):
         logger.info('Clearing all scheduled jobs...')
         # clear only jobs originating from config
         schedule.clear(CUSTOM_JOB_TAG)
-        # join in place to config object
-        ConfigManager.join_configs(self.config, new_config)
+        self.config = self.config_manager.get_latest_config()
         self.init_jobs()
 
     def stop_running(self):

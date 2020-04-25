@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 
+from src import consts
 from src.utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
@@ -30,8 +31,20 @@ class ConfigManager(Singleton):
         Recommended way to access config without re-reading from disk.
         Freshness of the config depends on scheduler.config_checker_job
         """
-        logger.info(f'Got config, last updated {self._latest_config_ts}')
+        logger.debug(f'Got config, last updated: {self._latest_config_ts}')
         return self._latest_config
+
+    def get_trello_config(self):
+        return self.get_latest_config().get(consts.TRELLO_CONFIG, {})
+
+    def get_telegram_config(self):
+        return self.get_latest_config().get(consts.TELEGRAM_CONFIG, {})
+
+    def get_sheets_config(self):
+        return self.get_latest_config().get(consts.SHEETS_CONFIG, {})
+
+    def get_jobs_config(self):
+        return self.get_latest_config().get(consts.JOBS_CONFIG, {})
 
     @staticmethod
     def join_configs(main_config: dict, override_config: dict):

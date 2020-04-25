@@ -5,6 +5,8 @@ ROOT_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 CONFIG_PATH = os.path.join(ROOT_DIR, 'config.json')
 CONFIG_OVERRIDE_PATH = os.path.join(ROOT_DIR, 'config_override.json')
 
+CONFIG_RELOAD_MINUTES = 1
+
 # Upper level config keys
 TELEGRAM_CONFIG = 'telegram'
 TRELLO_CONFIG = 'trello'

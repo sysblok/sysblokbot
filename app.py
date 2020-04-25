@@ -20,20 +20,19 @@ def get_bot():
     All singletone classes must be initialized within this method before bot
     actually launched. This includes clients, config manager and scheduler.
     """
-    config = ConfigManager(
-        CONFIG_PATH, CONFIG_OVERRIDE_PATH
-    ).load_config_with_override()
+    config_manager = ConfigManager(CONFIG_PATH, CONFIG_OVERRIDE_PATH)
+    config = config_manager.load_config_with_override()
     if not config:
         raise ValueError(f"Could not load config, can't go on")
 
     scheduler = JobScheduler(config)
 
-    bot = SysBlokBot(config, signal_handler=lambda signum,
+    bot = SysBlokBot(config_manager, signal_handler=lambda signum,
                      frame: scheduler.stop_running())
     bot.init_handlers()
 
     # properly inilitalize TelegramSender singleton
-    TelegramSender(bot, config.get(TELEGRAM_CONFIG))
+    TelegramSender(bot.dp.bot, config.get(TELEGRAM_CONFIG))
 
     scheduler.run(bot)
     scheduler.init_jobs()

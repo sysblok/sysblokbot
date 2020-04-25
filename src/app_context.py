@@ -1,5 +1,6 @@
 from .consts import TRELLO_CONFIG
 
+from .config_manager import ConfigManager
 from .sheets.sheets_client import GoogleSheetsClient
 from .tg.sender import TelegramSender
 from .trello.trello_client import TrelloClient
@@ -11,20 +12,25 @@ class AppContext(Singleton):
     Stores client references in one place,
     so that they can be easily used in jobs.
     """
-    def __init__(self, config=None):
+    def __init__(self, config_manager: ConfigManager = None):
         if self.was_initialized():
             return
 
-        self.config = config
-        self.trello_client = TrelloClient(config=config[TRELLO_CONFIG])
+        self.config_manager = config_manager
+        self.trello_client = TrelloClient(
+            config=config_manager.get_trello_config()
+        )
+        sheets_config = config_manager.get_sheets_config()
         self.sheets_client = GoogleSheetsClient(
-            api_key_path=config['sheets']['api_key_path'],
-            curators_sheet_key=config['sheets']['curators_sheet_key'],
-            authors_sheet_key=config['sheets']['authors_sheet_key']
+            api_key_path=sheets_config['api_key_path'],
+            curators_sheet_key=sheets_config['curators_sheet_key'],
+            authors_sheet_key=sheets_config['authors_sheet_key']
         )
         # must be properly reinitialized after SysBlokInstance ready
         self.telegram_sender = TelegramSender(should_initialize=False)
 
         # TODO: move that to db
-        self.admin_chat_ids = config['telegram']['_tmp_']['admin_chat_ids']
-        self.lists_config = config['trello']['_tmp_']['list_aliases']
+        tg_config = config_manager.get_telegram_config()
+        trello_config = config_manager.get_trello_config()
+        self.admin_chat_ids = tg_config['_tmp_']['admin_chat_ids']
+        self.lists_config = trello_config['_tmp_']['list_aliases']

@@ -5,20 +5,21 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 from .tg import handlers
 from .app_context import AppContext
+from .config_manager import ConfigManager
 
 
 logger = logging.getLogger(__name__)
 
 
 class SysBlokBot:
-    def __init__(self, config, signal_handler):
+    def __init__(self, config_manager: ConfigManager, signal_handler):
         self.updater = Updater(
-            config['telegram']['token'],
+            config_manager.get_latest_config()['telegram']['token'],
             use_context=True,
             user_sig_handler=signal_handler,
         )
         self.dp = self.updater.dispatcher
-        self.app_context = AppContext(config)
+        self.app_context = AppContext(config_manager)
 
     def init_handlers(self):
         # all command handlers defined here
