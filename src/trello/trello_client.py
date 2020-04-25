@@ -23,6 +23,9 @@ class TrelloBoard:
         return self._ok
 
     def __str__(self):
+        return self.name
+
+    def __repr__(self):
         return f'Board<id={self.id}, name={self.name}, url={self.url}>'
 
     @classmethod
@@ -49,6 +52,9 @@ class TrelloList:
         return self._ok
 
     def __str__(self):
+        return self.name
+
+    def __repr__(self):
         return f'List<id={self.id}, name={self.name}>'
 
     @classmethod
@@ -80,7 +86,10 @@ class TrelloCard:
         return self._ok
 
     def __str__(self):
-        return f'Card<id={self.id}, name={self.name}, url={self.url}>'
+        return self.url
+
+    def __repr__(self):
+        return f'Card<id={self.id}, name={self.name}, url={self.url} members={self.members}>'
 
     @classmethod
     def from_json(cls, data):
@@ -143,6 +152,7 @@ class TrelloClient:
     def get_lists(self):
         _, data = self._make_request(f'boards/{self.board_id}/lists')
         lists = [TrelloList.from_json(trello_list) for trello_list in data]
+        logger.debug(f'get_lists: {lists}')
         return lists
 
     def get_cards(self, list_ids=None):
@@ -172,16 +182,17 @@ class TrelloClient:
             if len(card_dict['idMembers']) > 0:
                 for member in members:
                     if member.id in card_dict['idMembers']:
-                        card.members.append(member.username)
-                        break
-                else:
+                        card.members.append(member.full_name)
+                if len(card.members) == 0:
                     logger.error(f"Member username not found for {card}")
             cards.append(card)
+        logger.debug(f'get_cards: {cards}')
         return cards
 
     def get_members(self):
         _, data = self._make_request(f'boards/{self.board_id}/members')
         members = [TrelloMember.from_json(member) for member in data]
+        logger.debug(f'get_members: {members}')
         return members
 
     def update_config(self, new_trello_config):
@@ -206,4 +217,5 @@ class TrelloClient:
             f'{BASE_URL}{uri}',
             params=self.default_payload
         )
+        logger.debug(f'{response.url}')
         return response.status_code, response.json()
