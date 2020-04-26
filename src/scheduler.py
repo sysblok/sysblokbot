@@ -6,7 +6,7 @@ from deepdiff import DeepDiff
 import schedule
 import telegram
 
-from .bot import SysBlokBot
+from .app_context import AppContext
 from .config_manager import ConfigManager
 from .consts import CONFIG_RELOAD_MINUTES
 from .jobs import jobs
@@ -38,9 +38,10 @@ class JobScheduler(Singleton):
             self.config_checker_job
         ).tag(TECHNICAL_JOB_TAG)
 
-    def run(self, sysblok_bot: SysBlokBot):
+    def run(self):
         logger.info('Starting JobScheduler...')
-        self.app_context = sysblok_bot.app_context
+        self.app_context = AppContext()
+        self.telegram_sender = TelegramSender()
 
         cease_continuous_run = threading.Event()
 
@@ -72,7 +73,7 @@ class JobScheduler(Singleton):
             # update config['jobs']
             self.reschedule_jobs()
             # update config['telegram']
-            self.app_context.telegram_sender.update_config(
+            self.telegram_sender.update_config(
                 self.config_manager.get_telegram_config()
             )
             # update config['trello']
@@ -99,8 +100,11 @@ class JobScheduler(Singleton):
                 scheduled = getattr(schedule.every(), schedule_dict['every'])
                 if 'at' in schedule_dict:
                     scheduled = scheduled.at(schedule_dict['at'])
+                # TODO: switch to send=sender.create_chat_ids_send(chat_ids)
                 scheduled.do(
-                    job, app_context=self.app_context
+                    job,
+                    app_context=self.app_context,
+                    send=self.telegram_sender.send_to_managers
                 ).tag(CUSTOM_JOB_TAG)
             except Exception as e:
                 logger.error(f'Failed to schedule job {job_id} \

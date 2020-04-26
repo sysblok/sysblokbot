@@ -11,7 +11,6 @@ import time
 from typing import Callable, List
 
 from ..app_context import AppContext
-from ..tg.sender import TelegramSender
 from ..trello.trello_client import TrelloClient
 
 
@@ -21,14 +20,14 @@ logger = logging.getLogger(__name__)
 MESSAGE_DELAY_SEC = 0.1
 
 
-def sample_job(app_context: AppContext):
+def sample_job(app_context: AppContext, send: Callable[[str], None]):
     # Logic here could include retrieving data from trello/sheets
     # and sending a notification to corresponding user.
     # app_context contain all necessary clients inside.
     print("I am a job and I'm done")
 
 
-def manager_stats_job(app_context: AppContext):
+def manager_stats_job(app_context: AppContext, send: Callable[[str], None]):
     # TODO: make it a decorator
     logger.info('Starting manager_stats_job...')
 
@@ -99,7 +98,7 @@ def manager_stats_job(app_context: AppContext):
     for i, message in enumerate(_paragraphs_to_messages(stats_paragraphs)):
         if i > 0:
             time.sleep(MESSAGE_DELAY_SEC)
-        app_context.telegram_sender.send_to_managers(message)
+        send(message)
     logger.info('Finished manager_stats_job')
 
 

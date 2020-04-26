@@ -26,8 +26,6 @@ class AppContext(Singleton):
             curators_sheet_key=sheets_config['curators_sheet_key'],
             authors_sheet_key=sheets_config['authors_sheet_key']
         )
-        # must be properly reinitialized after SysBlokInstance ready
-        self.telegram_sender = TelegramSender(should_initialize=False)
 
         # TODO: move that to db
         tg_config = config_manager.get_telegram_config()

@@ -6,6 +6,18 @@ from src.bot import SysBlokBot
 from src.config_manager import ConfigManager
 
 
+# TODO: move to tests/fakes
+class FakeTelegramSender:
+    def send_to_managers(self, *args, **kwargs):
+        pass
+
+    def create_chat_ids_send(self, *args, **kwargs):
+        pass
+
+    def create_reply_send(self, *args, **kwargs):
+        pass
+
+
 @pytest.mark.parametrize(
     "jobs_config, num_jobs",
     [
@@ -35,6 +47,7 @@ def test_scheduler(monkeypatch, jobs_config, num_jobs):
     scheduler.JobScheduler.drop_instance()
     job_scheduler = scheduler.JobScheduler()
     job_scheduler.app_context = None
+    job_scheduler.telegram_sender = FakeTelegramSender()
     job_scheduler.init_jobs()
 
     assert len(scheduler.schedule.jobs) == num_jobs + 1
