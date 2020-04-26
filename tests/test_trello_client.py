@@ -29,8 +29,13 @@ def mock_trello(_, uri):
             return 200, load_json('cards.json')
         elif uri.endswith('members'):
             return 200, load_json('members.json')
+        elif uri.endswith('customFields'):
+            return 200, load_json('board_custom_fields.json')
         else:
             return 200, load_json('board.json')
+    elif uri.startswith('cards'):
+        if uri.endswith('customFieldItems'):
+            return 200, load_json('card_custom_fields.json')
 
 
 def test_board(monkeypatch):
@@ -47,6 +52,22 @@ def test_board(monkeypatch):
     assert board.id == 'board_1'
     assert board.name == 'Редакция (тест)'
     assert board.url == 'https://trello.com/b/test_board_url'
+
+
+def test_board_custom_fields(monkeypatch):
+    monkeypatch.setattr(TrelloClient, '_make_request', mock_trello)
+
+    # TODO: check api keys etc
+    trello = TrelloClient({
+        'api_key': 'api_key',
+        'token': 'token',
+        'board_id': 'board_1'
+    })
+    custom_fields = trello.get_board_custom_fields()
+    # TODO: better checks -- e.g. match with response json?
+    assert len(custom_fields) == 5
+    for i, custom_field in enumerate(sorted(custom_fields, key=lambda field: field.id)):
+        assert custom_field.id == str(i)
 
 
 def test_lists(monkeypatch):
@@ -97,6 +118,22 @@ def test_cards(monkeypatch):
     assert card.due is None
     assert card.list_name == 'Редактору'
     assert card.members == ['Paulin Matavina']
+
+
+def test_card_custom_fields(monkeypatch):
+    monkeypatch.setattr(TrelloClient, '_make_request', mock_trello)
+
+    # TODO: check api keys etc
+    trello = TrelloClient({
+        'api_key': 'api_key',
+        'token': 'token',
+        'board_id': 'board_1'
+    })
+    custom_fields = trello.get_card_custom_fields(1)
+    # TODO: better checks -- e.g. match with response json?
+    assert len(custom_fields) == 3
+    for i, custom_field in enumerate(sorted(custom_fields, key=lambda field: field.id)):
+        assert custom_field.id == str(i)
 
 
 def test_members(monkeypatch):
