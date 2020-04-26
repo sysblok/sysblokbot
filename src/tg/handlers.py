@@ -45,24 +45,22 @@ def test_handler(update, tg_context):
     Handler for /test command, feel free to use it for one-off job testing
     """
     app_context = AppContext()
-    jobs.sample_job(
-        app_context,
-        TelegramSender(
-            tg_context.bot,
-            app_context.config['telegram']
-        )
-    )
+    jobs.sample_job(app_context, None)
 
 
 @admin_only
 def manager_stats_handler(update, tg_context):
     app_context = AppContext()
+    # TODO: switch to create_chat_ids_send
+    jobs.manager_stats_job(app_context, send=TelegramSender().send_to_managers)
+
+
+# TODO: @manager_only
+def get_manager_stats_handler(update, tg_context):
+    app_context = AppContext()
     jobs.manager_stats_job(
         app_context,
-        TelegramSender(
-            tg_context.bot,
-            app_context.config['telegram']
-        )
+        send=TelegramSender().create_reply_send(update)
     )
 
 

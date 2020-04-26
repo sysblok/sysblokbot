@@ -1,37 +1,34 @@
-import threading
-
 from .consts import TRELLO_CONFIG
 
+from .config_manager import ConfigManager
 from .sheets.sheets_client import GoogleSheetsClient
+from .tg.sender import TelegramSender
 from .trello.trello_client import TrelloClient
+from .utils.singleton import Singleton
 
 
-# Avoid creating 2 singleton instances
-lock = threading.Lock()
-
-
-class AppContext:
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        with lock:
-            if cls._instance is None:
-                cls._instance = super(AppContext, cls).__new__(cls)
-                cls._instance._was_initialized = False
-            return cls._instance
-
-    def __init__(self, config=None):
-        if self._was_initialized:
+class AppContext(Singleton):
+    """
+    Stores client references in one place,
+    so that they can be easily used in jobs.
+    """
+    def __init__(self, config_manager: ConfigManager = None):
+        if self.was_initialized():
             return
-        self._was_initialized = True
-        self.config = config
-        # TODO: Consider making them singletones too
-        self.trello_client = TrelloClient(config=config[TRELLO_CONFIG])
-        self.sheets_client = GoogleSheetsClient(
-            api_key_path=config['sheets']['api_key_path'],
-            curators_sheet_key=config['sheets']['curators_sheet_key'],
-            authors_sheet_key=config['sheets']['authors_sheet_key']
+
+        self.config_manager = config_manager
+        self.trello_client = TrelloClient(
+            config=config_manager.get_trello_config()
         )
+        sheets_config = config_manager.get_sheets_config()
+        self.sheets_client = GoogleSheetsClient(
+            api_key_path=sheets_config['api_key_path'],
+            curators_sheet_key=sheets_config['curators_sheet_key'],
+            authors_sheet_key=sheets_config['authors_sheet_key']
+        )
+
         # TODO: move that to db
-        self.admin_chat_ids = config['telegram']['_tmp_']['admin_chat_ids']
-        self.lists_config = config['trello']['_tmp_']['list_aliases']
+        tg_config = config_manager.get_telegram_config()
+        trello_config = config_manager.get_trello_config()
+        self.admin_chat_ids = tg_config['_tmp_']['admin_chat_ids']
+        self.lists_config = trello_config['_tmp_']['list_aliases']
