@@ -271,6 +271,14 @@ class TrelloClient(Singleton):
         ]
         logger.debug(f'get_card_custom_fields: {custom_fields}')
         return custom_fields
+    
+    def get_cards_enhances(self, card_id):
+        _, data = self._make_request(f'cards/{card_id}/customFieldItems')
+        custom_fields = [
+            TrelloCustomField.from_json(custom_field) for custom_field in data
+        ]
+        logger.debug(f'get_card_custom_fields: {custom_fields}')
+        return custom_fields
 
     def get_members(self):
         _, data = self._make_request(f'boards/{self.board_id}/members')

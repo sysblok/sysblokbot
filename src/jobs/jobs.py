@@ -102,6 +102,28 @@ def manager_stats_job(app_context: AppContext, send: Callable[[str], None]):
     logger.info('Finished manager_stats_job')
 
 
+def weekly_publish_digest_job(app_context: AppContext, sender: TelegramSender):
+
+    logger.info('Starting weekly_publish_digest_job...')
+
+    digest_paragraphs = []  # list of paragraph strings
+    digest_paragraphs.append('Всем привет!')
+
+    digest_paragraphs += _retrieve_cards_for_digest(
+        trello_client=app_context.trello_client,
+        title='Публикуем на неделе',
+        list_ids=(app_context.lists_config['proofreading'], app_context.lists_config['done']),
+        show_due=True,
+    )
+
+
+    for i, message in enumerate(_paragraphs_to_messages(digest_paragraphs)):
+        if i > 0:
+            time.sleep(MESSAGE_DELAY_SEC)
+        sender.send_to_managers(message)
+    logger.info('Finished weekly_publish_digest_job')
+
+
 def _is_deadline_missed(card) -> bool:
     return card.due is not None and card.due < datetime.datetime.now()
 
@@ -152,6 +174,37 @@ def _retrieve_trello_members_stats(
     return paragraphs
 
 
+def _retrieve_cards_for_digest(
+        trello_client: TrelloClient,
+        title: str,
+        list_ids: List[str],
+        filter_func: Callable=lambda _: True,
+        show_due=True,
+) -> List[str]:
+    '''
+    Returns a list of paragraphs that should always go in a single message.
+    '''
+    logger.info(f'Started counting: "{title}"')
+    cards = list(filter(filter_func, trello_client.get_cards(list_ids)))
+    parse_failure_counter = 0
+
+    paragraphs = [f'<b>{title}: {len(cards)}</b>']
+
+    for card in cards:
+        if not card:
+            parse_failure_counter += 1
+            continue
+        card_fields = trello_client.get_card_custom_fields(card.id)
+        authors, editors, illustrators = card_fields
+        paragraphs.append(
+            _format_card_for_digest(card, authors, editors, illustrators, show_due=show_due)
+        )
+
+    if parse_failure_counter > 0:
+        logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
+    return paragraphs
+
+
 def _format_card(card, show_due=True, show_members=True) -> str:
     # Name and url always present.
     card_text = f'<a href="{card.url}">{card.name}</a>\n'
@@ -169,6 +222,21 @@ def _format_card(card, show_due=True, show_members=True) -> str:
         card_text = f'<b>{card.due.strftime("%d.%m")}</b> — {card_text}'
     if show_members and card.members:
         card_text += f'👤 {", ".join(list(map(str, card.members)))}'
+    return card_text.strip()
+
+
+def _format_card_for_digest(
+        card, authors, editors, illustrators, show_due=True
+) -> str:
+    # Name and url always present.
+    card_text = f'<a href="{card.url}">{card.name}</a>\n'
+
+    card_text += f'Авторы: {authors} '
+    card_text += f'Редакторы: {editors} '
+    card_text += f'Иллюстраторы: {illustrators} '
+
+    if show_due:
+        card_text = f'<b>{card.due.strftime("%d.%m")}</b> — {card_text}'
     return card_text.strip()
 
 
