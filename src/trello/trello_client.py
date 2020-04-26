@@ -41,34 +41,6 @@ class TrelloBoard:
         return board
 
 
-class TrelloBoardCustomField:
-    def __init__(self):
-        self.id = None
-        self.name = None
-
-        self._ok = True
-
-    def __bool__(self):
-        return self._ok
-
-    def __str__(self):
-        return self.name
-
-    def __repr__(self):
-        return f'BoardCustomField<id={self.id}, name={self.name}>'
-
-    @classmethod
-    def from_json(cls, data):
-        custom_field = cls()
-        try:
-            custom_field.id = data['id']
-            custom_field.name = data['name']
-        except Exception:
-            custom_field._ok = False
-            logger.error(f"Bad custom field json {data}")
-        return custom_field
-
-
 class TrelloList:
     def __init__(self):
         self.id = None
@@ -136,11 +108,39 @@ members={self.members}>'
         return card
 
 
-class TrelloCardCustomField:
+class TrelloCustomFieldType:
+    def __init__(self):
+        self.id = None
+        self.name = None
+
+        self._ok = True
+
+    def __bool__(self):
+        return self._ok
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return f'CustomFieldType<id={self.id}, name={self.name}>'
+
+    @classmethod
+    def from_json(cls, data):
+        field_type = cls()
+        try:
+            field_type.id = data['id']
+            field_type.name = data['name']
+        except Exception:
+            field_type._ok = False
+            logger.error(f"Bad field type json {data}")
+        return field_type
+
+
+class TrelloCustomField:
     def __init__(self):
         self.id = None
         self.value = None
-        self.field_id = None
+        self.type_id = None
 
         self._ok = True
 
@@ -151,7 +151,7 @@ class TrelloCardCustomField:
         return self.value
 
     def __repr__(self):
-        return f'CardCustomField<id={self.id}, value={self.value}>'
+        return f'CustomField<id={self.id}, value={self.value}, type_id={self.type_id}>'
 
     @classmethod
     def from_json(cls, data):
@@ -159,7 +159,7 @@ class TrelloCardCustomField:
         try:
             custom_field.id = data['id']
             custom_field.value = data['value']['text']
-            custom_field.field_id = data['idCustomField']
+            custom_field.type_id = data['idCustomField']
         except Exception:
             custom_field._ok = False
             logger.error(f"Bad custom field json {data}")
@@ -210,9 +210,12 @@ class TrelloClient:
 
     def get_board_custom_fields(self):
         _, data = self._make_request(f'boards/{self.board_id}/customFields')
-        custom_fields = [TrelloBoardCustomField.from_json(custom_field) for custom_field in data]
-        logger.debug(f'get_board_custom_fields: {custom_fields}')
-        return custom_fields
+        custom_field_types = [\
+            TrelloCustomFieldType.from_json(custom_field_type) 
+            for custom_field_type in data
+        ]
+        logger.debug(f'get_board_custom_fields: {custom_field_types}')
+        return custom_field_types
 
     def get_lists(self):
         _, data = self._make_request(f'boards/{self.board_id}/lists')
@@ -256,7 +259,7 @@ class TrelloClient:
 
     def get_card_custom_fields(self, card_id):
         _, data = self._make_request(f'cards/{card_id}/customFieldItems')
-        custom_fields = [TrelloCardCustomField.from_json(custom_field) for custom_field in data]
+        custom_fields = [TrelloCustomField.from_json(custom_field) for custom_field in data]
         logger.debug(f'get_card_custom_fields: {custom_fields}')
         return custom_fields
 

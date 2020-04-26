@@ -1,28 +1,28 @@
 [
     {
-      "id": "0",
+      "id": "field_0",
       "value": {
         "text": "Илья Булгаков"
       },
-      "idCustomField": "0",
+      "idCustomField": "type_0",
       "idModel": "5e91d48a9e9d947b95fb0f75",
       "modelType": "card"
     },
     {
-      "id": "1",
+      "id": "field_1",
       "value": {
         "text": "https://docs.google.com/document/d/1t-cQ4U3wuUjbZa6-K14DyAyRoyYX0CCnnnyQol0SuhE/edit?usp=sharing"
       },
-      "idCustomField": "1",
+      "idCustomField": "type_1",
       "idModel": "5e91d48a9e9d947b95fb0f75",
       "modelType": "card"
     },
     {
-      "id": "2",
+      "id": "field_2",
       "value": {
         "text": "Полина Матавина"
       },
-      "idCustomField": "2",
+      "idCustomField": "type_2",
       "idModel": "5e91d48a9e9d947b95fb0f75",
       "modelType": "card"
     }

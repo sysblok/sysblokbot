@@ -1,6 +1,6 @@
 [
     {
-      "id": "0",
+      "id": "type_0",
       "idModel": "5e91d48a9e9d947b95fb0df7",
       "modelType": "board",
       "fieldGroup": "093946898f0a74bee9f218e55e31db722938563e140b0635704307912135a6bc",
@@ -12,7 +12,7 @@
       "type": "text"
     },
     {
-      "id": "1",
+      "id": "type_1",
       "idModel": "5e91d48a9e9d947b95fb0df7",
       "modelType": "board",
       "fieldGroup": "a91bc8b0b9b1ff076de078de356b1462beba9f4225c89986ef405c4371402b35",
@@ -24,7 +24,7 @@
       "type": "text"
     },
     {
-      "id": "2",
+      "id": "type_2",
       "idModel": "5e91d48a9e9d947b95fb0df7",
       "modelType": "board",
       "fieldGroup": "588488e8f09eb6dbaecbd89cf5fe83fc6f3299ca8a2323522410d96f80e7c00e",
@@ -36,7 +36,7 @@
       "type": "text"
     },
     {
-      "id": "3",
+      "id": "type_3",
       "idModel": "5e91d48a9e9d947b95fb0df7",
       "modelType": "board",
       "fieldGroup": "9b23e842082fcaf352f26809eb8270a3f065d8d982a8af171428cac112e46b24",
@@ -48,7 +48,7 @@
       "type": "text"
     },
     {
-      "id": "4",
+      "id": "type_4",
       "idModel": "5e91d48a9e9d947b95fb0df7",
       "modelType": "board",
       "fieldGroup": "92cc10f007fa367cd04b35929c26db94cc5d292247fdf04b575d0117c4282481",

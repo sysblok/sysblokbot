@@ -54,22 +54,6 @@ def test_board(monkeypatch):
     assert board.url == 'https://trello.com/b/test_board_url'
 
 
-def test_board_custom_fields(monkeypatch):
-    monkeypatch.setattr(TrelloClient, '_make_request', mock_trello)
-
-    # TODO: check api keys etc
-    trello = TrelloClient({
-        'api_key': 'api_key',
-        'token': 'token',
-        'board_id': 'board_1'
-    })
-    custom_fields = trello.get_board_custom_fields()
-    # TODO: better checks -- e.g. match with response json?
-    assert len(custom_fields) == 5
-    for i, custom_field in enumerate(sorted(custom_fields, key=lambda field: field.id)):
-        assert custom_field.id == str(i)
-
-
 def test_lists(monkeypatch):
     monkeypatch.setattr(TrelloClient, '_make_request', mock_trello)
 
@@ -120,6 +104,22 @@ def test_cards(monkeypatch):
     assert card.members == ['Paulin Matavina']
 
 
+def test_board_custom_fields(monkeypatch):
+    monkeypatch.setattr(TrelloClient, '_make_request', mock_trello)
+
+    # TODO: check api keys etc
+    trello = TrelloClient({
+        'api_key': 'api_key',
+        'token': 'token',
+        'board_id': 'board_1'
+    })
+    custom_fields = trello.get_board_custom_fields()
+    # TODO: better checks -- e.g. match with response json?
+    assert len(custom_fields) == 5
+    for i, custom_field in enumerate(sorted(custom_fields, key=lambda field: field.id)):
+        assert custom_field.id == f'type_{i}'
+
+
 def test_card_custom_fields(monkeypatch):
     monkeypatch.setattr(TrelloClient, '_make_request', mock_trello)
 
@@ -133,7 +133,7 @@ def test_card_custom_fields(monkeypatch):
     # TODO: better checks -- e.g. match with response json?
     assert len(custom_fields) == 3
     for i, custom_field in enumerate(sorted(custom_fields, key=lambda field: field.id)):
-        assert custom_field.id == str(i)
+        assert custom_field.id == f'field_{i}'
 
 
 def test_members(monkeypatch):
