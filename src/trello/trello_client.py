@@ -111,6 +111,65 @@ members={self.members}>'
         return card
 
 
+class TrelloCustomFieldType:
+    def __init__(self):
+        self.id = None
+        self.name = None
+
+        self._ok = True
+
+    def __bool__(self):
+        return self._ok
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return f'CustomFieldType<id={self.id}, name={self.name}>'
+
+    @classmethod
+    def from_json(cls, data):
+        field_type = cls()
+        try:
+            field_type.id = data['id']
+            field_type.name = data['name']
+        except Exception:
+            field_type._ok = False
+            logger.error(f"Bad field type json {data}")
+        return field_type
+
+
+class TrelloCustomField:
+    def __init__(self):
+        self.id = None
+        self.value = None
+        self.type_id = None
+
+        self._ok = True
+
+    def __bool__(self):
+        return self._ok
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return f'CustomField<id={self.id}, value={self.value}, \
+type_id={self.type_id}>'
+
+    @classmethod
+    def from_json(cls, data):
+        custom_field = cls()
+        try:
+            custom_field.id = data['id']
+            custom_field.value = data['value']['text']
+            custom_field.type_id = data['idCustomField']
+        except Exception:
+            custom_field._ok = False
+            logger.error(f"Bad custom field json {data}")
+        return custom_field
+
+
 class TrelloMember:
     def __init__(self):
         self.id = None
@@ -156,6 +215,15 @@ class TrelloClient(Singleton):
         _, data = self._make_request(f'boards/{self.board_id}')
         return TrelloBoard.from_json(data)
 
+    def get_board_custom_fields(self):
+        _, data = self._make_request(f'boards/{self.board_id}/customFields')
+        custom_field_types = [
+            TrelloCustomFieldType.from_json(custom_field_type)
+            for custom_field_type in data
+        ]
+        logger.debug(f'get_board_custom_fields: {custom_field_types}')
+        return custom_field_types
+
     def get_lists(self):
         _, data = self._make_request(f'boards/{self.board_id}/lists')
         lists = [TrelloList.from_json(trello_list) for trello_list in data]
@@ -195,6 +263,14 @@ class TrelloClient(Singleton):
             cards.append(card)
         logger.debug(f'get_cards: {cards}')
         return cards
+
+    def get_card_custom_fields(self, card_id):
+        _, data = self._make_request(f'cards/{card_id}/customFieldItems')
+        custom_fields = [
+            TrelloCustomField.from_json(custom_field) for custom_field in data
+        ]
+        logger.debug(f'get_card_custom_fields: {custom_fields}')
+        return custom_fields
 
     def get_members(self):
         _, data = self._make_request(f'boards/{self.board_id}/members')
