@@ -151,7 +151,8 @@ class TrelloCustomField:
         return self.value
 
     def __repr__(self):
-        return f'CustomField<id={self.id}, value={self.value}, type_id={self.type_id}>'
+        return f'CustomField<id={self.id}, value={self.value}, \
+type_id={self.type_id}>'
 
     @classmethod
     def from_json(cls, data):
@@ -210,8 +211,8 @@ class TrelloClient:
 
     def get_board_custom_fields(self):
         _, data = self._make_request(f'boards/{self.board_id}/customFields')
-        custom_field_types = [\
-            TrelloCustomFieldType.from_json(custom_field_type) 
+        custom_field_types = [
+            TrelloCustomFieldType.from_json(custom_field_type)
             for custom_field_type in data
         ]
         logger.debug(f'get_board_custom_fields: {custom_field_types}')
@@ -259,7 +260,9 @@ class TrelloClient:
 
     def get_card_custom_fields(self, card_id):
         _, data = self._make_request(f'cards/{card_id}/customFieldItems')
-        custom_fields = [TrelloCustomField.from_json(custom_field) for custom_field in data]
+        custom_fields = [
+            TrelloCustomField.from_json(custom_field) for custom_field in data
+        ]
         logger.debug(f'get_card_custom_fields: {custom_fields}')
         return custom_fields
 
