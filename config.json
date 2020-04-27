@@ -34,7 +34,8 @@
     "jobs": {
         "sample_job": {
             "every": "wednesday",
-            "at": "10:00"
+            "at": "10:00",
+            "send_to": []
         }
     }
 }

@@ -8,7 +8,7 @@ import telegram
 
 from .app_context import AppContext
 from .config_manager import ConfigManager
-from .consts import CONFIG_RELOAD_MINUTES
+from .consts import CONFIG_RELOAD_MINUTES, EVERY, AT, SEND_TO
 from .jobs import jobs
 from .tg.sender import TelegramSender
 from .utils.singleton import Singleton
@@ -97,14 +97,14 @@ class JobScheduler(Singleton):
                 continue
             logger.info(f'Found job "{job_id}"')
             try:
-                scheduled = getattr(schedule.every(), schedule_dict['every'])
+                scheduled = getattr(schedule.every(), schedule_dict[EVERY])
                 if 'at' in schedule_dict:
-                    scheduled = scheduled.at(schedule_dict['at'])
-                # TODO: switch to send=sender.create_chat_ids_send(chat_ids)
+                    scheduled = scheduled.at(schedule_dict[AT])
                 scheduled.do(
                     job,
                     app_context=self.app_context,
-                    send=self.telegram_sender.send_to_managers
+                    send=self.telegram_sender.create_chat_ids_send(
+                        schedule_dict.get(SEND_TO, []))
                 ).tag(CUSTOM_JOB_TAG)
             except Exception as e:
                 logger.error(f'Failed to schedule job {job_id} \
