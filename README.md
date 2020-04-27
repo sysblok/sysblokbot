@@ -24,6 +24,7 @@
 
 ## How to add a scheduled job
 - Implement job logic in `jobs/<job_name>_job.py:execute`
+- Import `<job_name>_job` in `jobs/__init__.py`
 - Add schedule to `config.json`, using `job_name` as a key (you may use `config_override.json` to test your changes without committing)
 
 ## How to Docker
