@@ -6,10 +6,10 @@ from deepdiff import DeepDiff
 import schedule
 import telegram
 
+from . import jobs
 from .app_context import AppContext
 from .config_manager import ConfigManager
 from .consts import CONFIG_RELOAD_MINUTES, EVERY, AT, SEND_TO
-from .jobs import jobs
 from .tg.sender import TelegramSender
 from .utils.singleton import Singleton
 
@@ -101,7 +101,7 @@ class JobScheduler(Singleton):
                 if 'at' in schedule_dict:
                     scheduled = scheduled.at(schedule_dict[AT])
                 scheduled.do(
-                    job,
+                    job.execute,
                     app_context=self.app_context,
                     send=self.telegram_sender.create_chat_ids_send(
                         schedule_dict.get(SEND_TO, []))

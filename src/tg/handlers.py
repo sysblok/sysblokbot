@@ -3,7 +3,7 @@ Module with all the telegram handlers.
 """
 import logging
 
-from ..jobs import jobs
+from .. import jobs
 from .sender import TelegramSender
 from ..app_context import AppContext
 
