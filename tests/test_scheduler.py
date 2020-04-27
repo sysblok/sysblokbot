@@ -1,7 +1,7 @@
 import pytest
 
+from src import jobs
 from src import scheduler
-from src.jobs import jobs
 from src.bot import SysBlokBot
 from src.config_manager import ConfigManager
 
@@ -15,6 +15,11 @@ class FakeTelegramSender:
         pass
 
     def create_reply_send(self, *args, **kwargs):
+        pass
+
+
+class FakeJob:
+    def execute(self, *args, **kwargs):
         pass
 
 
@@ -36,7 +41,7 @@ class FakeTelegramSender:
 )
 def test_scheduler(monkeypatch, jobs_config, num_jobs):
     for job_id in jobs_config:
-        setattr(jobs, job_id, lambda _: 0)
+        setattr(jobs, job_id, FakeJob)
 
     config_manager = ConfigManager()
     config_manager._latest_config = {'jobs': jobs_config}

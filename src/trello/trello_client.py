@@ -23,15 +23,6 @@ class TrelloClient(Singleton):
         _, data = self._make_request(f'boards/{self.board_id}')
         return objects.TrelloBoard.from_json(data)
 
-    def get_board_custom_fields(self):
-        _, data = self._make_request(f'boards/{self.board_id}/customFields')
-        custom_field_types = [
-            objects.TrelloCustomFieldType.from_json(custom_field_type)
-            for custom_field_type in data
-        ]
-        logger.debug(f'get_board_custom_fields: {custom_field_types}')
-        return custom_field_types
-
     def get_lists(self):
         _, data = self._make_request(f'boards/{self.board_id}/lists')
         lists = [
@@ -73,6 +64,15 @@ class TrelloClient(Singleton):
             cards.append(card)
         logger.debug(f'get_cards: {cards}')
         return cards
+
+    def get_board_custom_field_types(self):
+        _, data = self._make_request(f'boards/{self.board_id}/customFields')
+        custom_field_types = [
+            objects.TrelloCustomFieldType.from_json(custom_field_type)
+            for custom_field_type in data
+        ]
+        logger.debug(f'get_board_custom_field_types: {custom_field_types}')
+        return custom_field_types
 
     def get_card_custom_fields(self, card_id):
         _, data = self._make_request(f'cards/{card_id}/customFieldItems')
