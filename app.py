@@ -30,7 +30,7 @@ def get_bot():
     bot = SysBlokBot(config_manager, signal_handler=lambda signum,
                      frame: scheduler.stop_running())
     bot.init_handlers()
- 
+
     # Scheduler must be run after clients initialized
     scheduler.run()
     scheduler.init_jobs()
