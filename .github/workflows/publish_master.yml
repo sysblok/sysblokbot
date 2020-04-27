@@ -25,7 +25,10 @@ jobs:
           ref: master
 
       - name: Python Style Checker
-        uses: andymckay/pycodestyle-action@0.1.3
+        run: |
+          pip3 install --upgrade pip
+          pip3 install pycodestyle
+          pycodestyle /github/workspace/ --max-line-length 100
         
       - name: Python Pytest Github Action
         uses: fylein/python-pytest-github-action@v2
