@@ -102,7 +102,7 @@ class JobScheduler(Singleton):
                     scheduled = scheduled.at(schedule_dict['at'])
                 # TODO: switch to send=sender.create_chat_ids_send(chat_ids)
                 scheduled.do(
-                    job,
+                    job.execute,
                     app_context=self.app_context,
                     send=self.telegram_sender.send_to_managers
                 ).tag(CUSTOM_JOB_TAG)

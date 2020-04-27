@@ -18,6 +18,11 @@ class FakeTelegramSender:
         pass
 
 
+class FakeJob:
+    def execute(self, *args, **kwargs):
+        pass
+
+
 @pytest.mark.parametrize(
     "jobs_config, num_jobs",
     [
@@ -36,7 +41,7 @@ class FakeTelegramSender:
 )
 def test_scheduler(monkeypatch, jobs_config, num_jobs):
     for job_id in jobs_config:
-        setattr(jobs, job_id, lambda _: 0)
+        setattr(jobs, job_id, FakeJob)
 
     config_manager = ConfigManager()
     config_manager._latest_config = {'jobs': jobs_config}
