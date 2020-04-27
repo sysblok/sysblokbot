@@ -29,12 +29,12 @@ class SysBlokBot:
         self.dp.add_handler(CommandHandler("help", handlers.help))
         self.dp.add_handler(CommandHandler("test", handlers.test_handler))
         self.dp.add_handler(CommandHandler(
-            "manager_stats",
-            handlers.manager_stats_handler
+            "trello_board_state",
+            handlers.trello_board_state_handler
         ))
         self.dp.add_handler(CommandHandler(
-            "get_manager_stats",
-            handlers.get_manager_stats_handler
+            "get_trello_board_state",
+            handlers.get_trello_board_state_handler
         ))
 
         # on user message

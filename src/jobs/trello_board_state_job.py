@@ -14,11 +14,11 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
     # TODO: make it a decorator
     logger.info('Starting trello_board_state_job...')
 
-    stats_paragraphs = []  # list of paragraph strings
-    stats_paragraphs.append('Всем привет! Еженедельная сводка \
+    paragraphs = []  # list of paragraph strings
+    paragraphs.append('Всем привет! Еженедельная сводка \
 о состоянии Trello-доски.\n#доскаживи')
 
-    stats_paragraphs += _retrieve_trello_card_stats(
+    paragraphs += _retrieve_trello_card_stats(
         trello_client=app_context.trello_client,
         title='Не указан автор в карточке',
         list_ids=(
@@ -35,7 +35,7 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
         show_members=False,
     )
 
-    stats_paragraphs += _retrieve_trello_card_stats(
+    paragraphs += _retrieve_trello_card_stats(
         trello_client=app_context.trello_client,
         title='Не указан срок в карточке',
         list_ids=(app_context.lists_config['in_progress']),
@@ -43,7 +43,7 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
         show_due=False
     )
 
-    stats_paragraphs += _retrieve_trello_card_stats(
+    paragraphs += _retrieve_trello_card_stats(
         trello_client=app_context.trello_client,
         title='Не указан тег рубрики в карточке',
         list_ids=(
@@ -65,20 +65,20 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
         members_with_cards = members_with_cards.union(set(card.members))
 
     # TODO: probably move to another cmd, @ibulgakov has thoughts on that
-    # stats_paragraphs += _retrieve_trello_members_stats(
+    # paragraphs += _retrieve_trello_members_stats(
     #     trello_client=app_context.trello_client,
     #     title='Авторы без карточек',
     #     filter_func=lambda member: member.username not in members_with_cards,
     # )
 
-    stats_paragraphs += _retrieve_trello_card_stats(
+    paragraphs += _retrieve_trello_card_stats(
         trello_client=app_context.trello_client,
         title='Пропущен дедлайн',
         list_ids=(app_context.lists_config['in_progress']),
         filter_func=_is_deadline_missed,
     )
 
-    pretty_send(stats_paragraphs, send)
+    pretty_send(paragraphs, send)
     logger.info('Finished trello_board_state_job')
 
 

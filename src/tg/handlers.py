@@ -49,16 +49,16 @@ def test_handler(update, tg_context):
 
 
 @admin_only
-def manager_stats_handler(update, tg_context):
+def trello_board_state_handler(update, tg_context):
     app_context = AppContext()
     # TODO: switch to create_chat_ids_send
-    jobs.manager_stats_job(app_context, send=TelegramSender().send_to_managers)
+    jobs.trello_board_state_job.execute(app_context, send=TelegramSender().send_to_managers)
 
 
 # TODO: @manager_only
-def get_manager_stats_handler(update, tg_context):
+def get_trello_board_state_handler(update, tg_context):
     app_context = AppContext()
-    jobs.manager_stats_job(
+    jobs.trello_board_state_job.execute(
         app_context,
         send=TelegramSender().create_reply_send(update)
     )
