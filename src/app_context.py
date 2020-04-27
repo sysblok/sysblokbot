@@ -32,3 +32,5 @@ class AppContext(Singleton):
         trello_config = config_manager.get_trello_config()
         self.admin_chat_ids = tg_config['_tmp_']['admin_chat_ids']
         self.lists_config = trello_config['_tmp_']['list_aliases']
+        self.custom_fields_config = \
+            trello_config['_tmp_']['custom_field_type_aliases']

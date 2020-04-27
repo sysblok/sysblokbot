@@ -36,6 +36,14 @@ class SysBlokBot:
             "get_trello_board_state",
             handlers.get_trello_board_state_handler
         ))
+        self.dp.add_handler(CommandHandler(
+            "publication_plans",
+            handlers.publication_plans_handler
+        ))
+        self.dp.add_handler(CommandHandler(
+            "get_publication_plans",
+            handlers.get_publication_plans_handler
+        ))
 
         # on user message
         self.dp.add_handler(MessageHandler(
