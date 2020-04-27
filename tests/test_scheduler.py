@@ -1,7 +1,7 @@
 import pytest
 
+from src import jobs
 from src import scheduler
-from src.jobs import jobs
 from src.bot import SysBlokBot
 from src.config_manager import ConfigManager
 

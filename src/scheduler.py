@@ -6,10 +6,10 @@ from deepdiff import DeepDiff
 import schedule
 import telegram
 
+from . import jobs
 from .app_context import AppContext
 from .config_manager import ConfigManager
 from .consts import CONFIG_RELOAD_MINUTES
-from .jobs import jobs
 from .tg.sender import TelegramSender
 from .utils.singleton import Singleton
 

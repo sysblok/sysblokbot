@@ -113,10 +113,10 @@ def test_board_custom_fields(monkeypatch):
         'token': 'token',
         'board_id': 'board_1'
     })
-    custom_fields = trello.get_board_custom_fields()
+    custom_field_types = trello.get_board_custom_field_types()
     # TODO: better checks -- e.g. match with response json?
-    assert len(custom_fields) == 5
-    for i, custom_field in enumerate(sorted(custom_fields, key=lambda field: field.id)):
+    assert len(custom_field_types) == 5
+    for i, custom_field in enumerate(sorted(custom_field_types, key=lambda field: field.id)):
         assert custom_field.id == f'type_{i}'
 
 
