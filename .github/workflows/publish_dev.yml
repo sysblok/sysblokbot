@@ -25,6 +25,7 @@ jobs:
           ref: dev
 
       - name: Python Style Checker
+        working-directory: ${{ github.workspace }}
         run: |
           pip3 install --upgrade pip
           export PATH="$HOME/.local/bin:$PATH"
