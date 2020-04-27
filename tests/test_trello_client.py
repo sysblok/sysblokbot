@@ -116,7 +116,8 @@ def test_board_custom_fields(monkeypatch):
     custom_field_types = trello.get_board_custom_field_types()
     # TODO: better checks -- e.g. match with response json?
     assert len(custom_field_types) == 5
-    for i, custom_field in enumerate(sorted(custom_field_types, key=lambda field: field.id)):
+    for i, custom_field in enumerate(sorted(custom_field_types,
+                                            key=lambda field: field.id)):
         assert custom_field.id == f'type_{i}'
 
 
@@ -132,7 +133,8 @@ def test_card_custom_fields(monkeypatch):
     custom_fields = trello.get_card_custom_fields(1)
     # TODO: better checks -- e.g. match with response json?
     assert len(custom_fields) == 3
-    for i, custom_field in enumerate(sorted(custom_fields, key=lambda field: field.id)):
+    for i, custom_field in enumerate(sorted(custom_fields,
+                                            key=lambda field: field.id)):
         assert custom_field.id == f'field_{i}'
 
 

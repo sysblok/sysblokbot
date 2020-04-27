@@ -82,7 +82,6 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
     logger.info('Finished trello_board_state_job')
 
 
-
 def _is_deadline_missed(card) -> bool:
     return card.due is not None and card.due < datetime.datetime.now()
 
@@ -151,4 +150,3 @@ def _format_card(card, show_due=True, show_members=True) -> str:
     if show_members and card.members:
         card_text += f'👤 {", ".join(list(map(str, card.members)))}'
     return card_text.strip()
-
