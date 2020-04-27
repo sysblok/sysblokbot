@@ -1,10 +1,3 @@
-"""
-A module for business logic-containing regular jobs.
-Jobs should use corresponding client objects to interact with
-Trello, Spreadsheets or Telegram API.
-Jobs can be ran from scheduler or from anywhere else for a one-off action.
-"""
-
 import logging
 import time
 from typing import Callable, List
