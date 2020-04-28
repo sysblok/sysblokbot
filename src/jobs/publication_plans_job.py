@@ -43,8 +43,10 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
         need_illustrators=False,
     )
 
-    if len(errors) > 0:
-        paragraphs = _format_errors(errors)
+    paragraphs.append('Спасибо авторам, редакторам, кураторам и иллюстраторам! 🤖❤️')
+
+    # if len(errors) > 0:
+    #     paragraphs = _format_errors(errors)
 
     pretty_send(paragraphs, send)
     logger.info('Finished publication_plans_job')
