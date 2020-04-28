@@ -130,10 +130,10 @@ def test_card_custom_fields(monkeypatch):
         'token': 'token',
         'board_id': 'board_1'
     })
-    custom_fields = trello.get_card_custom_fields(1)
+    custom_fields = trello.get_card_custom_fields_dict(1)
     # TODO: better checks -- e.g. match with response json?
     assert len(custom_fields) == 3
-    for i, custom_field in enumerate(sorted(custom_fields,
+    for i, custom_field in enumerate(sorted(custom_fields.values(),
                                             key=lambda field: field.id)):
         assert custom_field.id == f'field_{i}'
 
