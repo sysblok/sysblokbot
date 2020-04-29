@@ -2,7 +2,6 @@ import logging
 import time
 import threading
 
-from deepdiff import DeepDiff
 import schedule
 import telegram
 
@@ -35,7 +34,7 @@ class JobScheduler(Singleton):
         self.config_manager = ConfigManager()
         # re-read config on schedule
         schedule.every(CONFIG_RELOAD_MINUTES).minutes.do(
-            self.config_checker_job
+            jobs.config_updater_job.execute
         ).tag(TECHNICAL_JOB_TAG)
 
     def run(self):
@@ -60,28 +59,6 @@ class JobScheduler(Singleton):
         continuous_thread = ScheduleThread()
         continuous_thread.start()
         self.stop_run_event = cease_continuous_run
-
-    def config_checker_job(self):
-        """A very special job checking config for recent changes"""
-        # if anything at all changed in config
-        diff = DeepDiff(
-            self.config,
-            self.config_manager.load_config_with_override()
-        )
-        if diff:
-            logger.info(f'Config was changed, diff: {diff}')
-            # update config['jobs']
-            self.reschedule_jobs()
-            # update config['telegram']
-            self.telegram_sender.update_config(
-                self.config_manager.get_telegram_config()
-            )
-            # update config['trello']
-            self.app_context.trello_client.update_config(
-                self.config_manager.get_trello_config())
-            # TODO: update GS client too
-        else:
-            logger.info('No config changes detected')
 
     def init_jobs(self):
         """
