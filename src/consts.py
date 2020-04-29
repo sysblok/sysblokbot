@@ -12,3 +12,8 @@ TELEGRAM_CONFIG = 'telegram'
 TRELLO_CONFIG = 'trello'
 SHEETS_CONFIG = 'sheets'
 JOBS_CONFIG = 'jobs'
+
+# Jobs-related keys
+EVERY = 'every'
+AT = 'at'
+SEND_TO = 'send_to'

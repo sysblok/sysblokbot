@@ -23,14 +23,6 @@ class TelegramSender(Singleton):
         self._tg_config = tg_config
         self._update_from_config()
 
-    def send_to_managers(self, message_text: str):
-        for manager_chat_id in self.manager_chat_ids:
-            if not manager_chat_id:
-                logger.error(f'Can\'t send message to manager, check config: \
-                    manager_chat_id is {manager_chat_id}')
-                continue
-            self.send_to_chat_id(message_text, manager_chat_id)
-
     def create_reply_send(
             self, update: telegram.Update
     ) -> Callable[[str], None]:
