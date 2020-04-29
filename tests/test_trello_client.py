@@ -8,37 +8,12 @@ from src import config_manager
 from src.trello.trello_client import TrelloClient
 
 
-ROOT_TEST_DIR = os.path.abspath(os.path.dirname(__file__))
-TRELLO_TEST_PATH = os.path.join(
-    os.path.join(ROOT_TEST_DIR, 'static'), 'trello')
 
 # TODO check milliseconds :)
 TIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
 
-def mock_trello(_, uri):
-
-    def load_json(filename):
-        with open(os.path.join(TRELLO_TEST_PATH, filename), 'r') as fin:
-            return json.loads(fin.read())
-
-    if uri.startswith('boards'):
-        if uri.endswith('lists'):
-            return 200, load_json('lists.json')
-        elif uri.endswith('cards'):
-            return 200, load_json('cards.json')
-        elif uri.endswith('members'):
-            return 200, load_json('members.json')
-        elif uri.endswith('customFields'):
-            return 200, load_json('board_custom_fields.json')
-        else:
-            return 200, load_json('board.json')
-    elif uri.startswith('cards'):
-        if uri.endswith('customFieldItems'):
-            return 200, load_json('card_custom_fields.json')
-
-
-def test_board(monkeypatch):
+def test_board(monkeypatch, mock_trello):
     monkeypatch.setattr(TrelloClient, '_make_request', mock_trello)
 
     # TODO: check api keys etc
@@ -54,7 +29,7 @@ def test_board(monkeypatch):
     assert board.url == 'https://trello.com/b/test_board_url'
 
 
-def test_lists(monkeypatch):
+def test_lists(monkeypatch, mock_trello):
     monkeypatch.setattr(TrelloClient, '_make_request', mock_trello)
 
     # TODO: check api keys etc
@@ -70,7 +45,7 @@ def test_lists(monkeypatch):
         assert trello_list.id.startswith('list_')
 
 
-def test_cards(monkeypatch):
+def test_cards(monkeypatch, mock_trello):
     monkeypatch.setattr(TrelloClient, '_make_request', mock_trello)
 
     # TODO: check api keys etc
@@ -86,6 +61,7 @@ def test_cards(monkeypatch):
     cards.sort(key=lambda card: card.id)
 
     card = cards[0]
+    assert card.__dict__ == None
     assert card.id == 'card_1'
     assert card.name == 'Open Memory Map'
     assert card.labels == ['История']
@@ -104,7 +80,7 @@ def test_cards(monkeypatch):
     assert card.members == ['Paulin Matavina']
 
 
-def test_board_custom_fields(monkeypatch):
+def test_board_custom_fields(monkeypatch, mock_trello):
     monkeypatch.setattr(TrelloClient, '_make_request', mock_trello)
 
     # TODO: check api keys etc
@@ -121,7 +97,7 @@ def test_board_custom_fields(monkeypatch):
         assert custom_field.id == f'type_{i}'
 
 
-def test_card_custom_fields(monkeypatch):
+def test_card_custom_fields(monkeypatch, mock_trello):
     monkeypatch.setattr(TrelloClient, '_make_request', mock_trello)
 
     # TODO: check api keys etc
@@ -138,7 +114,7 @@ def test_card_custom_fields(monkeypatch):
         assert custom_field.id == f'field_{i}'
 
 
-def test_members(monkeypatch):
+def test_members(monkeypatch, mock_trello):
     monkeypatch.setattr(TrelloClient, '_make_request', mock_trello)
 
     # TODO: check api keys etc
