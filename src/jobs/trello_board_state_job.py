@@ -18,7 +18,7 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
     paragraphs.append('Всем привет! Еженедельная сводка \
 о состоянии Trello-доски.\n#доскаживи')
 
-    paragraphs += _retrieve_trello_card_stats(
+    paragraphs += _retrieve_cards_for_paragraph(
         trello_client=app_context.trello_client,
         title='Не указан автор в карточке',
         list_ids=(
@@ -35,7 +35,7 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
         show_members=False,
     )
 
-    paragraphs += _retrieve_trello_card_stats(
+    paragraphs += _retrieve_cards_for_paragraph(
         trello_client=app_context.trello_client,
         title='Не указан срок в карточке',
         list_ids=(app_context.lists_config['in_progress']),
@@ -43,7 +43,7 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
         show_due=False
     )
 
-    paragraphs += _retrieve_trello_card_stats(
+    paragraphs += _retrieve_cards_for_paragraph(
         trello_client=app_context.trello_client,
         title='Не указан тег рубрики в карточке',
         list_ids=(
@@ -71,7 +71,7 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
     #     filter_func=lambda member: member.username not in members_with_cards,
     # )
 
-    paragraphs += _retrieve_trello_card_stats(
+    paragraphs += _retrieve_cards_for_paragraph(
         trello_client=app_context.trello_client,
         title='Пропущен дедлайн',
         list_ids=(app_context.lists_config['in_progress']),
@@ -86,7 +86,7 @@ def _is_deadline_missed(card) -> bool:
     return card.due is not None and card.due < datetime.datetime.now()
 
 
-def _retrieve_trello_card_stats(
+def _retrieve_cards_for_paragraph(
         trello_client: TrelloClient,
         title: str,
         list_ids: List[str],

@@ -23,6 +23,13 @@
                 "proofreading": "5e91d48a9e9d947b95fb0dff",
                 "done": "5e91d48a9e9d947b95fb0e00",
                 "back_burner": "5e91d48a9e9d947b95fb0e01"
+            },
+            "custom_field_type_aliases": {
+                "author": "",
+                "google_doc": "",
+                "editor": "",
+                "title": "",
+                "illustrator": ""
             }
         }
     },

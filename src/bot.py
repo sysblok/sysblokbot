@@ -37,7 +37,16 @@ class SysBlokBot:
             self.admin_handler("trello_board_state_job")))
         self.dp.add_handler(CommandHandler(
             "get_trello_board_state",
-            self.manager_handler("trello_board_state_job")))
+            self.manager_handler("trello_board_state_job")
+        ))
+        self.dp.add_handler(CommandHandler(
+            "send_publication_plans",
+            self.admin_handler("publication_plans_job")
+        ))
+        self.dp.add_handler(CommandHandler(
+            "get_publication_plans",
+            self.manager_handler("publication_plans_job")
+        ))
 
         # on user message
         self.dp.add_handler(MessageHandler(

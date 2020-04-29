@@ -74,14 +74,14 @@ class TrelloClient(Singleton):
         logger.debug(f'get_board_custom_field_types: {custom_field_types}')
         return custom_field_types
 
-    def get_card_custom_fields(self, card_id):
+    def get_card_custom_fields_dict(self, card_id):
         _, data = self._make_request(f'cards/{card_id}/customFieldItems')
-        custom_fields = [
-            objects.TrelloCustomField.from_json(custom_field)
-            for custom_field in data
-        ]
-        logger.debug(f'get_card_custom_fields: {custom_fields}')
-        return custom_fields
+        custom_fields_dict = {}
+        for custom_field in data:
+            custom_field = objects.TrelloCustomField.from_json(custom_field)
+            custom_fields_dict[custom_field.type_id] = custom_field
+        logger.debug(f'get_card_custom_fields_dict: {custom_fields_dict}')
+        return custom_fields_dict
 
     def get_members(self):
         _, data = self._make_request(f'boards/{self.board_id}/members')
