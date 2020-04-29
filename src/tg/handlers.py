@@ -9,8 +9,6 @@ from ..app_context import AppContext
 
 logger = logging.getLogger(__name__)
 
-app_context = AppContext()
-
 
 def admin_only(func):
     """
@@ -87,11 +85,11 @@ def error(update, tg_context):
 
 
 def _is_sender_admin(update) -> bool:
-    return _get_sender_id(update) in app_context.admin_chat_ids
+    return _get_sender_id(update) in AppContext().admin_chat_ids
 
 
 def _is_sender_manager(update) -> bool:
-    return _get_sender_id(update) in app_context.manager_chat_ids
+    return _get_sender_id(update) in AppContext().manager_chat_ids
 
 
 def _get_sender_id(update) -> int:
