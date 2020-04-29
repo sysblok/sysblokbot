@@ -40,10 +40,10 @@ def manager_only(func):
 
 # Command handlers
 def start(update, tg_context):
-    is_group = update.chat.type in ('group', 'supergroup')
+    is_group = update.message.chat.type in ('group', 'supergroup')
     if is_group and not _is_sender_admin(update):
         logger.warning(
-            f'/start was invoked in a group {update.chat_id} by {_get_sender_id(update)}'
+            f'/start was invoked in a group {update.message.chat_id} by {_get_sender_id(update)}'
         )
         return
     update.message.reply_text('''
