@@ -55,6 +55,7 @@ class SysBlokBot:
             "update_config",
             self.admin_reply_handler("config_updater_job")
         ))
+        self.dp.add_handler(CommandHandler("list_jobs", handlers.list_jobs_handler))
 
         # on user message
         self.dp.add_handler(MessageHandler(

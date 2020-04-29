@@ -6,6 +6,7 @@ import logging
 from .. import jobs
 from .sender import TelegramSender
 from ..app_context import AppContext
+from ..scheduler import JobScheduler
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +69,11 @@ def test_handler(update, tg_context):
     Handler for /test command, feel free to use it for one-off job testing
     """
     jobs.sample_job(AppContext(), None)
+
+
+@admin_only
+def list_jobs_handler(update, tg_context):
+    update.message.reply_text('\n'.join(JobScheduler.list_jobs()))
 
 
 # Other handlers
