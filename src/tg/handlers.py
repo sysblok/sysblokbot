@@ -11,9 +11,14 @@ logger = logging.getLogger(__name__)
 
 
 def admin_only(func):
+    """
+    Decorator allowing only users from admin_chat_ids to run the command.
+    Checks the immediate sender: if forwarded by non-admin, it doesn't run handler.
+    If admin sends command to the chat, it does run handler.
+    """
     def wrapper(update, tg_context, *args, **kwargs):
         app_context = AppContext()
-        if update.message.chat_id in app_context.admin_chat_ids:
+        if update.message.from_user in app_context.admin_chat_ids:
             return func(update, tg_context, *args, **kwargs)
         logger.warning(f'Admin-only handler {func.__name__} \
             was invoked by {update.message.chat_id}')
@@ -21,9 +26,14 @@ def admin_only(func):
 
 
 def manager_only(func):
+    """
+    Decorator allowing only users from manager_chat_ids to run the command.
+    Checks the immediate sender: if forwarded by non-manager, it doesn't run handler.
+    If manager sends command to the chat, it does run handler.
+    """
     def wrapper(update, tg_context, *args, **kwargs):
         app_context = AppContext()
-        if update.message.chat_id in app_context.manager_chat_ids:
+        if update.message.from_user in app_context.manager_chat_ids:
             return func(update, tg_context, *args, **kwargs)
         logger.warning(f'Manager-only handler {func.__name__} \
             was invoked by {update.message.chat_id}')
