@@ -9,6 +9,8 @@ from ..app_context import AppContext
 
 logger = logging.getLogger(__name__)
 
+app_context = AppContext()
+
 
 def admin_only(func):
     """
@@ -17,11 +19,10 @@ def admin_only(func):
     If admin sends command to the chat, it does run handler.
     """
     def wrapper(update, tg_context, *args, **kwargs):
-        app_context = AppContext()
-        if update.message.from_user in app_context.admin_chat_ids:
+        if _is_sender_admin(update):
             return func(update, tg_context, *args, **kwargs)
         logger.warning(f'Admin-only handler {func.__name__} \
-            was invoked by {update.message.chat_id}')
+            was invoked by {_get_sender_id(update)}')
     return wrapper
 
 
@@ -32,17 +33,21 @@ def manager_only(func):
     If manager sends command to the chat, it does run handler.
     """
     def wrapper(update, tg_context, *args, **kwargs):
-        app_context = AppContext()
-        if update.message.from_user in app_context.manager_chat_ids:
+        if _is_sender_manager(update):
             return func(update, tg_context, *args, **kwargs)
         logger.warning(f'Manager-only handler {func.__name__} \
-            was invoked by {update.message.chat_id}')
+            was invoked by {_get_sender_id(update)}')
     return wrapper
 
 
 # Command handlers
 def start(update, tg_context):
-    # TODO: change behavior depending on who calls that
+    is_group = update.chat.type in ('group', 'supergroup')
+    if is_group and not _is_sender_admin(update):
+        logger.warning(
+            f'/start was invoked in a group {update.chat_id} by {_get_sender_id(update)}'
+        )
+        return
     update.message.reply_text('''
 Привет!
 
@@ -79,3 +84,15 @@ def handle_user_message(update, tg_context):
 def error(update, tg_context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, tg_context.error)
+
+
+def _is_sender_admin(update) -> bool:
+    return _get_sender_id(update) in app_context.admin_chat_ids
+
+
+def _is_sender_manager(update) -> bool:
+    return _get_sender_id(update) in app_context.manager_chat_ids
+
+
+def _get_sender_id(update) -> int:
+    return update.message.from_user.id
