@@ -39,7 +39,7 @@ class SysBlokBot:
             self.admin_broadcast_handler("trello_board_state_job")))
         self.dp.add_handler(CommandHandler(
             "get_trello_board_state",
-            self.manager_handler("trello_board_state_job")
+            self.manager_reply_handler("trello_board_state_job")
         ))
         self.dp.add_handler(CommandHandler(
             "send_publication_plans",
@@ -47,13 +47,13 @@ class SysBlokBot:
         ))
         self.dp.add_handler(CommandHandler(
             "get_publication_plans",
-            self.manager_handler("publication_plans_job")
+            self.manager_reply_handler("publication_plans_job")
         ))
 
         # admin-only technical cmds
         self.dp.add_handler(CommandHandler(
             "update_config",
-            self.admin_handler("config_updater_job")
+            self.admin_reply_handler("config_updater_job")
         ))
 
         # on user message
@@ -82,14 +82,14 @@ class SysBlokBot:
         """
         return handlers.admin_only(self._create_broadcast_handler(job_name))
 
-    def admin_handler(self, job_name: str) -> Callable:
+    def admin_reply_handler(self, job_name: str) -> Callable:
         """
         Handler that invokes the job as configured in settings, if called by admin.
         Replies to the admin that invoked it.
         """
         return handlers.admin_only(self._create_reply_handler(job_name))
 
-    def manager_handler(self, job_name: str) -> Callable:
+    def manager_reply_handler(self, job_name: str) -> Callable:
         """
         Handler that replies if manager invokes it (DM or chat).
         """
