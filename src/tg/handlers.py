@@ -20,9 +20,19 @@ def admin_only(func):
     return wrapper
 
 
+def manager_only(func):
+    def wrapper(update, tg_context, *args, **kwargs):
+        app_context = AppContext()
+        if update.message.chat_id in app_context.manager_chat_ids:
+            return func(update, tg_context, *args, **kwargs)
+        logger.warning(f'Manager-only handler {func.__name__} \
+            was invoked by {update.message.chat_id}')
+    return wrapper
+
+
 # Command handlers
 def start(update, tg_context):
-    # TODO: register a new user somewhere, e.g. Google Sheet
+    # TODO: change behavior depending on who calls that
     update.message.reply_text('''
 Привет!
 
@@ -44,24 +54,7 @@ def test_handler(update, tg_context):
     """
     Handler for /test command, feel free to use it for one-off job testing
     """
-    app_context = AppContext()
-    jobs.sample_job(app_context, None)
-
-
-@admin_only
-def trello_board_state_handler(update, tg_context):
-    app_context = AppContext()
-    # TODO: switch to create_chat_ids_send
-    jobs.trello_board_state_job.execute(app_context, send=TelegramSender().send_to_managers)
-
-
-# TODO: @manager_only
-def get_trello_board_state_handler(update, tg_context):
-    app_context = AppContext()
-    jobs.trello_board_state_job.execute(
-        app_context,
-        send=TelegramSender().create_reply_send(update)
-    )
+    jobs.sample_job(AppContext(), None)
 
 
 # Other handlers
