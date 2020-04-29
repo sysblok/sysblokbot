@@ -32,20 +32,28 @@ class SysBlokBot:
         self.dp.add_handler(CommandHandler("start", handlers.start))
         self.dp.add_handler(CommandHandler("help", handlers.help))
         self.dp.add_handler(CommandHandler("test", handlers.test_handler))
+
+        # business logic cmds
         self.dp.add_handler(CommandHandler(
             "send_trello_board_state",
-            self.admin_handler("trello_board_state_job")))
+            self.admin_broadcast_handler("trello_board_state_job")))
         self.dp.add_handler(CommandHandler(
             "get_trello_board_state",
-            self.manager_handler("trello_board_state_job")
+            self.manager_reply_handler("trello_board_state_job")
         ))
         self.dp.add_handler(CommandHandler(
             "send_publication_plans",
-            self.admin_handler("publication_plans_job")
+            self.admin_broadcast_handler("publication_plans_job")
         ))
         self.dp.add_handler(CommandHandler(
             "get_publication_plans",
-            self.manager_handler("publication_plans_job")
+            self.manager_reply_handler("publication_plans_job")
+        ))
+
+        # admin-only technical cmds
+        self.dp.add_handler(CommandHandler(
+            "update_config",
+            self.admin_reply_handler("config_updater_job")
         ))
 
         # on user message
@@ -67,14 +75,21 @@ class SysBlokBot:
         # stop the bot gracefully.
         self.updater.idle()
 
-    def admin_handler(self, job_name: str) -> Callable:
+    def admin_broadcast_handler(self, job_name: str) -> Callable:
         """
         Handler that invokes the job as configured in settings, if called by admin.
         Can possibly send message to multiple chat ids, if configured in settings.
         """
         return handlers.admin_only(self._create_broadcast_handler(job_name))
 
-    def manager_handler(self, job_name: str) -> Callable:
+    def admin_reply_handler(self, job_name: str) -> Callable:
+        """
+        Handler that invokes the job as configured in settings, if called by admin.
+        Replies to the admin that invoked it.
+        """
+        return handlers.admin_only(self._create_reply_handler(job_name))
+
+    def manager_reply_handler(self, job_name: str) -> Callable:
         """
         Handler that replies if manager invokes it (DM or chat).
         """

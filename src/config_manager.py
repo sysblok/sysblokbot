@@ -29,7 +29,7 @@ class ConfigManager(Singleton):
     def get_latest_config(self):
         """
         Recommended way to access config without re-reading from disk.
-        Freshness of the config depends on scheduler.config_checker_job
+        Freshness of the config depends on jobs.config_checker_job
         """
         logger.debug(f'Got config, last updated: {self._latest_config_ts}')
         return self._latest_config
