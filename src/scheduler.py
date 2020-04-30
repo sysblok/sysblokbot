@@ -1,6 +1,7 @@
 import logging
 import time
 import threading
+from typing import List
 
 import schedule
 import telegram
@@ -34,7 +35,7 @@ class JobScheduler(Singleton):
         self.config_manager = ConfigManager()
         # re-read config on schedule
         schedule.every(CONFIG_RELOAD_MINUTES).minutes.do(
-            jobs.config_updater_job.execute
+            self._get_job_runnable(jobs.config_updater_job)
         ).tag(TECHNICAL_JOB_TAG)
 
     def run(self):
@@ -78,7 +79,7 @@ class JobScheduler(Singleton):
                 if 'at' in schedule_dict:
                     scheduled = scheduled.at(schedule_dict[AT])
                 scheduled.do(
-                    job.execute,
+                    self._get_job_runnable(job),
                     app_context=self.app_context,
                     send=self.telegram_sender.create_chat_ids_send(
                         schedule_dict.get(SEND_TO, []))
@@ -87,6 +88,10 @@ class JobScheduler(Singleton):
                 logger.error(f'Failed to schedule job {job_id} \
                     with params {schedule_dict}: {e}')
         logger.info('Finished setting jobs')
+
+    @staticmethod
+    def list_jobs() -> List[str]:
+        return list(map(str, schedule.jobs))
 
     def reschedule_jobs(self):
         logger.info('Clearing all scheduled jobs...')
@@ -101,3 +106,13 @@ class JobScheduler(Singleton):
             'Scheduler received a signal. '
             'Will terminate after ongoing jobs end'))
         self.stop_run_event.set()
+
+    @staticmethod
+    def _get_job_runnable(job_module):
+        """
+        Hack to add readable name for execute method for introspection.
+        May be once replaced by Job base class.
+        """
+        execute_job = job_module.execute
+        execute_job.__name__ = job_module.__name__
+        return execute_job
