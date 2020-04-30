@@ -48,7 +48,7 @@ def assert_equal():
         def load_json(filename):
             with open(os.path.join(EXPECTED_TEST_PATH, filename), 'r') as fin:
                 return json.loads(fin.read())
-        
+
         expected_response = load_json(expected_filename)
         assert not DeepDiff(response, expected_response)
 
