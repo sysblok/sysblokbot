@@ -36,7 +36,7 @@ def test_lists(monkeypatch, mock_trello, assert_equal):
     })
     lists = trello.get_lists()
     assert_equal([lst.to_dict() for lst in lists], 'lists.json')
-    
+
 
 def test_cards(monkeypatch, mock_trello, assert_equal):
     monkeypatch.setattr(TrelloClient, '_make_request', mock_trello)
