@@ -45,8 +45,8 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
 
     paragraphs.append('Спасибо авторам, редакторам, кураторам и иллюстраторам! 🤖❤️')
 
-    # if len(errors) > 0:
-    #     paragraphs = _format_errors(errors)
+    if len(errors) > 0:
+        paragraphs = _format_errors(errors)
 
     pretty_send(paragraphs, send)
     logger.info('Finished publication_plans_job')
@@ -105,7 +105,9 @@ def _retrieve_cards_for_paragraph(
             this_card_bad_fields.append('дата публикации')
 
         if len(this_card_bad_fields) > 0:
-            logger.error(f'Trello card is unsuitable for publication: {card.url}')
+            logger.error(
+                f'Trello card is unsuitable for publication: {card.url}: {this_card_bad_fields}'
+            )
             errors[card] = this_card_bad_fields
             continue
 
