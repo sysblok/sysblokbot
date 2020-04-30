@@ -1,0 +1,17 @@
+[
+    {
+      "id": "list_1",
+      "name": "Готовая тема",
+      "idBoard": "board_id"
+    },
+    {
+      "id": "list_2",
+      "name": "Редактору",
+      "idBoard": "board_id"
+    },
+    {
+      "id": "list_3",
+      "name": "Долгий Ящик",
+      "idBoard": "board_id"
+    }
+]

@@ -26,7 +26,7 @@ class TrelloBoard:
         return f'Board<id={self.id}, name={self.name}, url={self.url}>'
 
     @classmethod
-    def from_json(cls, data):
+    def from_dict(cls, data):
         board = cls()
         try:
             board.id = data['id']
@@ -37,11 +37,19 @@ class TrelloBoard:
             logger.error(f"Bad board json {data}")
         return board
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'url': self.url,
+        }
+
 
 class TrelloList:
     def __init__(self):
         self.id = None
         self.name = None
+        self.board_id = None
 
         self._ok = True
 
@@ -55,15 +63,23 @@ class TrelloList:
         return f'List<id={self.id}, name={self.name}>'
 
     @classmethod
-    def from_json(cls, data):
+    def from_dict(cls, data):
         trello_list = cls()
         try:
             trello_list.id = data['id']
             trello_list.name = data['name']
+            trello_list.board_id = data['idBoard']
         except Exception:
             trello_list._ok = False
             logger.error(f"Bad list json {data}")
         return trello_list
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'idBoard': self.board_id,
+        }
 
 
 class TrelloCard:
@@ -90,7 +106,7 @@ class TrelloCard:
 members={self.members}>'
 
     @classmethod
-    def from_json(cls, data):
+    def from_dict(cls, data):
         card = cls()
         try:
             card.id = data['id']
@@ -103,6 +119,17 @@ members={self.members}>'
             card._ok = False
             logger.error(f"Bad card json {data}")
         return card
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'labels': self.labels,
+            'url': self.url,
+            'due': datetime.strftime(self.due, TIME_FORMAT) if self.due else None,
+            'listName': self.list_name,
+            'members': self.members,
+        }
 
 
 class TrelloCustomFieldType:
@@ -122,7 +149,7 @@ class TrelloCustomFieldType:
         return f'CustomFieldType<id={self.id}, name={self.name}>'
 
     @classmethod
-    def from_json(cls, data):
+    def from_dict(cls, data):
         field_type = cls()
         try:
             field_type.id = data['id']
@@ -131,6 +158,12 @@ class TrelloCustomFieldType:
             field_type._ok = False
             logger.error(f"Bad field type json {data}")
         return field_type
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+        }
 
 
 class TrelloCustomField:
@@ -152,7 +185,7 @@ class TrelloCustomField:
 type_id={self.type_id}>'
 
     @classmethod
-    def from_json(cls, data):
+    def from_dict(cls, data):
         custom_field = cls()
         try:
             custom_field.id = data['id']
@@ -162,6 +195,13 @@ type_id={self.type_id}>'
             custom_field._ok = False
             logger.error(f"Bad custom field json {data}")
         return custom_field
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'value': self.value,
+            'idCustomField': self.type_id,
+        }
 
 
 class TrelloMember:
@@ -189,9 +229,16 @@ class TrelloMember:
         return hash(self.username)
 
     @classmethod
-    def from_json(cls, data):
+    def from_dict(cls, data):
         member = cls()
         member.id = data['id']
         member.username = data['username']
         member.full_name = data['fullName']
         return member
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'fullName': self.full_name,
+        }
