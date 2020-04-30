@@ -27,12 +27,12 @@ def admin_only(func):
 
 def manager_only(func):
     """
-    Decorator allowing only users from manager_chat_ids to run the command.
+    Decorator allowing only users from manager_chat_ids OR admin_chat_ids to run the command.
     Checks the immediate sender: if forwarded by non-manager, it doesn't run handler.
     If manager sends command to the chat, it does run handler.
     """
     def wrapper(update, tg_context, *args, **kwargs):
-        if _is_sender_manager(update):
+        if _is_sender_manager(update) or _is_sender_admin(update):
             return func(update, tg_context, *args, **kwargs)
         logger.warning(f'Manager-only handler {func.__name__} \
             was invoked by {_get_sender_id(update)}')
@@ -91,12 +91,18 @@ def error(update, tg_context):
 
 
 def _is_sender_admin(update) -> bool:
-    return _get_sender_id(update) in AppContext().admin_chat_ids
+    chats = AppContext().admin_chat_ids
+    return _get_sender_id(update) in chats or _get_sender_username(update) in chats
 
 
 def _is_sender_manager(update) -> bool:
-    return _get_sender_id(update) in AppContext().manager_chat_ids
+    chats = AppContext().manager_chat_ids
+    return _get_sender_id(update) in chats or _get_sender_username(update) in chats
 
 
 def _get_sender_id(update) -> int:
     return update.message.from_user.id
+
+
+def _get_sender_username(update) -> str:
+    return update.message.from_user.username
