@@ -21,12 +21,12 @@ class TrelloClient(Singleton):
 
     def get_board(self):
         _, data = self._make_request(f'boards/{self.board_id}')
-        return objects.TrelloBoard.from_json(data)
+        return objects.TrelloBoard.from_dict(data)
 
     def get_lists(self):
         _, data = self._make_request(f'boards/{self.board_id}/lists')
         lists = [
-            objects.TrelloList.from_json(trello_list) for trello_list in data
+            objects.TrelloList.from_dict(trello_list) for trello_list in data
         ]
         logger.debug(f'get_lists: {lists}')
         return lists
@@ -46,7 +46,7 @@ class TrelloClient(Singleton):
         members = self.get_members()
         lists = self.get_lists()
         for card_dict in data:
-            card = objects.TrelloCard.from_json(card_dict)
+            card = objects.TrelloCard.from_dict(card_dict)
             # TODO: move this to app state
             for trello_list in lists:
                 if trello_list.id == card_dict['idList']:
@@ -68,7 +68,7 @@ class TrelloClient(Singleton):
     def get_board_custom_field_types(self):
         _, data = self._make_request(f'boards/{self.board_id}/customFields')
         custom_field_types = [
-            objects.TrelloCustomFieldType.from_json(custom_field_type)
+            objects.TrelloCustomFieldType.from_dict(custom_field_type)
             for custom_field_type in data
         ]
         logger.debug(f'get_board_custom_field_types: {custom_field_types}')
@@ -78,14 +78,14 @@ class TrelloClient(Singleton):
         _, data = self._make_request(f'cards/{card_id}/customFieldItems')
         custom_fields_dict = {}
         for custom_field in data:
-            custom_field = objects.TrelloCustomField.from_json(custom_field)
+            custom_field = objects.TrelloCustomField.from_dict(custom_field)
             custom_fields_dict[custom_field.type_id] = custom_field
         logger.debug(f'get_card_custom_fields_dict: {custom_fields_dict}')
         return custom_fields_dict
 
     def get_members(self):
         _, data = self._make_request(f'boards/{self.board_id}/members')
-        members = [objects.TrelloMember.from_json(member) for member in data]
+        members = [objects.TrelloMember.from_dict(member) for member in data]
         logger.debug(f'get_members: {members}')
         return members
 
