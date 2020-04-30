@@ -4,7 +4,8 @@ from typing import Callable, List
 
 from ..app_context import AppContext
 from ..trello.trello_client import TrelloClient
-from .utils import pretty_send
+from ..sheets.sheets_client import GoogleSheetsClient
+from .utils import pretty_send, retrieve_usernames
 
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,7 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
 
     paragraphs += _retrieve_cards_for_paragraph(
         trello_client=app_context.trello_client,
+        sheets_client=None,
         title='Не указан автор в карточке',
         list_ids=(
             app_context.lists_config['in_progress'],
@@ -37,6 +39,7 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
 
     paragraphs += _retrieve_cards_for_paragraph(
         trello_client=app_context.trello_client,
+        sheets_client=app_context.sheets_client,
         title='Не указан срок в карточке',
         list_ids=(app_context.lists_config['in_progress']),
         filter_func=lambda card: not card.due,
@@ -45,6 +48,7 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
 
     paragraphs += _retrieve_cards_for_paragraph(
         trello_client=app_context.trello_client,
+        sheets_client=app_context.sheets_client,
         title='Не указан тег рубрики в карточке',
         list_ids=(
             app_context.lists_config['in_progress'],
@@ -73,6 +77,7 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
 
     paragraphs += _retrieve_cards_for_paragraph(
         trello_client=app_context.trello_client,
+        sheets_client=app_context.sheets_client,
         title='Пропущен дедлайн',
         list_ids=(app_context.lists_config['in_progress']),
         filter_func=_is_deadline_missed,
@@ -88,6 +93,7 @@ def _is_deadline_missed(card) -> bool:
 
 def _retrieve_cards_for_paragraph(
         trello_client: TrelloClient,
+        sheets_client: GoogleSheetsClient,
         title: str,
         list_ids: List[str],
         filter_func: Callable,
@@ -108,7 +114,12 @@ def _retrieve_cards_for_paragraph(
             parse_failure_counter += 1
             continue
         paragraphs.append(
-            _format_card(card, show_due=show_due, show_members=show_members)
+            _format_card(
+                card,
+                sheets_client,
+                show_due=show_due,
+                show_members=show_members
+            )
         )
 
     if parse_failure_counter > 0:
@@ -118,6 +129,7 @@ def _retrieve_cards_for_paragraph(
 
 def _retrieve_trello_members_stats(
         trello_client: TrelloClient,
+        sheets_client: GoogleSheetsClient,
         title: str,
         filter_func: Callable,
 ) -> List[str]:
@@ -128,11 +140,13 @@ def _retrieve_trello_members_stats(
     members = list(filter(filter_func, trello_client.get_members()))
     paragraphs = [f'<b>{title}: {len(members)}</b>']
     if members:
-        paragraphs.append('👤 ' + ', '.join(map(str, sorted(members))))
+        paragraphs.append('👤 ' + ", ".join(
+            retrieve_usernames(sorted(members), sheets_client)
+        ))
     return paragraphs
 
 
-def _format_card(card, show_due=True, show_members=True) -> str:
+def _format_card(card, sheets_client, show_due=True, show_members=True) -> str:
     # Name and url always present.
     card_text = f'<a href="{card.url}">{card.name}</a>\n'
 
@@ -148,5 +162,5 @@ def _format_card(card, show_due=True, show_members=True) -> str:
     if show_due:
         card_text = f'<b>{card.due.strftime("%d.%m")}</b> — {card_text}'
     if show_members and card.members:
-        card_text += f'👤 {", ".join(list(map(str, card.members)))}'
+        card_text += f'👤 {", ".join(retrieve_usernames(card.members, sheets_client))}'
     return card_text.strip()

@@ -58,7 +58,7 @@ class TrelloClient(Singleton):
             if len(card_dict['idMembers']) > 0:
                 for member in members:
                     if member.id in card_dict['idMembers']:
-                        card.members.append(member.full_name)
+                        card.members.append(member)
                 if len(card.members) == 0:
                     logger.error(f"Member username not found for {card}")
             cards.append(card)
@@ -90,9 +90,7 @@ class TrelloClient(Singleton):
         return members
 
     def update_config(self, new_trello_config):
-        """
-        To be called after config automatic update.
-        """
+        """To be called after config automatic update"""
         self._trello_config = new_trello_config
         self._update_from_config()
 
