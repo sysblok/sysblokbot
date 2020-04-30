@@ -24,6 +24,8 @@ def retrieve_username(
     """
     Where possible and defined, choose @tg_id over trello_id.
     Note: currently requires a request to GSheets API.
+    Returns: "John Smith (@jsmith_tg)" if telegram login found,
+    "John Smith (jsmith_trello)" otherwise.
     """
     global tg_login_cache
     trello_id = trello_member.username
