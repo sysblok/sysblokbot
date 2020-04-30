@@ -27,9 +27,10 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
         # update config['jobs']
         job_scheduler.reschedule_jobs()
         # update config['telegram']
-        job_scheduler.telegram_sender.update_config(
-            job_scheduler.config_manager.get_telegram_config()
-        )
+        tg_config = job_scheduler.config_manager.get_telegram_config()
+        job_scheduler.telegram_sender.update_config(tg_config)
+        # update admins and managers
+        app_context.set_access_rights(tg_config)
         # update config['trello']
         app_context.trello_client.update_config(
             job_scheduler.config_manager.get_trello_config())

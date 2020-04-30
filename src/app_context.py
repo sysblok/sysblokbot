@@ -30,8 +30,13 @@ class AppContext(Singleton):
         # TODO: move that to db
         tg_config = config_manager.get_telegram_config()
         trello_config = config_manager.get_trello_config()
-        self.admin_chat_ids = tg_config['_tmp_']['admin_chat_ids']
-        self.manager_chat_ids = tg_config['_tmp_']['manager_chat_ids']
+
+        self.set_access_rights(tg_config)
+
         self.lists_config = trello_config['_tmp_']['list_aliases']
         self.custom_fields_config = \
             trello_config['_tmp_']['custom_field_type_aliases']
+
+    def set_access_rights(self, tg_config: dict):
+        self.admin_chat_ids = set(tg_config['_tmp_']['admin_chat_ids'])
+        self.manager_chat_ids = set(tg_config['_tmp_']['manager_chat_ids'])
