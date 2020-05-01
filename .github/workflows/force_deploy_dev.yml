@@ -1,10 +1,10 @@
-name: Docker testing at will deploy
+name: Deploy dev testing
 
 on:
   push:
     # Publish `dev` as Docker `testing` image.
     branches:
-      - nonexistent_branch
+      - dev
 
     # Publish `v1.2.3` tags as releases.
     tags:
