@@ -114,8 +114,6 @@ def _retrieve_cards_for_paragraph(
         if not card:
             parse_failure_counter += 1
             continue
-        if TrelloCardColor.BLACK in map(lambda label: label.color, card.labels):
-            continue
         paragraphs.append(
             _format_card(
                 card,
@@ -155,7 +153,11 @@ def _format_card(card, sheets_client, show_due=True, show_members=True) -> str:
 
     # If no labels assigned, don't render them to text.
     if card.labels:
-        card_text = f'{card_text}📘 {", ".join(map(lambda label: label.name, card.labels))} '
+        # We filter BLACK cards as this is an auxiliary label
+        label_names = map(lambda label: label.name,
+            filter(lambda label: label.color != TrelloCardColor.BLACK, card.labels)
+        )
+        card_text = f'{card_text}📘 {", ".join(label_names)} '
 
     # Avoiding message overflow, strip explanations in ()
     list_name = card.list_name + '('
