@@ -1,5 +1,15 @@
 name: Docker testing at will deploy
 
+on:
+  push:
+    # Publish `dev` as Docker `testing` image.
+    branches:
+      - nonexistent_branch
+
+    # Publish `v1.2.3` tags as releases.
+    tags:
+      - v*
+
 env:
   IMAGE_NAME: sysblokbot
 
