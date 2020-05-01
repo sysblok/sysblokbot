@@ -20,11 +20,8 @@ class AppContext(Singleton):
         self.trello_client = TrelloClient(
             config=config_manager.get_trello_config()
         )
-        sheets_config = config_manager.get_sheets_config()
         self.sheets_client = GoogleSheetsClient(
-            api_key_path=sheets_config['api_key_path'],
-            curators_sheet_key=sheets_config['curators_sheet_key'],
-            authors_sheet_key=sheets_config['authors_sheet_key']
+            config=config_manager.get_sheets_config()
         )
 
         # TODO: move that to db

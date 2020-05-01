@@ -3,10 +3,57 @@ import time
 from typing import Callable, List
 
 
+from ..sheets.sheets_client import GoogleSheetsClient
+from ..trello.trello_objects import TrelloMember
+
+
 logger = logging.getLogger(__name__)
 
 # Delay to ensure messages come in right order.
 MESSAGE_DELAY_SEC = 0.1
+
+# TODO: remove after we move to DB
+# Per-session cache
+tg_login_cache = {}
+
+
+def retrieve_username(
+        trello_member: TrelloMember,
+        sheets_client: GoogleSheetsClient
+):
+    """
+    Where possible and defined, choose @tg_id over trello_id.
+    Note: currently requires a request to GSheets API.
+    Returns: "John Smith (@jsmith_tg)" if telegram login found,
+    "John Smith (jsmith_trello)" otherwise.
+    """
+    global tg_login_cache
+    trello_id = trello_member.username
+    if trello_id in tg_login_cache:
+        tg_id = tg_login_cache[trello_id]
+    else:
+        tg_id = sheets_client.find_telegram_id_by_trello_id(
+            '@' + trello_id
+        ).strip()
+        if tg_id:
+            tg_login_cache[trello_id] = tg_id
+
+    if tg_id and tg_id.startswith('@'):  # otherwise can be phone number
+        return f'{trello_member.full_name} ({tg_id})'
+    return f'{trello_member.full_name} ({trello_id})'
+
+
+def retrieve_usernames(
+        trello_members: List[TrelloMember],
+        sheets_client: GoogleSheetsClient
+) -> List[str]:
+    """
+    Process an iterable of trello members to list of formatted strings.
+    """
+    return [
+        retrieve_username(member, sheets_client)
+        for member in trello_members
+    ]
 
 
 def pretty_send(

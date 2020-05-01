@@ -12,7 +12,7 @@ from ..trello.trello_client import TrelloClient
 logger = logging.getLogger(__name__)
 
 
-def execute(app_context: AppContext, send: Callable[[str], None]):
+def execute(app_context: AppContext, send: Callable[[str], None] = None):
     """A very special job checking config for recent changes"""
     logger.info('Starting config_updater_job...')
     # get the scheduler instance
@@ -34,7 +34,9 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
         # update config['trello']
         app_context.trello_client.update_config(
             job_scheduler.config_manager.get_trello_config())
-        # TODO: update GS client too
+        # update config['sheets']
+        app_context.sheets_client.update_config(
+            job_scheduler.config_manager.get_sheets_config())
     else:
         logger.info('No config changes detected')
     logger.info('Finished config_updater_job')

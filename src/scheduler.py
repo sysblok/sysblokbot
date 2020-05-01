@@ -34,14 +34,15 @@ class JobScheduler(Singleton):
         # use config manager to receive current config states
         self.config_manager = ConfigManager()
         # re-read config on schedule
-        schedule.every(CONFIG_RELOAD_MINUTES).minutes.do(
-            self._get_job_runnable(jobs.config_updater_job)
-        ).tag(TECHNICAL_JOB_TAG)
 
     def run(self):
         logger.info('Starting JobScheduler...')
         self.app_context = AppContext()
         self.telegram_sender = TelegramSender()
+        schedule.every(CONFIG_RELOAD_MINUTES).minutes.do(
+            self._get_job_runnable(jobs.config_updater_job),
+            self.app_context
+        ).tag(TECHNICAL_JOB_TAG)
 
         cease_continuous_run = threading.Event()
 

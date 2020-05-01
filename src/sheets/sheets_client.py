@@ -8,28 +8,33 @@ from google.oauth2.service_account import Credentials
 
 logger = logging.getLogger(__name__)
 
-UNDEFINED_STATES = ['', '-', '#N/A']
-scope = [
+UNDEFINED_STATES = ('', '-', '#N/A')
+scope = (
     "https://spreadsheets.google.com/feeds",
     "https://www.googleapis.com/auth/drive",
-]
+)
 
 
 class GoogleSheetsClient(Singleton):
-    def __init__(
-            self,
-            api_key_path: str = '',
-            authors_sheet_key: str = '',
-            curators_sheet_key: str = ''
-    ):
+    def __init__(self, config: dict):
         if self.was_initialized():
             return
 
-        credentials = Credentials.from_service_account_file(
-            api_key_path, scopes=scope)
-        self.client = gspread.authorize(credentials)
-        self.authors_sheet_key = authors_sheet_key
-        self.curators_sheet_key = curators_sheet_key
+        self._sheets_config = config
+        self._update_from_config()
+
+    def update_config(self, new_sheets_config: dict):
+        """To be called after config automatic update"""
+        self._sheets_config = new_sheets_config
+        self._update_from_config()
+
+    def _update_from_config(self):
+        """Update attributes according to current self._sheets_config"""
+        self._credentials = Credentials.from_service_account_file(
+            self._sheets_config['api_key_path'], scopes=scope)
+        self.client = gspread.authorize(self._credentials)
+        self.authors_sheet_key = self._sheets_config['authors_sheet_key']
+        self.curators_sheet_key = self._sheets_config['curators_sheet_key']
 
     def find_author_curators(
             self,
