@@ -29,12 +29,16 @@ def retrieve_username(
     """
     global tg_login_cache
     trello_id = trello_member.username
+    tg_id = None
     if trello_id in tg_login_cache:
         tg_id = tg_login_cache[trello_id]
     else:
-        tg_id = sheets_client.find_telegram_id_by_trello_id(
-            '@' + trello_id
-        ).strip()
+        try:
+            tg_id = sheets_client.find_telegram_id_by_trello_id(
+                '@' + trello_id
+            ).strip()
+        except Exception as e:
+            logger.error(f'Failed to retrieve tg id for "{trello_id}": {e}')
         if tg_id:
             tg_login_cache[trello_id] = tg_id
 

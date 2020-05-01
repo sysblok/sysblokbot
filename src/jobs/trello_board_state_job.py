@@ -3,6 +3,7 @@ import logging
 from typing import Callable, List
 
 from ..app_context import AppContext
+from ..consts import TrelloCardColor
 from ..trello.trello_client import TrelloClient
 from ..sheets.sheets_client import GoogleSheetsClient
 from .utils import pretty_send, retrieve_usernames
@@ -113,6 +114,8 @@ def _retrieve_cards_for_paragraph(
         if not card:
             parse_failure_counter += 1
             continue
+        if TrelloCardColor.BLACK in map(lambda label: label.color, card.labels):
+            continue
         paragraphs.append(
             _format_card(
                 card,
@@ -152,7 +155,7 @@ def _format_card(card, sheets_client, show_due=True, show_members=True) -> str:
 
     # If no labels assigned, don't render them to text.
     if card.labels:
-        card_text = f'{card_text}📘 {", ".join(card.labels)} '
+        card_text = f'{card_text}📘 {", ".join(map(lambda label: label.name, card.labels))} '
 
     # Avoiding message overflow, strip explanations in ()
     list_name = card.list_name + '('

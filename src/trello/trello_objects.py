@@ -2,6 +2,8 @@ import logging
 
 from datetime import datetime
 
+from ..consts import TrelloCardColor
+
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +84,43 @@ class TrelloList:
         }
 
 
+class TrelloCardLabel:
+    def __init__(self):
+        self.id = None
+        self.name = None
+        self.color = None
+
+        self._ok = True
+
+    def __bool__(self):
+        return self._ok
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return f'CardLabel<name={self.name}, color={self.color}>'
+
+    @classmethod
+    def from_dict(cls, data):
+        label = cls()
+        try:
+            label.id = data['id']
+            label.name = data['name']
+            label.color = TrelloCardColor(data['color'])
+        except Exception:
+            label._ok = False
+            logger.error(f"Bad card label json {data}")
+        return label
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'color': self.color.value,
+        }
+
+
 class TrelloCard:
     def __init__(self):
         self.id = None
@@ -111,7 +150,7 @@ members={self.members}>'
         try:
             card.id = data['id']
             card.name = data['name']
-            card.labels = [label['name'] for label in data['labels']]
+            card.labels = [TrelloCardLabel.from_dict(label) for label in data['labels']]
             card.url = data['shortUrl']
             card.due = (datetime.strptime(data['due'], TIME_FORMAT)
                         if data['due'] else None)
@@ -124,7 +163,7 @@ members={self.members}>'
         return {
             'id': self.id,
             'name': self.name,
-            'labels': self.labels,
+            'labels': [label.to_dict() for label in self.labels],
             'url': self.url,
             'due': datetime.strftime(self.due, TIME_FORMAT) if self.due else None,
             'listName': self.list_name,
