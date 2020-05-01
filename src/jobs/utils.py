@@ -3,6 +3,7 @@ import time
 from typing import Callable, List
 
 
+from ..app_context import AppContext
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..trello.trello_objects import TrelloMember
 
@@ -106,3 +107,16 @@ def _paragraphs_to_messages(
     # first message is empty by design.
     assert messages[0] == ''
     return messages[1:]
+
+
+def job_log_start_stop(func):
+    """
+    Decorator that logs start and end events of each job.
+    """
+    def wrapper(app_context: AppContext, send: Callable[[str], None]):
+        # it works!
+        module = func.__code__.co_filename.split('/')[-1]
+        logger.info(f'Starting {module}...')
+        func(app_context, send)
+        logger.info(f'Finished {module}')
+    return wrapper

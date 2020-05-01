@@ -6,16 +6,14 @@ from ..app_context import AppContext
 from ..consts import TrelloCardColor
 from ..trello.trello_client import TrelloClient
 from ..sheets.sheets_client import GoogleSheetsClient
-from .utils import pretty_send, retrieve_usernames
+from .utils import pretty_send, retrieve_usernames, job_log_start_stop
 
 
 logger = logging.getLogger(__name__)
 
 
+@job_log_start_stop
 def execute(app_context: AppContext, send: Callable[[str], None]):
-    # TODO: make it a decorator
-    logger.info('Starting trello_board_state_job...')
-
     paragraphs = []  # list of paragraph strings
     paragraphs.append('Всем привет! Еженедельная сводка \
 о состоянии Trello-доски.\n#доскаживи')
@@ -85,7 +83,6 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
     )
 
     pretty_send(paragraphs, send)
-    logger.info('Finished trello_board_state_job')
 
 
 def _is_deadline_missed(card) -> bool:

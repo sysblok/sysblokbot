@@ -5,16 +5,14 @@ from typing import Callable, List
 
 from ..app_context import AppContext
 from ..trello.trello_client import TrelloClient
-from .utils import pretty_send
+from .utils import pretty_send, job_log_start_stop
 
 
 logger = logging.getLogger(__name__)
 
 
+@job_log_start_stop
 def execute(app_context: AppContext, send: Callable[[str], None]):
-    # TODO: make it a decorator
-    logger.info('Starting publication_plans_job...')
-
     paragraphs = []  # list of paragraph strings
     errors = {}
     paragraphs.append('Всем привет!')
@@ -49,7 +47,6 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
         paragraphs = _format_errors(errors)
 
     pretty_send(paragraphs, send)
-    logger.info('Finished publication_plans_job')
 
 
 def _retrieve_cards_for_paragraph(
