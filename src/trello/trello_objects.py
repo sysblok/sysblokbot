@@ -128,7 +128,7 @@ members={self.members}>'
             'url': self.url,
             'due': datetime.strftime(self.due, TIME_FORMAT) if self.due else None,
             'listName': self.list_name,
-            'members': self.members,
+            'members': [member.to_dict() for member in self.members],
         }
 
 
