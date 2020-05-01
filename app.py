@@ -11,7 +11,7 @@ from src.tg.sender import TelegramSender
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG
+    level=logging.INFO
 )
 
 

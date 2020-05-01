@@ -1,5 +1,7 @@
 """App-level constants"""
 import os
+from enum import Enum
+
 
 ROOT_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 CONFIG_PATH = os.path.join(ROOT_DIR, 'config.json')
@@ -17,3 +19,16 @@ JOBS_CONFIG = 'jobs'
 EVERY = 'every'
 AT = 'at'
 SEND_TO = 'send_to'
+
+
+class TrelloCardColor(Enum):
+    GREEN = 'green'
+    YELLOW = 'yellow'
+    RED = 'red'
+    ORANGE = 'orange'
+    PURPLE = 'purple'
+    BLUE = 'blue'
+    SKY = 'sky'
+    LIME = 'lime'
+    PINK = 'pink'
+    BLACK = 'black'

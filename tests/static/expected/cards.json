@@ -4,7 +4,13 @@
       "name": "Open Memory Map",
       "due": "2020-06-18T09:00:00.000000Z",
       "members": [],
-      "labels": ["История"],
+      "labels": [
+        {
+          "id": "5e91d48a9e9d947b95fb0fd7",
+          "name": "История",
+          "color": "yellow"
+        }
+      ],
       "url": "https://trello.com/c/card_1",
       "listName": "Готовая тема"
     },
