@@ -26,6 +26,7 @@ class SysBlokBot:
         self.dp = self.updater.dispatcher
         self.app_context = AppContext(config_manager)
         self.telegram_sender = sender.TelegramSender(self.dp.bot, tg_config)
+        logger.info('SysBlokBot successfully initialized')
 
     def init_handlers(self):
         # all command handlers defined here

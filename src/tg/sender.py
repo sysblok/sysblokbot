@@ -22,6 +22,7 @@ class TelegramSender(Singleton):
         self.bot = bot
         self._tg_config = tg_config
         self._update_from_config()
+        logger.info('TelegramSender successfully initialized')
 
     def create_reply_send(
             self, update: telegram.Update

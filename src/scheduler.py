@@ -61,6 +61,7 @@ class JobScheduler(Singleton):
         continuous_thread = ScheduleThread()
         continuous_thread.start()
         self.stop_run_event = cease_continuous_run
+        logger.info('JobScheduler successfully initialized')
 
     def init_jobs(self):
         """
