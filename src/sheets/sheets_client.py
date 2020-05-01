@@ -22,6 +22,7 @@ class GoogleSheetsClient(Singleton):
 
         self._sheets_config = config
         self._update_from_config()
+        logger.info('GoogleSheetsClient successfully initialized')
 
     def update_config(self, new_sheets_config: dict):
         """To be called after config automatic update"""

@@ -18,6 +18,7 @@ class TrelloClient(Singleton):
 
         self._trello_config = config
         self._update_from_config()
+        logger.info('TrelloClient successfully initialized')
 
     def get_board(self):
         _, data = self._make_request(f'boards/{self.board_id}')
