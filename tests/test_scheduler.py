@@ -55,4 +55,4 @@ def test_scheduler(monkeypatch, jobs_config, num_jobs):
     job_scheduler.telegram_sender = FakeTelegramSender()
     job_scheduler.init_jobs()
 
-    assert len(scheduler.schedule.jobs) == num_jobs + 1
+    assert len(scheduler.schedule.jobs) == num_jobs

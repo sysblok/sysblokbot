@@ -12,7 +12,13 @@
       "id": "card_2",
       "due": null,
       "name": "тестовая карточка",
-      "members": ["Paulin Matavina"],
+      "members": [
+        {
+          "id": "member_1",
+          "username": "paulinmatavina",
+          "fullName": "Paulin Matavina"
+        }
+      ],
       "listName": "Редактору",
       "url": "https://trello.com/c/card_2",
       "labels": []
