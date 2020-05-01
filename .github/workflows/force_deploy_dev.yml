@@ -1,4 +1,4 @@
-name: Deploy dev testing
+name: Manually deploy testing
 
 on:
   push:
@@ -47,4 +47,4 @@ jobs:
               -v /home/${{ env.DO_USERNAME }}/config_override_testing.json:/app/config_override.json \
               -v /home/${{ env.DO_USERNAME }}/config_gs_testing.json:/app/config_gs.json \
               docker.pkg.github.com/sysblok/sysblokbot/${{ env.IMAGE_NAME }}:testing
-            docker fail
+            please fail now
