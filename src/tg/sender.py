@@ -62,6 +62,7 @@ class TelegramSender(Singleton):
                 text=message_text,
                 chat_id=chat_id,
                 disable_notification=self.is_silent,
+                disable_web_page_preview=self.disable_web_page_preview,
                 parse_mode=telegram.ParseMode.HTML
             )
         except telegram.TelegramError as e:
@@ -83,3 +84,4 @@ class TelegramSender(Singleton):
             'manager_chat_ids'
         )
         self.is_silent = self._tg_config.get('is_silent', True)
+        self.disable_web_page_preview = self._tg_config.get('disable_web_page_preview', True)

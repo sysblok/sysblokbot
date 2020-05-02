@@ -51,7 +51,7 @@ class TrelloClient(Singleton):
             # TODO: move this to app state
             for trello_list in lists:
                 if trello_list.id == card_dict['idList']:
-                    card.list_name = trello_list.name
+                    card.lst = trello_list
                     break
             else:
                 logger.error(f"List name not found for {card}")

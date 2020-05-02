@@ -18,7 +18,7 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
     paragraphs.append('Всем привет!')
 
     paragraphs += _retrieve_cards_for_paragraph(
-        trello_client=app_context.trello_client,
+        app_context=app_context,
         title='Публикуем на неделе',
         list_ids=(
             app_context.lists_config['proofreading'],
@@ -30,7 +30,7 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
     )
 
     paragraphs += _retrieve_cards_for_paragraph(
-        trello_client=app_context.trello_client,
+        app_context=app_context,
         title='На редактуре',
         list_ids=(
             app_context.lists_config['edited_next_week']
@@ -50,7 +50,7 @@ def execute(app_context: AppContext, send: Callable[[str], None]):
 
 
 def _retrieve_cards_for_paragraph(
-        trello_client: TrelloClient,
+        app_context: AppContext,
         title: str,
         list_ids: List[str],
         custom_fields_config: dict,
@@ -62,7 +62,7 @@ def _retrieve_cards_for_paragraph(
     Returns a list of paragraphs that should always go in a single message.
     '''
     logger.info(f'Started counting: "{title}"')
-    cards = trello_client.get_cards(list_ids)
+    cards = app_context.trello_client.get_cards(list_ids)
     if show_due:
         cards.sort(key=lambda card: card.due)
     parse_failure_counter = 0
@@ -74,7 +74,7 @@ def _retrieve_cards_for_paragraph(
             parse_failure_counter += 1
             continue
 
-        card_fields_dict = trello_client.get_card_custom_fields_dict(card.id)
+        card_fields_dict = app_context.trello_client.get_card_custom_fields_dict(card.id)
         authors = \
             card_fields_dict[custom_fields_config['author']].value.split(',') \
             if custom_fields_config['author'] in card_fields_dict else []
@@ -87,30 +87,32 @@ def _retrieve_cards_for_paragraph(
         google_doc = card_fields_dict.get(custom_fields_config['google_doc'], None)
         title = card_fields_dict.get(custom_fields_config['title'], None)
 
+        label_names = [label.name for label in card.labels]
+
         this_card_bad_fields = []
-        if title is None:
+        if title is None and card.lst.id != app_context.lists_config['edited_next_week']:
             this_card_bad_fields.append('название поста')
         if google_doc is None:
             this_card_bad_fields.append('google doc')
         if len(authors) == 0:
             this_card_bad_fields.append('автор')
-        if len(editors) == 0:
+        if len(editors) == 0:  # unsure if need this -- and 'Архив' not in label_names:
             this_card_bad_fields.append('редактор')
-        if len(illustrators) == 0 and need_illustrators:
+        if len(illustrators) == 0 and need_illustrators and 'Архив' not in label_names:
             this_card_bad_fields.append('иллюстратор')
         if card.due is None and show_due:
             this_card_bad_fields.append('дата публикации')
 
         if len(this_card_bad_fields) > 0:
             logger.error(
-                f'Trello card is unsuitable for publication: {card.url}: {this_card_bad_fields}'
+                f'Trello card is unsuitable for publication: {card.url} {this_card_bad_fields}'
             )
             errors[card] = this_card_bad_fields
             continue
 
         paragraphs.append(
             _format_card(
-                card, google_doc, authors, editors, illustrators, show_due=show_due
+                card, title, google_doc, authors, editors, illustrators, show_due=show_due
             )
         )
 
@@ -120,16 +122,17 @@ def _retrieve_cards_for_paragraph(
 
 
 def _format_card(
-        card, google_doc, authors, editors, illustrators, show_due=True
+        card, title, google_doc, authors, editors, illustrators, show_due=True
 ) -> str:
     # Name and google_doc url always present.
-    card_text = f'<a href="{google_doc}">{card.name}</a>\n'
+    card_text = f'<a href="{google_doc}">{title or card.name}</a>\n'
 
     card_text += f'Автор{"ы" if len(authors) > 1 else ""}: \
 {", ".join(authors)}. '
     card_text += f'Редактор{"ы" if len(editors) > 1 else ""}: \
 {", ".join(editors)}. '
-    card_text += f'Иллюстратор{"ы" if len(illustrators) > 1 else ""}: \
+    if len(illustrators) > 0:
+        card_text += f'Иллюстратор{"ы" if len(illustrators) > 1 else ""}: \
 {", ".join(illustrators)}. '
 
     if show_due:

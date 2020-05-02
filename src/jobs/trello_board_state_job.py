@@ -155,7 +155,7 @@ def _format_card(card, sheets_client, show_due=True, show_members=True) -> str:
         card_text = f'{card_text}📘 {", ".join(label_names)} '
 
     # Avoiding message overflow, strip explanations in ()
-    list_name = card.list_name + '('
+    list_name = card.lst.name + '('
     list_name = list_name[:list_name.find('(')].strip()
     card_text += f'📍 {list_name} '
 
