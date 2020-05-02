@@ -135,20 +135,3 @@ class GoogleSheetsClient(Singleton):
         if value in UNDEFINED_STATES:
             return None
         return value
-
-
-if __name__ == "__main__":
-    gs = GoogleSheetsClient(
-        'sysblokbot.json',
-        '1-oU86gg1dYI4qfYlh-DBK5_X61dENa0Iw4IRBQ_aoWk',
-        '1Ydmd-qTrO4_6lsu-onuIal91MnQU8Qx4Z-Td21MzcME'
-    )
-
-    pprint(gs.fetch_authors())
-    pprint(gs.fetch_curators())
-
-    pprint(gs.find_telegram_id_by_trello_id('@irinoise'))
-    pprint(gs.find_trello_id_by_telegram_id('@irinoise'))
-
-    pprint(gs.find_curator_authors('telegram', '@irinoise'))
-    pprint(gs.find_author_curators('telegram', '@alexeyqu'))

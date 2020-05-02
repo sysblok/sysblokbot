@@ -6,7 +6,7 @@ from ..app_context import AppContext
 from ..consts import TrelloCardColor
 from ..trello.trello_client import TrelloClient
 from ..sheets.sheets_client import GoogleSheetsClient
-from .utils import pretty_send, retrieve_usernames, job_log_start_stop
+from .utils import pretty_send, retrieve_usernames, retrieve_curator_names, job_log_start_stop
 
 
 logger = logging.getLogger(__name__)
@@ -163,4 +163,15 @@ def _format_card(card, sheets_client, show_due=True, show_members=True) -> str:
         card_text = f'<b>{card.due.strftime("%d.%m")}</b> — {card_text}'
     if show_members and card.members:
         card_text += f'👤 {", ".join(retrieve_usernames(card.members, sheets_client))}'
+        # add curators to the list
+        curators = set()
+        for member in card.members:
+            curator_names = retrieve_curator_names(member, sheets_client)
+            if not curator_names:
+                continue
+            for curator_name in curator_names:
+                if curator_name and curator_name not in curators:
+                    curators.add(curator_name)
+                    logger.info(member.username + curator_name)
+                    card_text += f', {curator_name}'
     return card_text.strip()
