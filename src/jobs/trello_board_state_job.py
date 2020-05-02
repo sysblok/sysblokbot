@@ -153,7 +153,10 @@ class TrelloBoardStateJob(BaseJob):
         # If no labels assigned, don't render them to text.
         if card.labels:
             # We filter BLACK cards as this is an auxiliary label
-            label_names = [label.name for label in card.labels if label.color != TrelloCardColor.BLACK]
+            label_names = [
+                label.name for label in card.labels
+                if label.color != TrelloCardColor.BLACK
+            ]
             card_text = f'{card_text}📘 {", ".join(label_names)} '
 
         # Avoiding message overflow, strip explanations in ()
