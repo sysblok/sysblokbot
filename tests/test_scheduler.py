@@ -11,21 +11,10 @@ from src import scheduler
 from src.bot import SysBlokBot
 from src.config_manager import ConfigManager
 from fakes import fake_job
+from fakes.fake_sender import FakeTelegramSender
 
 
 logger = logging.getLogger(__name__)
-
-
-# TODO: move to tests/fakes
-class FakeTelegramSender:
-    def send_to_managers(self, *args, **kwargs):
-        pass
-
-    def create_chat_ids_send(self, *args, **kwargs):
-        pass
-
-    def create_reply_send(self, *args, **kwargs):
-        pass
 
 
 @pytest.mark.parametrize(
