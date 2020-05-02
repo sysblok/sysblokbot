@@ -96,7 +96,7 @@ def _retrieve_cards_for_paragraph(
             this_card_bad_fields.append('google doc')
         if len(authors) == 0:
             this_card_bad_fields.append('автор')
-        if len(editors) == 0 and 'Архив' not in label_names:
+        if len(editors) == 0: # unsure if need this -- and 'Архив' not in label_names:
             this_card_bad_fields.append('редактор')
         if len(illustrators) == 0 and need_illustrators and 'Архив' not in label_names:
             this_card_bad_fields.append('иллюстратор')
@@ -112,7 +112,7 @@ def _retrieve_cards_for_paragraph(
 
         paragraphs.append(
             _format_card(
-                card, google_doc, authors, editors, illustrators, show_due=show_due
+                card, title, google_doc, authors, editors, illustrators, show_due=show_due
             )
         )
 
@@ -122,16 +122,17 @@ def _retrieve_cards_for_paragraph(
 
 
 def _format_card(
-        card, google_doc, authors, editors, illustrators, show_due=True
+        card, title, google_doc, authors, editors, illustrators, show_due=True
 ) -> str:
     # Name and google_doc url always present.
-    card_text = f'<a href="{google_doc}">{card.name}</a>\n'
+    card_text = f'<a href="{google_doc}">{title or card.name}</a>\n'
 
     card_text += f'Автор{"ы" if len(authors) > 1 else ""}: \
 {", ".join(authors)}. '
     card_text += f'Редактор{"ы" if len(editors) > 1 else ""}: \
 {", ".join(editors)}. '
-    card_text += f'Иллюстратор{"ы" if len(illustrators) > 1 else ""}: \
+    if len(illustrators) > 0:
+        card_text += f'Иллюстратор{"ы" if len(illustrators) > 1 else ""}: \
 {", ".join(illustrators)}. '
 
     if show_due:
