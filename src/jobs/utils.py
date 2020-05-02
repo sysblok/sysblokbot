@@ -168,7 +168,9 @@ def get_job_runnable(job_id: str):
         return
 
     for name, obj in inspect.getmembers(job_module):
-        if inspect.isclass(obj) and issubclass(obj, jobs.base_job.BaseJob) and obj is not jobs.base_job.BaseJob:
+        if (inspect.isclass(obj) and
+                issubclass(obj, jobs.base_job.BaseJob) and
+                obj is not jobs.base_job.BaseJob):
             execute_job = obj.execute
             execute_job.__func__.__name__ = name
             return execute_job
