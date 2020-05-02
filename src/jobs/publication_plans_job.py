@@ -90,7 +90,7 @@ def _retrieve_cards_for_paragraph(
         label_names = [label.name for label in card.labels]
 
         this_card_bad_fields = []
-        if title is None and card.lst.id != app_context.lists_config['proofreading']:
+        if title is None and card.lst.id != app_context.lists_config['edited_next_week']:
             this_card_bad_fields.append('название поста')
         if google_doc is None:
             this_card_bad_fields.append('google doc')
