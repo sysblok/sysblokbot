@@ -162,16 +162,23 @@ def _format_card(card, sheets_client, show_due=True, show_members=True) -> str:
     if show_due:
         card_text = f'<b>{card.due.strftime("%d.%m")}</b> — {card_text}'
     if show_members and card.members:
-        card_text += f'👤 {", ".join(retrieve_usernames(card.members, sheets_client))}'
+        members_text = f'👤 {", ".join(retrieve_usernames(card.members, sheets_client))}'
         # add curators to the list
+        # TODO: make it more readable!
         curators = set()
         for member in card.members:
             curator_names = retrieve_curator_names(member, sheets_client)
             if not curator_names:
                 continue
-            for curator_name in curator_names:
-                if curator_name and curator_name not in curators:
-                    curators.add(curator_name)
-                    logger.info(member.username + curator_name)
-                    card_text += f', {curator_name}'
+            for curator_text, telegram in curator_names:
+                # curator should not duplicate author or other curator
+                if (
+                    curator_text and curator_text not in curators and
+                        telegram and telegram not in members_text
+                ):
+                    curators.add(curator_text)
+        card_text += members_text
+        if curators:
+            curators_text = ' <b>Кураторы:</b> ' + ', '.join(curators)
+            card_text += curators_text
     return card_text.strip()

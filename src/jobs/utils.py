@@ -90,7 +90,10 @@ def retrieve_curator_names(
     return [_make_curator_string(curator) for curator in curators]
 
 
-def _make_curator_string(curator: dict) -> str:
+def _make_curator_string(curator: dict):
+    """
+    Returns: (pretty_curator_string, tg_login_or_None)
+    """
     # TODO: make this SheetsCurator class
     name = curator.get('name')
     telegram = curator.get('telegram')
@@ -98,9 +101,9 @@ def _make_curator_string(curator: dict) -> str:
         name = name.strip()
         if telegram:
             telegram = telegram.strip()
-            return f'{name} ({telegram})'
-        return name
-    return telegram
+            return f'{name} ({telegram})', telegram
+        return name, None
+    return telegram, telegram
 
 
 def pretty_send(
