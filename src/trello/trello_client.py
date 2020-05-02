@@ -1,158 +1,34 @@
-import json
 import logging
 import requests
 
-from datetime import datetime
+
+from . import trello_objects as objects
+from ..utils.singleton import Singleton
 
 
 logger = logging.getLogger(__name__)
 
 BASE_URL = 'https://api.trello.com/1/'
-TIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 
-class TrelloBoard:
-    def __init__(self):
-        self.id = None
-        self.name = None
-        self.url = None
+class TrelloClient(Singleton):
+    def __init__(self, config=None):
+        if self.was_initialized():
+            return
 
-        self._ok = True
-
-    def __bool__(self):
-        return self._ok
-
-    def __str__(self):
-        return self.name
-
-    def __repr__(self):
-        return f'Board<id={self.id}, name={self.name}, url={self.url}>'
-
-    @classmethod
-    def from_json(cls, data):
-        board = cls()
-        try:
-            board.id = data['id']
-            board.name = data['name']
-            board.url = data['shortUrl']
-        except Exception:
-            board._ok = False
-            logger.error(f"Bad board json {data}")
-        return board
-
-
-class TrelloList:
-    def __init__(self):
-        self.id = None
-        self.name = None
-
-        self._ok = True
-
-    def __bool__(self):
-        return self._ok
-
-    def __str__(self):
-        return self.name
-
-    def __repr__(self):
-        return f'List<id={self.id}, name={self.name}>'
-
-    @classmethod
-    def from_json(cls, data):
-        trello_list = cls()
-        try:
-            trello_list.id = data['id']
-            trello_list.name = data['name']
-        except Exception:
-            trello_list._ok = False
-            logger.error(f"Bad list json {data}")
-        return trello_list
-
-
-class TrelloCard:
-    def __init__(self):
-        self.id = None
-        self.name = None
-        self.labels = []
-        self.url = None
-        self.due = None
-        # TODO: move this to app state
-        self.list_name = None
-        self.members = []
-
-        self._ok = True
-
-    def __bool__(self):
-        return self._ok
-
-    def __str__(self):
-        return self.url
-
-    def __repr__(self):
-        return f'Card<id={self.id}, name={self.name}, url={self.url} \
-members={self.members}>'
-
-    @classmethod
-    def from_json(cls, data):
-        card = cls()
-        try:
-            card.id = data['id']
-            card.name = data['name']
-            card.labels = [label['name'] for label in data['labels']]
-            card.url = data['shortUrl']
-            card.due = (datetime.strptime(data['due'], TIME_FORMAT)
-                        if data['due'] else None)
-        except Exception:
-            card._ok = False
-            logger.error(f"Bad card json {data}")
-        return card
-
-
-class TrelloMember:
-    def __init__(self):
-        self.id = None
-        self.username = None
-        self.full_name = None
-
-    def __str__(self):
-        return self.username
-
-    def __repr__(self):
-        return f'Member<id={self.id}, name={self.username}, \
-            full name={self.full_name}>'
-
-    def __eq__(self, other):
-        return (isinstance(other, TrelloMember) and
-                self.username == other.username)
-
-    def __lt__(self, other):
-        return (isinstance(other, TrelloMember) and
-                self.username < other.username)
-
-    def __hash__(self):
-        return hash(self.username)
-
-    @classmethod
-    def from_json(cls, data):
-        member = cls()
-        member.id = data['id']
-        member.username = data['username']
-        member.full_name = data['fullName']
-        return member
-
-
-class TrelloClient:
-    def __init__(self, config):
         self._trello_config = config
         self._update_from_config()
+        logger.info('TrelloClient successfully initialized')
 
     def get_board(self):
         _, data = self._make_request(f'boards/{self.board_id}')
-        return TrelloBoard.from_json(data)
+        return objects.TrelloBoard.from_dict(data)
 
     def get_lists(self):
         _, data = self._make_request(f'boards/{self.board_id}/lists')
-        lists = [TrelloList.from_json(trello_list) for trello_list in data]
+        lists = [
+            objects.TrelloList.from_dict(trello_list) for trello_list in data
+        ]
         logger.debug(f'get_lists: {lists}')
         return lists
 
@@ -171,11 +47,11 @@ class TrelloClient:
         members = self.get_members()
         lists = self.get_lists()
         for card_dict in data:
-            card = TrelloCard.from_json(card_dict)
+            card = objects.TrelloCard.from_dict(card_dict)
             # TODO: move this to app state
             for trello_list in lists:
                 if trello_list.id == card_dict['idList']:
-                    card.list_name = trello_list.name
+                    card.lst = trello_list
                     break
             else:
                 logger.error(f"List name not found for {card}")
@@ -183,23 +59,39 @@ class TrelloClient:
             if len(card_dict['idMembers']) > 0:
                 for member in members:
                     if member.id in card_dict['idMembers']:
-                        card.members.append(member.full_name)
+                        card.members.append(member)
                 if len(card.members) == 0:
                     logger.error(f"Member username not found for {card}")
             cards.append(card)
         logger.debug(f'get_cards: {cards}')
         return cards
 
+    def get_board_custom_field_types(self):
+        _, data = self._make_request(f'boards/{self.board_id}/customFields')
+        custom_field_types = [
+            objects.TrelloCustomFieldType.from_dict(custom_field_type)
+            for custom_field_type in data
+        ]
+        logger.debug(f'get_board_custom_field_types: {custom_field_types}')
+        return custom_field_types
+
+    def get_card_custom_fields_dict(self, card_id):
+        _, data = self._make_request(f'cards/{card_id}/customFieldItems')
+        custom_fields_dict = {}
+        for custom_field in data:
+            custom_field = objects.TrelloCustomField.from_dict(custom_field)
+            custom_fields_dict[custom_field.type_id] = custom_field
+        logger.debug(f'get_card_custom_fields_dict: {custom_fields_dict}')
+        return custom_fields_dict
+
     def get_members(self):
         _, data = self._make_request(f'boards/{self.board_id}/members')
-        members = [TrelloMember.from_json(member) for member in data]
+        members = [objects.TrelloMember.from_dict(member) for member in data]
         logger.debug(f'get_members: {members}')
         return members
 
     def update_config(self, new_trello_config):
-        """
-        To be called after config automatic update.
-        """
+        """To be called after config automatic update"""
         self._trello_config = new_trello_config
         self._update_from_config()
 

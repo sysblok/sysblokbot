@@ -3,31 +3,36 @@
 import logging
 
 from src.bot import SysBlokBot
-from src.consts import CONFIG_PATH, CONFIG_OVERRIDE_PATH
-from src.scheduler import JobScheduler
 from src.config_manager import ConfigManager
+from src.consts import CONFIG_PATH, CONFIG_OVERRIDE_PATH, TELEGRAM_CONFIG
+from src.scheduler import JobScheduler
+from src.tg.sender import TelegramSender
 
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG
+    level=logging.INFO
 )
 
 
 def get_bot():
-    config = ConfigManager(
-        CONFIG_PATH, CONFIG_OVERRIDE_PATH
-    ).load_config_with_override()
+    """
+    All singletone classes must be initialized within this method before bot
+    actually launched. This includes clients, config manager and scheduler.
+    """
+    config_manager = ConfigManager(CONFIG_PATH, CONFIG_OVERRIDE_PATH)
+    config = config_manager.load_config_with_override()
     if not config:
         raise ValueError(f"Could not load config, can't go on")
 
     scheduler = JobScheduler(config)
 
-    bot = SysBlokBot(config, signal_handler=lambda signum,
+    bot = SysBlokBot(config_manager, signal_handler=lambda signum,
                      frame: scheduler.stop_running())
     bot.init_handlers()
 
-    scheduler.run(bot)
+    # Scheduler must be run after clients initialized
+    scheduler.run()
     scheduler.init_jobs()
 
     return bot
