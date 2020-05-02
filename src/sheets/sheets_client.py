@@ -2,30 +2,40 @@ import logging
 from pprint import pprint
 from typing import List, Dict, Optional
 
+from ..utils.singleton import Singleton
 import gspread
 from google.oauth2.service_account import Credentials
 
 logger = logging.getLogger(__name__)
 
-UNDEFINED_STATES = ['', '-', '#N/A']
-scope = [
+UNDEFINED_STATES = ('', '-', '#N/A')
+scope = (
     "https://spreadsheets.google.com/feeds",
     "https://www.googleapis.com/auth/drive",
-]
+)
 
 
-class GoogleSheetsClient:
-    def __init__(
-            self,
-            api_key_path: str,
-            authors_sheet_key: str,
-            curators_sheet_key: str
-    ):
-        credentials = Credentials.from_service_account_file(
-            api_key_path, scopes=scope)
-        self.client = gspread.authorize(credentials)
-        self.authors_sheet_key = authors_sheet_key
-        self.curators_sheet_key = curators_sheet_key
+class GoogleSheetsClient(Singleton):
+    def __init__(self, config: dict):
+        if self.was_initialized():
+            return
+
+        self._sheets_config = config
+        self._update_from_config()
+        logger.info('GoogleSheetsClient successfully initialized')
+
+    def update_config(self, new_sheets_config: dict):
+        """To be called after config automatic update"""
+        self._sheets_config = new_sheets_config
+        self._update_from_config()
+
+    def _update_from_config(self):
+        """Update attributes according to current self._sheets_config"""
+        self._credentials = Credentials.from_service_account_file(
+            self._sheets_config['api_key_path'], scopes=scope)
+        self.client = gspread.authorize(self._credentials)
+        self.authors_sheet_key = self._sheets_config['authors_sheet_key']
+        self.curators_sheet_key = self._sheets_config['curators_sheet_key']
 
     def find_author_curators(
             self,
@@ -41,7 +51,7 @@ class GoogleSheetsClient:
         curators = self.fetch_curators()
         found_curators = []
         for curator in curators:
-            if curator['section'] in author['curator']:
+            if curator['role'].strip() == author['curator'].strip():
                 found_curators.append(curator)
         return found_curators
 
@@ -59,7 +69,7 @@ class GoogleSheetsClient:
         authors = self.fetch_authors()
         found_authors = []
         for author in authors:
-            if curator['section'] in author['curator']:
+            if curator['role'].strip() == author['curator'].strip():
                 found_authors.append(curator)
         return found_authors
 
@@ -125,20 +135,3 @@ class GoogleSheetsClient:
         if value in UNDEFINED_STATES:
             return None
         return value
-
-
-if __name__ == "__main__":
-    gs = GoogleSheetsClient(
-        'sysblokbot.json',
-        '1-oU86gg1dYI4qfYlh-DBK5_X61dENa0Iw4IRBQ_aoWk',
-        '1Ydmd-qTrO4_6lsu-onuIal91MnQU8Qx4Z-Td21MzcME'
-    )
-
-    pprint(gs.fetch_authors())
-    pprint(gs.fetch_curators())
-
-    pprint(gs.find_telegram_id_by_trello_id('@irinoise'))
-    pprint(gs.find_trello_id_by_telegram_id('@irinoise'))
-
-    pprint(gs.find_curator_authors('telegram', '@irinoise'))
-    pprint(gs.find_author_curators('telegram', '@alexeyqu'))

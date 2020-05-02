@@ -1,8 +1,26 @@
 import pytest
 
+from src import jobs
 from src import scheduler
-from src.jobs import jobs
 from src.bot import SysBlokBot
+from src.config_manager import ConfigManager
+
+
+# TODO: move to tests/fakes
+class FakeTelegramSender:
+    def send_to_managers(self, *args, **kwargs):
+        pass
+
+    def create_chat_ids_send(self, *args, **kwargs):
+        pass
+
+    def create_reply_send(self, *args, **kwargs):
+        pass
+
+
+class FakeJob:
+    def execute(self, *args, **kwargs):
+        pass
 
 
 @pytest.mark.parametrize(
@@ -23,13 +41,18 @@ from src.bot import SysBlokBot
 )
 def test_scheduler(monkeypatch, jobs_config, num_jobs):
     for job_id in jobs_config:
-        setattr(jobs, job_id, lambda _: 0)
+        setattr(jobs, job_id, FakeJob)
+
+    config_manager = ConfigManager()
+    config_manager._latest_config = {'jobs': jobs_config}
 
     scheduler.schedule.clear()
-    job_scheduler = scheduler.JobScheduler({'jobs': jobs_config})
-    # Instead of: job_scheduler.run(sysblok_bot=None)
-    job_scheduler.app_context = None
-    job_scheduler.sender = None
 
+    # create singleton instance from scratch
+    scheduler.JobScheduler.drop_instance()
+    job_scheduler = scheduler.JobScheduler()
+    job_scheduler.app_context = None
+    job_scheduler.telegram_sender = FakeTelegramSender()
     job_scheduler.init_jobs()
-    assert len(scheduler.schedule.jobs) == num_jobs + 1
+
+    assert len(scheduler.schedule.jobs) == num_jobs

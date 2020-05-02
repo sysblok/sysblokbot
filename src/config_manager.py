@@ -1,19 +1,50 @@
+import datetime
 import json
 import logging
+
+from src import consts
+from src.utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
 
 
-class ConfigManager:
-    def __init__(self, config_path: str, config_override_path: str):
+class ConfigManager(Singleton):
+    def __init__(self, config_path: str = '', config_override_path: str = ''):
+        if self.was_initialized():
+            return
+
         self.config_path = config_path
         self.config_override_path = config_override_path
+        self._latest_config = {}
+        self._latest_config_ts = None
 
     def load_config_with_override(self) -> dict:
         main_config = self._load_config(self.config_path) or {}
         override_config = self._load_config(self.config_override_path) or {}
         ConfigManager.join_configs(main_config, override_config)
+        self._latest_config = main_config
+        self._latest_config_ts = datetime.datetime.now()
         return main_config
+
+    def get_latest_config(self):
+        """
+        Recommended way to access config without re-reading from disk.
+        Freshness of the config depends on jobs.config_checker_job
+        """
+        logger.debug(f'Got config, last updated: {self._latest_config_ts}')
+        return self._latest_config
+
+    def get_trello_config(self):
+        return self.get_latest_config().get(consts.TRELLO_CONFIG, {})
+
+    def get_telegram_config(self):
+        return self.get_latest_config().get(consts.TELEGRAM_CONFIG, {})
+
+    def get_sheets_config(self):
+        return self.get_latest_config().get(consts.SHEETS_CONFIG, {})
+
+    def get_jobs_config(self):
+        return self.get_latest_config().get(consts.JOBS_CONFIG, {})
 
     @staticmethod
     def join_configs(main_config: dict, override_config: dict):

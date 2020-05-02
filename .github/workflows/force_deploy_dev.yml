@@ -1,10 +1,10 @@
-name: Docker testing
+name: Manually deploy testing
 
 on:
   push:
     # Publish `dev` as Docker `testing` image.
     branches:
-      - dev
+      - nonexistent_branch
 
     # Publish `v1.2.3` tags as releases.
     tags:
@@ -14,54 +14,15 @@ env:
   IMAGE_NAME: sysblokbot
 
 jobs:
-  # Run tests.
-  # See also https://docs.docker.com/docker-hub/builds/automated-testing/
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: dev
-
-      - name: Python Style Checker
-        working-directory: ${{ github.workspace }}
-        run: |
-          pip3 install --upgrade pip
-          export PATH="$HOME/.local/bin:$PATH"
-          pip3 install pycodestyle
-          pycodestyle . --max-line-length 100
-        
-      - name: Python Pytest Github Action
-        uses: fylein/python-pytest-github-action@v2
-        with:
-          args: pip3 install -e . && pip3 install -r requirements.txt && pytest
-
   # Push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
   push:
-    # Ensure test job passes before pushing image.
-    needs: test
-
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
 
     steps:
       - uses: actions/checkout@v2
         with:
           ref: dev
-
-      - name: Publish to Github Packages Registry
-        uses: elgohr/Publish-Docker-Github-Action@master
-        env:
-          IMAGE_NAME: ${{ env.IMAGE_NAME }}
-        with:
-          name: ${{ github.repository }}/${{ env.IMAGE_NAME }}
-          registry: docker.pkg.github.com
-          username: sysblok
-          password: ${{ secrets.GITHUB_TOKEN }}
-          dockerfile: Dockerfile
-          tags: testing
 
       - name: Deploy package to digitalocean
         uses: appleboy/ssh-action@master
@@ -86,3 +47,4 @@ jobs:
               -v /home/${{ env.DO_USERNAME }}/config_override_testing.json:/app/config_override.json \
               -v /home/${{ env.DO_USERNAME }}/config_gs_testing.json:/app/config_gs.json \
               docker.pkg.github.com/sysblok/sysblokbot/${{ env.IMAGE_NAME }}:testing
+            please fail now
