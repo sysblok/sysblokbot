@@ -51,7 +51,7 @@ class GoogleSheetsClient(Singleton):
         curators = self.fetch_curators()
         found_curators = []
         for curator in curators:
-            if curator['section'] in author['curator']:
+            if curator['role'].strip() == author['curator'].strip():
                 found_curators.append(curator)
         return found_curators
 
@@ -69,7 +69,7 @@ class GoogleSheetsClient(Singleton):
         authors = self.fetch_authors()
         found_authors = []
         for author in authors:
-            if curator['section'] in author['curator']:
+            if curator['role'].strip() == author['curator'].strip():
                 found_authors.append(curator)
         return found_authors
 
