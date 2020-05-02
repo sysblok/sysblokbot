@@ -76,6 +76,19 @@ def list_jobs_handler(update, tg_context):
     update.message.reply_text('\n'.join(JobScheduler.list_jobs()))
 
 
+@admin_only
+def set_log_level_handler(update, tg_context):
+    level = update.message.text.strip().split()[-1].upper()
+    try:
+        if level == 'DEBUG':
+            logging.getLogger().setLevel(logging.DEBUG)
+        elif level == 'INFO':
+            logging.getLogger().setLevel(logging.INFO)
+    except Exception as e:
+        logger.error(f'Failed to update log level to {level}: {e}')
+    update.message.reply_text(f'Log level set to {logging.getLogger().level}')
+
+
 # Other handlers
 def handle_user_message(update, tg_context):
     # TODO: depending on user state, do anything (postpone the task, etc)
