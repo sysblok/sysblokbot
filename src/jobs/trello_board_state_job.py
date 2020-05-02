@@ -179,6 +179,6 @@ def _format_card(card, sheets_client, show_due=True, show_members=True) -> str:
                     curators.add(curator_text)
         card_text += members_text
         if curators:
-            curators_text = ' <b>Кураторы:</b> ' + ', '.join(curators)
+            curators_text = ' <b>Куратор:</b> ' + ', '.join(curators)
             card_text += curators_text
     return card_text.strip()
