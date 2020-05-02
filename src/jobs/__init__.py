@@ -5,7 +5,7 @@ Trello, Spreadsheets or Telegram API.
 Jobs can be ran from scheduler or from anywhere else for a one-off action.
 """
 
-from . import config_updater_job
+from .config_updater_job import ConfigUpdaterJob
 from . import publication_plans_job
-from . import sample_job
-from . import trello_board_state_job
+from .sample_job import SampleJob
+from .trello_board_state_job import TrelloBoardStateJob

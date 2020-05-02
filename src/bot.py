@@ -108,7 +108,7 @@ class SysBlokBot:
         """
         Creates a handler that replies to a message of given user.
         """
-        return lambda update, tg_context: getattr(jobs, job_name).execute(
+        return lambda update, tg_context: jobs.utils.get_job_runnable(job_name)(
                 app_context=self.app_context,
                 send=self.telegram_sender.create_reply_send(update)
             )
@@ -118,7 +118,7 @@ class SysBlokBot:
         Creates a handler that sends message to list of chat ids.
         """
         chat_ids = self.config_manager.get_jobs_config().get(job_name, {}).get(SEND_TO, [])
-        return lambda update, tg_context: getattr(jobs, job_name).execute(
+        return lambda update, tg_context: jobs.utils.get_job_runnable(job_name)(
                 app_context=self.app_context,
                 send=self.telegram_sender.create_chat_ids_send(chat_ids)
             )
