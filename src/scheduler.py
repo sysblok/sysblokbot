@@ -6,10 +6,10 @@ from typing import List
 import schedule
 import telegram
 
-from . import jobs
 from .app_context import AppContext
 from .config_manager import ConfigManager
 from .consts import CONFIG_RELOAD_MINUTES, EVERY, AT, SEND_TO
+from .jobs.utils import get_job_runnable
 from .tg.sender import TelegramSender
 from .utils.singleton import Singleton
 
@@ -40,7 +40,7 @@ class JobScheduler(Singleton):
         self.app_context = AppContext()
         self.telegram_sender = TelegramSender()
         schedule.every(CONFIG_RELOAD_MINUTES).minutes.do(
-            jobs.utils.get_job_runnable('config_updater_job'),
+            get_job_runnable('config_updater_job'),
             self.app_context
         ).tag(TECHNICAL_JOB_TAG)
 
@@ -76,14 +76,13 @@ class JobScheduler(Singleton):
                 if 'at' in schedule_dict:
                     scheduled = scheduled.at(schedule_dict[AT])
                 scheduled.do(
-                    jobs.utils.get_job_runnable(job_id),
+                    get_job_runnable(job_id),
                     app_context=self.app_context,
                     send=self.telegram_sender.create_chat_ids_send(
                         schedule_dict.get(SEND_TO, []))
                 ).tag(CUSTOM_JOB_TAG)
             except Exception as e:
-                logger.error(f'Failed to schedule job {job_id} \
-                    with params {schedule_dict}: {e}')
+                logger.error(f'Failed to schedule job {job_id} with params {schedule_dict}: {e}')
         logger.info('Finished setting jobs')
 
     @staticmethod
