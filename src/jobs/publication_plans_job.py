@@ -96,7 +96,7 @@ def _retrieve_cards_for_paragraph(
             this_card_bad_fields.append('google doc')
         if len(authors) == 0:
             this_card_bad_fields.append('автор')
-        if len(editors) == 0: # unsure if need this -- and 'Архив' not in label_names:
+        if len(editors) == 0:  # unsure if need this -- and 'Архив' not in label_names:
             this_card_bad_fields.append('редактор')
         if len(illustrators) == 0 and need_illustrators and 'Архив' not in label_names:
             this_card_bad_fields.append('иллюстратор')
