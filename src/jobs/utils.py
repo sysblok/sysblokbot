@@ -14,8 +14,9 @@ logger = logging.getLogger(__name__)
 MESSAGE_DELAY_SEC = 0.1
 
 # TODO: remove after we move to DB
-# Per-session cache
+# Per-session caches
 tg_login_cache = {}
+curator_name_cache = {}
 
 
 def retrieve_username(
@@ -37,10 +38,11 @@ def retrieve_username(
         try:
             tg_id = sheets_client.find_telegram_id_by_trello_id(
                 '@' + trello_id
-            ).strip()
+            )
         except Exception as e:
             logger.error(f'Failed to retrieve tg id for "{trello_id}": {e}')
         if tg_id:
+            tg_id = tg_id.strip()
             tg_login_cache[trello_id] = tg_id
 
     if tg_id and tg_id.startswith('@'):  # otherwise can be phone number
@@ -59,6 +61,46 @@ def retrieve_usernames(
         retrieve_username(member, sheets_client)
         for member in trello_members
     ]
+
+
+def retrieve_curator_names(
+        trello_member: TrelloMember,
+        sheets_client: GoogleSheetsClient
+) -> List[str]:
+    """
+    Tries to find a curator for trello member.
+    Returns: "John Smith (@jsmith_tg)" where possible, otherwise "John Smith".
+    If trello member or curator could not be found in Authors sheet, returns None
+    Note: requires a request to GoogleSheets API.
+    """
+    global curator_name_cache
+    curators = None
+    if trello_member.username in curator_name_cache:
+        curators = curator_name_cache[trello_member.username]
+    else:
+        try:
+            curators = sheets_client.find_author_curators('trello', '@' + trello_member.username)
+            if curators:
+                curator_name_cache[trello_member.username] = curators
+        except Exception as e:
+            logger.error(f'Could not retrieve curator: {e}')
+            return
+    if not curators:
+        return None
+    return [_make_curator_string(curator) for curator in curators]
+
+
+def _make_curator_string(curator: dict) -> str:
+    # TODO: make this SheetsCurator class
+    name = curator.get('name')
+    telegram = curator.get('telegram')
+    if name:
+        name = name.strip()
+        if telegram:
+            telegram = telegram.strip()
+            return f'{name} ({telegram})'
+        return name
+    return telegram
 
 
 def pretty_send(
