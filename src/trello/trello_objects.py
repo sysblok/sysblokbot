@@ -129,7 +129,7 @@ class TrelloCard:
         self.url = None
         self.due = None
         # TODO: move this to app state
-        self.list_name = None
+        self.lst = None
         self.members = []
 
         self._ok = True
@@ -166,7 +166,7 @@ members={self.members}>'
             'labels': [label.to_dict() for label in self.labels],
             'url': self.url,
             'due': datetime.strftime(self.due, TIME_FORMAT) if self.due else None,
-            'listName': self.list_name,
+            'list': self.lst.to_dict() if self.lst is not None else {},
             'members': [member.to_dict() for member in self.members],
         }
 

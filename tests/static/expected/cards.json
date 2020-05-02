@@ -12,7 +12,11 @@
         }
       ],
       "url": "https://trello.com/c/card_1",
-      "listName": "Готовая тема"
+      "list": {
+        "id": "list_1",
+        "name": "Готовая тема",
+        "idBoard": "board_id"
+      }
     },
     {
       "id": "card_2",
@@ -25,7 +29,11 @@
           "fullName": "Paulin Matavina"
         }
       ],
-      "listName": "Редактору",
+      "list": {
+        "id": "list_2",
+        "name": "Редактору",
+        "idBoard": "board_id"
+      },
       "url": "https://trello.com/c/card_2",
       "labels": []
     }
