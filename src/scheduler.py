@@ -6,10 +6,10 @@ from typing import List
 import schedule
 import telegram
 
-from . import jobs
 from .app_context import AppContext
 from .config_manager import ConfigManager
 from .consts import CONFIG_RELOAD_MINUTES, EVERY, AT, SEND_TO
+from .jobs.utils import get_job_runnable
 from .tg.sender import TelegramSender
 from .utils.singleton import Singleton
 
@@ -40,7 +40,7 @@ class JobScheduler(Singleton):
         self.app_context = AppContext()
         self.telegram_sender = TelegramSender()
         schedule.every(CONFIG_RELOAD_MINUTES).minutes.do(
-            self._get_job_runnable(jobs.config_updater_job),
+            get_job_runnable('config_updater_job'),
             self.app_context
         ).tag(TECHNICAL_JOB_TAG)
 
@@ -70,25 +70,19 @@ class JobScheduler(Singleton):
         logger.info('Starting setting job schedules...')
         jobs_config = self.config_manager.get_jobs_config()
         for job_id, schedule_dict in jobs_config.items():
-            try:
-                job = getattr(jobs, job_id)
-            except Exception as e:
-                logger.error(f'Job "{job_id}" not found: {e}')
-                continue
             logger.info(f'Found job "{job_id}"')
             try:
                 scheduled = getattr(schedule.every(), schedule_dict[EVERY])
                 if 'at' in schedule_dict:
                     scheduled = scheduled.at(schedule_dict[AT])
                 scheduled.do(
-                    self._get_job_runnable(job),
+                    get_job_runnable(job_id),
                     app_context=self.app_context,
                     send=self.telegram_sender.create_chat_ids_send(
                         schedule_dict.get(SEND_TO, []))
                 ).tag(CUSTOM_JOB_TAG)
             except Exception as e:
-                logger.error(f'Failed to schedule job {job_id} \
-                    with params {schedule_dict}: {e}')
+                logger.error(f'Failed to schedule job {job_id} with params {schedule_dict}: {e}')
         logger.info('Finished setting jobs')
 
     @staticmethod
@@ -108,13 +102,3 @@ class JobScheduler(Singleton):
             'Scheduler received a signal. '
             'Will terminate after ongoing jobs end'))
         self.stop_run_event.set()
-
-    @staticmethod
-    def _get_job_runnable(job_module):
-        """
-        Hack to add readable name for execute method for introspection.
-        May be once replaced by Job base class.
-        """
-        execute_job = job_module.execute
-        execute_job.__name__ = job_module.__name__
-        return execute_job

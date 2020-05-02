@@ -1,3 +1,4 @@
+import inspect
 import logging
 import time
 from typing import Callable, List
@@ -6,6 +7,7 @@ from typing import Callable, List
 from ..app_context import AppContext
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..trello.trello_objects import TrelloMember
+from .. import jobs
 
 
 logger = logging.getLogger(__name__)
@@ -154,14 +156,20 @@ def _paragraphs_to_messages(
     return messages[1:]
 
 
-def job_log_start_stop(func):
+def get_job_runnable(job_id: str):
     """
-    Decorator that logs start and end events of each job.
+    Finds a job class inside a module and returns its execute method.
+    Adds readable name to execute method for introspection.
     """
-    def wrapper(app_context: AppContext, send: Callable[[str], None]):
-        # it works!
-        module = func.__code__.co_filename.split('/')[-1]
-        logger.info(f'Starting {module}...')
-        func(app_context, send)
-        logger.info(f'Finished {module}')
-    return wrapper
+    try:
+        job_module = getattr(jobs, job_id)
+    except Exception as e:
+        logger.error(f'Job "{job_id}" not found: {e}')
+        return
+
+    for name, obj in inspect.getmembers(job_module):
+        if inspect.isclass(obj) and issubclass(obj, jobs.base_job.BaseJob) and obj is not jobs.base_job.BaseJob:
+            execute_job = obj.execute
+            execute_job.__func__.__name__ = name
+            return execute_job
+    logger.error(f'Could not find job runnable for {job_module}')
