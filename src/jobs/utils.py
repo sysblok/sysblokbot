@@ -156,19 +156,6 @@ def _paragraphs_to_messages(
     return messages[1:]
 
 
-def job_log_start_stop(func):
-    """
-    Decorator that logs start and end events of each job.
-    """
-    def wrapper(*args, **kwargs):
-        # it works!
-        module = func.__code__.co_filename.split('/')[-1]
-        logger.info(f'Starting {module}...')
-        func(*args, **kwargs)
-        logger.info(f'Finished {module}')
-    return wrapper
-
-
 def get_job_runnable(job_id: str):
     """
     Finds a job class inside a module and returns its execute method.
