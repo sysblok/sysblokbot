@@ -102,3 +102,13 @@ class JobScheduler(Singleton):
             'Scheduler received a signal. '
             'Will terminate after ongoing jobs end'))
         self.stop_run_event.set()
+
+    @staticmethod
+    def _get_job_runnable(job_module):
+        """
+        Hack to add readable name for execute method for introspection.
+        May be once replaced by Job base class.
+        """
+        execute_job = job_module.execute
+        execute_job.__name__ = job_module.__name__
+        return execute_job

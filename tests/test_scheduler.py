@@ -10,6 +10,7 @@ from src import jobs
 from src import scheduler
 from src.bot import SysBlokBot
 from src.config_manager import ConfigManager
+
 from fakes import fake_job
 from fakes.fake_sender import FakeTelegramSender
 
