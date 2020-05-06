@@ -13,7 +13,6 @@ from .jobs.utils import get_job_runnable
 from .tg.sender import TelegramSender
 from .utils.singleton import Singleton
 
-
 logger = logging.getLogger(__name__)
 
 CUSTOM_JOB_TAG = 'custom'

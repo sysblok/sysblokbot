@@ -3,7 +3,6 @@ from typing import Callable
 
 from ..app_context import AppContext
 
-
 logger = logging.getLogger(__name__)
 
 
