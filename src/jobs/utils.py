@@ -9,7 +9,6 @@ from ..sheets.sheets_client import GoogleSheetsClient
 from ..trello.trello_objects import TrelloMember
 from .. import jobs
 
-
 logger = logging.getLogger(__name__)
 
 # Delay to ensure messages come in right order.

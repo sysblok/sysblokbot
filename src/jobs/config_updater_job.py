@@ -9,7 +9,6 @@ from ..scheduler import JobScheduler
 from ..trello.trello_client import TrelloClient
 from .base_job import BaseJob
 
-
 logger = logging.getLogger(__name__)
 
 

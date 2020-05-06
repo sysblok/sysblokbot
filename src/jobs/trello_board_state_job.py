@@ -9,7 +9,6 @@ from ..trello.trello_client import TrelloClient
 from ..sheets.sheets_client import GoogleSheetsClient
 from .utils import pretty_send, retrieve_usernames, retrieve_curator_names
 
-
 logger = logging.getLogger(__name__)
 
 

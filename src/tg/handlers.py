@@ -3,48 +3,22 @@ Module with all the telegram handlers.
 """
 import logging
 
-from .. import jobs
+from . import utils as tg_utils
 from .sender import TelegramSender
+from .utils import admin_only, manager_only, direct_message_only
+from .. import jobs
 from ..app_context import AppContext
 from ..scheduler import JobScheduler
 
 logger = logging.getLogger(__name__)
 
 
-def admin_only(func):
-    """
-    Decorator allowing only users from admin_chat_ids to run the command.
-    Checks the immediate sender: if forwarded by non-admin, it doesn't run handler.
-    If admin sends command to the chat, it does run handler.
-    """
-    def wrapper(update, tg_context, *args, **kwargs):
-        if _is_sender_admin(update):
-            return func(update, tg_context, *args, **kwargs)
-        logger.warning(f'Admin-only handler {func.__name__} \
-            was invoked by {_get_sender_id(update)}')
-    return wrapper
-
-
-def manager_only(func):
-    """
-    Decorator allowing only users from manager_chat_ids OR admin_chat_ids to run the command.
-    Checks the immediate sender: if forwarded by non-manager, it doesn't run handler.
-    If manager sends command to the chat, it does run handler.
-    """
-    def wrapper(update, tg_context, *args, **kwargs):
-        if _is_sender_manager(update) or _is_sender_admin(update):
-            return func(update, tg_context, *args, **kwargs)
-        logger.warning(f'Manager-only handler {func.__name__} \
-            was invoked by {_get_sender_id(update)}')
-    return wrapper
-
-
 # Command handlers
 def start(update, tg_context):
-    is_group = update.message.chat.type in ('group', 'supergroup')
-    if is_group and not _is_sender_admin(update):
+    sender_id = tg_utils.get_sender_id(update)
+    if tg_utils.is_group_chat(update) and not tg_utils.is_sender_admin(update):
         logger.warning(
-            f'/start was invoked in a group {update.message.chat_id} by {_get_sender_id(update)}'
+            f'/start was invoked in a group {update.message.chat_id} by {sender_id}'
         )
         return
     update.message.reply_text('''
@@ -58,9 +32,26 @@ def start(update, tg_context):
 '''.strip())  # noqa
 
 
-def help(update, tg_context):
-    # TODO: add some help text
-    update.message.reply_text('Здесь будет какая-нибудь инструкция')
+@direct_message_only
+def help(update, tg_context, admin_handlers, manager_handlers, user_handlers):
+    message = ''
+    if tg_utils.is_sender_admin(update):
+        message += _format_commands_block(admin_handlers)
+    if tg_utils.is_sender_manager(update):
+        message += _format_commands_block(manager_handlers)
+    message += _format_commands_block(user_handlers)
+    if not message.strip():
+        message = 'Кажется, у меня пока нет доступных команд для тебя.'
+    else:
+        message = '<b>Список команд</b>:\n\n' + message
+    TelegramSender().send_to_chat_id(message, tg_utils.get_chat_id(update))
+
+
+def _format_commands_block(handlers: dict):
+    lines = []
+    for command, description in handlers.items():
+        lines.append(f'{command} - {description}' if description else command)
+    return '\n'.join(lines) + '\n\n'
 
 
 @admin_only
@@ -68,7 +59,7 @@ def test_handler(update, tg_context):
     """
     Handler for /test command, feel free to use it for one-off job testing
     """
-    jobs.sample_job(AppContext(), None)
+    jobs.sample_job.SampleJob.execute(AppContext(), None)
 
 
 @admin_only
@@ -101,21 +92,3 @@ def handle_user_message(update, tg_context):
 def error(update, tg_context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, tg_context.error)
-
-
-def _is_sender_admin(update) -> bool:
-    chats = AppContext().admin_chat_ids
-    return _get_sender_id(update) in chats or _get_sender_username(update) in chats
-
-
-def _is_sender_manager(update) -> bool:
-    chats = AppContext().manager_chat_ids
-    return _get_sender_id(update) in chats or _get_sender_username(update) in chats
-
-
-def _get_sender_id(update) -> int:
-    return update.message.from_user.id
-
-
-def _get_sender_username(update) -> str:
-    return update.message.from_user.username
