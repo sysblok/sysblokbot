@@ -14,7 +14,6 @@ from src.config_manager import ConfigManager
 from fakes import fake_job
 from fakes.fake_sender import FakeTelegramSender
 
-
 logger = logging.getLogger(__name__)
 
 

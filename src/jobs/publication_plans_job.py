@@ -8,7 +8,6 @@ from .base_job import BaseJob
 from ..trello.trello_client import TrelloClient
 from .utils import pretty_send
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -146,7 +145,7 @@ class PublicationPlansJob(BaseJob):
         error_messages = []
         for bad_card, bad_fields in errors.items():
             card_error_message = f'В карточке <a href="{bad_card.url}">\
-    {bad_card.name}</a> не заполнено: {", ".join(bad_fields)}'
+{bad_card.name}</a> не заполнено: {", ".join(bad_fields)}'
             error_messages.append(card_error_message)
         paragraphs = [
             'Не могу сгенерировать сводку.',
