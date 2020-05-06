@@ -43,7 +43,7 @@ def help(update, tg_context, admin_handlers, manager_handlers, user_handlers):
     if not message.strip():
         message = 'Кажется, у меня пока нет доступных команд для тебя.'
     else:
-        message = '<b>Список команд</b>:\n\n + message
+        message = '<b>Список команд</b>:\n\n' + message
     TelegramSender().send_to_chat_id(message, tg_utils.get_chat_id(update))
 
 
