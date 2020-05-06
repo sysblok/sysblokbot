@@ -5,7 +5,7 @@ import logging
 
 from . import utils as tg_utils
 from .sender import TelegramSender
-from .utils import admin_only, manager_only
+from .utils import admin_only, manager_only, direct_message_only
 from .. import jobs
 from ..app_context import AppContext
 from ..scheduler import JobScheduler
@@ -15,9 +15,8 @@ logger = logging.getLogger(__name__)
 
 # Command handlers
 def start(update, tg_context):
-    is_group = update.message.chat.type in ('group', 'supergroup')
     sender_id = tg_utils.get_sender_id(update)
-    if is_group and not tg_utils.is_sender_admin(update):
+    if tg_utils.is_group_chat(update) and not tg_utils.is_sender_admin(update):
         logger.warning(
             f'/start was invoked in a group {update.message.chat_id} by {sender_id}'
         )
@@ -33,17 +32,22 @@ def start(update, tg_context):
 '''.strip())  # noqa
 
 
+@direct_message_only
 def help(update, tg_context, admin_handlers, manager_handlers, user_handlers):
-    message = '<b>Список команд</b>:\n'
+    message = ''
     if tg_utils.is_sender_admin(update):
-        message += _format_commands(admin_handlers)
+        message += _format_commands_block(admin_handlers)
     if tg_utils.is_sender_manager(update):
-        message += _format_commands(manager_handlers)
-    message += _format_commands(user_handlers)
-    TelegramSender().send_to_chat_id(message.strip(), tg_utils.get_chat_id(update))
+        message += _format_commands_block(manager_handlers)
+    message += _format_commands_block(user_handlers)
+    if not message.strip():
+        message = 'Кажется, у меня пока нет доступных команд для тебя.'
+    else:
+        message = '<b>Список команд</b>:\n\n + message
+    TelegramSender().send_to_chat_id(message, tg_utils.get_chat_id(update))
 
 
-def _format_commands(handlers: dict):
+def _format_commands_block(handlers: dict):
     lines = []
     for command, description in handlers.items():
         lines.append(f'{command} - {description}' if description else command)

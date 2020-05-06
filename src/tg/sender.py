@@ -59,7 +59,7 @@ class TelegramSender(Singleton):
         """
         try:
             self.bot.send_message(
-                text=message_text,
+                text=message_text.strip(),
                 chat_id=chat_id,
                 disable_notification=self.is_silent,
                 disable_web_page_preview=self.disable_web_page_preview,

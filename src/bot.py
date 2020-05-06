@@ -33,36 +33,53 @@ class SysBlokBot:
 
     def init_handlers(self):
         # all command handlers defined here
-
-        self.add_user_handler("start", handlers.start)
-        self.add_user_handler(
-            "help",
-            lambda update, context: handlers.help(
-                update, context, self.admin_handlers, self.manager_handlers, self.user_handlers
-            )
-        )
-        self.add_handler("test", handlers.test_handler)
-
         # business logic cmds
         self.add_admin_handler(
-            "send_trello_board_state",
-            self.admin_broadcast_handler("trello_board_state_job"),
-            "Рассылка сводки о состоянии доски")
+            'send_trello_board_state',
+            self.admin_broadcast_handler('trello_board_state_job'),
+            'рассылка сводки о состоянии доски')
         self.add_manager_handler(
-            "get_trello_board_state",
-            self.manager_reply_handler("trello_board_state_job"),
-            "Получить сводку о состоянии доски")
+            'get_trello_board_state',
+            self.manager_reply_handler('trello_board_state_job'),
+            'получить сводку о состоянии доски')
         self.add_admin_handler(
-            "send_publication_plans",
-            self.admin_broadcast_handler("publication_plans_job"))
+            'send_publication_plans',
+            self.admin_broadcast_handler('publication_plans_job'),
+            'рассылка сводки о публикуемых на неделе постах'
+        )
         self.add_manager_handler(
-            "get_publication_plans",
-            self.manager_reply_handler("publication_plans_job"))
+            'get_publication_plans',
+            self.manager_reply_handler('publication_plans_job'),
+            'получить сводку о публикуемых на неделе постах'
+        )
 
         # admin-only technical cmds
-        self.add_admin_handler("update_config", self.admin_reply_handler("config_updater_job"))
-        self.add_admin_handler("list_jobs", handlers.list_jobs_handler)
-        self.add_admin_handler("set_log_level", handlers.set_log_level_handler)
+        self.add_admin_handler(
+            'update_config',
+            self.admin_reply_handler('config_updater_job'),
+            'обновить конфиг вне расписания'
+        )
+        self.add_admin_handler(
+            'list_jobs',
+            handlers.list_jobs_handler,
+            'показать статус асинхронных задач'
+        )
+        self.add_admin_handler(
+            'set_log_level',
+            handlers.set_log_level_handler,
+            'изменить уровень логирования (info / debug)'
+        )
+
+        # general purpose cmds
+        self.add_admin_handler('start', handlers.start, 'начать чат с ботом')
+        self.add_admin_handler(
+            'help',
+            lambda update, context: handlers.help(
+                update, context, self.admin_handlers, self.manager_handlers, self.user_handlers
+            ),
+            'получить список доступных команд'
+        )
+        self.add_handler('test', handlers.test_handler)
 
         # on non-command user message
         self.dp.add_handler(MessageHandler(
