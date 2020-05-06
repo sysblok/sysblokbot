@@ -35,11 +35,16 @@ def start(update, tg_context):
 @direct_message_only
 def help(update, tg_context, admin_handlers, manager_handlers, user_handlers):
     message = ''
+    # list privileged commands
     if tg_utils.is_sender_admin(update):
         message += _format_commands_block(admin_handlers)
-    if tg_utils.is_sender_manager(update):
         message += _format_commands_block(manager_handlers)
+    elif tg_utils.is_sender_manager(update):
+        message += _format_commands_block(manager_handlers)
+
+    # list common commands
     message += _format_commands_block(user_handlers)
+
     if not message.strip():
         message = 'Кажется, у меня пока нет доступных команд для тебя.'
     else:
