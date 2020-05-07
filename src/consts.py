@@ -2,6 +2,7 @@
 import os
 from enum import Enum
 
+LOG_FORMAT = '%(asctime)s - %(name)s\t- %(levelname)s\t- %(message)s'
 
 ROOT_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 CONFIG_PATH = os.path.join(ROOT_DIR, 'config.json')
