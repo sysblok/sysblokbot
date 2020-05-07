@@ -68,6 +68,13 @@ class TelegramSender(Singleton):
         except telegram.TelegramError as e:
             logger.error(f'Could not send a message: {e}')
 
+    def send_error_log(self, error_log: str):
+        self.send_to_chat_ids(error_log, self.error_logs_recipients)
+
+    def send_important_event(self, event_text: str):
+        logger.info(f'Sending important event: "{event_text}"')
+        self.send_to_chat_ids(event_text, self.important_events_recipients)
+
     def update_config(self, new_tg_config):
         """
         To be called after config automatic update.
@@ -78,10 +85,15 @@ class TelegramSender(Singleton):
 
     def _update_from_config(self):
         """Update attributes according to current self._tg_config"""
-        self.manager_chat_ids = self._tg_config.get(
+        self.important_events_recipients = self._tg_config.get(
             '_tmp_', {}
         ).get(
-            'manager_chat_ids'
+            'important_events_recipients'
+        )
+        self.error_logs_recipients = self._tg_config.get(
+            '_tmp_', {}
+        ).get(
+            'error_logs_recipients'
         )
         self.is_silent = self._tg_config.get('is_silent', True)
         self.disable_web_page_preview = self._tg_config.get('disable_web_page_preview', True)

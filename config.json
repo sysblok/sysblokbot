@@ -5,7 +5,9 @@
         "disable_web_page_preview": false,
         "_tmp_": {
             "admin_chat_ids": [],
-            "manager_chat_ids": []
+            "manager_chat_ids": [],
+            "important_events_recipients": [],
+            "error_logs_recipients": []
         }
     },
     "trello": {
