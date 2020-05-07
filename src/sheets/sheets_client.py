@@ -6,6 +6,8 @@ from ..utils.singleton import Singleton
 import gspread
 from google.oauth2.service_account import Credentials
 
+from .sheets_objects import RegistryPost
+
 logger = logging.getLogger(__name__)
 
 UNDEFINED_STATES = ('', '-', '#N/A')
@@ -36,6 +38,7 @@ class GoogleSheetsClient(Singleton):
         self.client = gspread.authorize(self._credentials)
         self.authors_sheet_key = self._sheets_config['authors_sheet_key']
         self.curators_sheet_key = self._sheets_config['curators_sheet_key']
+        self.post_registry_sheet_key = self._sheets_config['post_registry_sheet_key']
 
     def find_author_curators(
             self,
@@ -109,6 +112,45 @@ class GoogleSheetsClient(Singleton):
             "Телеграм": "telegram",
         }
         return self._parse_gs_res(title_key_map, self.curators_sheet_key)
+
+    def update_posts_registry(self, entries: List[RegistryPost]):
+        sheet = self.client.open_by_key(self.post_registry_sheet_key)
+        worksheet = sheet.get_worksheet(0)
+        num_of_posts = len(worksheet.get_all_values()) - 2  # table formatting
+        logger.info(f'Posts registry currently has {num_of_posts} posts')
+        count_updated = 0
+        for entry in entries:
+            if self._has_string(worksheet, entry.trello_url):
+                logger.info(f'Card {entry.trello_url} already present in registry')
+                continue
+            try:
+                logger.info(f'adding {entry.trello_url}')
+                this_line = num_of_posts + count_updated + 3  # table formatting
+                logger.info(entry.rubrics)
+                worksheet.update(
+                    f'A{this_line}:G{this_line}',
+                    [[
+                        num_of_posts + count_updated + 1,
+                        entry.title,
+                        entry.author,
+                        entry.rubrics,
+                        'нет',
+                        entry.google_doc,
+                        entry.trello_url
+                    ]]
+                )
+                count_updated += 1
+            except Exception as e:
+                logger.error(f'Failed to update post registry: {e}')
+        num_of_posts_after = len(worksheet.get_all_values()) - 2  # table formatting
+        return count_updated, num_of_posts, num_of_posts_after
+
+    def _has_string(self, worksheet, string: str):
+        try:
+            worksheet.find(string)
+        except gspread.exceptions.CellNotFound:
+            return False
+        return True
 
     def _parse_gs_res(self, title_key_map: Dict, sheet_key: str) -> List[Dict]:
         titles, *rows = self._get_sheet_values(sheet_key)

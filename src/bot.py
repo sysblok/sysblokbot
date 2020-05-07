@@ -52,6 +52,11 @@ class SysBlokBot:
             self.manager_reply_handler('publication_plans_job'),
             'получить сводку о публикуемых на неделе постах'
         )
+        self.add_admin_handler(
+            'fill_posts_list',
+            self.admin_reply_handler('fill_posts_list_job'),
+            'заполнить реестр постов'
+        )
 
         # admin-only technical cmds
         self.add_admin_handler(
