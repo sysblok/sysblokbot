@@ -30,20 +30,21 @@ class FillPostsListJob(BaseJob):
             show_due=True,
         )
 
-        posts_added, before, after = \
-            app_context.sheets_client.update_posts_registry(registry_posts)
-
-        assert before + posts_added == after
+        posts_added = app_context.sheets_client.update_posts_registry(registry_posts)
 
         if len(errors) > 0:
             paragraphs = FillPostsListJob._format_errors(errors)
-        elif posts_added == 0:
+        elif len(posts_added) == 0:
             paragraphs = [
-                '''Информация о публикуемых на следующей неделе постах уже внесена в реестр. 
+                '''Информация о публикуемых на следующей неделе постах уже внесена в реестр. \
 Внести необходимые изменения можно в таблице “Реестр постов”.'''
             ]
         else:
-            paragraphs = [f'Экспортировано {posts_added} постов']
+            paragraphs = ['Добавлено в реестр постов:'] + [
+                '\n'.join(
+                    f'{index + 1}) {post_name}' for index, post_name in enumerate(posts_added)
+                )
+            ]
 
         pretty_send(paragraphs, send)
 

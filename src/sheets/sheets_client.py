@@ -136,16 +136,16 @@ class GoogleSheetsClient(Singleton):
                 logger.info(f'Card {entry.trello_url} already present in registry')
                 continue
             this_line = num_of_posts + count_updated + 3  # table formatting
-            rubric_1 = next(
-                (rubric['vk_tag'] for rubric in rubrics_registry
-                if rubric['name'] == entry.rubrics[0]), 'нет'
-            )
+            rubric_1 = next((
+                rubric['vk_tag'] for rubric in rubrics_registry
+                if rubric['name'] == entry.rubrics[0]
+            ), 'нет')
             rubric_2 = 'нет'
             if len(entry.rubrics) > 1:
-                rubric_2 = next(
-                    (rubric['vk_tag'] for rubric in rubrics_registry
-                    if rubric['name'] == entry.rubrics[1]), 'нет'
-                )
+                rubric_2 = next((
+                    rubric['vk_tag'] for rubric in rubrics_registry
+                    if rubric['name'] == entry.rubrics[1]
+                ), 'нет')
             if entry.is_archive_post:
                 new_data.append([
                     this_line - 2,
@@ -185,16 +185,27 @@ class GoogleSheetsClient(Singleton):
                     'да' if entry.is_main_post else 'нет',
                 ])
             count_updated += 1
-        try:  
+        try:
             worksheet.update(
                 f'A{num_of_posts + 3}:P{num_of_posts + count_updated + 3}',
                 new_data
+            )
+            worksheet.format(
+                f'A{num_of_posts + 3}:AG{num_of_posts + count_updated + 2}',  # mind the const
+                {
+                    'borders': {
+                        'top': {'style': 'SOLID'},
+                        'bottom': {'style': 'SOLID'},
+                        'left': {'style': 'SOLID'},
+                        'right': {'style': 'SOLID'},
+                    }
+                }
             )
         except Exception as e:
             logger.error(f'Failed to update post registry: {e}')
         num_of_posts_after = len(worksheet.get_all_values()) - 2  # table formatting
         assert num_of_posts_after == num_of_posts + count_updated
-        return count_updated, num_of_posts, num_of_posts_after
+        return [row[1] for row in new_data]
 
     def _has_string(self, worksheet, string: str):
         try:
