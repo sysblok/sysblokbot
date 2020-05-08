@@ -51,17 +51,17 @@ jobs:
         with:
           ref: dev
 
-      - name: Publish to Github Packages Registry
-        uses: elgohr/Publish-Docker-Github-Action@master
+      - name: Publish to Github Packages Registry with cache
+        uses: whoan/docker-build-with-cache-action@v5
         env:
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
         with:
-          name: ${{ github.repository }}/${{ env.IMAGE_NAME }}
+          image_name: ${{ github.repository }}/${{ env.IMAGE_NAME }}
           registry: docker.pkg.github.com
           username: sysblok
           password: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: Dockerfile
-          tags: testing
+          image_tag: testing
 
       - name: Deploy package to digitalocean
         uses: appleboy/ssh-action@master
