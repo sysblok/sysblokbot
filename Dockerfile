@@ -7,7 +7,7 @@ ADD ./requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
 COPY . /app
 
-RUN python setup.py install
+RUN pip install .
 
 RUN apk del libressl-dev musl-dev libffi-dev gcc
 
