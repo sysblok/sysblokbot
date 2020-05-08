@@ -37,6 +37,11 @@ class FillPostsListJob(BaseJob):
 
         if len(errors) > 0:
             paragraphs = FillPostsListJob._format_errors(errors)
+        elif posts_added == 0:
+            paragraphs = [
+                '''Информация о публикуемых на следующей неделе постах уже внесена в реестр. 
+Внести необходимые изменения можно в таблице “Реестр постов”.'''
+            ]
         else:
             paragraphs = [f'Экспортировано {posts_added} постов']
 
@@ -96,6 +101,8 @@ class FillPostsListJob(BaseJob):
                 this_card_bad_fields.append('иллюстратор')
             if card.due is None and show_due:
                 this_card_bad_fields.append('дата публикации')
+            if len(card.labels) == 0:
+                this_card_bad_fields.append('рубрика')
 
             if len(this_card_bad_fields) > 0:
                 logger.error(
@@ -104,8 +111,11 @@ class FillPostsListJob(BaseJob):
                 errors[card] = this_card_bad_fields
                 continue
 
+            is_main_post = 'Главный пост' in label_names
+
             registry_posts.append(
-                RegistryPost(card, title.value, ','.join(authors), google_doc.value)
+                RegistryPost(card, title.value, ','.join(authors), google_doc.value,
+                             ','.join(editors), ','.join(illustrators), is_main_post)
             )
 
         if parse_failure_counter > 0:

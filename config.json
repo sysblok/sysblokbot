@@ -38,7 +38,8 @@
         "api_key_path": "do_not_set_here_please_go_to_config_override",
         "authors_sheet_key": "",
         "curators_sheet_key": "",
-        "post_registry_sheet_key": ""
+        "post_registry_sheet_key": "",
+        "rubrics_registry_sheet_key": ""
     },
     "jobs": {
         "sample_job": {

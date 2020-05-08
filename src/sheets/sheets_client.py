@@ -39,6 +39,7 @@ class GoogleSheetsClient(Singleton):
         self.authors_sheet_key = self._sheets_config['authors_sheet_key']
         self.curators_sheet_key = self._sheets_config['curators_sheet_key']
         self.post_registry_sheet_key = self._sheets_config['post_registry_sheet_key']
+        self.rubrics_registry_sheet_key = self._sheets_config['rubrics_registry_sheet_key']
 
     def find_author_curators(
             self,
@@ -113,36 +114,66 @@ class GoogleSheetsClient(Singleton):
         }
         return self._parse_gs_res(title_key_map, self.curators_sheet_key)
 
+    def fetch_rubrics_registry(self) -> List[Dict]:
+        title_key_map = {
+            "Название рубрики ": "name",  # space is important!
+            "Тег вк": "vk_tag",
+            "Тег в тг": "tg_tag",
+        }
+        return self._parse_gs_res(title_key_map, self.rubrics_registry_sheet_key)
+
     def update_posts_registry(self, entries: List[RegistryPost]):
         sheet = self.client.open_by_key(self.post_registry_sheet_key)
         worksheet = sheet.get_worksheet(0)
         num_of_posts = len(worksheet.get_all_values()) - 2  # table formatting
         logger.info(f'Posts registry currently has {num_of_posts} posts')
+        # TODO(alexeyqu): move this to DB and sync it
+        rubrics_registry = self.fetch_rubrics_registry()
+        new_data = []
         count_updated = 0
         for entry in entries:
             if self._has_string(worksheet, entry.trello_url):
                 logger.info(f'Card {entry.trello_url} already present in registry')
                 continue
-            try:
-                logger.info(f'adding {entry.trello_url}')
-                this_line = num_of_posts + count_updated + 3  # table formatting
-                logger.info(entry.rubrics)
-                worksheet.update(
-                    f'A{this_line}:G{this_line}',
-                    [[
-                        num_of_posts + count_updated + 1,
-                        entry.title,
-                        entry.author,
-                        entry.rubrics,
-                        'нет',
-                        entry.google_doc,
-                        entry.trello_url
-                    ]]
+            this_line = num_of_posts + count_updated + 3  # table formatting
+            rubric_1 = next(
+                (rubric['vk_tag'] for rubric in rubrics_registry
+                if rubric['name'] == entry.rubrics[0]), 'нет'
+            )
+            rubric_2 = 'нет'
+            if len(entry.rubrics) > 1:
+                rubric_2 = next(
+                    (rubric['vk_tag'] for rubric in rubrics_registry
+                    if rubric['name'] == entry.rubrics[1]), 'нет'
                 )
-                count_updated += 1
-            except Exception as e:
-                logger.error(f'Failed to update post registry: {e}')
+            new_data.append([
+                this_line - 2,
+                entry.title,
+                entry.authors,
+                rubric_1,
+                rubric_2,
+                entry.google_doc,
+                entry.trello_url,
+                entry.editors,
+                None,  # Оценка редактора
+                None,  # План по контенту
+                None,  # Тип обложки
+                None,  # Обложка
+                entry.illustrators,
+                None,  # Дата (сайт)
+                None,  # Статус публикации (сайт)
+                'да' if entry.is_main_post else 'нет',
+            ])
+            count_updated += 1
+        try:  
+            worksheet.update(
+                f'A{num_of_posts + 3}:P{num_of_posts + count_updated + 3}',
+                new_data
+            )
+        except Exception as e:
+            logger.error(f'Failed to update post registry: {e}')
         num_of_posts_after = len(worksheet.get_all_values()) - 2  # table formatting
+        assert num_of_posts_after == num_of_posts + count_updated
         return count_updated, num_of_posts, num_of_posts_after
 
     def _has_string(self, worksheet, string: str):
@@ -154,16 +185,18 @@ class GoogleSheetsClient(Singleton):
 
     def _parse_gs_res(self, title_key_map: Dict, sheet_key: str) -> List[Dict]:
         titles, *rows = self._get_sheet_values(sheet_key)
-        for title in titles:
-            if title not in title_key_map.keys():
-                logger.error(f'Update title_key_map. "{title}" caused error.')
-        title_idx_map = {idx: title_key_map[title]
-                         for idx, title in enumerate(titles)}
-
+        title_idx_map = {
+            idx: title_key_map[title]
+            for idx, title in enumerate(titles)
+            if title in title_key_map
+        }
         res = []
         for row in rows:
-            item = {title_idx_map[key]: self._parse_cell_value(
-                val) for key, val in enumerate(row)}
+            item = {
+                title_idx_map[key]: self._parse_cell_value(val)
+                for key, val in enumerate(row)
+                if key in title_idx_map
+            }
             res.append(item)
         return res
 
