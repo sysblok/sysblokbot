@@ -9,6 +9,7 @@ from .utils import admin_only, manager_only, direct_message_only
 from .. import jobs
 from ..app_context import AppContext
 from ..scheduler import JobScheduler
+from ..utils.log_handler import ErrorBroadcastHandler
 
 logger = logging.getLogger(__name__)
 
@@ -35,11 +36,16 @@ def start(update, tg_context):
 @direct_message_only
 def help(update, tg_context, admin_handlers, manager_handlers, user_handlers):
     message = ''
+    # list privileged commands
     if tg_utils.is_sender_admin(update):
         message += _format_commands_block(admin_handlers)
-    if tg_utils.is_sender_manager(update):
         message += _format_commands_block(manager_handlers)
+    elif tg_utils.is_sender_manager(update):
+        message += _format_commands_block(manager_handlers)
+
+    # list common commands
     message += _format_commands_block(user_handlers)
+
     if not message.strip():
         message = 'Кажется, у меня пока нет доступных команд для тебя.'
     else:
@@ -80,6 +86,22 @@ def set_log_level_handler(update, tg_context):
     update.message.reply_text(f'Log level set to {logging.getLogger().level}')
 
 
+@admin_only
+def mute_errors(update, tg_context):
+    ErrorBroadcastHandler().set_muted(True)
+    update.message.reply_text(
+        'I\'ll stop sending errors to important_events_recipients (until unmuted or restarted)!'
+    )
+
+
+@admin_only
+def unmute_errors(update, tg_context):
+    ErrorBroadcastHandler().set_muted(False)
+    update.message.reply_text(
+        'I\'ll be sending error logs to important_events_recipients list!'
+    )
+
+
 # Other handlers
 def handle_user_message(update, tg_context):
     # TODO: depending on user state, do anything (postpone the task, etc)
@@ -91,4 +113,4 @@ def handle_user_message(update, tg_context):
 
 def error(update, tg_context):
     """Log Errors caused by Updates."""
-    logger.warning('Update "%s" caused error "%s"', update, tg_context.error)
+    logger.error('Update "%s" caused error "%s"', update, tg_context.error)
