@@ -18,6 +18,10 @@ class TelegramSender(Singleton):
     ):
         if self.was_initialized():
             return
+        if bot is None or tg_config is None:
+            raise ValueError(
+                'On first TelegramSender initialization bot and tg_config must be not None'
+            )
 
         self.bot = bot
         self._tg_config = tg_config
