@@ -112,10 +112,19 @@ class FillPostsListJob(BaseJob):
                 continue
 
             is_main_post = 'Главный пост' in label_names
+            is_archive_post = 'Архив' in label_names
 
             registry_posts.append(
-                RegistryPost(card, title.value, ','.join(authors), google_doc.value,
-                             ','.join(editors), ','.join(illustrators), is_main_post)
+                RegistryPost(
+                    card,
+                    title.value,
+                    ','.join(authors),
+                    google_doc.value,
+                    ','.join(editors),
+                    ','.join(illustrators),
+                    is_main_post,
+                    is_archive_post,
+                )
             )
 
         if parse_failure_counter > 0:

@@ -146,24 +146,44 @@ class GoogleSheetsClient(Singleton):
                     (rubric['vk_tag'] for rubric in rubrics_registry
                     if rubric['name'] == entry.rubrics[1]), 'нет'
                 )
-            new_data.append([
-                this_line - 2,
-                entry.title,
-                entry.authors,
-                rubric_1,
-                rubric_2,
-                entry.google_doc,
-                entry.trello_url,
-                entry.editors,
-                None,  # Оценка редактора
-                None,  # План по контенту
-                None,  # Тип обложки
-                None,  # Обложка
-                entry.illustrators,
-                None,  # Дата (сайт)
-                None,  # Статус публикации (сайт)
-                'да' if entry.is_main_post else 'нет',
-            ])
+            if entry.is_archive_post:
+                new_data.append([
+                    this_line - 2,
+                    entry.title,
+                    entry.authors,
+                    rubric_1,
+                    rubric_2,
+                    entry.google_doc,
+                    entry.trello_url,
+                    entry.editors,
+                    None,  # Оценка редактора
+                    None,  # План по контенту
+                    'нет',  # Тип обложки
+                    'нет',  # Обложка
+                    'нет',  # Иллюстратор
+                    'нет',  # Дата (сайт)
+                    'архив',  # Статус публикации (сайт)
+                    'нет',  # Pin post
+                ])
+            else:
+                new_data.append([
+                    this_line - 2,
+                    entry.title,
+                    entry.authors,
+                    rubric_1,
+                    rubric_2,
+                    entry.google_doc,
+                    entry.trello_url,
+                    entry.editors,
+                    None,  # Оценка редактора
+                    None,  # План по контенту
+                    None,  # Тип обложки
+                    None,  # Обложка
+                    entry.illustrators,
+                    None,  # Дата (сайт)
+                    None,  # Статус публикации (сайт)
+                    'да' if entry.is_main_post else 'нет',
+                ])
             count_updated += 1
         try:  
             worksheet.update(

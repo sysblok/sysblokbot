@@ -17,6 +17,7 @@ class RegistryPost:
             editors: str,
             illustrators: str,
             is_main_post: bool,
+            is_archive_post: bool,
     ):
         self.title = title
         self.authors = authors
@@ -30,3 +31,4 @@ class RegistryPost:
         self.editors = editors
         self.illustrators = illustrators
         self.is_main_post = is_main_post
+        self.is_archive_post = is_archive_post
