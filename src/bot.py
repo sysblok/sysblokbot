@@ -102,7 +102,7 @@ class SysBlokBot:
 
     # Methods, adding command handlers and setting them to /help cmd for proper audience
     def add_handler(self, handler_cmd: str, handler_func: Callable):
-        """Adds handler silently. Noone will it in /help output"""
+        """Adds handler silently. Noone will see it in /help output"""
         self.dp.add_handler(CommandHandler(handler_cmd, handler_func))
 
     def add_admin_handler(self, handler_cmd: str, handler_func: Callable, description: str = ''):

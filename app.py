@@ -4,15 +4,13 @@ import logging
 
 from src.bot import SysBlokBot
 from src.config_manager import ConfigManager
-from src.consts import CONFIG_PATH, CONFIG_OVERRIDE_PATH, TELEGRAM_CONFIG
+from src.consts import CONFIG_PATH, CONFIG_OVERRIDE_PATH, LOG_FORMAT
 from src.scheduler import JobScheduler
 from src.tg.sender import TelegramSender
+from src.utils.log_handler import ErrorBroadcastHandler
 
 
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
+logging.basicConfig(format=LOG_FORMAT, level=logging.INFO)
 
 
 def get_bot():
@@ -34,6 +32,16 @@ def get_bot():
     # Scheduler must be run after clients initialized
     scheduler.run()
     scheduler.init_jobs()
+
+    # Setting final logger and sending a message bot is up
+    tg_sender = TelegramSender()
+    logging.basicConfig(
+        format=LOG_FORMAT,
+        level=logging.INFO,
+        handlers=[ErrorBroadcastHandler(tg_sender)],
+        force=True
+    )
+    tg_sender.send_important_event('Bot successfully started!')
 
     return bot
 
