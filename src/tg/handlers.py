@@ -89,13 +89,17 @@ def set_log_level_handler(update, tg_context):
 @admin_only
 def mute_errors(update, tg_context):
     ErrorBroadcastHandler().set_muted(True)
-    update.message.reply_text('Errors muted!')
+    update.message.reply_text(
+        'I\'ll stop sending errors to important_events_recipients (until unmuted or restarted)!'
+    )
 
 
 @admin_only
 def unmute_errors(update, tg_context):
     ErrorBroadcastHandler().set_muted(False)
-    update.message.reply_text('Errors unmuted!')
+    update.message.reply_text(
+        'I\'ll be sending error logs to important_events_recipients list!'
+    )
 
 
 # Other handlers
