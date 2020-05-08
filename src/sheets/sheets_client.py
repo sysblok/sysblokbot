@@ -123,7 +123,7 @@ class GoogleSheetsClient(Singleton):
         return self._parse_gs_res(title_key_map, self.rubrics_registry_sheet_key)
 
     def update_posts_registry(self, entries: List[RegistryPost]):
-        sheet = self.client.open_by_key(self.post_registry_sheet_key)
+        sheet = self._open_by_key(self.post_registry_sheet_key)
         worksheet = sheet.get_worksheet(0)
         num_of_posts = len(worksheet.get_all_values()) - 2  # table formatting
         logger.info(f'Posts registry currently has {num_of_posts} posts')
@@ -232,9 +232,15 @@ class GoogleSheetsClient(Singleton):
         return res
 
     def _get_sheet_values(self, sheet_key: str) -> List:
-        sheet = self.client.open_by_key(sheet_key)
+        sheet = self._open_by_key(sheet_key)
         worksheet = sheet.get_worksheet(0)
         return worksheet.get_all_values()
+
+    def _open_by_key(self, sheet_key: str):
+        try:
+            return self.client.open_by_key(sheet_key)
+        except Exception as e:
+            logger.error(f'Failed to access sheet {sheet_key}: {e}')
 
     @classmethod
     def _parse_cell_value(cls, value: str) -> Optional[str]:
