@@ -65,6 +65,11 @@ class SysBlokBot:
             'показать статус асинхронных задач'
         )
         self.add_admin_handler(
+            'set_log_level',
+            handlers.set_log_level_handler,
+            'изменить уровень логирования (info / debug)'
+        )
+        self.add_admin_handler(
             'mute_errors',
             handlers.mute_errors,
             'отключить логирование ошибок в телеграм'
