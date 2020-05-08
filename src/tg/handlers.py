@@ -9,6 +9,7 @@ from .utils import admin_only, manager_only, direct_message_only
 from .. import jobs
 from ..app_context import AppContext
 from ..scheduler import JobScheduler
+from ..utils.log_handler import ErrorBroadcastHandler
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +84,22 @@ def set_log_level_handler(update, tg_context):
     except Exception as e:
         logger.error(f'Failed to update log level to {level}: {e}')
     update.message.reply_text(f'Log level set to {logging.getLogger().level}')
+
+
+@admin_only
+def mute_errors(update, tg_context):
+    ErrorBroadcastHandler().set_muted(True)
+    update.message.reply_text(
+        'I\'ll stop sending errors to important_events_recipients (until unmuted or restarted)!'
+    )
+
+
+@admin_only
+def unmute_errors(update, tg_context):
+    ErrorBroadcastHandler().set_muted(False)
+    update.message.reply_text(
+        'I\'ll be sending error logs to important_events_recipients list!'
+    )
 
 
 # Other handlers

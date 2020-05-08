@@ -35,12 +35,7 @@ def get_bot():
 
     # Setting final logger and sending a message bot is up
     tg_sender = TelegramSender()
-    logging.basicConfig(
-        format=LOG_FORMAT,
-        level=logging.INFO,
-        handlers=[ErrorBroadcastHandler(tg_sender)],
-        force=True
-    )
+    logging.getLogger().addHandler(ErrorBroadcastHandler(tg_sender))
     tg_sender.send_important_event('Bot successfully started!')
 
     return bot

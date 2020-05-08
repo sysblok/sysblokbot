@@ -69,6 +69,16 @@ class SysBlokBot:
             handlers.set_log_level_handler,
             'изменить уровень логирования (info / debug)'
         )
+        self.add_admin_handler(
+            'mute_errors',
+            handlers.mute_errors,
+            'отключить логирование ошибок в телеграм'
+        )
+        self.add_admin_handler(
+            'unmute_errors',
+            handlers.unmute_errors,
+            'включить логирование ошибок в телеграм'
+        )
 
         # general purpose cmds
         self.add_admin_handler('start', handlers.start, 'начать чат с ботом')
