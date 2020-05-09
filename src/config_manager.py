@@ -8,6 +8,9 @@ from src.utils.singleton import Singleton
 logger = logging.getLogger(__name__)
 
 
+REDACTED_KEYS = ('key', 'token')
+
+
 class ConfigManager(Singleton):
     def __init__(self, config_path: str = '', config_override_path: str = ''):
         if self.was_initialized():
@@ -58,6 +61,21 @@ class ConfigManager(Singleton):
             else:
                 # rewrite if key is absent, or is list/str/int/bool
                 main_config[key] = override_config[key]
+
+    @staticmethod
+    def redact(config: dict) -> dict:
+        """Returns redacted config copy"""
+        redacted_config = {}
+        for key, value in config.items():
+            if isinstance(value, dict):
+                redacted_config[key] = ConfigManager.redact(value)
+            else:
+                redacted_config[key] = value
+                for redacted_key in REDACTED_KEYS:
+                    if redacted_key in key:
+                        redacted_config[key] = 'XXXXX'
+                        break
+        return redacted_config
 
     def _load_config(self, config_path: str) -> dict:
         try:
