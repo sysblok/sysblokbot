@@ -52,14 +52,11 @@ class SysBlokBot:
             self.manager_reply_handler('publication_plans_job'),
             'получить сводку о публикуемых на неделе постах'
         )
-<<<<<<< HEAD
         self.add_manager_handler(
             'fill_posts_list',
             self.manager_reply_handler('fill_posts_list_job'),
             'заполнить реестр постов'
         )
-=======
->>>>>>> b7778ee63b1686a1c9e07e964012288fb997672e
 
         # admin-only technical cmds
         self.add_admin_handler(
@@ -120,11 +117,7 @@ class SysBlokBot:
 
     # Methods, adding command handlers and setting them to /help cmd for proper audience
     def add_handler(self, handler_cmd: str, handler_func: Callable):
-<<<<<<< HEAD
         """Adds handler silently. Noone will see it in /help output"""
-=======
-        """Adds handler silently. Noone will it in /help output"""
->>>>>>> b7778ee63b1686a1c9e07e964012288fb997672e
         self.dp.add_handler(CommandHandler(handler_cmd, handler_func))
 
     def add_admin_handler(self, handler_cmd: str, handler_func: Callable, description: str = ''):
