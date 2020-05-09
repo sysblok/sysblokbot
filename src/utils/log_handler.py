@@ -20,6 +20,8 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
         self.is_muted = False
 
     def emit(self, record: LogRecord):
+        self.format(record)
+        super().emit(record)
         if record.levelno >= ERROR and not self.is_muted:
             try:
                 self.tg_sender.send_error_log(
@@ -36,7 +38,6 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
                     args=None,
                     exc_info=None,
                 ))
-                super().emit(record)
 
     def set_muted(self, is_muted: bool):
         self.is_muted = is_muted

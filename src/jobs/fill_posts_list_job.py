@@ -40,7 +40,7 @@ class FillPostsListJob(BaseJob):
 Внести необходимые изменения можно в таблице “Реестр постов”.'''
             ]
         else:
-            paragraphs = ['Добавлено в реестр постов:'] + [
+            paragraphs = ['<b>Добавлено в реестр постов:</b>'] + [
                 '\n'.join(
                     f'{index + 1}) {post_name}' for index, post_name in enumerate(posts_added)
                 )
