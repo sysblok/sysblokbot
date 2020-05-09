@@ -90,13 +90,9 @@ class TelegramSender(Singleton):
     def _update_from_config(self):
         """Update attributes according to current self._tg_config"""
         self.important_events_recipients = self._tg_config.get(
-            '_tmp_', {}
-        ).get(
             'important_events_recipients'
         )
         self.error_logs_recipients = self._tg_config.get(
-            '_tmp_', {}
-        ).get(
             'error_logs_recipients'
         )
         self.is_silent = self._tg_config.get('is_silent', True)

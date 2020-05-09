@@ -24,6 +24,14 @@ class TrelloClient(Singleton):
         _, data = self._make_request(f'boards/{self.board_id}')
         return objects.TrelloBoard.from_dict(data)
 
+    def get_board_labels(self):
+        _, data = self._make_request(f'boards/{self.board_id}/labels')
+        labels = [
+            objects.TrelloBoardLabel.from_dict(label) for label in data
+        ]
+        logger.debug(f'get_board_labels: {labels}')
+        return labels
+
     def get_lists(self):
         _, data = self._make_request(f'boards/{self.board_id}/lists')
         lists = [
@@ -104,6 +112,21 @@ class TrelloClient(Singleton):
             'key': self.api_key,
             'token': self.token,
         }
+        lists = self.get_lists()
+        self.lists_config = self._fill_id_alias_map(lists, self._trello_config['list_aliases'])
+        custom_field_types = self.get_board_custom_field_types()
+        self.custom_fields_config = self._fill_id_alias_map(
+            custom_field_types, self._trello_config['custom_field_type_aliases']
+        )
+
+    def _fill_id_alias_map(self, items, item_config):
+        result = {}
+        for alias, name in item_config.items():
+            suitable_items = [item for item in items if item.name.startswith(name)]
+            if len(suitable_items) != 1:
+                raise ValueError(f'Config name {name} is ambiguous!')
+            result[alias] = suitable_items[0].id
+        return result
 
     def _make_request(self, uri):
         response = requests.get(
