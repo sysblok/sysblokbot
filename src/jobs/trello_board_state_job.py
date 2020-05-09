@@ -87,7 +87,7 @@ class TrelloBoardStateJob(BaseJob):
 
     @staticmethod
     def _is_deadline_missed(card) -> bool:
-        return card.due is not None and card.due < datetime.datetime.now()
+        return card.due is not None and card.due.date() < datetime.datetime.now().date()
 
     @staticmethod
     def _retrieve_cards_for_paragraph(
