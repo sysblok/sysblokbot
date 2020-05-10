@@ -4,7 +4,7 @@ from typing import Callable, List
 
 from .base_job import BaseJob
 from ..app_context import AppContext
-from ..consts import TrelloCardColor
+from ..consts import TrelloCardColor, TrelloListAlias
 from ..trello.trello_client import TrelloClient
 from ..sheets.sheets_client import GoogleSheetsClient
 from .utils import pretty_send, retrieve_usernames, retrieve_curator_names
@@ -24,13 +24,13 @@ class TrelloBoardStateJob(BaseJob):
             sheets_client=None,
             title='Не указан автор в карточке',
             list_aliases=(
-                'in_progress',
-                'editor',
-                'edited_next_week',
-                'edited_sometimes',
-                'chief_editor',
-                'proofreading',
-                'done',
+                TrelloListAlias.IN_PROGRESS,
+                TrelloListAlias.TO_EDITOR,
+                TrelloListAlias.EDITED_NEXT_WEEK,
+                TrelloListAlias.EDITED_SOMETIMES,
+                TrelloListAlias.TO_CHIEF_EDITOR,
+                TrelloListAlias.PROOFREADING,
+                TrelloListAlias.DONE,
             ),
             filter_func=lambda card: not card.members,
             show_due=False,
@@ -41,7 +41,7 @@ class TrelloBoardStateJob(BaseJob):
             trello_client=app_context.trello_client,
             sheets_client=app_context.sheets_client,
             title='Не указан срок в карточке',
-            list_aliases=('in_progress', ),
+            list_aliases=(TrelloListAlias.IN_PROGRESS, ),
             filter_func=lambda card: not card.due,
             show_due=False
         )
@@ -51,13 +51,13 @@ class TrelloBoardStateJob(BaseJob):
             sheets_client=app_context.sheets_client,
             title='Не указан тег рубрики в карточке',
             list_aliases=(
-                'in_progress',
-                'editor',
-                'edited_next_week',
-                'edited_sometimes',
-                'chief_editor',
-                'proofreading',
-                'done',
+                TrelloListAlias.IN_PROGRESS,
+                TrelloListAlias.TO_EDITOR,
+                TrelloListAlias.EDITED_NEXT_WEEK,
+                TrelloListAlias.EDITED_SOMETIMES,
+                TrelloListAlias.TO_CHIEF_EDITOR,
+                TrelloListAlias.PROOFREADING,
+                TrelloListAlias.DONE,
             ),
             filter_func=lambda card: not card.labels,
             show_due=False
@@ -79,7 +79,7 @@ class TrelloBoardStateJob(BaseJob):
             trello_client=app_context.trello_client,
             sheets_client=app_context.sheets_client,
             title='Пропущен дедлайн',
-            list_aliases=('in_progress', ),
+            list_aliases=(TrelloListAlias.IN_PROGRESS, ),
             filter_func=TrelloBoardStateJob._is_deadline_missed,
         )
 

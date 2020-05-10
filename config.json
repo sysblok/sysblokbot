@@ -11,26 +11,7 @@
     "trello": {
         "api_key": "do_not_set_here_please_go_to_config_override",
         "token": "do_not_set_here_please_go_to_config_override",
-        "board_id": "5e91d48a9e9d947b95fb0df7",
-        "list_aliases": {
-            "topic_suggestion": "Предлагаю тему!",
-            "topic_ready": "Готовая тема",
-            "in_progress": "Уже пишу",
-            "editor": "Редактору",
-            "edited_next_week": "На редактуре на след.неделю",
-            "edited_sometimes": "Отредактировано впрок",
-            "chief_editor": "Финальная проверка и отбор",
-            "proofreading": "Отобрано для публикации на неделю",
-            "done": "Готово для верстки",
-            "back_burner": "Долгий Ящик"
-        },
-        "custom_field_type_aliases": {
-            "author": "Автор",
-            "google_doc": "Google Doc",
-            "editor": "Редактор",
-            "title": "Название поста",
-            "illustrator": "Иллюстратор"
-        }
+        "board_id": "5e91d48a9e9d947b95fb0df7"
     },
     "sheets": {
         "api_key_path": "do_not_set_here_please_go_to_config_override",

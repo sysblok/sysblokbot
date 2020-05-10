@@ -5,6 +5,7 @@ from typing import Callable, List
 
 from ..app_context import AppContext
 from .base_job import BaseJob
+from ..consts import TrelloListAlias
 from ..trello.trello_client import TrelloClient
 from .utils import pretty_send
 
@@ -21,7 +22,7 @@ class PublicationPlansJob(BaseJob):
         paragraphs += PublicationPlansJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
             title='Публикуем на неделе',
-            list_aliases=('proofreading', 'done'),
+            list_aliases=(TrelloListAlias.PROOFREADING, TrelloListAlias.DONE),
             errors=errors,
             show_due=True,
         )
@@ -29,7 +30,7 @@ class PublicationPlansJob(BaseJob):
         paragraphs += PublicationPlansJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
             title='На редактуре',
-            list_aliases=('edited_next_week', ),
+            list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, ),
             errors=errors,
             show_due=False,
             need_illustrators=False,
@@ -46,7 +47,7 @@ class PublicationPlansJob(BaseJob):
     def _retrieve_cards_for_paragraph(
             trello_client: TrelloClient,
             title: str,
-            list_aliases: List[str],
+            list_aliases: List[TrelloListAlias],
             errors: dict,
             show_due=True,
             need_illustrators=True,
@@ -70,21 +71,19 @@ class PublicationPlansJob(BaseJob):
 
             card_fields_dict = trello_client.get_card_custom_fields_dict(card.id)
             authors = (
-                card_fields_dict[trello_client.custom_fields_config['author']].value.split(',')
-                if trello_client.custom_fields_config['author'] in card_fields_dict else []
+                card_fields_dict[TrelloCustomFieldTypeAlias.AUTHOR].value.split(',')
+                if TrelloCustomFieldTypeAlias.AUTHOR in card_fields_dict else []
             )
             editors = (
-                card_fields_dict[trello_client.custom_fields_config['editor']].value.split(',')
-                if trello_client.custom_fields_config['editor'] in card_fields_dict else []
+                card_fields_dict[TrelloCustomFieldTypeAlias.EDITOR].value.split(',')
+                if TrelloCustomFieldTypeAlias.EDITOR in card_fields_dict else []
             )
             illustrators = (
-                card_fields_dict[trello_client.custom_fields_config['illustrator']].value.split(',')
-                if trello_client.custom_fields_config['illustrator'] in card_fields_dict else []
+                card_fields_dict[TrelloCustomFieldTypeAlias.ILLUSTRATOR].value.split(',')
+                if TrelloCustomFieldTypeAlias.ILLUSTRATOR in card_fields_dict else []
             )
-            google_doc = card_fields_dict.get(
-                trello_client.custom_fields_config['google_doc'], None
-            )
-            title = card_fields_dict.get(trello_client.custom_fields_config['title'], None)
+            google_doc = card_fields_dict.get(TrelloCustomFieldTypeAlias.GOOGLE_DOC, None)
+            title = card_fields_dict.get(TrelloCustomFieldTypeAlias.TITLE, None)
 
             label_names = [label.name for label in card.labels]
 

@@ -3,6 +3,7 @@ import requests
 
 
 from . import trello_objects as objects
+from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias
 from ..utils.singleton import Singleton
 
 
@@ -83,13 +84,19 @@ class TrelloClient(Singleton):
         logger.debug(f'get_board_custom_field_types: {custom_field_types}')
         return custom_field_types
 
-    def get_card_custom_fields_dict(self, card_id):
+    def get_card_custom_fields(self, card_id):
         _, data = self._make_request(f'cards/{card_id}/customFieldItems')
+        custom_fields = [
+            objects.TrelloCustomField.from_dict(custom_field) for custom_field in data
+        ]
+        logger.debug(f'get_card_custom_fields: {custom_fields}')
+        return custom_fields
+
+    def get_card_custom_fields_dict(self, card_id):
+        custom_fields = self.get_card_custom_fields(card_id)
         custom_fields_dict = {}
-        for custom_field in data:
-            custom_field = objects.TrelloCustomField.from_dict(custom_field)
-            custom_fields_dict[custom_field.type_id] = custom_field
-        logger.debug(f'get_card_custom_fields_dict: {custom_fields_dict}')
+        for alias, type_id in self.custom_fields_config.items():
+            custom_fields_dict[alias] = next(fld for fld in custom_fields if fld.id == type_id)
         return custom_fields_dict
 
     def get_members(self):
@@ -113,18 +120,18 @@ class TrelloClient(Singleton):
             'token': self.token,
         }
         lists = self.get_lists()
-        self.lists_config = self._fill_id_alias_map(lists, self._trello_config['list_aliases'])
+        self.lists_config = self._fill_id_alias_map(lists, TrelloListAlias)
         custom_field_types = self.get_board_custom_field_types()
         self.custom_fields_config = self._fill_id_alias_map(
-            custom_field_types, self._trello_config['custom_field_type_aliases']
+            custom_field_types, TrelloCustomFieldTypeAlias
         )
 
-    def _fill_id_alias_map(self, items, item_config):
+    def _fill_id_alias_map(self, items, item_enum):
         result = {}
-        for alias, name in item_config.items():
-            suitable_items = [item for item in items if item.name.startswith(name)]
+        for alias in item_enum:
+            suitable_items = [item for item in items if item.name.startswith(alias.value)]
             if len(suitable_items) != 1:
-                raise ValueError(f'Config name {name} is ambiguous!')
+                raise ValueError(f'Enum {item_enum.__name__} name {alias.value} is ambiguous!')
             result[alias] = suitable_items[0].id
         return result
 

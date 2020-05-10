@@ -14,7 +14,7 @@
       "url": "https://trello.com/c/card_1",
       "list": {
         "id": "list_1",
-        "name": "Готовая тема",
+        "name": "Готовая тема - автор, бери!",
         "idBoard": "board_id"
       }
     },
@@ -31,7 +31,7 @@
       ],
       "list": {
         "id": "list_2",
-        "name": "Редактору",
+        "name": "Уже пишу (не забудь указать дату и автора!)",
         "idBoard": "board_id"
       },
       "url": "https://trello.com/c/card_2",
