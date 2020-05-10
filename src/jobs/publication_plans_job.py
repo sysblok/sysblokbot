@@ -5,7 +5,7 @@ from typing import Callable, List
 
 from ..app_context import AppContext
 from .base_job import BaseJob
-from ..consts import TrelloListAlias
+from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias
 from ..trello.trello_client import TrelloClient
 from .utils import pretty_send
 
@@ -88,7 +88,10 @@ class PublicationPlansJob(BaseJob):
             label_names = [label.name for label in card.labels]
 
             this_card_bad_fields = []
-            if title is None and card.lst.id != trello_client.lists_config['edited_next_week']:
+            if (
+                    title is None and
+                    card.lst.id != trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK]
+            ):
                 this_card_bad_fields.append('название поста')
             if google_doc is None:
                 this_card_bad_fields.append('google doc')

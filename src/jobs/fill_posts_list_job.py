@@ -58,7 +58,7 @@ class FillPostsListJob(BaseJob):
         Returns a list of paragraphs that should always go in a single message.
         '''
         logger.info(f'Started counting: "{title}"')
-        list_ids = [trello_client.lists_config[alias.value] for alias in list_aliases]
+        list_ids = [trello_client.lists_config[alias] for alias in list_aliases]
         cards = trello_client.get_cards(list_ids)
         if show_due:
             cards.sort(key=lambda card: card.due)
@@ -90,7 +90,10 @@ class FillPostsListJob(BaseJob):
             label_names = [label.name for label in card.labels]
 
             this_card_bad_fields = []
-            if title is None and card.lst.id != trello_client.lists_config['edited_next_week']:
+            if (
+                    title is None and
+                    card.lst.id != trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK]
+            ):
                 this_card_bad_fields.append('название поста')
             if google_doc is None:
                 this_card_bad_fields.append('google doc')
