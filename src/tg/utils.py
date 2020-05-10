@@ -1,5 +1,6 @@
 import logging
 
+from .sender import TelegramSender
 from ..app_context import AppContext
 
 logger = logging.getLogger(__name__)
@@ -67,3 +68,7 @@ def get_sender_username(update) -> str:
 
 def is_group_chat(update) -> bool:
     return update.message.chat.type in ('group', 'supergroup')
+
+
+def reply(message: str, tg_update):
+    TelegramSender().send_to_chat_id(message, get_chat_id(tg_update))
