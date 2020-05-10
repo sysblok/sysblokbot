@@ -52,10 +52,10 @@ jobs:
           ref: dev
 
       - name: Generate build args
-          id: args
-          run: |
-            echo "::set-output name=commit_hash::$(git rev-parse HEAD)"
-            echo "::set-output name=commit_hash_short::$(git rev-parse --short HEAD)"
+        id: args
+        run: |
+          echo "::set-output name=commit_hash::$(git rev-parse HEAD)"
+          echo "::set-output name=commit_hash_short::$(git rev-parse --short HEAD)"
 
       - name: Publish to Github Packages Registry with cache
         uses: whoan/docker-build-with-cache-action@v5
