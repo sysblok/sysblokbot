@@ -23,7 +23,7 @@ class BaseJob:
             cls._execute(app_context, send)
         except Exception as e:
             # should not raise exception, so that schedule module won't go mad retrying
-            logger.error(f'Could not run job: {e}')
+            logging.exception(f'Could not run job {module}', exc_info=e)
         logger.info(f'Finished {module}')
 
     @staticmethod

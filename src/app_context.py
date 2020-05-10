@@ -38,10 +38,6 @@ class AppContext(Singleton):
 
         self.set_access_rights(tg_config)
 
-        self.lists_config = trello_config['_tmp_']['list_aliases']
-        self.custom_fields_config = \
-            trello_config['_tmp_']['custom_field_type_aliases']
-
     def set_access_rights(self, tg_config: dict):
-        self.admin_chat_ids = set(tg_config['_tmp_']['admin_chat_ids'])
-        self.manager_chat_ids = set(tg_config['_tmp_']['manager_chat_ids'])
+        self.admin_chat_ids = set(tg_config['admin_chat_ids'])
+        self.manager_chat_ids = set(tg_config['manager_chat_ids'])

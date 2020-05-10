@@ -5,6 +5,7 @@ from typing import Callable, List
 
 from ..app_context import AppContext
 from .base_job import BaseJob
+from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias
 from ..trello.trello_client import TrelloClient
 from .utils import pretty_send
 from ..sheets.sheets_objects import RegistryPost
@@ -19,13 +20,9 @@ class FillPostsListJob(BaseJob):
         registry_posts = []
 
         registry_posts += FillPostsListJob._retrieve_cards_for_registry(
-            app_context=app_context,
+            trello_client=app_context.trello_client,
             title='Публикуем на неделе',
-            list_ids=(
-                app_context.lists_config['proofreading'],
-                app_context.lists_config['done']
-            ),
-            custom_fields_config=app_context.custom_fields_config,
+            list_aliases=(TrelloListAlias.PROOFREADING, TrelloListAlias.DONE),
             errors=errors,
             show_due=True,
         )
@@ -50,10 +47,9 @@ class FillPostsListJob(BaseJob):
 
     @staticmethod
     def _retrieve_cards_for_registry(
-            app_context: AppContext,
+            trello_client: TrelloClient,
             title: str,
-            list_ids: List[str],
-            custom_fields_config: dict,
+            list_aliases: List[str],
             errors: dict,
             show_due=True,
             need_illustrators=True,
@@ -62,7 +58,8 @@ class FillPostsListJob(BaseJob):
         Returns a list of paragraphs that should always go in a single message.
         '''
         logger.info(f'Started counting: "{title}"')
-        cards = app_context.trello_client.get_cards(list_ids)
+        list_ids = [trello_client.lists_config[alias.value] for alias in list_aliases]
+        cards = trello_client.get_cards(list_ids)
         if show_due:
             cards.sort(key=lambda card: card.due)
         parse_failure_counter = 0
@@ -74,23 +71,26 @@ class FillPostsListJob(BaseJob):
                 parse_failure_counter += 1
                 continue
 
-            card_fields_dict = app_context.trello_client.get_card_custom_fields_dict(card.id)
-            authors = \
-                card_fields_dict[custom_fields_config['author']].value.split(',') \
-                if custom_fields_config['author'] in card_fields_dict else []
-            editors = \
-                card_fields_dict[custom_fields_config['editor']].value.split(',') \
-                if custom_fields_config['editor'] in card_fields_dict else []
-            illustrators = \
-                card_fields_dict[custom_fields_config['illustrator']].value.split(',') \
-                if custom_fields_config['illustrator'] in card_fields_dict else []
-            google_doc = card_fields_dict.get(custom_fields_config['google_doc'], None)
-            title = card_fields_dict.get(custom_fields_config['title'], None)
+            card_fields_dict = trello_client.get_card_custom_fields_dict(card.id)
+            authors = (
+                card_fields_dict[TrelloCustomFieldTypeAlias.AUTHOR].value.split(',')
+                if TrelloCustomFieldTypeAlias.AUTHOR in card_fields_dict else []
+            )
+            editors = (
+                card_fields_dict[TrelloCustomFieldTypeAlias.EDITOR].value.split(',')
+                if TrelloCustomFieldTypeAlias.EDITOR in card_fields_dict else []
+            )
+            illustrators = (
+                card_fields_dict[TrelloCustomFieldTypeAlias.ILLUSTRATOR].value.split(',')
+                if TrelloCustomFieldTypeAlias.ILLUSTRATOR in card_fields_dict else []
+            )
+            google_doc = card_fields_dict.get(TrelloCustomFieldTypeAlias.GOOGLE_DOC, None)
+            title = card_fields_dict.get(TrelloCustomFieldTypeAlias.TITLE, None)
 
             label_names = [label.name for label in card.labels]
 
             this_card_bad_fields = []
-            if title is None and card.lst.id != app_context.lists_config['edited_next_week']:
+            if title is None and card.lst.id != trello_client.lists_config['edited_next_week']:
                 this_card_bad_fields.append('название поста')
             if google_doc is None:
                 this_card_bad_fields.append('google doc')

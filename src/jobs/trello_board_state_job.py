@@ -4,7 +4,7 @@ from typing import Callable, List
 
 from .base_job import BaseJob
 from ..app_context import AppContext
-from ..consts import TrelloCardColor
+from ..consts import TrelloCardColor, TrelloListAlias
 from ..trello.trello_client import TrelloClient
 from ..sheets.sheets_client import GoogleSheetsClient
 from .utils import pretty_send, retrieve_usernames, retrieve_curator_names
@@ -23,14 +23,14 @@ class TrelloBoardStateJob(BaseJob):
             trello_client=app_context.trello_client,
             sheets_client=None,
             title='Не указан автор в карточке',
-            list_ids=(
-                app_context.lists_config['in_progress'],
-                app_context.lists_config['editor'],
-                app_context.lists_config['edited_next_week'],
-                app_context.lists_config['edited_sometimes'],
-                app_context.lists_config['chief_editor'],
-                app_context.lists_config['proofreading'],
-                app_context.lists_config['done'],
+            list_aliases=(
+                TrelloListAlias.IN_PROGRESS,
+                TrelloListAlias.TO_EDITOR,
+                TrelloListAlias.EDITED_NEXT_WEEK,
+                TrelloListAlias.EDITED_SOMETIMES,
+                TrelloListAlias.TO_CHIEF_EDITOR,
+                TrelloListAlias.PROOFREADING,
+                TrelloListAlias.DONE,
             ),
             filter_func=lambda card: not card.members,
             show_due=False,
@@ -41,7 +41,7 @@ class TrelloBoardStateJob(BaseJob):
             trello_client=app_context.trello_client,
             sheets_client=app_context.sheets_client,
             title='Не указан срок в карточке',
-            list_ids=(app_context.lists_config['in_progress']),
+            list_aliases=(TrelloListAlias.IN_PROGRESS, ),
             filter_func=lambda card: not card.due,
             show_due=False
         )
@@ -50,14 +50,14 @@ class TrelloBoardStateJob(BaseJob):
             trello_client=app_context.trello_client,
             sheets_client=app_context.sheets_client,
             title='Не указан тег рубрики в карточке',
-            list_ids=(
-                app_context.lists_config['in_progress'],
-                app_context.lists_config['editor'],
-                app_context.lists_config['edited_next_week'],
-                app_context.lists_config['edited_sometimes'],
-                app_context.lists_config['chief_editor'],
-                app_context.lists_config['proofreading'],
-                app_context.lists_config['done'],
+            list_aliases=(
+                TrelloListAlias.IN_PROGRESS,
+                TrelloListAlias.TO_EDITOR,
+                TrelloListAlias.EDITED_NEXT_WEEK,
+                TrelloListAlias.EDITED_SOMETIMES,
+                TrelloListAlias.TO_CHIEF_EDITOR,
+                TrelloListAlias.PROOFREADING,
+                TrelloListAlias.DONE,
             ),
             filter_func=lambda card: not card.labels,
             show_due=False
@@ -79,7 +79,7 @@ class TrelloBoardStateJob(BaseJob):
             trello_client=app_context.trello_client,
             sheets_client=app_context.sheets_client,
             title='Пропущен дедлайн',
-            list_ids=(app_context.lists_config['in_progress']),
+            list_aliases=(TrelloListAlias.IN_PROGRESS, ),
             filter_func=TrelloBoardStateJob._is_deadline_missed,
         )
 
@@ -94,7 +94,7 @@ class TrelloBoardStateJob(BaseJob):
             trello_client: TrelloClient,
             sheets_client: GoogleSheetsClient,
             title: str,
-            list_ids: List[str],
+            list_aliases: List[str],
             filter_func: Callable,
             show_due=True,
             show_members=True,
@@ -103,6 +103,7 @@ class TrelloBoardStateJob(BaseJob):
         Returns a list of paragraphs that should always go in a single message.
         '''
         logger.info(f'Started counting: "{title}"')
+        list_ids = [trello_client.lists_config[alias] for alias in list_aliases]
         cards = list(filter(filter_func, trello_client.get_cards(list_ids)))
         parse_failure_counter = 0
 

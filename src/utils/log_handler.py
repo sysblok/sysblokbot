@@ -24,9 +24,10 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
         super().emit(record)
         if record.levelno >= ERROR and not self.is_muted:
             try:
-                self.tg_sender.send_error_log(
-                    f'<code>{record.levelname} - {record.module} - {record.message}</code>'
-                )
+                error_message = f'{record.levelname} - {record.module} - {record.message}'
+                if record.exc_text:
+                    error_message += f' - {record.exc_text}'
+                self.tg_sender.send_error_log(f'<code>{error_message}</code>')
             except Exception as e:
                 # if it can't send a message, still should log it to the stream
                 super().emit(LogRecord(
