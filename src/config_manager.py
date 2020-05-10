@@ -19,6 +19,7 @@ class ConfigManager(Singleton):
         self.config_path = config_path
         self.config_override_path = config_override_path
         self._latest_config = {}
+        self._latest_config_override = {}
         self._latest_config_ts = None
 
     def load_config_with_override(self) -> dict:
@@ -26,6 +27,7 @@ class ConfigManager(Singleton):
         override_config = self._load_config(self.config_override_path) or {}
         ConfigManager.join_configs(main_config, override_config)
         self._latest_config = main_config
+        self._latest_config_override = override_config
         self._latest_config_ts = datetime.datetime.now()
         return main_config
 
@@ -49,6 +51,22 @@ class ConfigManager(Singleton):
     def get_jobs_config(self):
         return self.get_latest_config().get(consts.JOBS_CONFIG, {})
 
+    def get_job_send_to(self, job_name: str):
+        return self.get_jobs_config().get(job_name, {}).get(consts.SEND_TO, [])
+
+    def set_value_to_config_override(self, config_path: str, new_value):
+        """
+        Sets a new value to config_override and writes it to the disk.
+        config_path example: jobs.sample_job.at
+        Note: no sanity checks performed inside the method!
+        """
+        new_config_piece = new_value
+        for config_item in config_path.split('.')[::-1]:
+            new_config_piece = {config_item: new_config_piece}
+        config_override = self._latest_config_override
+        ConfigManager.join_configs(config_override, new_config_piece)
+        self._write_config_override(config_override)
+
     @staticmethod
     def join_configs(main_config: dict, override_config: dict):
         """Recursively override values from the main config (in place)"""
@@ -65,6 +83,9 @@ class ConfigManager(Singleton):
     @staticmethod
     def redact(config: dict) -> dict:
         """Returns redacted config copy"""
+        if not isinstance(config, dict):
+            return config
+
         redacted_config = {}
         for key, value in config.items():
             if isinstance(value, dict):
@@ -86,3 +107,7 @@ class ConfigManager(Singleton):
                     logger.error(e)
         except IOError:
             logger.warning(f'Config file at {config_path} not found')
+
+    def _write_config_override(self, config_override: dict):
+        with open(self.config_override_path, 'w') as fout:
+            fout.write(json.dumps(config_override, indent=4))
