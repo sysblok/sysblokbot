@@ -138,7 +138,7 @@ def set_config(update, tg_context):
             reply((
                 f'Subconfig <code>{config_path}</code> is a complex object. '
                 'Dict reassignment is not supported. '
-                'Please, specify your request to str, bool, int or list'
+                'Please, specify your request to str, bool, int or list field'
             ), update)
             return
         if type(current_config) != type(new_value):
