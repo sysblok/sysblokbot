@@ -51,10 +51,18 @@ jobs:
         with:
           ref: dev
 
+      - name: Generate build args
+        id: args
+        run: |
+          echo "::set-output name=commit_hash::$(git rev-parse HEAD)"
+          echo "::set-output name=commit_hash_short::$(git rev-parse --short HEAD)"
+
       - name: Publish to Github Packages Registry with cache
         uses: whoan/docker-build-with-cache-action@v5
         env:
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          COMMIT_HASH: "${{ steps.args.outputs.commit_hash }}"
+          COMMIT_HASH_SHORT: "${{ steps.args.outputs.commit_hash_short }}"
         with:
           image_name: ${{ github.repository }}/${{ env.IMAGE_NAME }}
           registry: docker.pkg.github.com
@@ -62,6 +70,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: Dockerfile
           image_tag: testing
+          build_extra_args: "--build-arg=COMMIT_HASH --build-arg=COMMIT_HASH_SHORT"
 
       - name: Deploy package to digitalocean
         uses: appleboy/ssh-action@master
@@ -83,6 +92,7 @@ jobs:
             docker rmi $(docker images -a --filter reference='docker.pkg.github.com/sysblok/sysblokbot/sysblokbot:testing')
             docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
             docker run -dit --name sysblokbot-testing \
+              --env APP_SOURCE="github CI" \
               -v /home/${{ env.DO_USERNAME }}/config_override_testing.json:/app/config_override.json \
               -v /home/${{ env.DO_USERNAME }}/config_gs_testing.json:/app/config_gs.json \
               docker.pkg.github.com/sysblok/sysblokbot/${{ env.IMAGE_NAME }}:testing

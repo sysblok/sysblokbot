@@ -47,6 +47,43 @@ class TrelloBoard:
         }
 
 
+class TrelloBoardLabel:
+    def __init__(self):
+        self.id = None
+        self.name = None
+        self.color = None
+
+        self._ok = True
+
+    def __bool__(self):
+        return self._ok
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return f'BoardLabel<id={self.id}, name={self.name}, color={self.color}>'
+
+    @classmethod
+    def from_dict(cls, data):
+        label = cls()
+        try:
+            label.id = data['id']
+            label.name = data['name']
+            label.color = data['color']
+        except Exception:
+            label._ok = False
+            logger.error(f"Bad board label json {data}")
+        return label
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'color': self.color,
+        }
+
+
 class TrelloList:
     def __init__(self):
         self.id = None
