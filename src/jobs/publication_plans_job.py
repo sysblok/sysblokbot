@@ -126,13 +126,12 @@ class PublicationPlansJob(BaseJob):
         # Name and google_doc url always present.
         card_text = f'<a href="{google_doc}">{title or card.name}</a>\n'
 
-        card_text += f'Автор{"ы" if len(authors) > 1 else ""}: \
-    {", ".join(authors)}. '
-        card_text += f'Редактор{"ы" if len(editors) > 1 else ""}: \
-    {", ".join(editors)}. '
+        card_text += f'Автор{"ы" if len(authors) > 1 else ""}: {", ".join(authors)}. '
+        card_text += f'Редактор{"ы" if len(editors) > 1 else ""}: {", ".join(editors)}. '
         if len(illustrators) > 0:
-            card_text += f'Иллюстратор{"ы" if len(illustrators) > 1 else ""}: \
-    {", ".join(illustrators)}. '
+            card_text += (
+                f'Иллюстратор{"ы" if len(illustrators) > 1 else ""}: {", ".join(illustrators)}. '
+            )
 
         if show_due:
             card_text = f'<b>{card.due.strftime("%d.%m")}</b> — {card_text}'
