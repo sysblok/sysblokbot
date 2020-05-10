@@ -6,7 +6,6 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 from .app_context import AppContext
 from .config_manager import ConfigManager
-from .consts import SEND_TO
 from .jobs.utils import get_job_runnable
 from .tg import handlers, sender
 
@@ -83,6 +82,16 @@ class SysBlokBot:
             'unmute_errors',
             handlers.unmute_errors,
             'включить логирование ошибок в телеграм'
+        )
+        self.add_admin_handler(
+            'get_config',
+            handlers.get_config,
+            'получить текущий конфиг (частично или полностью)'
+        )
+        self.add_admin_handler(
+            'set_config',
+            handlers.set_config,
+            'установить новое значение в конфиге'
         )
 
         # general purpose cmds
@@ -183,7 +192,7 @@ class SysBlokBot:
         """
         Creates a handler that sends message to list of chat ids.
         """
-        chat_ids = self.config_manager.get_jobs_config().get(job_name, {}).get(SEND_TO, [])
+        chat_ids = self.config_manager.get_job_send_to(job_name)
         return lambda update, tg_context: get_job_runnable(job_name)(
                 app_context=self.app_context,
                 send=self.telegram_sender.create_chat_ids_send(chat_ids)
