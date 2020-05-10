@@ -1,13 +1,14 @@
 """
 Module with all the telegram handlers.
 """
+import json
 import logging
 
 from . import utils as tg_utils
-from .sender import TelegramSender
-from .utils import admin_only, manager_only, direct_message_only
+from .utils import admin_only, manager_only, direct_message_only, reply
 from .. import jobs
 from ..app_context import AppContext
+from ..config_manager import ConfigManager
 from ..scheduler import JobScheduler
 from ..utils.log_handler import ErrorBroadcastHandler
 
@@ -22,7 +23,7 @@ def start(update, tg_context):
             f'/start was invoked in a group {update.message.chat_id} by {sender_id}'
         )
         return
-    update.message.reply_text('''
+    reply('''
 Привет!
 
 Я — бот Системного Блока. Меня создали для того, чтобы я помогал авторам, редакторам, кураторам и другим участникам проекта.
@@ -30,7 +31,7 @@ def start(update, tg_context):
 Например, я умею проводить субботники в Trello-доске и сообщать о найденных неточностях: карточках без авторов, сроков и тегов рубрик, а также авторах без карточек и карточках с пропущенным дедлайном. Для их исправления мне понадобится ваша помощь, без кожаных мешков пока не справляюсь.
 
 Хорошего дня! Не болейте!
-'''.strip())  # noqa
+'''.strip(), update)  # noqa
 
 
 @direct_message_only
@@ -50,7 +51,7 @@ def help(update, tg_context, admin_handlers, manager_handlers, user_handlers):
         message = 'Кажется, у меня пока нет доступных команд для тебя.'
     else:
         message = '<b>Список команд</b>:\n\n' + message
-    TelegramSender().send_to_chat_id(message, tg_utils.get_chat_id(update))
+    reply(message, update)
 
 
 def _format_commands_block(handlers: dict):
@@ -70,7 +71,7 @@ def test_handler(update, tg_context):
 
 @admin_only
 def list_jobs_handler(update, tg_context):
-    update.message.reply_text('\n'.join(JobScheduler.list_jobs()))
+    reply('\n'.join(JobScheduler.list_jobs()), update)
 
 
 @admin_only
@@ -83,23 +84,41 @@ def set_log_level_handler(update, tg_context):
             logging.getLogger().setLevel(logging.INFO)
     except Exception as e:
         logger.error(f'Failed to update log level to {level}: {e}')
-    update.message.reply_text(f'Log level set to {logging.getLogger().level}')
+    reply(f'Log level set to {logging.getLogger().level}', update)
 
 
 @admin_only
 def mute_errors(update, tg_context):
     ErrorBroadcastHandler().set_muted(True)
-    update.message.reply_text(
-        'I\'ll stop sending errors to important_events_recipients (until unmuted or restarted)!'
+    reply(
+        'I\'ll stop sending errors to important_events_recipients (until unmuted or restarted)!',
+        update
     )
 
 
 @admin_only
 def unmute_errors(update, tg_context):
     ErrorBroadcastHandler().set_muted(False)
-    update.message.reply_text(
-        'I\'ll be sending error logs to important_events_recipients list!'
+    reply(
+        'I\'ll be sending error logs to important_events_recipients list!',
+        update
     )
+
+
+@admin_only
+def get_config(update, tg_context):
+    config = ConfigManager().get_latest_config()
+    try:
+        tokens = update.message.text.strip().split()
+        config_path = tokens[1] if len(tokens) > 1 else ''
+        if config_path:
+            for config_item in config_path.split('.'):
+                config = config[config_item]
+    except Exception as e:
+        reply('Usage example: <code>/get_config jobs.sample_job</code>', update)
+        logger.warning(f'Failed to get config: {e}')
+        return
+    reply(f'<code>{json.dumps(ConfigManager.redact(config), indent=2)}</code>', update)
 
 
 # Other handlers
