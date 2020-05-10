@@ -70,7 +70,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: Dockerfile
           image_tag: "prod,latest"
-          build_extra_args: COMMIT_HASH, COMMIT_HASH_SHORT
+          build_extra_args: "--build-arg=COMMIT_HASH --build-arg=COMMIT_HASH_SHORT"
 
       - name: Deploy package to digitalocean
         uses: appleboy/ssh-action@master
