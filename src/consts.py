@@ -4,6 +4,17 @@ from enum import Enum
 
 LOG_FORMAT = '%(asctime)s - %(name)s\t- %(levelname)s\t- %(message)s'
 
+COMMIT_URL = f'https://github.com/sysblok/sysblokbot/commit/{os.environ.get("COMMIT_HASH")}'
+COMMIT_HASH = os.environ.get('COMMIT_HASH_SHORT')
+
+
+class AppSource(Enum):
+    DEFAULT = 'manual'
+    GITHUB = 'github CI'
+
+
+APP_SOURCE = os.environ.get('APP_SOURCE', AppSource.DEFAULT)
+
 ROOT_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 CONFIG_PATH = os.path.join(ROOT_DIR, 'config.json')
 CONFIG_OVERRIDE_PATH = os.path.join(ROOT_DIR, 'config_override.json')

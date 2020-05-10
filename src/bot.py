@@ -84,11 +84,6 @@ class SysBlokBot:
             handlers.unmute_errors,
             'включить логирование ошибок в телеграм'
         )
-        self.add_admin_handler(
-            'get_config',
-            handlers.get_config,
-            'получить текущий конфиг (частично или полностью)'
-        )
 
         # general purpose cmds
         self.add_admin_handler('start', handlers.start, 'начать чат с ботом')
