@@ -33,3 +33,24 @@ class TrelloCardColor(Enum):
     LIME = 'lime'
     PINK = 'pink'
     BLACK = 'black'
+
+
+class TrelloListAlias(Enum):
+    TOPIC_SUGGESTION = 'Предлагаю тему!'
+    TOPIC_READY = 'Готовая тема'
+    IN_PROGRESS = 'Уже пишу'
+    TO_EDITOR = 'Редактору'
+    EDITED_NEXT_WEEK = 'На редактуре на след.неделю'
+    EDITED_SOMETIMES = 'Отредактировано впрок'
+    TO_CHIEF_EDITOR = 'Финальная проверка и отбор'
+    PROOFREADING = 'Отобрано для публикации на неделю'
+    DONE = 'Готово для верстки'
+    BACK_BURNER = 'Долгий Ящик'
+
+
+class TrelloCustomFieldTypeAlias(Enum):
+    AUTHOR = 'Автор'
+    GOOGLE_DOC = 'Google Doc'
+    EDITOR = 'Редактор'
+    TITLE = 'Название поста'
+    ILLUSTRATOR = 'Иллюстратор'

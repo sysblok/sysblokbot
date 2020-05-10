@@ -1,17 +1,52 @@
 [
-    {
-      "id": "list_1",
-      "name": "Готовая тема",
-      "idBoard": "board_id"
-    },
-    {
-      "id": "list_2",
-      "name": "Редактору",
-      "idBoard": "board_id"
-    },
-    {
-      "id": "list_3",
-      "name": "Долгий Ящик",
-      "idBoard": "board_id"
-    }
+  {
+    "id": "list_0",
+    "name": "Предлагаю тему! (здесь любой участник может предложить свою тему для команды)",
+    "idBoard": "board_id"
+  },
+  {
+    "id": "list_1",
+    "name": "Готовая тема - автор, бери!",
+    "idBoard": "board_id"
+  },
+  {
+    "id": "list_2",
+    "name": "Уже пишу (не забудь указать дату и автора!)",
+    "idBoard": "board_id"
+  },
+  {
+    "id": "list_3",
+    "name": "Редактору",
+    "idBoard": "board_id"
+  },
+  {
+    "id": "list_4",
+    "name": "На редактуре на след.неделю (не забудь тег рубрики!)",
+    "idBoard": "board_id"
+  },
+  {
+    "id": "list_5",
+    "name": "Отредактировано впрок",
+    "idBoard": "board_id"
+  },
+  {
+    "id": "list_6",
+    "name": "Финальная проверка и отбор (Главреду)",
+    "idBoard": "board_id"
+  },
+  {
+    "id": "list_7",
+    "name": "Отобрано для публикации на неделю (Корректору)",
+    "idBoard": "board_id"
+  },
+  {
+    "id": "list_8",
+    "name": "Готово для верстки (Выпускающему)",
+    "idBoard": "board_id"
+  },
+  {
+    "id": "list_9",
+    "name": "Долгий Ящик",
+    "idBoard": "board_id"
+  }
 ]

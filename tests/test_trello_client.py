@@ -73,8 +73,8 @@ def test_card_custom_fields(monkeypatch, mock_trello, assert_equal):
         'token': 'token',
         'board_id': 'board_1'
     })
-    custom_fields = trello.get_card_custom_fields_dict(1)
-    assert_equal([fld.to_dict() for fld in custom_fields.values()], 'card_custom_fields.json')
+    custom_fields = trello.get_card_custom_fields(1)
+    assert_equal([fld.to_dict() for fld in custom_fields], 'card_custom_fields.json')
 
 
 def test_members(monkeypatch, mock_trello, assert_equal):
