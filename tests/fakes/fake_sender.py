@@ -6,4 +6,5 @@ class FakeTelegramSender:
         pass
 
     def create_reply_send(self, *args, **kwargs):
-        pass
+        assert args == None
+        return args
