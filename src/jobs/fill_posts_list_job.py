@@ -5,7 +5,7 @@ from typing import Callable, List
 
 from ..app_context import AppContext
 from .base_job import BaseJob
-from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias
+from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias, TrelloCardColor
 from ..trello.trello_client import TrelloClient
 from .utils import pretty_send
 from ..sheets.sheets_objects import RegistryPost
@@ -61,7 +61,7 @@ class FillPostsListJob(BaseJob):
         list_ids = [trello_client.lists_config[alias] for alias in list_aliases]
         cards = trello_client.get_cards(list_ids)
         if show_due:
-            cards.sort(key=lambda card: card.due)
+            cards.sort(key=lambda card: card.due or datetime.datetime.min)
         parse_failure_counter = 0
 
         registry_posts = []
@@ -87,7 +87,10 @@ class FillPostsListJob(BaseJob):
             google_doc = card_fields_dict.get(TrelloCustomFieldTypeAlias.GOOGLE_DOC, None)
             title = card_fields_dict.get(TrelloCustomFieldTypeAlias.TITLE, None)
 
-            label_names = [label.name for label in card.labels]
+            label_names = [
+                label.name for label in card.labels if label.color != TrelloCardColor.BLACK
+            ]
+            print(label_names)
 
             this_card_bad_fields = []
             if (
@@ -105,11 +108,11 @@ class FillPostsListJob(BaseJob):
                 this_card_bad_fields.append('иллюстратор')
             if card.due is None and show_due:
                 this_card_bad_fields.append('дата публикации')
-            if len(card.labels) == 0:
+            if len(label_names) == 0:
                 this_card_bad_fields.append('рубрика')
 
             if len(this_card_bad_fields) > 0:
-                logger.error(
+                logger.info(
                     f'Trello card is unsuitable for publication: {card.url} {this_card_bad_fields}'
                 )
                 errors[card] = this_card_bad_fields
@@ -145,9 +148,8 @@ class FillPostsListJob(BaseJob):
 {bad_card.name}</a> не заполнено: {", ".join(bad_fields)}'
             error_messages.append(card_error_message)
         paragraphs = [
-            'Не могу сгенерировать сводку.',
+            'Не удалось внести информацию в реестр.',
             '\n'.join(error_messages),
-            'Пожалуйста, заполни требуемые поля в карточках \
-    и запусти генерацию снова.'
+            'Пожалуйста, заполни требуемые поля в карточках и запусти генерацию снова.'
         ]
         return paragraphs
