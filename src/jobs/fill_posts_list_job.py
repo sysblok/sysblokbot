@@ -27,21 +27,21 @@ class FillPostsListJob(BaseJob):
             show_due=True,
         )
 
-        posts_added = app_context.sheets_client.update_posts_registry(registry_posts)
-
-        if len(errors) > 0:
-            paragraphs = FillPostsListJob._format_errors(errors)
-        elif len(posts_added) == 0:
-            paragraphs = [
-                '''Информация о публикуемых на следующей неделе постах уже внесена в реестр. \
-Внести необходимые изменения можно в таблице “Реестр постов”.'''
-            ]
+        if len(errors) == 0:
+            posts_added = app_context.sheets_client.update_posts_registry(registry_posts)
+            if len(posts_added) == 0:
+                paragraphs = [
+                    '''Информация о публикуемых на следующей неделе постах уже внесена в реестр. \
+    Внести необходимые изменения можно в таблице “Реестр постов”.'''
+                ]
+            else:
+                paragraphs = ['<b>Добавлено в реестр постов:</b>'] + [
+                    '\n'.join(
+                        f'{index + 1}) {post_name}' for index, post_name in enumerate(posts_added)
+                    )
+                ]
         else:
-            paragraphs = ['<b>Добавлено в реестр постов:</b>'] + [
-                '\n'.join(
-                    f'{index + 1}) {post_name}' for index, post_name in enumerate(posts_added)
-                )
-            ]
+            paragraphs = FillPostsListJob._format_errors(errors)
 
         pretty_send(paragraphs, send)
 
