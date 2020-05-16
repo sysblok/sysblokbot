@@ -2,6 +2,18 @@
 import os
 from enum import Enum
 
+LOG_FORMAT = '%(asctime)s - %(name)s\t- %(levelname)s\t- %(message)s'
+
+COMMIT_URL = f'https://github.com/sysblok/sysblokbot/commit/{os.environ.get("COMMIT_HASH")}'
+COMMIT_HASH = os.environ.get('COMMIT_HASH_SHORT')
+
+
+class AppSource(Enum):
+    DEFAULT = 'manual'
+    GITHUB = 'github CI'
+
+
+APP_SOURCE = os.environ.get('APP_SOURCE', AppSource.DEFAULT.value)
 
 ROOT_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 CONFIG_PATH = os.path.join(ROOT_DIR, 'config.json')
@@ -32,3 +44,24 @@ class TrelloCardColor(Enum):
     LIME = 'lime'
     PINK = 'pink'
     BLACK = 'black'
+
+
+class TrelloListAlias(Enum):
+    TOPIC_SUGGESTION = 'Предлагаю тему!'
+    TOPIC_READY = 'Готовая тема'
+    IN_PROGRESS = 'Уже пишу'
+    TO_EDITOR = 'Редактору'
+    EDITED_NEXT_WEEK = 'На редактуре на след.неделю'
+    EDITED_SOMETIMES = 'Отредактировано впрок'
+    TO_CHIEF_EDITOR = 'Финальная проверка и отбор'
+    PROOFREADING = 'Отобрано для публикации на неделю'
+    DONE = 'Готово для верстки'
+    BACK_BURNER = 'Долгий Ящик'
+
+
+class TrelloCustomFieldTypeAlias(Enum):
+    AUTHOR = 'Автор'
+    GOOGLE_DOC = 'Google Doc'
+    EDITOR = 'Редактор'
+    TITLE = 'Название поста'
+    ILLUSTRATOR = 'Иллюстратор'

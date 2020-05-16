@@ -8,18 +8,18 @@ from .base_job import BaseJob
 from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias
 from ..trello.trello_client import TrelloClient
 from .utils import pretty_send
+from ..sheets.sheets_objects import RegistryPost
 
 logger = logging.getLogger(__name__)
 
 
-class PublicationPlansJob(BaseJob):
+class FillPostsListJob(BaseJob):
     @staticmethod
     def _execute(app_context: AppContext, send: Callable[[str], None]):
-        paragraphs = []  # list of paragraph strings
         errors = {}
-        paragraphs.append('Всем привет!')
+        registry_posts = []
 
-        paragraphs += PublicationPlansJob._retrieve_cards_for_paragraph(
+        registry_posts += FillPostsListJob._retrieve_cards_for_registry(
             trello_client=app_context.trello_client,
             title='Публикуем на неделе',
             list_aliases=(TrelloListAlias.PROOFREADING, TrelloListAlias.DONE),
@@ -27,27 +27,29 @@ class PublicationPlansJob(BaseJob):
             show_due=True,
         )
 
-        paragraphs += PublicationPlansJob._retrieve_cards_for_paragraph(
-            trello_client=app_context.trello_client,
-            title='На редактуре',
-            list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, ),
-            errors=errors,
-            show_due=False,
-            need_illustrators=False,
-        )
-
-        paragraphs.append('Спасибо авторам, редакторам, кураторам и иллюстраторам! 🤖❤️')
+        posts_added = app_context.sheets_client.update_posts_registry(registry_posts)
 
         if len(errors) > 0:
-            paragraphs = PublicationPlansJob._format_errors(errors)
+            paragraphs = FillPostsListJob._format_errors(errors)
+        elif len(posts_added) == 0:
+            paragraphs = [
+                '''Информация о публикуемых на следующей неделе постах уже внесена в реестр. \
+Внести необходимые изменения можно в таблице “Реестр постов”.'''
+            ]
+        else:
+            paragraphs = ['<b>Добавлено в реестр постов:</b>'] + [
+                '\n'.join(
+                    f'{index + 1}) {post_name}' for index, post_name in enumerate(posts_added)
+                )
+            ]
 
         pretty_send(paragraphs, send)
 
     @staticmethod
-    def _retrieve_cards_for_paragraph(
+    def _retrieve_cards_for_registry(
             trello_client: TrelloClient,
             title: str,
-            list_aliases: List[TrelloListAlias],
+            list_aliases: List[str],
             errors: dict,
             show_due=True,
             need_illustrators=True,
@@ -62,7 +64,7 @@ class PublicationPlansJob(BaseJob):
             cards.sort(key=lambda card: card.due)
         parse_failure_counter = 0
 
-        paragraphs = [f'<b>{title}: {len(cards)}</b>']
+        registry_posts = []
 
         for card in cards:
             if not card:
@@ -103,6 +105,8 @@ class PublicationPlansJob(BaseJob):
                 this_card_bad_fields.append('иллюстратор')
             if card.due is None and show_due:
                 this_card_bad_fields.append('дата публикации')
+            if len(card.labels) == 0:
+                this_card_bad_fields.append('рубрика')
 
             if len(this_card_bad_fields) > 0:
                 logger.error(
@@ -111,36 +115,30 @@ class PublicationPlansJob(BaseJob):
                 errors[card] = this_card_bad_fields
                 continue
 
-            paragraphs.append(
-                PublicationPlansJob._format_card(
-                    card, title, google_doc, authors, editors, illustrators, show_due=show_due
+            is_main_post = 'Главный пост' in label_names
+            is_archive_post = 'Архив' in label_names
+
+            registry_posts.append(
+                RegistryPost(
+                    card,
+                    title.value,
+                    ','.join(authors),
+                    google_doc.value,
+                    ','.join(editors),
+                    ','.join(illustrators),
+                    is_main_post,
+                    is_archive_post,
                 )
             )
 
         if parse_failure_counter > 0:
             logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
-        return paragraphs
-
-    @staticmethod
-    def _format_card(
-            card, title, google_doc, authors, editors, illustrators, show_due=True
-    ) -> str:
-        # Name and google_doc url always present.
-        card_text = f'<a href="{google_doc}">{title or card.name}</a>\n'
-
-        card_text += f'Автор{"ы" if len(authors) > 1 else ""}: {", ".join(authors)}. '
-        card_text += f'Редактор{"ы" if len(editors) > 1 else ""}: {", ".join(editors)}. '
-        if len(illustrators) > 0:
-            card_text += (
-                f'Иллюстратор{"ы" if len(illustrators) > 1 else ""}: {", ".join(illustrators)}. '
-            )
-
-        if show_due:
-            card_text = f'<b>{card.due.strftime("%d.%m")}</b> — {card_text}'
-        return card_text.strip()
+        return registry_posts
 
     @staticmethod
     def _format_errors(errors: dict):
+        # copied from publication_plans_job.py
+        # it will be merged there later, hopefully
         error_messages = []
         for bad_card, bad_fields in errors.items():
             card_error_message = f'В карточке <a href="{bad_card.url}">\

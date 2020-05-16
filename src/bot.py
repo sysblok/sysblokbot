@@ -4,10 +4,9 @@ from typing import Callable
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
-from . import jobs
 from .app_context import AppContext
 from .config_manager import ConfigManager
-from .consts import SEND_TO
+from .jobs.utils import get_job_runnable
 from .tg import handlers, sender
 
 
@@ -26,40 +25,87 @@ class SysBlokBot:
         self.dp = self.updater.dispatcher
         self.app_context = AppContext(config_manager)
         self.telegram_sender = sender.TelegramSender(self.dp.bot, tg_config)
+        self.user_handlers = {}
+        self.admin_handlers = {}
+        self.manager_handlers = {}
         logger.info('SysBlokBot successfully initialized')
 
     def init_handlers(self):
         # all command handlers defined here
-        self.dp.add_handler(CommandHandler("start", handlers.start))
-        self.dp.add_handler(CommandHandler("help", handlers.help))
-        self.dp.add_handler(CommandHandler("test", handlers.test_handler))
-
         # business logic cmds
-        self.dp.add_handler(CommandHandler(
-            "send_trello_board_state",
-            self.admin_broadcast_handler("trello_board_state_job")))
-        self.dp.add_handler(CommandHandler(
-            "get_trello_board_state",
-            self.manager_reply_handler("trello_board_state_job")
-        ))
-        self.dp.add_handler(CommandHandler(
-            "send_publication_plans",
-            self.admin_broadcast_handler("publication_plans_job")
-        ))
-        self.dp.add_handler(CommandHandler(
-            "get_publication_plans",
-            self.manager_reply_handler("publication_plans_job")
-        ))
+        self.add_admin_handler(
+            'send_trello_board_state',
+            self.admin_broadcast_handler('trello_board_state_job'),
+            'рассылка сводки о состоянии доски')
+        self.add_manager_handler(
+            'get_trello_board_state',
+            self.manager_reply_handler('trello_board_state_job'),
+            'получить сводку о состоянии доски')
+        self.add_admin_handler(
+            'send_publication_plans',
+            self.admin_broadcast_handler('publication_plans_job'),
+            'рассылка сводки о публикуемых на неделе постах'
+        )
+        self.add_manager_handler(
+            'get_publication_plans',
+            self.manager_reply_handler('publication_plans_job'),
+            'получить сводку о публикуемых на неделе постах'
+        )
+        self.add_manager_handler(
+            'fill_posts_list',
+            self.manager_reply_handler('fill_posts_list_job'),
+            'заполнить реестр постов'
+        )
 
         # admin-only technical cmds
-        self.dp.add_handler(CommandHandler(
-            "update_config",
-            self.admin_reply_handler("config_updater_job")
-        ))
-        self.dp.add_handler(CommandHandler("list_jobs", handlers.list_jobs_handler))
-        self.dp.add_handler(CommandHandler("set_log_level", handlers.set_log_level_handler))
+        self.add_admin_handler(
+            'update_config',
+            self.admin_reply_handler('config_updater_job'),
+            'обновить конфиг вне расписания'
+        )
+        self.add_admin_handler(
+            'list_jobs',
+            handlers.list_jobs_handler,
+            'показать статус асинхронных задач'
+        )
+        self.add_admin_handler(
+            'set_log_level',
+            handlers.set_log_level_handler,
+            'изменить уровень логирования (info / debug)'
+        )
+        self.add_admin_handler(
+            'mute_errors',
+            handlers.mute_errors,
+            'отключить логирование ошибок в телеграм'
+        )
+        self.add_admin_handler(
+            'unmute_errors',
+            handlers.unmute_errors,
+            'включить логирование ошибок в телеграм'
+        )
+        self.add_admin_handler(
+            'get_config',
+            handlers.get_config,
+            'получить текущий конфиг (частично или полностью)'
+        )
+        self.add_admin_handler(
+            'set_config',
+            handlers.set_config,
+            'установить новое значение в конфиге'
+        )
 
-        # on user message
+        # general purpose cmds
+        self.add_admin_handler('start', handlers.start, 'начать чат с ботом')
+        self.add_admin_handler(
+            'help',
+            lambda update, context: handlers.help(
+                update, context, self.admin_handlers, self.manager_handlers, self.user_handlers
+            ),
+            'получить список доступных команд'
+        )
+        self.add_handler('test', handlers.test_handler)
+
+        # on non-command user message
         self.dp.add_handler(MessageHandler(
             Filters.text,
             handlers.handle_user_message)
@@ -78,6 +124,35 @@ class SysBlokBot:
         # stop the bot gracefully.
         self.updater.idle()
 
+    # Methods, adding command handlers and setting them to /help cmd for proper audience
+    def add_handler(self, handler_cmd: str, handler_func: Callable):
+        """Adds handler silently. Noone will see it in /help output"""
+        self.dp.add_handler(CommandHandler(handler_cmd, handler_func))
+
+    def add_admin_handler(self, handler_cmd: str, handler_func: Callable, description: str = ''):
+        """
+        Adds handler. It will be listed in /help for admins only
+        Note: method does not automatically handle invokation restrictions.
+        See tg.utils#admin_only
+        """
+        self.add_handler(handler_cmd, handler_func)
+        self.admin_handlers[f'/{handler_cmd}'] = description
+
+    def add_manager_handler(self, handler_cmd: str, handler_func: Callable, description: str = ''):
+        """
+        Adds handler. It will be listed in /help for admins and managers only
+        Note: method does not automatically handle invokation restrictions.
+        See tg.utils#manager_only
+        """
+        self.add_handler(handler_cmd, handler_func)
+        self.manager_handlers[f'/{handler_cmd}'] = description
+
+    def add_user_handler(self, handler_cmd: str, handler_func: Callable, description: str = ''):
+        """Adds handler. It will be listed in /help for everybody"""
+        self.add_handler(handler_cmd, handler_func)
+        self.user_handlers[f'/{handler_cmd}'] = description
+
+    # Methods, creating handlers from jobs with proper invocation restrictions
     def admin_broadcast_handler(self, job_name: str) -> Callable:
         """
         Handler that invokes the job as configured in settings, if called by admin.
@@ -108,7 +183,7 @@ class SysBlokBot:
         """
         Creates a handler that replies to a message of given user.
         """
-        return lambda update, tg_context: getattr(jobs, job_name).execute(
+        return lambda update, tg_context: get_job_runnable(job_name)(
                 app_context=self.app_context,
                 send=self.telegram_sender.create_reply_send(update)
             )
@@ -117,8 +192,8 @@ class SysBlokBot:
         """
         Creates a handler that sends message to list of chat ids.
         """
-        chat_ids = self.config_manager.get_jobs_config().get(job_name, {}).get(SEND_TO, [])
-        return lambda update, tg_context: getattr(jobs, job_name).execute(
+        chat_ids = self.config_manager.get_job_send_to(job_name)
+        return lambda update, tg_context: get_job_runnable(job_name)(
                 app_context=self.app_context,
                 send=self.telegram_sender.create_chat_ids_send(chat_ids)
             )

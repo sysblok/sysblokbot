@@ -51,17 +51,26 @@ jobs:
         with:
           ref: master
 
-      - name: Publish to Github Packages Registry
-        uses: elgohr/Publish-Docker-Github-Action@master
+      - name: Generate build args
+        id: args
+        run: |
+          echo "::set-output name=commit_hash::$(git rev-parse HEAD)"
+          echo "::set-output name=commit_hash_short::$(git rev-parse --short HEAD)"
+
+      - name: Publish to Github Packages Registry with cache
+        uses: whoan/docker-build-with-cache-action@v5
         env:
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          COMMIT_HASH: "${{ steps.args.outputs.commit_hash }}"
+          COMMIT_HASH_SHORT: "${{ steps.args.outputs.commit_hash_short }}"
         with:
-          name: ${{ github.repository }}/${{ env.IMAGE_NAME }}
+          image_name: ${{ github.repository }}/${{ env.IMAGE_NAME }}
           registry: docker.pkg.github.com
           username: sysblok
           password: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: Dockerfile
-          tags: "prod,latest"
+          image_tag: "prod,latest"
+          build_extra_args: "--build-arg=COMMIT_HASH --build-arg=COMMIT_HASH_SHORT"
 
       - name: Deploy package to digitalocean
         uses: appleboy/ssh-action@master
@@ -83,6 +92,7 @@ jobs:
             docker rmi $(docker images -a --filter reference='docker.pkg.github.com/sysblok/sysblokbot/sysblokbot:prod')
             docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
             docker run -dit --name sysblokbot-prod \
+              --env APP_SOURCE="github CI" \
               -v /home/${{ env.DO_USERNAME }}/config_override_prod.json:/app/config_override.json \
               -v /home/${{ env.DO_USERNAME }}/config_gs_prod.json:/app/config_gs.json \
               docker.pkg.github.com/sysblok/sysblokbot/${{ env.IMAGE_NAME }}:prod

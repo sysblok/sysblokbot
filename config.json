@@ -3,41 +3,22 @@
         "token": "do_not_set_here_please_go_to_config_override",
         "is_silent": false,
         "disable_web_page_preview": false,
-        "_tmp_": {
-            "admin_chat_ids": [],
-            "manager_chat_ids": []
-        }
+        "admin_chat_ids": [],
+        "manager_chat_ids": [],
+        "important_events_recipients": [],
+        "error_logs_recipients": []
     },
     "trello": {
         "api_key": "do_not_set_here_please_go_to_config_override",
         "token": "do_not_set_here_please_go_to_config_override",
-        "board_id": "5e91d48a9e9d947b95fb0df7",
-        "_tmp_": {
-            "list_aliases": {
-                "topic_suggestion": "5e91d48a9e9d947b95fb0df8",
-                "topic_ready": "5e91d48a9e9d947b95fb0df9",
-                "in_progress": "5e91d48a9e9d947b95fb0dfa",
-                "editor": "5e91d48a9e9d947b95fb0dfb",
-                "edited_next_week": "5e91d48a9e9d947b95fb0dfc",
-                "edited_sometimes": "5e91d48a9e9d947b95fb0dfd",
-                "chief_editor": "5e91d48a9e9d947b95fb0dfe",
-                "proofreading": "5e91d48a9e9d947b95fb0dff",
-                "done": "5e91d48a9e9d947b95fb0e00",
-                "back_burner": "5e91d48a9e9d947b95fb0e01"
-            },
-            "custom_field_type_aliases": {
-                "author": "",
-                "google_doc": "",
-                "editor": "",
-                "title": "",
-                "illustrator": ""
-            }
-        }
+        "board_id": "5e91d48a9e9d947b95fb0df7"
     },
     "sheets": {
         "api_key_path": "do_not_set_here_please_go_to_config_override",
-        "authors_sheet_key": "",
-        "curators_sheet_key": ""
+        "authors_sheet_key": "do_not_set_here_please_go_to_config_override",
+        "curators_sheet_key": "do_not_set_here_please_go_to_config_override",
+        "post_registry_sheet_key": "do_not_set_here_please_go_to_config_override",
+        "rubrics_registry_sheet_key": "do_not_set_here_please_go_to_config_override"
     },
     "jobs": {
         "sample_job": {
