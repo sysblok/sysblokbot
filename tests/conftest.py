@@ -107,7 +107,6 @@ def mock_sheets_client(mock_config_manager):
 
     def _update_from_config(self):
         """Update attributes according to current self._sheets_config"""
-        self._sheets_config = mock_config_manager(None)['sheets']
         self.authors_sheet_key = self._sheets_config['authors_sheet_key']
         self.curators_sheet_key = self._sheets_config['curators_sheet_key']
         self.post_registry_sheet_key = self._sheets_config['post_registry_sheet_key']
