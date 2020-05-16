@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import locale
 import logging
 import os
 
@@ -11,6 +12,7 @@ from src.tg.sender import TelegramSender
 from src.utils.log_handler import ErrorBroadcastHandler
 
 
+locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
 logging.basicConfig(format=consts.LOG_FORMAT, level=logging.INFO)
 
 

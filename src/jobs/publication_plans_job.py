@@ -141,7 +141,7 @@ class PublicationPlansJob(BaseJob):
 
         if show_due:
             card_text = (
-                f'<b>{card.due.strftime("%d.%m")} ({card.due.strftime("%a")})</b> — {card_text}'
+                f'<b>{card.due.strftime("%d.%m (%a)").lower()}</b> — {card_text}'
             )
         return card_text.strip()
 
