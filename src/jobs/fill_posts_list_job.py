@@ -31,8 +31,8 @@ class FillPostsListJob(BaseJob):
             posts_added = app_context.sheets_client.update_posts_registry(registry_posts)
             if len(posts_added) == 0:
                 paragraphs = [
-                    '''Информация о публикуемых на следующей неделе постах уже внесена в реестр. \
-    Внести необходимые изменения можно в таблице “Реестр постов”.'''
+                    'Информация о публикуемых на следующей неделе постах уже внесена в реестр. '
+                    'Внести необходимые изменения можно в таблице “Реестр постов”.'
                 ]
             else:
                 paragraphs = ['<b>Добавлено в реестр постов:</b>'] + [
@@ -144,8 +144,10 @@ class FillPostsListJob(BaseJob):
         # it will be merged there later, hopefully
         error_messages = []
         for bad_card, bad_fields in errors.items():
-            card_error_message = f'В карточке <a href="{bad_card.url}">\
-{bad_card.name}</a> не заполнено: {", ".join(bad_fields)}'
+            card_error_message = (
+                f'В карточке <a href="{bad_card.url}">{bad_card.name}</a>'
+                f' не заполнено: {", ".join(bad_fields)}'
+            )
             error_messages.append(card_error_message)
         paragraphs = [
             'Не удалось внести информацию в реестр.',

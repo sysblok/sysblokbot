@@ -178,8 +178,7 @@ class TrelloCard:
         return self.url
 
     def __repr__(self):
-        return f'Card<id={self.id}, name={self.name}, url={self.url} \
-members={self.members}>'
+        return f'Card<id={self.id}, name={self.name}, url={self.url} members={self.members}>'
 
     @classmethod
     def from_dict(cls, data):
@@ -257,8 +256,7 @@ class TrelloCustomField:
         return self.value
 
     def __repr__(self):
-        return f'CustomField<id={self.id}, value={self.value}, \
-type_id={self.type_id}>'
+        return f'CustomField<id={self.id}, value={self.value}, type_id={self.type_id}>'
 
     @classmethod
     def from_dict(cls, data):
@@ -290,8 +288,7 @@ class TrelloMember:
         return self.username
 
     def __repr__(self):
-        return f'Member<id={self.id}, name={self.username}, \
-            full name={self.full_name}>'
+        return f'Member<id={self.id}, name={self.username}, full name={self.full_name}>'
 
     def __eq__(self, other):
         return (isinstance(other, TrelloMember) and

@@ -149,13 +149,14 @@ class PublicationPlansJob(BaseJob):
     def _format_errors(errors: dict):
         error_messages = []
         for bad_card, bad_fields in errors.items():
-            card_error_message = f'В карточке <a href="{bad_card.url}">\
-{bad_card.name}</a> не заполнено: {", ".join(bad_fields)}'
+            card_error_message = (
+                f'В карточке <a href="{bad_card.url}">{bad_card.name}</a>'
+                f' не заполнено: {", ".join(bad_fields)}'
+            )
             error_messages.append(card_error_message)
         paragraphs = [
             'Не могу сгенерировать сводку.',
             '\n'.join(error_messages),
-            'Пожалуйста, заполни требуемые поля в карточках \
-    и запусти генерацию снова.'
+            'Пожалуйста, заполни требуемые поля в карточках и запусти генерацию снова.'
         ]
         return paragraphs
