@@ -31,7 +31,6 @@ class AppContext(Singleton):
             )
         except Exception as e:
             logger.critical(f'Could not initialize GoogleSheetsClient: {e}')
-            raise
 
         # TODO: move that to db
         tg_config = config_manager.get_telegram_config()
