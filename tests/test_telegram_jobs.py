@@ -2,8 +2,8 @@ import pytest
 
 from src.app_context import AppContext
 from src.config_manager import ConfigManager
-import src.jobs as jobs
-import src.tg as tg
+from src import jobs
+from src.tg.sender import TelegramSender
 from src.sheets.sheets_client import GoogleSheetsClient
 from src.trello.trello_client import TrelloClient
 
@@ -44,12 +44,12 @@ def test_job(monkeypatch, mock_trello, mock_sheets_client, mock_config_manager, 
     monkeypatch.setattr(GoogleSheetsClient, '_update_from_config', _update_from_config)
     monkeypatch.setattr(GoogleSheetsClient, '_parse_gs_res', _parse_gs_res)
     monkeypatch.setattr(
-        tg.sender.TelegramSender,
+        TelegramSender,
         'send_to_chat_id',
         mock_sender(output_parts)
     )
 
     job._execute(
         AppContext(ConfigManager()),
-        send=tg.sender.TelegramSender({}, {}).create_chat_ids_send((0))
+        send=TelegramSender({}, {}).create_chat_ids_send((0))
     )
