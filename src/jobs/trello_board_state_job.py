@@ -16,8 +16,9 @@ class TrelloBoardStateJob(BaseJob):
     @staticmethod
     def _execute(app_context: AppContext, send: Callable[[str], None]):
         paragraphs = []  # list of paragraph strings
-        paragraphs.append('Всем привет! Еженедельная сводка \
-о состоянии Trello-доски.\n#доскаживи')
+        paragraphs.append(
+            'Всем привет! Еженедельная сводка о состоянии Trello-доски.\n#доскаживи'
+        )
 
         paragraphs += TrelloBoardStateJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,

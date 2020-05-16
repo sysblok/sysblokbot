@@ -53,7 +53,9 @@ class SysBlokBot:
         )
         self.add_manager_handler(
             'fill_posts_list',
-            self.manager_reply_handler('fill_posts_list_job'),
+            handlers.direct_message_only(
+                self.manager_reply_handler('fill_posts_list_job')
+            ),
             'заполнить реестр постов'
         )
 

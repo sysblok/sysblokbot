@@ -5,7 +5,7 @@ from typing import Callable, List
 
 from ..app_context import AppContext
 from .base_job import BaseJob
-from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias
+from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias, TrelloCardColor
 from ..trello.trello_client import TrelloClient
 from .utils import pretty_send
 
@@ -59,7 +59,7 @@ class PublicationPlansJob(BaseJob):
         list_ids = [trello_client.lists_config[alias] for alias in list_aliases]
         cards = trello_client.get_cards(list_ids)
         if show_due:
-            cards.sort(key=lambda card: card.due)
+            cards.sort(key=lambda card: card.due or datetime.datetime.min)
         parse_failure_counter = 0
 
         paragraphs = [f'<b>{title}: {len(cards)}</b>']
@@ -85,7 +85,9 @@ class PublicationPlansJob(BaseJob):
             google_doc = card_fields_dict.get(TrelloCustomFieldTypeAlias.GOOGLE_DOC, None)
             title = card_fields_dict.get(TrelloCustomFieldTypeAlias.TITLE, None)
 
-            label_names = [label.name for label in card.labels]
+            label_names = [
+                label.name for label in card.labels if label.color != TrelloCardColor.BLACK
+            ]
 
             this_card_bad_fields = []
             if (
@@ -103,9 +105,11 @@ class PublicationPlansJob(BaseJob):
                 this_card_bad_fields.append('иллюстратор')
             if card.due is None and show_due:
                 this_card_bad_fields.append('дата публикации')
+            if len(label_names) == 0:
+                this_card_bad_fields.append('рубрика')
 
             if len(this_card_bad_fields) > 0:
-                logger.error(
+                logger.info(
                     f'Trello card is unsuitable for publication: {card.url} {this_card_bad_fields}'
                 )
                 errors[card] = this_card_bad_fields
@@ -136,20 +140,23 @@ class PublicationPlansJob(BaseJob):
             )
 
         if show_due:
-            card_text = f'<b>{card.due.strftime("%d.%m")}</b> — {card_text}'
+            card_text = (
+                f'<b>{card.due.strftime("%d.%m (%a)").lower()}</b> — {card_text}'
+            )
         return card_text.strip()
 
     @staticmethod
     def _format_errors(errors: dict):
         error_messages = []
         for bad_card, bad_fields in errors.items():
-            card_error_message = f'В карточке <a href="{bad_card.url}">\
-{bad_card.name}</a> не заполнено: {", ".join(bad_fields)}'
+            card_error_message = (
+                f'В карточке <a href="{bad_card.url}">{bad_card.name}</a>'
+                f' не заполнено: {", ".join(bad_fields)}'
+            )
             error_messages.append(card_error_message)
         paragraphs = [
             'Не могу сгенерировать сводку.',
             '\n'.join(error_messages),
-            'Пожалуйста, заполни требуемые поля в карточках \
-    и запусти генерацию снова.'
+            'Пожалуйста, заполни требуемые поля в карточках и запусти генерацию снова.'
         ]
         return paragraphs
