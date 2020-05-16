@@ -96,7 +96,9 @@ class TrelloClient(Singleton):
         custom_fields = self.get_card_custom_fields(card_id)
         custom_fields_dict = {}
         for alias, type_id in self.custom_fields_config.items():
-            custom_fields_dict[alias] = next(fld for fld in custom_fields if fld.id == type_id)
+            suitable_fields = [fld for fld in custom_fields if fld.type_id == type_id]
+            if len(suitable_fields) > 0:
+                custom_fields_dict[alias] = suitable_fields[0]
         return custom_fields_dict
 
     def get_members(self):

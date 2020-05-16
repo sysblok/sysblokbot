@@ -5,7 +5,7 @@ from typing import Callable, List
 
 from ..app_context import AppContext
 from .base_job import BaseJob
-from ..consts import TrelloListAlias
+from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias, TrelloCardColor
 from ..trello.trello_client import TrelloClient
 from .utils import pretty_send
 
@@ -59,7 +59,7 @@ class PublicationPlansJob(BaseJob):
         list_ids = [trello_client.lists_config[alias] for alias in list_aliases]
         cards = trello_client.get_cards(list_ids)
         if show_due:
-            cards.sort(key=lambda card: card.due)
+            cards.sort(key=lambda card: card.due or datetime.datetime.min)
         parse_failure_counter = 0
 
         paragraphs = [f'<b>{title}: {len(cards)}</b>']
@@ -85,10 +85,15 @@ class PublicationPlansJob(BaseJob):
             google_doc = card_fields_dict.get(TrelloCustomFieldTypeAlias.GOOGLE_DOC, None)
             title = card_fields_dict.get(TrelloCustomFieldTypeAlias.TITLE, None)
 
-            label_names = [label.name for label in card.labels]
+            label_names = [
+                label.name for label in card.labels if label.color != TrelloCardColor.BLACK
+            ]
 
             this_card_bad_fields = []
-            if title is None and card.lst.id != trello_client.lists_config['edited_next_week']:
+            if (
+                    title is None and
+                    card.lst.id != trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK]
+            ):
                 this_card_bad_fields.append('название поста')
             if google_doc is None:
                 this_card_bad_fields.append('google doc')
@@ -100,9 +105,11 @@ class PublicationPlansJob(BaseJob):
                 this_card_bad_fields.append('иллюстратор')
             if card.due is None and show_due:
                 this_card_bad_fields.append('дата публикации')
+            if len(label_names) == 0:
+                this_card_bad_fields.append('рубрика')
 
             if len(this_card_bad_fields) > 0:
-                logger.error(
+                logger.info(
                     f'Trello card is unsuitable for publication: {card.url} {this_card_bad_fields}'
                 )
                 errors[card] = this_card_bad_fields
@@ -133,7 +140,9 @@ class PublicationPlansJob(BaseJob):
             )
 
         if show_due:
-            card_text = f'<b>{card.due.strftime("%d.%m")}</b> — {card_text}'
+            card_text = (
+                f'<b>{card.due.strftime("%d.%m")} ({card.due.strftime("%a")})</b> — {card_text}'
+            )
         return card_text.strip()
 
     @staticmethod

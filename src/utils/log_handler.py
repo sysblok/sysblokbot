@@ -1,5 +1,6 @@
 from logging import LogRecord, StreamHandler, Formatter
 from logging import ERROR
+import html
 
 from .singleton import Singleton
 from ..consts import LOG_FORMAT
@@ -27,7 +28,7 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
                 error_message = f'{record.levelname} - {record.module} - {record.message}'
                 if record.exc_text:
                     error_message += f' - {record.exc_text}'
-                self.tg_sender.send_error_log(f'<code>{error_message}</code>')
+                self.tg_sender.send_error_log(f'<code>{html.escape(error_message)}</code>')
             except Exception as e:
                 # if it can't send a message, still should log it to the stream
                 super().emit(LogRecord(
