@@ -90,7 +90,6 @@ class FillPostsListJob(BaseJob):
             label_names = [
                 label.name for label in card.labels if label.color != TrelloCardColor.BLACK
             ]
-            print(label_names)
 
             this_card_bad_fields = []
             if (
@@ -118,8 +117,8 @@ class FillPostsListJob(BaseJob):
                 errors[card] = this_card_bad_fields
                 continue
 
-            is_main_post = 'Главный пост' in label_names
-            is_archive_post = 'Архив' in label_names
+            is_main_post = 'Главный пост' in [label.name for label in card.labels]
+            is_archive_post = 'Архив' in [label.name for label in card.labels]
 
             registry_posts.append(
                 RegistryPost(
