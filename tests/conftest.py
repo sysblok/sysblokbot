@@ -96,7 +96,10 @@ def mock_config_manager():
                 "post_registry_sheet_key": "post_registry_sheet_key",
                 "rubrics_registry_sheet_key": "rubrics_registry_sheet_key"
             },
-            "jobs": {}
+            "jobs": {},
+            "db": {
+                "uri": "sqlite:///:memory:"
+            }
         }
 
     return get_latest_config
