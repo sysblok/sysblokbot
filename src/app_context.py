@@ -35,6 +35,9 @@ class AppContext(Singleton):
 
         self.db_client = DBClient(config=config_manager.get_db_config())
 
+        if self.sheets_client:
+            self.db_client.fetch_all(self.sheets_client)
+
         # TODO: move that to db
         tg_config = config_manager.get_telegram_config()
         trello_config = config_manager.get_trello_config()

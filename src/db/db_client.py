@@ -28,6 +28,9 @@ class DBClient(Singleton):
         self.session = Session()
         Base.metadata.create_all(self.engine)
 
+    def fetch_all(self, sheets_client: GoogleSheetsClient):
+        self.fetch_authors_sheet(sheets_client)
+
     def fetch_authors_sheet(self, sheets_client: GoogleSheetsClient):
         try:
             # clean this table

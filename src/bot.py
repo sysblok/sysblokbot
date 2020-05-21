@@ -100,7 +100,7 @@ class SysBlokBot:
         self.add_admin_handler(
             'db_fetch_authors_sheet',
             self.admin_reply_handler('db_fetch_authors_sheet_job'),
-            'обновить таблицу с авторами из гугл шитс'
+            'обновить таблицу с авторами из Google Sheets'
         )
 
         # general purpose cmds
