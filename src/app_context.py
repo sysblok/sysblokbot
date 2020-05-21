@@ -3,6 +3,7 @@ import logging
 from .consts import TRELLO_CONFIG
 
 from .config_manager import ConfigManager
+from .db.db_client import DBClient
 from .sheets.sheets_client import GoogleSheetsClient
 from .tg.sender import TelegramSender
 from .trello.trello_client import TrelloClient
@@ -31,6 +32,8 @@ class AppContext(Singleton):
             )
         except Exception as e:
             logger.critical(f'Could not initialize GoogleSheetsClient: {e}')
+
+        self.db_client = DBClient(config=config_manager.get_db_config())
 
         # TODO: move that to db
         tg_config = config_manager.get_telegram_config()
