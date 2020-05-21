@@ -28,6 +28,6 @@
         }
     },
     "db": {
-        "uri": ""
+        "uri": "sqlite:///sysblokbot.sqlite"
     }
 }

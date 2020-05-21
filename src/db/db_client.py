@@ -47,4 +47,7 @@ class DBClient(Singleton):
         author = self.session.query(Author).filter(
             Author.trello == trello_id
         ).first()
+        if author is None:
+            logger.warning(f'Telegram id not found for {trello_id}')
+            return None
         return author.telegram
