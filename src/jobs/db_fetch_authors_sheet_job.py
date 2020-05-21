@@ -1,14 +1,7 @@
-import datetime
-import json
 import logging
-from typing import Callable, List
-
-from deepdiff import DeepDiff
+from typing import Callable
 
 from ..app_context import AppContext
-from ..scheduler import JobScheduler
-from ..tg.sender import TelegramSender
-from ..trello.trello_client import TrelloClient
 from .base_job import BaseJob
 
 logger = logging.getLogger(__name__)
