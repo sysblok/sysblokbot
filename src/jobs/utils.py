@@ -5,6 +5,7 @@ from typing import Callable, List
 
 
 from ..app_context import AppContext
+from ..db.db_client import DBClient
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..trello.trello_objects import TrelloMember
 from .. import jobs
@@ -22,7 +23,7 @@ curator_name_cache = {}
 
 def retrieve_username(
         trello_member: TrelloMember,
-        sheets_client: GoogleSheetsClient
+        db_client: DBClient
 ):
     """
     Where possible and defined, choose @tg_id over trello_id.
@@ -37,7 +38,7 @@ def retrieve_username(
         tg_id = tg_login_cache[trello_id]
     else:
         try:
-            tg_id = sheets_client.find_telegram_id_by_trello_id(
+            tg_id = db_client.find_author_telegram_id_by_trello_id(
                 '@' + trello_id
             )
         except Exception as e:
@@ -53,13 +54,13 @@ def retrieve_username(
 
 def retrieve_usernames(
         trello_members: List[TrelloMember],
-        sheets_client: GoogleSheetsClient
+        db_client: DBClient
 ) -> List[str]:
     """
     Process an iterable of trello members to list of formatted strings.
     """
     return [
-        retrieve_username(member, sheets_client)
+        retrieve_username(member, db_client)
         for member in trello_members
     ]
 
