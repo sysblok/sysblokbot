@@ -33,9 +33,12 @@ class AppContext(Singleton):
         except Exception as e:
             logger.critical(f'Could not initialize GoogleSheetsClient: {e}')
 
-        self.db_client = DBClient(config=config_manager.get_db_config())
+        try:
+            self.db_client = DBClient(config=config_manager.get_db_config())
+        except Exception as e:
+            logger.critical(f'Could not initialize DBClient: {e}')
 
-        if self.sheets_client:
+        if self.sheets_client and self.db_client:
             self.db_client.fetch_all(self.sheets_client)
 
         # TODO: move that to db
