@@ -91,6 +91,7 @@ jobs:
             docker rm $(docker ps -aq --filter name=testing)
             docker rmi $(docker images -a --filter reference='docker.pkg.github.com/sysblok/sysblokbot/sysblokbot:testing')
             docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
+            touch /home/${{ env.DO_USERNAME }}/sysblokbot.sqlite
             docker run -dit --name sysblokbot-testing \
               --env APP_SOURCE="github CI" \
               -v /home/${{ env.DO_USERNAME }}/config_override_testing.json:/app/config_override.json \
