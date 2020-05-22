@@ -22,9 +22,7 @@ class TrelloBoardStateJob(BaseJob):
         )
 
         paragraphs += TrelloBoardStateJob._retrieve_cards_for_paragraph(
-            trello_client=app_context.trello_client,
-            sheets_client=None,
-            db_client=app_context.db_client,
+            app_context=app_context,
             title='Не указан автор в карточке',
             list_aliases=(
                 TrelloListAlias.IN_PROGRESS,
@@ -41,9 +39,7 @@ class TrelloBoardStateJob(BaseJob):
         )
 
         paragraphs += TrelloBoardStateJob._retrieve_cards_for_paragraph(
-            trello_client=app_context.trello_client,
-            sheets_client=app_context.sheets_client,
-            db_client=app_context.db_client,
+            app_context=app_context,
             title='Не указан срок в карточке',
             list_aliases=(TrelloListAlias.IN_PROGRESS, ),
             filter_func=lambda card: not card.due,
@@ -51,9 +47,7 @@ class TrelloBoardStateJob(BaseJob):
         )
 
         paragraphs += TrelloBoardStateJob._retrieve_cards_for_paragraph(
-            trello_client=app_context.trello_client,
-            sheets_client=app_context.sheets_client,
-            db_client=app_context.db_client,
+            app_context=app_context,
             title='Не указан тег рубрики в карточке',
             list_aliases=(
                 TrelloListAlias.IN_PROGRESS,
@@ -81,9 +75,7 @@ class TrelloBoardStateJob(BaseJob):
         # )
 
         paragraphs += TrelloBoardStateJob._retrieve_cards_for_paragraph(
-            trello_client=app_context.trello_client,
-            sheets_client=app_context.sheets_client,
-            db_client=app_context.db_client,
+            app_context=app_context,
             title='Пропущен дедлайн',
             list_aliases=(TrelloListAlias.IN_PROGRESS, ),
             filter_func=TrelloBoardStateJob._is_deadline_missed,
@@ -97,9 +89,7 @@ class TrelloBoardStateJob(BaseJob):
 
     @staticmethod
     def _retrieve_cards_for_paragraph(
-            trello_client: TrelloClient,
-            sheets_client: GoogleSheetsClient,
-            db_client: DBClient,
+            app_context: AppContext,
             title: str,
             list_aliases: List[str],
             filter_func: Callable,
@@ -110,8 +100,8 @@ class TrelloBoardStateJob(BaseJob):
         Returns a list of paragraphs that should always go in a single message.
         '''
         logger.info(f'Started counting: "{title}"')
-        list_ids = [trello_client.lists_config[alias] for alias in list_aliases]
-        cards = list(filter(filter_func, trello_client.get_cards(list_ids)))
+        list_ids = [app_context.trello_client.lists_config[alias] for alias in list_aliases]
+        cards = list(filter(filter_func, app_context.trello_client.get_cards(list_ids)))
         parse_failure_counter = 0
 
         paragraphs = [f'<b>{title}: {len(cards)}</b>']
@@ -123,8 +113,7 @@ class TrelloBoardStateJob(BaseJob):
             paragraphs.append(
                 TrelloBoardStateJob._format_card(
                     card,
-                    sheets_client,
-                    db_client,
+                    app_context,
                     show_due=show_due,
                     show_members=show_members
                 )
@@ -154,7 +143,7 @@ class TrelloBoardStateJob(BaseJob):
         return paragraphs
 
     @staticmethod
-    def _format_card(card, sheets_client, db_client, show_due=True, show_members=True) -> str:
+    def _format_card(card, app_context, show_due=True, show_members=True) -> str:
         # Name and url always present.
         card_text = f'<a href="{card.url}">{card.name}</a>\n'
 
@@ -175,12 +164,15 @@ class TrelloBoardStateJob(BaseJob):
         if show_due:
             card_text = f'<b>{card.due.strftime("%d.%m")}</b> — {card_text}'
         if show_members and card.members:
-            members_text = f'👤 {", ".join(retrieve_usernames(card.members, db_client))}'
+            members_text = (
+                f'👤 '
+                f'{", ".join(retrieve_usernames(card.members, app_context.db_client))}'
+            )
             # add curators to the list
             # TODO: make it more readable!
             curators = set()
             for member in card.members:
-                curator_names = retrieve_curator_names(member, sheets_client)
+                curator_names = retrieve_curator_names(member, app_context.sheets_client)
                 if not curator_names:
                     continue
                 for curator_text, telegram in curator_names:
