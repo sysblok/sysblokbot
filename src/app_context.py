@@ -31,11 +31,13 @@ class AppContext(Singleton):
                 config=config_manager.get_sheets_config()
             )
         except Exception as e:
+            self.sheets_client = None
             logger.critical(f'Could not initialize GoogleSheetsClient: {e}')
 
         try:
             self.db_client = DBClient(config=config_manager.get_db_config())
         except Exception as e:
+            self.db_client = None
             logger.critical(f'Could not initialize DBClient: {e}')
 
         if self.sheets_client and self.db_client:
