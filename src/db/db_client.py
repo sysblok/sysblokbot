@@ -3,7 +3,7 @@ import requests
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 from .db_objects import Author, Base
 from ..sheets.sheets_client import GoogleSheetsClient
@@ -24,7 +24,8 @@ class DBClient(Singleton):
 
     def _update_from_config(self):
         self.engine = create_engine(self._db_config['uri'], echo=True)
-        Session = sessionmaker(bind=self.engine)
+        session_factory = sessionmaker(bind=self.engine)
+        Session = scoped_session(session_factory)
         self.session = Session()
         Base.metadata.create_all(self.engine)
 
