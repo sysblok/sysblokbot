@@ -96,6 +96,13 @@ class SysBlokBot:
             'установить новое значение в конфиге'
         )
 
+        # admin-only DB cmds
+        self.add_admin_handler(
+            'db_fetch_authors_sheet',
+            self.admin_reply_handler('db_fetch_authors_sheet_job'),
+            'обновить таблицу с авторами из Google Sheets'
+        )
+
         # general purpose cmds
         self.add_admin_handler('start', handlers.start, 'начать чат с ботом')
         self.add_admin_handler(

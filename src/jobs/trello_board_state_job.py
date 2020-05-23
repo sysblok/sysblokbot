@@ -5,6 +5,7 @@ from typing import Callable, List
 from .base_job import BaseJob
 from ..app_context import AppContext
 from ..consts import TrelloCardColor, TrelloListAlias
+from ..db.db_client import DBClient
 from ..trello.trello_client import TrelloClient
 from ..sheets.sheets_client import GoogleSheetsClient
 from .utils import pretty_send, retrieve_usernames, retrieve_curator_names
@@ -16,12 +17,12 @@ class TrelloBoardStateJob(BaseJob):
     @staticmethod
     def _execute(app_context: AppContext, send: Callable[[str], None]):
         paragraphs = []  # list of paragraph strings
-        paragraphs.append('Всем привет! Еженедельная сводка \
-о состоянии Trello-доски.\n#доскаживи')
+        paragraphs.append(
+            'Всем привет! Еженедельная сводка о состоянии Trello-доски.\n#доскаживи'
+        )
 
         paragraphs += TrelloBoardStateJob._retrieve_cards_for_paragraph(
-            trello_client=app_context.trello_client,
-            sheets_client=None,
+            app_context=app_context,
             title='Не указан автор в карточке',
             list_aliases=(
                 TrelloListAlias.IN_PROGRESS,
@@ -38,8 +39,7 @@ class TrelloBoardStateJob(BaseJob):
         )
 
         paragraphs += TrelloBoardStateJob._retrieve_cards_for_paragraph(
-            trello_client=app_context.trello_client,
-            sheets_client=app_context.sheets_client,
+            app_context=app_context,
             title='Не указан срок в карточке',
             list_aliases=(TrelloListAlias.IN_PROGRESS, ),
             filter_func=lambda card: not card.due,
@@ -47,8 +47,7 @@ class TrelloBoardStateJob(BaseJob):
         )
 
         paragraphs += TrelloBoardStateJob._retrieve_cards_for_paragraph(
-            trello_client=app_context.trello_client,
-            sheets_client=app_context.sheets_client,
+            app_context=app_context,
             title='Не указан тег рубрики в карточке',
             list_aliases=(
                 TrelloListAlias.IN_PROGRESS,
@@ -76,8 +75,7 @@ class TrelloBoardStateJob(BaseJob):
         # )
 
         paragraphs += TrelloBoardStateJob._retrieve_cards_for_paragraph(
-            trello_client=app_context.trello_client,
-            sheets_client=app_context.sheets_client,
+            app_context=app_context,
             title='Пропущен дедлайн',
             list_aliases=(TrelloListAlias.IN_PROGRESS, ),
             filter_func=TrelloBoardStateJob._is_deadline_missed,
@@ -91,8 +89,7 @@ class TrelloBoardStateJob(BaseJob):
 
     @staticmethod
     def _retrieve_cards_for_paragraph(
-            trello_client: TrelloClient,
-            sheets_client: GoogleSheetsClient,
+            app_context: AppContext,
             title: str,
             list_aliases: List[str],
             filter_func: Callable,
@@ -103,8 +100,8 @@ class TrelloBoardStateJob(BaseJob):
         Returns a list of paragraphs that should always go in a single message.
         '''
         logger.info(f'Started counting: "{title}"')
-        list_ids = [trello_client.lists_config[alias] for alias in list_aliases]
-        cards = list(filter(filter_func, trello_client.get_cards(list_ids)))
+        list_ids = [app_context.trello_client.lists_config[alias] for alias in list_aliases]
+        cards = list(filter(filter_func, app_context.trello_client.get_cards(list_ids)))
         parse_failure_counter = 0
 
         paragraphs = [f'<b>{title}: {len(cards)}</b>']
@@ -116,7 +113,7 @@ class TrelloBoardStateJob(BaseJob):
             paragraphs.append(
                 TrelloBoardStateJob._format_card(
                     card,
-                    sheets_client,
+                    app_context,
                     show_due=show_due,
                     show_members=show_members
                 )
@@ -129,7 +126,7 @@ class TrelloBoardStateJob(BaseJob):
     @staticmethod
     def _retrieve_trello_members_stats(
             trello_client: TrelloClient,
-            sheets_client: GoogleSheetsClient,
+            db_client: DBClient,
             title: str,
             filter_func: Callable,
     ) -> List[str]:
@@ -141,12 +138,12 @@ class TrelloBoardStateJob(BaseJob):
         paragraphs = [f'<b>{title}: {len(members)}</b>']
         if members:
             paragraphs.append('👤 ' + ", ".join(
-                retrieve_usernames(sorted(members), sheets_client)
+                retrieve_usernames(sorted(members), db_client)
             ))
         return paragraphs
 
     @staticmethod
-    def _format_card(card, sheets_client, show_due=True, show_members=True) -> str:
+    def _format_card(card, app_context, show_due=True, show_members=True) -> str:
         # Name and url always present.
         card_text = f'<a href="{card.url}">{card.name}</a>\n'
 
@@ -167,12 +164,15 @@ class TrelloBoardStateJob(BaseJob):
         if show_due:
             card_text = f'<b>{card.due.strftime("%d.%m")}</b> — {card_text}'
         if show_members and card.members:
-            members_text = f'👤 {", ".join(retrieve_usernames(card.members, sheets_client))}'
+            members_text = (
+                f'👤 '
+                f'{", ".join(retrieve_usernames(card.members, app_context.db_client))}'
+            )
             # add curators to the list
             # TODO: make it more readable!
             curators = set()
             for member in card.members:
-                curator_names = retrieve_curator_names(member, sheets_client)
+                curator_names = retrieve_curator_names(member, app_context.sheets_client)
                 if not curator_names:
                     continue
                 for curator_text, telegram in curator_names:

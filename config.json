@@ -26,5 +26,8 @@
             "at": "10:00",
             "send_to": []
         }
+    },
+    "db": {
+        "uri": "sqlite:///sysblokbot.sqlite"
     }
 }
