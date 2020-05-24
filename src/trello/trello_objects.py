@@ -278,6 +278,69 @@ class TrelloCustomField:
         }
 
 
+class TrelloActionUpdateCard:
+    def __init__(self):
+        self.id = None
+        self.date = None
+        # probably will update fields if need be
+        self.card_url = None
+        self.list_before_id = None
+        self.list_before_name = None
+        self.list_after_id = None
+        self.list_after_name = None
+
+        self._ok = True
+
+    def __bool__(self):
+        return self._ok
+
+    def __str__(self):
+        return f'Card "{self.card_url}" moved {self.list_before_name} -> {self.list_after_name}'
+
+    def __repr__(self):
+        return (
+            f'ActionUpdateCard<date={self.date}, card_url={self.card_url}, '
+            f'list_before_id={self.list_before_id}, list_after_name={self.list_after_id}>'
+        )
+
+    @classmethod
+    def from_dict(cls, data):
+        action = cls()
+        try:
+            action.id = data['id']
+            action.date = datetime.strptime(data['date'], TIME_FORMAT)
+            action.card_url = 'https://trello.com/c/' + data['data']['card']['shortLink']
+            if 'listBefore' in data['data']:
+                action.list_before_id = data['data']['listBefore']['id']
+                action.list_before_name = data['data']['listBefore']['name']
+            if 'listAfter' in data['data']:
+                action.list_after_id = data['data']['listAfter']['id']
+                action.list_after_name = data['data']['listAfter']['name']
+        except Exception:
+            action._ok = False
+            logger.error(f"Bad card action json {data}")
+        return action
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'date': datetime.strftime(self.date, TIME_FORMAT),
+            'data': {
+                'card': {
+                    'shortLink': self.card_url.split('/')[-1]
+                },
+                'listBefore': {
+                    'id': self.list_before_id,
+                    'name': self.list_before_name,
+                },
+                'listAfter': {
+                    'id': self.list_after_id,
+                    'name': self.list_after_name,
+                }
+            }
+        }
+
+
 class TrelloMember:
     def __init__(self):
         self.id = None

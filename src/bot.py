@@ -58,6 +58,16 @@ class SysBlokBot:
             ),
             'заполнить реестр постов'
         )
+        self.add_admin_handler(
+            'send_editorial_report',
+            self.admin_broadcast_handler('editorial_report_job'),
+            'рассылка сводки по результатам редакторского созвона'
+        )
+        self.add_manager_handler(
+            'get_editorial_report',
+            self.manager_reply_handler('editorial_report_job'),
+            'получить сводку по результатам редакторского созвона'
+        )
 
         # admin-only technical cmds
         self.add_admin_handler(

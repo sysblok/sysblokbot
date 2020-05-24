@@ -48,7 +48,7 @@ class TrelloCardColor(Enum):
 
 
 class TrelloListAlias(Enum):
-    TOPIC_SUGGESTION = 'Предлагаю тему!'
+    TOPIC_SUGGESTION = 'Идея для статьи'
     TOPIC_READY = 'Готовая тема'
     IN_PROGRESS = 'Уже пишу'
     TO_EDITOR = 'Редактору'

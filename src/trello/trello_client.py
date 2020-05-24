@@ -101,6 +101,21 @@ class TrelloClient(Singleton):
                 custom_fields_dict[alias] = suitable_fields[0]
         return custom_fields_dict
 
+    def get_action_update_card(self, card_id):
+        _, data = self._make_request(f'cards/{card_id}/actions')
+        card_actions = [
+            objects.TrelloActionUpdateCard.from_dict(action)
+            for action in data
+        ]
+        logger.debug(f'get_action_update_card: {card_actions}')
+        return card_actions
+
+    def get_action_update_cards(self, card_ids):
+        card_actions = {}
+        for card_id in card_ids:
+            card_actions[card_id] = self.get_action_update_card(card_id)
+        return card_actions
+
     def get_members(self):
         _, data = self._make_request(f'boards/{self.board_id}/members')
         members = [objects.TrelloMember.from_dict(member) for member in data]
