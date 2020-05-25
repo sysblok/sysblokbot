@@ -3,12 +3,12 @@ import logging
 from typing import Callable, List
 
 from .base_job import BaseJob
+from . import utils
 from ..app_context import AppContext
 from ..consts import TrelloCardColor, TrelloListAlias
 from ..db.db_client import DBClient
 from ..trello.trello_client import TrelloClient
 from ..sheets.sheets_client import GoogleSheetsClient
-from .utils import pretty_send, retrieve_usernames, retrieve_curator_names
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +81,7 @@ class TrelloBoardStateJob(BaseJob):
             filter_func=TrelloBoardStateJob._is_deadline_missed,
         )
 
-        pretty_send(paragraphs, send)
+        utils.pretty_send(paragraphs, send)
 
     @staticmethod
     def _is_deadline_missed(card) -> bool:
@@ -138,7 +138,7 @@ class TrelloBoardStateJob(BaseJob):
         paragraphs = [f'<b>{title}: {len(members)}</b>']
         if members:
             paragraphs.append('👤 ' + ", ".join(
-                retrieve_usernames(sorted(members), db_client)
+                utils.retrieve_usernames(sorted(members), db_client)
             ))
         return paragraphs
 
@@ -163,27 +163,48 @@ class TrelloBoardStateJob(BaseJob):
 
         if show_due:
             card_text = f'<b>{card.due.strftime("%d.%m")}</b> — {card_text}'
-        if show_members and card.members:
-            members_text = (
-                f'👤 '
-                f'{", ".join(retrieve_usernames(card.members, app_context.db_client))}'
-            )
-            # add curators to the list
-            # TODO: make it more readable!
-            curators = set()
-            for member in card.members:
-                curator_names = retrieve_curator_names(member, app_context.sheets_client)
-                if not curator_names:
-                    continue
-                for curator_text, telegram in curator_names:
-                    # curator should not duplicate author or other curator
-                    if (
-                        curator_text and curator_text not in curators and
-                            telegram and telegram not in members_text
-                    ):
-                        curators.add(curator_text)
-            card_text += members_text
-            if curators:
-                curators_text = ' <b>Куратор:</b> ' + ', '.join(curators)
-                card_text += curators_text
+        if show_members:
+            card_text += TrelloBoardStateJob._make_members_string(card, app_context)
         return card_text.strip()
+
+    @staticmethod
+    def _make_members_string(card, app_context: AppContext) -> str:
+        members_text = '👤 '
+
+        if not card.members:
+            # if no members in a card, should tag curators based on label
+            curators = utils.retrieve_curator_names_by_categories(
+                card.labels, app_context.db_client
+            )
+            if curators:
+                # a bit ugly, gets printable name from (name, telegram)
+                curators = [curator[0] for curator in curators]
+                return members_text + TrelloBoardStateJob._format_curator_names(curators)
+            # neither members nor curators were found
+            return ""
+
+        # if there are members, should tag both members and their curators
+        members_text += ", ".join(
+            utils.retrieve_usernames(card.members, app_context.db_client)
+        )
+        # add curators to the list
+        curators = set()
+        for member in card.members:
+            curator_names = utils.retrieve_curator_names_by_author(member, app_context.db_client)
+            if not curator_names:
+                continue
+            for curator_text, telegram in curator_names:
+                # curator should not duplicate author or other curator
+                if (
+                    curator_text and curator_text not in curators and
+                        telegram and telegram not in members_text
+                ):
+                    curators.add(curator_text)
+        if curators:
+            curators_list = TrelloBoardStateJob._format_curator_names(curators)
+            members_text = f'{members_text} {curators_list}'
+        return members_text
+
+    @staticmethod
+    def _format_curator_names(curators) -> str:
+        return f'<b>Куратор{"ы" if len(curators) > 1 else ""}:</b> {", ".join(curators)}'

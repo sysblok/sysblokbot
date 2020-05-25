@@ -1,11 +1,12 @@
 import logging
 import requests
+from typing import List
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from .db_objects import Author, Base
+from .db_objects import Author, Base, Curator
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..utils.singleton import Singleton
 
@@ -31,6 +32,7 @@ class DBClient(Singleton):
 
     def fetch_all(self, sheets_client: GoogleSheetsClient):
         self.fetch_authors_sheet(sheets_client)
+        self.fetch_curators_sheet(sheets_client)
 
     def fetch_authors_sheet(self, sheets_client: GoogleSheetsClient):
         try:
@@ -43,15 +45,48 @@ class DBClient(Singleton):
                 self.session.add(author)
             self.session.commit()
         except Exception as e:
-            logger.warning(f"Failed to update authors table from sheer: {e}")
+            logger.warning(f"Failed to update authors table from sheet: {e}")
             self.session.rollback()
+            return 0
         return len(authors)
 
-    def find_author_telegram_id_by_trello_id(self, trello_id):
+    def fetch_curators_sheet(self, sheets_client: GoogleSheetsClient):
+        try:
+            # clean this table
+            self.session.query(Curator).delete()
+            # re-download it
+            curators = sheets_client.fetch_curators()
+            for curator_dict in curators:
+                curator = Curator.from_dict(curator_dict)
+                self.session.add(curator)
+            self.session.commit()
+        except Exception as e:
+            logger.warning(f"Failed to update curators table from sheet: {e}")
+            self.session.rollback()
+            return 0
+        return len(curators)
+
+    def find_author_telegram_by_trello(self, trello_id: str):
         author = self.session.query(Author).filter(
             Author.trello == trello_id
         ).first()
         if author is None:
-            logger.warning(f'Telegram id not found for {trello_id}')
+            logger.warning(f'Telegram id not found for author {trello_id}')
             return None
         return author.telegram
+
+    def find_curators_by_author_trello(self, trello_id: str) -> List[Curator]:
+        curators = self.session.query(Author).join(Curator).filter(
+            Author.trello == trello_id
+        ).all()
+        if not curators:
+            logger.warning(f'Curators not found for author {trello_id}')
+        return curators
+
+    def find_curators_by_trello_label(self, trello_label: str) -> List[Curator]:
+        curators = self.session.query(Curator).filter(
+            Curator.trello_labels.contains(trello_label)
+        ).all()
+        if not curators:
+            logger.warning(f'Curators not found for label {trello_label}')
+        return curators
