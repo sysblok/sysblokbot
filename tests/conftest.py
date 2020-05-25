@@ -39,6 +39,8 @@ def mock_trello():
         elif uri.startswith('cards'):
             if uri.endswith('customFieldItems'):
                 return 200, load_json('card_custom_fields.json')
+            if uri.endswith('actions'):
+                return 200, load_json('card_actions.json')
         elif uri.startswith('lists'):
             if uri.endswith('cards'):
                 return 200, load_json('cards.json')

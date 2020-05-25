@@ -77,6 +77,19 @@ def test_card_custom_fields(monkeypatch, mock_trello, assert_equal):
     assert_equal([fld.to_dict() for fld in custom_fields], 'card_custom_fields.json')
 
 
+def test_card_actions(monkeypatch, mock_trello, assert_equal):
+    monkeypatch.setattr(TrelloClient, '_make_request', mock_trello)
+
+    # TODO: check api keys etc
+    trello = TrelloClient({
+        'api_key': 'api_key',
+        'token': 'token',
+        'board_id': 'board_1'
+    })
+    custom_fields = trello.get_action_update_card(1)
+    assert_equal([fld.to_dict() for fld in custom_fields], 'card_actions.json')
+
+
 def test_members(monkeypatch, mock_trello, assert_equal):
     monkeypatch.setattr(TrelloClient, '_make_request', mock_trello)
 
