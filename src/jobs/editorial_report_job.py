@@ -56,6 +56,10 @@ class EditorialReportJob(BaseJob):
         pretty_send(paragraphs, send)
 
     @staticmethod
+    def _card_is_urgent(card):
+        return 'Срочно' in [label.name for label in card.labels]
+
+    @staticmethod
     def _retrieve_cards_for_paragraph(
             trello_client: TrelloClient,
             title: str,
@@ -155,10 +159,6 @@ class EditorialReportJob(BaseJob):
         if parse_failure_counter > 0:
             logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
         return paragraphs
-
-    @staticmethod
-    def _card_is_urgent(card):
-        return 'Срочно' in [label.name for label in card.labels]
 
     @staticmethod
     def _format_card(
