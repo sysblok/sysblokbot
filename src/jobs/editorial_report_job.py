@@ -7,7 +7,7 @@ from ..app_context import AppContext
 from .base_job import BaseJob
 from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias, TrelloCardColor
 from ..trello.trello_client import TrelloClient
-from .utils import pretty_send
+from .utils import format_errors, pretty_send
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class EditorialReportJob(BaseJob):
         )
 
         if len(errors) > 0:
-            paragraphs = EditorialReportJob._format_errors(errors)
+            paragraphs = format_errors(errors)
 
         pretty_send(paragraphs, send)
 
@@ -181,19 +181,3 @@ class EditorialReportJob(BaseJob):
                 f'<b>с ??.??</b> — {card_text}'
             )
         return card_text.strip()
-
-    @staticmethod
-    def _format_errors(errors: dict):
-        error_messages = []
-        for bad_card, bad_fields in errors.items():
-            card_error_message = (
-                f'В карточке <a href="{bad_card.url}">{bad_card.name}</a>'
-                f' не заполнено: {", ".join(bad_fields)}'
-            )
-            error_messages.append(card_error_message)
-        paragraphs = [
-            'Не могу сгенерировать сводку.',
-            '\n'.join(error_messages),
-            'Пожалуйста, заполни требуемые поля в карточках и запусти генерацию снова.'
-        ]
-        return paragraphs

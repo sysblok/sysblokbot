@@ -172,3 +172,23 @@ def get_job_runnable(job_id: str):
             execute_job.__func__.__name__ = name
             return execute_job
     logger.error(f'Could not find job runnable for {job_module}')
+
+
+def check_card_errors()
+
+
+def format_errors(errors: dict):
+    # probably will move it to BaseJob
+    error_messages = []
+    for bad_card, bad_fields in errors.items():
+        card_error_message = (
+            f'В карточке <a href="{bad_card.url}">{bad_card.name}</a>'
+            f' не заполнено: {", ".join(bad_fields)}'
+        )
+        error_messages.append(card_error_message)
+    paragraphs = [
+        'Не могу сгенерировать сводку.',
+        '\n'.join(error_messages),
+        'Пожалуйста, заполни требуемые поля в карточках и запусти генерацию снова.'
+    ]
+    return paragraphs

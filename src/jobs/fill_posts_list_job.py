@@ -7,7 +7,7 @@ from ..app_context import AppContext
 from .base_job import BaseJob
 from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias, TrelloCardColor
 from ..trello.trello_client import TrelloClient
-from .utils import pretty_send
+from .utils import format_errors, pretty_send
 from ..sheets.sheets_objects import RegistryPost
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ class FillPostsListJob(BaseJob):
                     )
                 ]
         else:
-            paragraphs = FillPostsListJob._format_errors(errors)
+            paragraphs = format_errors(errors)
 
         pretty_send(paragraphs, send)
 
@@ -136,21 +136,3 @@ class FillPostsListJob(BaseJob):
         if parse_failure_counter > 0:
             logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
         return registry_posts
-
-    @staticmethod
-    def _format_errors(errors: dict):
-        # copied from publication_plans_job.py
-        # it will be merged there later, hopefully
-        error_messages = []
-        for bad_card, bad_fields in errors.items():
-            card_error_message = (
-                f'В карточке <a href="{bad_card.url}">{bad_card.name}</a>'
-                f' не заполнено: {", ".join(bad_fields)}'
-            )
-            error_messages.append(card_error_message)
-        paragraphs = [
-            'Не удалось внести информацию в реестр.',
-            '\n'.join(error_messages),
-            'Пожалуйста, заполни требуемые поля в карточках и запусти команду снова.'
-        ]
-        return paragraphs
