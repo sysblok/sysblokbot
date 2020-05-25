@@ -16,6 +16,7 @@
 - Create `config_override.json` in the same directory and put sensitive tokens there (you can copypaste from `config.json` first). Do not push `config_override.json` to the repo!
 - `pip install -e .`
 - `pip install -r requirements.txt`
+- If your workstation is located countries where Telegram servers are restricted by internet providers (e.g. Russia): install and run any VPN service
 - `python3 app.py`
 
 ## How to run pre-checks locally
@@ -27,7 +28,7 @@
 - Import `<job_name>_job` in `jobs/__init__.py`
 - Add schedule to `config.json`, using `job_name` as a key (you may use `config_override.json` to test your changes without committing)
 
-## How to Docker
+## How to Docker (not required for a local run)
 - [Install](https://docs.docker.com/get-docker/) docker
 - Run `docker_build.sh` to build the docker image
 - Run `docker images` to look at the images
