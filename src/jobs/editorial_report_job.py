@@ -113,8 +113,9 @@ class EditorialReportJob(BaseJob):
 
         for card in sorted(
             cards_filtered,
-            key=lambda card: (_card_is_urgent(card), card.due is not None, card.due),
-            reverse=True
+            key=lambda card: (
+                EditorialReportJob._card_is_urgent(card), card.due is not None, card.due
+            ), reverse=True
         ):
             if not card:
                 parse_failure_counter += 1
@@ -152,7 +153,7 @@ class EditorialReportJob(BaseJob):
             paragraphs.append(
                 EditorialReportJob._format_card(
                     card, title if need_title else card.name, google_doc,
-                    authors, editors, is_urgent=_card_is_urgent(card)
+                    authors, editors, is_urgent=EditorialReportJob._card_is_urgent(card)
                 )
             )
 
