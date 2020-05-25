@@ -61,7 +61,7 @@ class EditorialReportJob(BaseJob):
             title: str,
             list_aliases: List[TrelloListAlias],
             errors: dict,
-            moved_from_exclusive: List[TrelloListAlias]=(),
+            moved_from_exclusive: List[TrelloListAlias] = (),
             show_post_title=False,
             need_editor=True,
             need_title=False,
@@ -94,19 +94,24 @@ class EditorialReportJob(BaseJob):
                         or action.list_before_id in list_moved_from_ids
                     )
                 )
-            ], key=lambda action: (action.date), reverse=True)
+            ], key=lambda action: action.date, reverse=True)
 
             if len(actions_moved_here) == 0:
-                logger.error(f'Card {card.url} unexpectedly appeared in list {card.lst.name}')
-                continue
-
-            card.due = actions_moved_here[0].date
-            
+                if len(moved_from_exclusive) > 0:
+                    # otherwise we don't really care where the card came from
+                    continue
+                logger.info(f'Card {card.url} unexpectedly appeared in list {card.lst.name}')
+            else:
+                card.due = actions_moved_here[0].date
             cards_filtered.append(card)
 
         paragraphs = [f'<b>{title}: {len(cards_filtered)}</b>']
 
-        for card in cards_filtered:
+        for card in sorted(
+            cards_filtered,
+            key=lambda card: (_card_is_urgent(card), card.due is not None, card.due),
+            reverse=True
+        ):
             if not card:
                 parse_failure_counter += 1
                 continue
@@ -140,11 +145,10 @@ class EditorialReportJob(BaseJob):
                 errors[card] = this_card_bad_fields
                 continue
 
-            is_urgent = 'Срочно' in [label.name for label in card.labels]
-
             paragraphs.append(
                 EditorialReportJob._format_card(
-                    card, title, google_doc, authors, editors, is_urgent=is_urgent
+                    card, title if need_title else card.name, google_doc,
+                    authors, editors, is_urgent=_card_is_urgent(card)
                 )
             )
 
@@ -153,19 +157,29 @@ class EditorialReportJob(BaseJob):
         return paragraphs
 
     @staticmethod
+    def _card_is_urgent(card):
+        return 'Срочно' in [label.name for label in card.labels]
+
+    @staticmethod
     def _format_card(
             card, title, google_doc, authors, editors, is_urgent=False
     ) -> str:
         # Name and google_doc url always present.
-        card_text = f'<a href="{google_doc}">{title or card.name}</a>\n'
+        card_text = f'<a href="{card.url}">{title or card.name}</a>\n'
 
         card_text += f'Автор{"ы" if len(authors) > 1 else ""}: {", ".join(authors)}. '
-        card_text += f'Редактор{"ы" if len(editors) > 1 else ""}: {", ".join(editors)}. '
+        if len(editors) > 0:
+            card_text += f'Редактор{"ы" if len(editors) > 1 else ""}: {", ".join(editors)}. '
 
-        card_text = (
-            f'<b>с {card.due.strftime("%d.%m (%a)").lower()} '
-            f'{"(Срочно!)" if is_urgent else ""}</b> — {card_text}'
-        )
+        if card.due:
+            card_text = (
+                f'<b>с {card.due.strftime("%d.%m (%a)").lower()} '
+                f'{"(Срочно!)" if is_urgent else ""}</b> — {card_text}'
+            )
+        else:
+            card_text = (
+                f'<b>с ??.??</b> — {card_text}'
+            )
         return card_text.strip()
 
     @staticmethod
