@@ -47,6 +47,7 @@ class DBClient(Singleton):
         except Exception as e:
             logger.warning(f"Failed to update authors table from sheet: {e}")
             self.session.rollback()
+            return 0
         return len(authors)
 
     def fetch_curators_sheet(self, sheets_client: GoogleSheetsClient):
@@ -62,6 +63,7 @@ class DBClient(Singleton):
         except Exception as e:
             logger.warning(f"Failed to update curators table from sheet: {e}")
             self.session.rollback()
+            return 0
         return len(curators)
 
     def find_author_telegram_by_trello(self, trello_id: str):
