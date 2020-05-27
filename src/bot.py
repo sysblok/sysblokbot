@@ -58,6 +58,16 @@ class SysBlokBot:
             ),
             'заполнить реестр постов'
         )
+        self.add_admin_handler(
+            'send_editorial_report',
+            self.admin_broadcast_handler('editorial_report_job'),
+            'рассылка сводки по результатам редакторского созвона'
+        )
+        self.add_manager_handler(
+            'get_editorial_report',
+            self.manager_reply_handler('editorial_report_job'),
+            'получить сводку по результатам редакторского созвона'
+        )
 
         # admin-only technical cmds
         self.add_admin_handler(
@@ -94,6 +104,13 @@ class SysBlokBot:
             'set_config',
             handlers.set_config,
             'установить новое значение в конфиге'
+        )
+
+        # admin-only DB cmds
+        self.add_admin_handler(
+            'db_fetch_authors_sheet',
+            self.admin_reply_handler('db_fetch_authors_sheet_job'),
+            'обновить таблицу с авторами из Google Sheets'
         )
 
         # general purpose cmds

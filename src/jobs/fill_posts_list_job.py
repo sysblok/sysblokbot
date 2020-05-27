@@ -27,21 +27,21 @@ class FillPostsListJob(BaseJob):
             show_due=True,
         )
 
-        posts_added = app_context.sheets_client.update_posts_registry(registry_posts)
-
-        if len(errors) > 0:
-            paragraphs = FillPostsListJob._format_errors(errors)
-        elif len(posts_added) == 0:
-            paragraphs = [
-                '''Информация о публикуемых на следующей неделе постах уже внесена в реестр. \
-Внести необходимые изменения можно в таблице “Реестр постов”.'''
-            ]
+        if len(errors) == 0:
+            posts_added = app_context.sheets_client.update_posts_registry(registry_posts)
+            if len(posts_added) == 0:
+                paragraphs = [
+                    'Информация о публикуемых на следующей неделе постах уже внесена в реестр. '
+                    'Внести необходимые изменения можно в таблице “Реестр постов”.'
+                ]
+            else:
+                paragraphs = ['<b>Добавлено в реестр постов:</b>'] + [
+                    '\n'.join(
+                        f'{index + 1}) {post_name}' for index, post_name in enumerate(posts_added)
+                    )
+                ]
         else:
-            paragraphs = ['<b>Добавлено в реестр постов:</b>'] + [
-                '\n'.join(
-                    f'{index + 1}) {post_name}' for index, post_name in enumerate(posts_added)
-                )
-            ]
+            paragraphs = FillPostsListJob._format_errors(errors)
 
         pretty_send(paragraphs, send)
 
@@ -90,7 +90,6 @@ class FillPostsListJob(BaseJob):
             label_names = [
                 label.name for label in card.labels if label.color != TrelloCardColor.BLACK
             ]
-            print(label_names)
 
             this_card_bad_fields = []
             if (
@@ -118,8 +117,8 @@ class FillPostsListJob(BaseJob):
                 errors[card] = this_card_bad_fields
                 continue
 
-            is_main_post = 'Главный пост' in label_names
-            is_archive_post = 'Архив' in label_names
+            is_main_post = 'Главный пост' in [label.name for label in card.labels]
+            is_archive_post = 'Архив' in [label.name for label in card.labels]
 
             registry_posts.append(
                 RegistryPost(
@@ -144,8 +143,10 @@ class FillPostsListJob(BaseJob):
         # it will be merged there later, hopefully
         error_messages = []
         for bad_card, bad_fields in errors.items():
-            card_error_message = f'В карточке <a href="{bad_card.url}">\
-{bad_card.name}</a> не заполнено: {", ".join(bad_fields)}'
+            card_error_message = (
+                f'В карточке <a href="{bad_card.url}">{bad_card.name}</a>'
+                f' не заполнено: {", ".join(bad_fields)}'
+            )
             error_messages.append(card_error_message)
         paragraphs = [
             'Не удалось внести информацию в реестр.',

@@ -12,36 +12,52 @@ from .utils import pretty_send
 logger = logging.getLogger(__name__)
 
 
-class PublicationPlansJob(BaseJob):
+class EditorialReportJob(BaseJob):
     @staticmethod
     def _execute(app_context: AppContext, send: Callable[[str], None]):
         paragraphs = []  # list of paragraph strings
         errors = {}
-        paragraphs.append('Всем привет!')
+        paragraphs.append('Всем привет! Еженедельный редакторский отчет. #cб_редчет')
 
-        paragraphs += PublicationPlansJob._retrieve_cards_for_paragraph(
+        paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
-            title='Публикуем на неделе',
-            list_aliases=(TrelloListAlias.PROOFREADING, TrelloListAlias.DONE),
+            title='Отредактировано и ожидает финальной проверки',
+            list_aliases=(TrelloListAlias.EDITED_SOMETIMES, TrelloListAlias.TO_CHIEF_EDITOR),
             errors=errors,
-            show_due=True,
+            need_title=True,
         )
 
-        paragraphs += PublicationPlansJob._retrieve_cards_for_paragraph(
+        paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
+            trello_client=app_context.trello_client,
+            title='На доработке у автора',
+            list_aliases=(TrelloListAlias.IN_PROGRESS, ),
+            errors=errors,
+            moved_from_exclusive=(TrelloListAlias.EDITED_NEXT_WEEK, )
+        )
+
+        paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
             title='На редактуре',
             list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, ),
             errors=errors,
-            show_due=False,
-            need_illustrators=False,
         )
 
-        paragraphs.append('Спасибо авторам, редакторам, кураторам и иллюстраторам! 🤖❤️')
+        paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
+            trello_client=app_context.trello_client,
+            title='Ожидает редактуры',
+            list_aliases=(TrelloListAlias.TO_EDITOR, ),
+            errors=errors,
+            need_editor=False,
+        )
 
         if len(errors) > 0:
-            paragraphs = PublicationPlansJob._format_errors(errors)
+            paragraphs = EditorialReportJob._format_errors(errors)
 
         pretty_send(paragraphs, send)
+
+    @staticmethod
+    def _card_is_urgent(card):
+        return 'Срочно' in [label.name for label in card.labels]
 
     @staticmethod
     def _retrieve_cards_for_paragraph(
@@ -49,22 +65,58 @@ class PublicationPlansJob(BaseJob):
             title: str,
             list_aliases: List[TrelloListAlias],
             errors: dict,
-            show_due=True,
-            need_illustrators=True,
+            moved_from_exclusive: List[TrelloListAlias] = (),
+            show_post_title=False,
+            need_editor=True,
+            need_title=False,
     ) -> List[str]:
         '''
         Returns a list of paragraphs that should always go in a single message.
         '''
         logger.info(f'Started counting: "{title}"')
         list_ids = [trello_client.lists_config[alias] for alias in list_aliases]
+        list_moved_from_ids = [trello_client.lists_config[alias] for alias in moved_from_exclusive]
         cards = trello_client.get_cards(list_ids)
-        if show_due:
-            cards.sort(key=lambda card: card.due or datetime.datetime.min)
         parse_failure_counter = 0
 
-        paragraphs = [f'<b>{title}: {len(cards)}</b>']
+        card_ids = [card.id for card in cards]
+        cards_actions = trello_client.get_action_update_cards(card_ids)
+
+        cards_filtered = []
 
         for card in cards:
+            if not card:
+                parse_failure_counter += 1
+                continue
+
+            actions_moved_here = sorted([
+                action for action in cards_actions[card.id]
+                if (
+                    action.list_after_id == card.lst.id
+                    and (
+                        len(list_moved_from_ids) == 0
+                        or action.list_before_id in list_moved_from_ids
+                    )
+                )
+            ], key=lambda action: action.date, reverse=True)
+
+            if len(actions_moved_here) == 0:
+                if len(moved_from_exclusive) > 0:
+                    # otherwise we don't really care where the card came from
+                    continue
+                logger.info(f'Card {card.url} unexpectedly appeared in list {card.lst.name}')
+            else:
+                card.due = actions_moved_here[0].date
+            cards_filtered.append(card)
+
+        paragraphs = [f'<b>{title}: {len(cards_filtered)}</b>']
+
+        for card in sorted(
+            cards_filtered,
+            key=lambda card: (
+                EditorialReportJob._card_is_urgent(card), card.due is not None, card.due
+            ), reverse=True
+        ):
             if not card:
                 parse_failure_counter += 1
                 continue
@@ -78,35 +130,18 @@ class PublicationPlansJob(BaseJob):
                 card_fields_dict[TrelloCustomFieldTypeAlias.EDITOR].value.split(',')
                 if TrelloCustomFieldTypeAlias.EDITOR in card_fields_dict else []
             )
-            illustrators = (
-                card_fields_dict[TrelloCustomFieldTypeAlias.ILLUSTRATOR].value.split(',')
-                if TrelloCustomFieldTypeAlias.ILLUSTRATOR in card_fields_dict else []
-            )
             google_doc = card_fields_dict.get(TrelloCustomFieldTypeAlias.GOOGLE_DOC, None)
             title = card_fields_dict.get(TrelloCustomFieldTypeAlias.TITLE, None)
 
-            label_names = [
-                label.name for label in card.labels if label.color != TrelloCardColor.BLACK
-            ]
-
             this_card_bad_fields = []
-            if (
-                    title is None and
-                    card.lst.id != trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK]
-            ):
+            if title is None and need_title:
                 this_card_bad_fields.append('название поста')
             if google_doc is None:
                 this_card_bad_fields.append('google doc')
             if len(authors) == 0:
                 this_card_bad_fields.append('автор')
-            if len(editors) == 0:  # unsure if need this -- and 'Архив' not in label_names:
+            if len(editors) == 0 and need_editor:
                 this_card_bad_fields.append('редактор')
-            if len(illustrators) == 0 and need_illustrators and 'Архив' not in label_names:
-                this_card_bad_fields.append('иллюстратор')
-            if card.due is None and show_due:
-                this_card_bad_fields.append('дата публикации')
-            if len(label_names) == 0:
-                this_card_bad_fields.append('рубрика')
 
             if len(this_card_bad_fields) > 0:
                 logger.info(
@@ -116,8 +151,9 @@ class PublicationPlansJob(BaseJob):
                 continue
 
             paragraphs.append(
-                PublicationPlansJob._format_card(
-                    card, title, google_doc, authors, editors, illustrators, show_due=show_due
+                EditorialReportJob._format_card(
+                    card, title if need_title else card.name, google_doc,
+                    authors, editors, is_urgent=EditorialReportJob._card_is_urgent(card)
                 )
             )
 
@@ -127,21 +163,23 @@ class PublicationPlansJob(BaseJob):
 
     @staticmethod
     def _format_card(
-            card, title, google_doc, authors, editors, illustrators, show_due=True
+            card, title, google_doc, authors, editors, is_urgent=False
     ) -> str:
         # Name and google_doc url always present.
-        card_text = f'<a href="{google_doc}">{title or card.name}</a>\n'
+        card_text = f'<a href="{card.url}">{title or card.name}</a>\n'
 
         card_text += f'Автор{"ы" if len(authors) > 1 else ""}: {", ".join(authors)}. '
-        card_text += f'Редактор{"ы" if len(editors) > 1 else ""}: {", ".join(editors)}. '
-        if len(illustrators) > 0:
-            card_text += (
-                f'Иллюстратор{"ы" if len(illustrators) > 1 else ""}: {", ".join(illustrators)}. '
-            )
+        if len(editors) > 0:
+            card_text += f'Редактор{"ы" if len(editors) > 1 else ""}: {", ".join(editors)}. '
 
-        if show_due:
+        if card.due:
             card_text = (
-                f'<b>{card.due.strftime("%d.%m (%a)").lower()}</b> — {card_text}'
+                f'<b>с {card.due.strftime("%d.%m (%a)").lower()} '
+                f'{"(Срочно!)" if is_urgent else ""}</b> — {card_text}'
+            )
+        else:
+            card_text = (
+                f'<b>с ??.??</b> — {card_text}'
             )
         return card_text.strip()
 
