@@ -109,7 +109,7 @@ class GoogleSheetsClient(Singleton):
             "Роль": "role",
             "Команда": "team",
             "Рубрика/Рубрики": "section",
-            "Название рубрики в трелло": "trello_section",
+            "Название рубрики в трелло": "trello_labels",
             "Телеграм": "telegram",
         }
         return self._parse_gs_res(title_key_map, self.curators_sheet_key)

@@ -1,6 +1,6 @@
 FROM python:3.7-alpine
 
-RUN apk add --no-cache gcc libressl-dev musl-dev libffi-dev; rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache gcc libressl-dev musl-dev libffi-dev sqlite; rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 ADD ./requirements.txt /app/requirements.txt

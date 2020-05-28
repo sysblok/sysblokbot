@@ -19,7 +19,7 @@ EXPECTED_TEST_PATH = os.path.join(
 @pytest.fixture
 def mock_trello():
 
-    def _make_request(_, uri: str) -> (int, Dict):
+    def _make_request(_, uri: str, payload={}) -> (int, Dict):
 
         def load_json(filename: str) -> Dict:
             with open(os.path.join(TRELLO_TEST_PATH, filename), 'r') as fin:
@@ -39,6 +39,8 @@ def mock_trello():
         elif uri.startswith('cards'):
             if uri.endswith('customFieldItems'):
                 return 200, load_json('card_custom_fields.json')
+            if uri.endswith('actions'):
+                return 200, load_json('card_actions.json')
         elif uri.startswith('lists'):
             if uri.endswith('cards'):
                 return 200, load_json('cards.json')
@@ -96,7 +98,10 @@ def mock_config_manager():
                 "post_registry_sheet_key": "post_registry_sheet_key",
                 "rubrics_registry_sheet_key": "rubrics_registry_sheet_key"
             },
-            "jobs": {}
+            "jobs": {},
+            "db": {
+                "uri": "sqlite:///:memory:"
+            }
         }
 
     return get_latest_config

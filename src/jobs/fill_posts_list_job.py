@@ -7,7 +7,7 @@ from ..app_context import AppContext
 from .base_job import BaseJob
 from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias, TrelloCardColor
 from ..trello.trello_client import TrelloClient
-from .utils import pretty_send
+from .utils import format_errors, pretty_send
 from ..sheets.sheets_objects import RegistryPost
 
 logger = logging.getLogger(__name__)
@@ -25,6 +25,7 @@ class FillPostsListJob(BaseJob):
             list_aliases=(TrelloListAlias.PROOFREADING, TrelloListAlias.DONE),
             errors=errors,
             show_due=True,
+            strict_archive_rules=True,
         )
 
         if len(errors) == 0:
@@ -41,7 +42,7 @@ class FillPostsListJob(BaseJob):
                     )
                 ]
         else:
-            paragraphs = FillPostsListJob._format_errors(errors)
+            paragraphs = format_errors(errors)
 
         pretty_send(paragraphs, send)
 
@@ -53,6 +54,7 @@ class FillPostsListJob(BaseJob):
             errors: dict,
             show_due=True,
             need_illustrators=True,
+            strict_archive_rules=True,
     ) -> List[str]:
         '''
         Returns a list of paragraphs that should always go in a single message.
@@ -71,46 +73,40 @@ class FillPostsListJob(BaseJob):
                 parse_failure_counter += 1
                 continue
 
-            card_fields_dict = trello_client.get_card_custom_fields_dict(card.id)
-            authors = (
-                card_fields_dict[TrelloCustomFieldTypeAlias.AUTHOR].value.split(',')
-                if TrelloCustomFieldTypeAlias.AUTHOR in card_fields_dict else []
-            )
-            editors = (
-                card_fields_dict[TrelloCustomFieldTypeAlias.EDITOR].value.split(',')
-                if TrelloCustomFieldTypeAlias.EDITOR in card_fields_dict else []
-            )
-            illustrators = (
-                card_fields_dict[TrelloCustomFieldTypeAlias.ILLUSTRATOR].value.split(',')
-                if TrelloCustomFieldTypeAlias.ILLUSTRATOR in card_fields_dict else []
-            )
-            google_doc = card_fields_dict.get(TrelloCustomFieldTypeAlias.GOOGLE_DOC, None)
-            title = card_fields_dict.get(TrelloCustomFieldTypeAlias.TITLE, None)
+            card_fields = trello_client.get_custom_fields(card.id)
 
             label_names = [
                 label.name for label in card.labels if label.color != TrelloCardColor.BLACK
             ]
 
+            is_archive_card = 'Архив' in label_names
+
             this_card_bad_fields = []
             if (
-                    title is None and
+                    title.title is None and
                     card.lst.id != trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK]
             ):
                 this_card_bad_fields.append('название поста')
-            if google_doc is None:
+            if card_fields.google_doc is None:
                 this_card_bad_fields.append('google doc')
-            if len(authors) == 0:
+            if len(card_fields.authors) == 0:
                 this_card_bad_fields.append('автор')
-            if len(editors) == 0:  # unsure if need this -- and 'Архив' not in label_names:
+            if len(card_fields.editors) == 0:  # and 'Архив' not in label_names:
                 this_card_bad_fields.append('редактор')
-            if len(illustrators) == 0 and need_illustrators and 'Архив' not in label_names:
+            if (
+                    len(card_fields.illustrators) == 0 and need_illustrators and
+                    'Архив' not in label_names
+            ):
                 this_card_bad_fields.append('иллюстратор')
             if card.due is None and show_due:
                 this_card_bad_fields.append('дата публикации')
             if len(label_names) == 0:
                 this_card_bad_fields.append('рубрика')
 
-            if len(this_card_bad_fields) > 0:
+            if (
+                    len(this_card_bad_fields) > 0
+                    and not (is_archive_card and not strict_archive_rules)
+            ):
                 logger.info(
                     f'Trello card is unsuitable for publication: {card.url} {this_card_bad_fields}'
                 )
@@ -123,11 +119,7 @@ class FillPostsListJob(BaseJob):
             registry_posts.append(
                 RegistryPost(
                     card,
-                    title.value,
-                    ','.join(authors),
-                    google_doc.value,
-                    ','.join(editors),
-                    ','.join(illustrators),
+                    card_fields,
                     is_main_post,
                     is_archive_post,
                 )
@@ -136,21 +128,3 @@ class FillPostsListJob(BaseJob):
         if parse_failure_counter > 0:
             logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
         return registry_posts
-
-    @staticmethod
-    def _format_errors(errors: dict):
-        # copied from publication_plans_job.py
-        # it will be merged there later, hopefully
-        error_messages = []
-        for bad_card, bad_fields in errors.items():
-            card_error_message = (
-                f'В карточке <a href="{bad_card.url}">{bad_card.name}</a>'
-                f' не заполнено: {", ".join(bad_fields)}'
-            )
-            error_messages.append(card_error_message)
-        paragraphs = [
-            'Не удалось внести информацию в реестр.',
-            '\n'.join(error_messages),
-            'Пожалуйста, заполни требуемые поля в карточках и запусти команду снова.'
-        ]
-        return paragraphs
