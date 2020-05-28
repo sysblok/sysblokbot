@@ -174,9 +174,6 @@ def get_job_runnable(job_id: str):
     logger.error(f'Could not find job runnable for {job_module}')
 
 
-def check_card_errors()
-
-
 def format_errors(errors: dict):
     # probably will move it to BaseJob
     error_messages = []

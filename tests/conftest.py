@@ -19,7 +19,7 @@ EXPECTED_TEST_PATH = os.path.join(
 @pytest.fixture
 def mock_trello():
 
-    def _make_request(_, uri: str) -> (int, Dict):
+    def _make_request(_, uri: str, payload={}) -> (int, Dict):
 
         def load_json(filename: str) -> Dict:
             with open(os.path.join(TRELLO_TEST_PATH, filename), 'r') as fin:

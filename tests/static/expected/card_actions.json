@@ -1,6 +1,7 @@
 [
     {
       "id": "5ebc8811bc56ff5809c1f833",
+      "type": "updateCard",
       "data": {
         "card": {
           "shortLink": "9qBC9AWi"
@@ -18,6 +19,7 @@
     },
     {
       "id": "5eb8727f1218f340bc659093",
+      "type": "updateCard",
       "data": {
         "card": {
           "shortLink": "9qBC9AWi"
@@ -35,6 +37,7 @@
     },
     {
       "id": "5eb8727f1218f340bc659091",
+      "type": "updateCard",
       "data": {
         "card": {
           "shortLink": "9qBC9AWi"

@@ -25,6 +25,7 @@ class PublicationPlansJob(BaseJob):
             list_aliases=(TrelloListAlias.PROOFREADING, TrelloListAlias.DONE),
             errors=errors,
             show_due=True,
+            strict_archive_rules=True,
         )
 
         paragraphs += PublicationPlansJob._retrieve_cards_for_paragraph(
@@ -34,6 +35,7 @@ class PublicationPlansJob(BaseJob):
             errors=errors,
             show_due=False,
             need_illustrators=False,
+            strict_archive_rules=False,
         )
 
         paragraphs.append('Спасибо авторам, редакторам, кураторам и иллюстраторам! 🤖❤️')
@@ -51,6 +53,7 @@ class PublicationPlansJob(BaseJob):
             errors: dict,
             show_due=True,
             need_illustrators=True,
+            strict_archive_rules=False,
     ) -> List[str]:
         '''
         Returns a list of paragraphs that should always go in a single message.
@@ -69,46 +72,40 @@ class PublicationPlansJob(BaseJob):
                 parse_failure_counter += 1
                 continue
 
-            card_fields_dict = trello_client.get_card_custom_fields_dict(card.id)
-            authors = (
-                card_fields_dict[TrelloCustomFieldTypeAlias.AUTHOR].value.split(',')
-                if TrelloCustomFieldTypeAlias.AUTHOR in card_fields_dict else []
-            )
-            editors = (
-                card_fields_dict[TrelloCustomFieldTypeAlias.EDITOR].value.split(',')
-                if TrelloCustomFieldTypeAlias.EDITOR in card_fields_dict else []
-            )
-            illustrators = (
-                card_fields_dict[TrelloCustomFieldTypeAlias.ILLUSTRATOR].value.split(',')
-                if TrelloCustomFieldTypeAlias.ILLUSTRATOR in card_fields_dict else []
-            )
-            google_doc = card_fields_dict.get(TrelloCustomFieldTypeAlias.GOOGLE_DOC, None)
-            title = card_fields_dict.get(TrelloCustomFieldTypeAlias.TITLE, None)
+            card_fields = trello_client.get_custom_fields(card.id)
 
             label_names = [
                 label.name for label in card.labels if label.color != TrelloCardColor.BLACK
             ]
 
+            is_archive_card = 'Архив' in label_names
+
             this_card_bad_fields = []
             if (
-                    title is None and
+                    card_fields.title is None and
                     card.lst.id != trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK]
             ):
                 this_card_bad_fields.append('название поста')
-            if google_doc is None:
+            if card_fields.google_doc is None:
                 this_card_bad_fields.append('google doc')
-            if len(authors) == 0:
+            if len(card_fields.authors) == 0:
                 this_card_bad_fields.append('автор')
-            if len(editors) == 0:  # unsure if need this -- and 'Архив' not in label_names:
+            if len(card_fields.editors) == 0:  # and 'Архив' not in label_names:
                 this_card_bad_fields.append('редактор')
-            if len(illustrators) == 0 and need_illustrators and 'Архив' not in label_names:
+            if (
+                    len(card_fields.illustrators) == 0 and need_illustrators and
+                    not is_archive_card
+            ):
                 this_card_bad_fields.append('иллюстратор')
             if card.due is None and show_due:
                 this_card_bad_fields.append('дата публикации')
             if len(label_names) == 0:
                 this_card_bad_fields.append('рубрика')
 
-            if len(this_card_bad_fields) > 0:
+            if (
+                    len(this_card_bad_fields) > 0
+                    and not (is_archive_card and not strict_archive_rules)
+            ):
                 logger.info(
                     f'Trello card is unsuitable for publication: {card.url} {this_card_bad_fields}'
                 )
@@ -117,7 +114,7 @@ class PublicationPlansJob(BaseJob):
 
             paragraphs.append(
                 PublicationPlansJob._format_card(
-                    card, title, google_doc, authors, editors, illustrators, show_due=show_due
+                    card, card_fields, show_due=show_due
                 )
             )
 
@@ -127,20 +124,28 @@ class PublicationPlansJob(BaseJob):
 
     @staticmethod
     def _format_card(
-            card, title, google_doc, authors, editors, illustrators, show_due=True
+            card, card_fields, show_due=True
     ) -> str:
-        # Name and google_doc url always present.
-        card_text = f'<a href="{google_doc}">{title or card.name}</a>\n'
+        card_text = (
+            f'<a href="{card_fields.google_doc or card.url}">'
+            f'{card_fields.title or card.name}</a>\n'
+        )
 
-        card_text += f'Автор{"ы" if len(authors) > 1 else ""}: {", ".join(authors)}. '
-        card_text += f'Редактор{"ы" if len(editors) > 1 else ""}: {", ".join(editors)}. '
-        if len(illustrators) > 0:
-            card_text += (
-                f'Иллюстратор{"ы" if len(illustrators) > 1 else ""}: {", ".join(illustrators)}. '
-            )
+        card_text += PublicationPlansJob._format_possibly_plural('Автор', card_fields.authors)
+        card_text += PublicationPlansJob._format_possibly_plural('Редактор', card_fields.editors)
+        card_text += PublicationPlansJob._format_possibly_plural(
+            'Иллюстратор', card_fields.illustrators
+        )
 
         if show_due:
             card_text = (
                 f'<b>{card.due.strftime("%d.%m (%a)").lower()}</b> — {card_text}'
             )
         return card_text.strip()
+
+    @staticmethod
+    def _format_possibly_plural(name: str, values: List[str]) -> str:
+        if len(values) == 0:
+            return ''
+        # yeah that's a bit sexist
+        return f'{name}{"ы" if len(values) > 1 else ""}: {", ".join(values)}. '
