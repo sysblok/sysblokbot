@@ -174,7 +174,7 @@ class EditorialReportJob(BaseJob):
 
         if parse_failure_counter > 0:
             logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
-        return ['\n'.join(paragraphs)]
+        return paragraphs
 
     @staticmethod
     def _format_card(card, card_fields, is_urgent=False) -> str:
@@ -188,7 +188,7 @@ class EditorialReportJob(BaseJob):
 
         if card.due:
             card_text = (
-                f'<b>с {card.due.strftime("%d.%m (%a)").lower()} '
+                f'<b>с {card.due.strftime("%d.%m").lower()} '
                 f'{"(Срочно!)" if is_urgent else ""}</b> — {card_text}'
             )
         else:

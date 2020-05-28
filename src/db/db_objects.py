@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 
-
 Base = declarative_base()
 
 
@@ -20,11 +19,11 @@ class Author(Base):
     @classmethod
     def from_dict(cls, data):
         author = cls()
-        author.name = data['name'].strip()
-        author.curator = data['curator'].strip()
-        author.status = data['status'].strip()
-        author.telegram = data['telegram'].strip()
-        author.trello = data['trello'].strip()
+        author.name = _get_str_data_item(data, 'name')
+        author.curator = _get_str_data_item(data, 'curator')
+        author.status = _get_str_data_item(data, 'status')
+        author.telegram = _get_str_data_item(data, 'telegram')
+        author.trello = _get_str_data_item(data, 'trello')
         return author
 
 
@@ -44,10 +43,14 @@ class Curator(Base):
     @classmethod
     def from_dict(cls, data):
         curator = cls()
-        curator.name = data['name'].strip()
-        curator.telegram = data['telegram'].strip()
-        curator.team = data['team'].strip()
-        curator.role = data['role'].strip()
-        curator.section = data['section'].strip()
-        curator.trello_labels = data['trello_labels'].strip()
+        curator.name = _get_str_data_item(data, 'name')
+        curator.telegram = _get_str_data_item(data, 'telegram')
+        curator.team = _get_str_data_item(data, 'team')
+        curator.role = _get_str_data_item(data, 'role')
+        curator.section = _get_str_data_item(data, 'section')
+        curator.trello_labels = _get_str_data_item(data, 'trello_labels')
         return curator
+
+def _get_str_data_item(data: dict, item_name: str) -> str:
+    """Preprocess string data item from sheets"""
+    return data[item_name].strip() if data.get(item_name) else ''

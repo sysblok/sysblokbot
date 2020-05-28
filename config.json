@@ -2,7 +2,7 @@
     "telegram": {
         "token": "do_not_set_here_please_go_to_config_override",
         "is_silent": false,
-        "disable_web_page_preview": false,
+        "disable_web_page_preview": true,
         "admin_chat_ids": [],
         "manager_chat_ids": [],
         "important_events_recipients": [],
