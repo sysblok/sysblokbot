@@ -1,7 +1,7 @@
 import logging
 
-from .sender import TelegramSender
-from ..app_context import AppContext
+from ..sender import TelegramSender
+from ...app_context import AppContext
 
 logger = logging.getLogger(__name__)
 
