@@ -278,6 +278,61 @@ class TrelloCustomField:
         }
 
 
+class TrelloActionCreateCard:
+    def __init__(self):
+        self.id = None
+        self.date = None
+        self.card_url = None
+        self.list_id = None
+        self.list_name = None
+
+        self._ok = True
+
+    def __bool__(self):
+        return self._ok
+
+    def __str__(self):
+        return f'Card "{self.card_url}" created in {self.list_name}'
+
+    def __repr__(self):
+        return (
+            f'ActionCreateCard<date={self.date}, card_url={self.card_url}, '
+            f'list_id={self.list_id}>'
+        )
+
+    @classmethod
+    def from_dict(cls, data):
+        action = cls()
+        try:
+            assert data['type'] == 'createCard'
+            action.id = data['id']
+            action.date = datetime.strptime(data['date'], TIME_FORMAT)
+            action.card_url = 'https://trello.com/c/' + data['data']['card']['shortLink']
+            if 'list' in data['data']:
+                action.list_id = data['data']['list'].get('id')
+                action.list_name = data['data']['list'].get('name')
+        except Exception:
+            action._ok = False
+            logger.error(f"Bad card action json {data}")
+        return action
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'date': datetime.strftime(self.date, TIME_FORMAT),
+            'type': 'createCard',
+            'data': {
+                'card': {
+                    'shortLink': self.card_url.split('/')[-1]
+                },
+                'list': {
+                    'id': self.list_id,
+                    'name': self.list_name,
+                },
+            }
+        }
+
+
 class TrelloActionUpdateCard:
     def __init__(self):
         self.id = None
@@ -307,6 +362,7 @@ class TrelloActionUpdateCard:
     def from_dict(cls, data):
         action = cls()
         try:
+            assert data['type'] == 'updateCard'
             action.id = data['id']
             action.date = datetime.strptime(data['date'], TIME_FORMAT)
             action.card_url = 'https://trello.com/c/' + data['data']['card']['shortLink']
@@ -325,6 +381,7 @@ class TrelloActionUpdateCard:
         return {
             'id': self.id,
             'date': datetime.strftime(self.date, TIME_FORMAT),
+            'type': 'updateCard',
             'data': {
                 'card': {
                     'shortLink': self.card_url.split('/')[-1]
@@ -378,3 +435,16 @@ class TrelloMember:
             'username': self.username,
             'fullName': self.full_name,
         }
+
+
+class CardCustomFields:
+    def __init__(self, card_id):
+        self.card_id = card_id
+        self.authors = None
+        self.editors = None
+        self.illustrators = None
+        self.title = None
+        self.google_doc = None
+
+    def __repr__(self):
+        return f'CardCustomFields<id={self.card_id}, title={self.title}>'
