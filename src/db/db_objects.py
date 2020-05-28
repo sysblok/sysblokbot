@@ -51,6 +51,7 @@ class Curator(Base):
         curator.trello_labels = _get_str_data_item(data, 'trello_labels')
         return curator
 
+
 def _get_str_data_item(data: dict, item_name: str) -> str:
     """Preprocess string data item from sheets"""
     return data[item_name].strip() if data.get(item_name) else ''
