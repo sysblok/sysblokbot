@@ -10,6 +10,7 @@ from ...tg.sender import TelegramSender
 
 logger = logging.getLogger(__name__)
 
+
 @admin_only
 def get_config(update, tg_context):
     config = ConfigManager().get_latest_config()
