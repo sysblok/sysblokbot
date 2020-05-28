@@ -131,8 +131,7 @@ class EditorialReportJob(BaseJob):
             cards_filtered,
             key=lambda card: (
                 not EditorialReportJob._card_is_urgent(card), card.due is None, card.due
-            ),
-            reverse=False
+            )
         ):
             if not card:
                 parse_failure_counter += 1
