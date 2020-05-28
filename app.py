@@ -44,7 +44,7 @@ def get_bot():
     logging.getLogger().addHandler(ErrorBroadcastHandler(tg_sender))
 
     start_msg = f'[{consts.APP_SOURCE}] Bot successfully started'
-    if consts.APP_SOURCE:
+    if consts.COMMIT_HASH:
         start_msg += (
             f', revision <a href="{consts.COMMIT_URL}">{consts.COMMIT_HASH}</a>.'
         )
