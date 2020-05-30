@@ -5,6 +5,8 @@ from typing import Callable, List
 
 
 from ..app_context import AppContext
+from ..db.db_client import DBClient
+from ..db.db_objects import Curator
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..trello.trello_objects import TrelloMember
 from .. import jobs
@@ -14,15 +16,10 @@ logger = logging.getLogger(__name__)
 # Delay to ensure messages come in right order.
 MESSAGE_DELAY_SEC = 0.1
 
-# TODO: remove after we move to DB
-# Per-session caches
-tg_login_cache = {}
-curator_name_cache = {}
-
 
 def retrieve_username(
         trello_member: TrelloMember,
-        sheets_client: GoogleSheetsClient
+        db_client: DBClient
 ):
     """
     Where possible and defined, choose @tg_id over trello_id.
@@ -30,21 +27,15 @@ def retrieve_username(
     Returns: "John Smith (@jsmith_tg)" if telegram login found,
     "John Smith (jsmith_trello)" otherwise.
     """
-    global tg_login_cache
     trello_id = trello_member.username
     tg_id = None
-    if trello_id in tg_login_cache:
-        tg_id = tg_login_cache[trello_id]
-    else:
-        try:
-            tg_id = sheets_client.find_telegram_id_by_trello_id(
-                '@' + trello_id
-            )
-        except Exception as e:
-            logger.error(f'Failed to retrieve tg id for "{trello_id}": {e}')
-        if tg_id:
-            tg_id = tg_id.strip()
-            tg_login_cache[trello_id] = tg_id
+
+    try:
+        tg_id = db_client.find_author_telegram_by_trello(
+            '@' + trello_id
+        )
+    except Exception as e:
+        logger.error(f'Failed to retrieve tg id for "{trello_id}": {e}')
 
     if tg_id and tg_id.startswith('@'):  # otherwise can be phone number
         return f'{trello_member.full_name} ({tg_id})'
@@ -53,20 +44,20 @@ def retrieve_username(
 
 def retrieve_usernames(
         trello_members: List[TrelloMember],
-        sheets_client: GoogleSheetsClient
+        db_client: DBClient
 ) -> List[str]:
     """
     Process an iterable of trello members to list of formatted strings.
     """
     return [
-        retrieve_username(member, sheets_client)
+        retrieve_username(member, db_client)
         for member in trello_members
     ]
 
 
-def retrieve_curator_names(
+def retrieve_curator_names_by_author(
         trello_member: TrelloMember,
-        sheets_client: GoogleSheetsClient
+        db_client: DBClient
 ) -> List[str]:
     """
     Tries to find a curator for trello member.
@@ -74,37 +65,44 @@ def retrieve_curator_names(
     If trello member or curator could not be found in Authors sheet, returns None
     Note: requires a request to GoogleSheets API.
     """
-    global curator_name_cache
-    curators = None
-    if trello_member.username in curator_name_cache:
-        curators = curator_name_cache[trello_member.username]
-    else:
-        try:
-            curators = sheets_client.find_author_curators('trello', '@' + trello_member.username)
-            if curators:
-                curator_name_cache[trello_member.username] = curators
-        except Exception as e:
-            logger.error(f'Could not retrieve curator: {e}')
-            return
+    try:
+        curators = db_client.find_curators_by_author_trello('@' + trello_member.username)
+    except Exception as e:
+        logger.error(f'Could not retrieve curators by author: {e}')
+        return
     if not curators:
         return None
     return [_make_curator_string(curator) for curator in curators]
 
 
-def _make_curator_string(curator: dict):
+def retrieve_curator_names_by_categories(labels: List[str], db_client: DBClient):
+    """
+    To be used when there is no known authors.
+    Category is a trello label (e.g. NLP)
+    """
+    curators = set()
+    try:
+        for label in labels:
+            curators = curators.union(
+                set(db_client.find_curators_by_trello_label(label.name))
+            )
+    except Exception as e:
+        logger.error(f'Could not retrieve curators by category: {e}')
+        return
+    if not curators:
+        return None
+    return [_make_curator_string(curator) for curator in curators]
+
+
+def _make_curator_string(curator: Curator):
     """
     Returns: (pretty_curator_string, tg_login_or_None)
     """
-    # TODO: make this SheetsCurator class
-    name = curator.get('name')
-    telegram = curator.get('telegram')
-    if name:
-        name = name.strip()
-        if telegram:
-            telegram = telegram.strip()
-            return f'{name} ({telegram})', telegram
-        return name, None
-    return telegram, telegram
+    if curator.name:
+        if curator.telegram:
+            return f'{curator.name} ({curator.telegram})', curator.telegram
+        return curator.name, None
+    return curator.telegram, curator.telegram
 
 
 def pretty_send(
@@ -174,3 +172,20 @@ def get_job_runnable(job_id: str):
             execute_job.__func__.__name__ = name
             return execute_job
     logger.error(f'Could not find job runnable for {job_module}')
+
+
+def format_errors(errors: dict):
+    # probably will move it to BaseJob
+    error_messages = []
+    for bad_card, bad_fields in errors.items():
+        card_error_message = (
+            f'В карточке <a href="{bad_card.url}">{bad_card.name}</a>'
+            f' не заполнено: {", ".join(bad_fields)}'
+        )
+        error_messages.append(card_error_message)
+    paragraphs = [
+        'Не могу сгенерировать сводку.',
+        '\n'.join(error_messages),
+        'Пожалуйста, заполни требуемые поля в карточках и запусти генерацию снова.'
+    ]
+    return paragraphs
