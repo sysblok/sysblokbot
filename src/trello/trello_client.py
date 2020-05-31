@@ -53,8 +53,8 @@ class TrelloClient(Singleton):
                 ]
         cards = []
         # TODO: move this to app state
-        members = self.get_members()
-        lists = self.get_lists()
+        members = self.get_members(board_id)
+        lists = self.get_lists(board_id)
         for card_dict in data:
             card = objects.TrelloCard.from_dict(card_dict)
             # TODO: move this to app state
