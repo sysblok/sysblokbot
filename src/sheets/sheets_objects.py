@@ -16,7 +16,7 @@ class RegistryPost:
             is_archive_post: bool,
     ):
         self.title = custom_fields.title
-        self.authors = custom_fields.authors
+        self.authors = ','.join(custom_fields.authors)
         self.trello_url = card.url
         # We filter BLACK cards as this is an auxiliary label
         self.rubrics = [
@@ -24,7 +24,7 @@ class RegistryPost:
             if label.color != TrelloCardColor.BLACK
         ]
         self.google_doc = custom_fields.google_doc
-        self.editors = custom_fields.editors
-        self.illustrators = custom_fields.illustrators
+        self.editors = ','.join(custom_fields.editors)
+        self.illustrators = ','.join(custom_fields.illustrators)
         self.is_main_post = is_main_post
         self.is_archive_post = is_archive_post
