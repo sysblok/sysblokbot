@@ -117,8 +117,14 @@ class TrelloClient(Singleton):
             card_fields_dict[TrelloCustomFieldTypeAlias.ILLUSTRATOR].value.split(',')
             if TrelloCustomFieldTypeAlias.ILLUSTRATOR in card_fields_dict else []
         )
-        card_fields.google_doc = card_fields_dict.get(TrelloCustomFieldTypeAlias.GOOGLE_DOC, None)
-        card_fields.title = card_fields_dict.get(TrelloCustomFieldTypeAlias.TITLE, None)
+        card_fields.google_doc = (
+            card_fields_dict[TrelloCustomFieldTypeAlias.GOOGLE_DOC].value
+            if TrelloCustomFieldTypeAlias.GOOGLE_DOC in card_fields_dict else None
+        )
+        card_fields.title = (
+            card_fields_dict[TrelloCustomFieldTypeAlias.TITLE].value
+            if TrelloCustomFieldTypeAlias.TITLE in card_fields_dict else None
+        )
         return card_fields
 
     def get_action_create_card(self, card_id):
