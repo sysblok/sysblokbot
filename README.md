@@ -20,7 +20,7 @@
 - `python3 app.py`
 
 ## How to run pre-checks locally
-- `pycodestyle .` checks pep8 compliance.
+- `pycodestyle --max-line-length=100 .` checks pep8 compliance.
 - `pytest` runs tests.
 
 ## How to add a scheduled job
