@@ -81,7 +81,7 @@ class DBClient(Singleton):
     def find_curators_by_author_trello(self, trello_id: str) -> List[Curator]:
         # TODO: make batch queries
         session = self.Session()
-        curators = session.query(Author).join(Curator).filter(
+        curators = session.query(Curator).join(Author).filter(
             Author.trello == trello_id
         ).all()
         if not curators:
