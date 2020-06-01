@@ -9,6 +9,11 @@ on:
     # Publish `v1.2.3` tags as releases.
     tags:
       - v*
+  
+  # for integration tests
+  pull_request:
+    branches:
+      - master
 
 env:
   IMAGE_NAME: sysblokbot
@@ -35,7 +40,7 @@ jobs:
       - name: Python Pytest Github Action
         uses: fylein/python-pytest-github-action@v2
         with:
-          args: pip3 install -e . && pip3 install -r requirements.txt && pytest
+          args: pip3 install -e . && pip3 install -r requirements.txt && pytest tests/unit
 
   # Push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
@@ -98,3 +103,14 @@ jobs:
               -v /home/${{ env.DO_USERNAME }}/config_gs_testing.json:/app/config_gs.json \
               -v /home/${{ env.DO_USERNAME }}/sysblokbot.sqlite:/app/sysblokbot.sqlite \
               docker.pkg.github.com/sysblok/sysblokbot/${{ env.IMAGE_NAME }}:testing
+
+      - name: Integration tests
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: fylein/python-pytest-github-action@v2
+        env:
+          TELEGRAM_APP_ID: ${{ secrets.TELEGRAM_APP_ID }}
+          TELEGRAM_APP_HASH: ${{ secrets.TELEGRAM_APP_HASH }}
+          TELETHON_SESSION: ${{ secrets.TELETHON_SESSION }}
+          TELEGRAM_BOT_NAME: ${{ secrets.TELEGRAM_BOT_NAME }}
+        with:
+          args: pip3 install -e . && pip3 install -r requirements.txt && pytest tests/integration
