@@ -104,8 +104,14 @@ jobs:
               -v /home/${{ env.DO_USERNAME }}/sysblokbot.sqlite:/app/sysblokbot.sqlite \
               docker.pkg.github.com/sysblok/sysblokbot/${{ env.IMAGE_NAME }}:testing
 
+  integration_tests:
+    needs: push
+
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
       - name: Integration tests
-        if: ${{ github.event_name == 'pull_request' }}
         uses: fylein/python-pytest-github-action@v2
         env:
           TELEGRAM_APP_ID: ${{ secrets.TELEGRAM_APP_ID }}
