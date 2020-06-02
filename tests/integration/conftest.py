@@ -12,7 +12,7 @@ session_str = os.environ["TELETHON_SESSION"]
 @pytest.fixture
 async def client() -> TelegramClient:
     client = TelegramClient(
-        StringSession(session_str), api_id, api_hash, 
+        StringSession(session_str), api_id, api_hash,
         sequential_updates=True
     )
     # Connect to the server
