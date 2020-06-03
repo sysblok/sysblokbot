@@ -2,7 +2,8 @@ import logging
 import os
 from typing import Callable
 
-from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
+from telegram.ext import (CallbackQueryHandler, CommandHandler, Filters,
+                          MessageHandler, Updater)
 
 from .app_context import AppContext
 from .config_manager import ConfigManager
@@ -138,6 +139,7 @@ class SysBlokBot:
             Filters.text,
             handlers.handle_user_message)
         )
+        self.dp.add_handler(CallbackQueryHandler(handlers.handle_callback_query))
 
         # log all errors
         self.dp.add_error_handler(handlers.error)

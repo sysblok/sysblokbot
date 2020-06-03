@@ -3,6 +3,7 @@ import logging
 import time
 from typing import Callable, List
 
+import telegram
 
 from ..app_context import AppContext
 from ..db.db_client import DBClient
@@ -120,7 +121,7 @@ def pretty_send(
 
 def _paragraphs_to_messages(
         paragraphs: List[str],
-        char_limit=4096,
+        char_limit=telegram.constants.MAX_MESSAGE_LENGTH,
         delimiter='\n\n',
 ) -> List[str]:
     '''

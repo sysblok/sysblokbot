@@ -10,6 +10,14 @@ from ...consts import PlainTextUserAction
 logger = logging.getLogger(__name__)
 
 
+def handle_callback_query(update: telegram.Update, tg_context: telegram.ext.CallbackContext):
+    """
+    Handler for handling button callbacks. Redirects to handle_user_message
+    """
+    update.callback_query.answer()
+    handle_user_message(update, tg_context)
+
+
 def handle_user_message(update: telegram.Update, tg_context: telegram.ext.CallbackContext):
     """
     Determines the last command for the user, its current state and responds accordingly
@@ -18,14 +26,15 @@ def handle_user_message(update: telegram.Update, tg_context: telegram.ext.Callba
     if not command_id:
         return
     command_data = tg_context.chat_data.get(command_id, {})
+    tg_context.chat_data[command_id] = command_data
     # to understand what kind of data currently expected from user
     next_action = command_data.get(consts.NEXT_ACTION)
     if not next_action:
         # last action for a command was successfully executed and nothing left to do
         return
     next_action = PlainTextUserAction(next_action)
-    user_input = update.message.text.strip()
-
+    user_input = update.message.text.strip() if update.message is not None else None
+        
     # Below comes a long switch of possible next_action.
     # Following conventions are used:
     # - If you got an exception or `user_input` is invalid, call `reply('...', update)` explaining
@@ -38,8 +47,8 @@ def handle_user_message(update: telegram.Update, tg_context: telegram.ext.Callba
     if next_action == PlainTextUserAction.ENTER_BOARD_URL:
         trello_client = TrelloClient()
         try:
-            # TODO: get lists by url
-            trello_lists = trello_client.get_lists('')
+            board = trello_client.get_board_by_url(user_input)
+            trello_lists = trello_client.get_lists(board.id)
         except Exception:
             reply(
                 (
@@ -81,14 +90,26 @@ def handle_user_message(update: telegram.Update, tg_context: telegram.ext.Callba
             ),
             update
         )
-        command_data[consts.NEXT_ACTION] = PlainTextUserAction.ENTER_INTRO.value
+        set_next_action(command_data, PlainTextUserAction.ENTER_INTRO)
         return
     elif next_action == PlainTextUserAction.ENTER_INTRO:
-        # TODO: button
         command_data[consts.GetTasksReportData.INTRO_TEXT] = user_input
-        reply('Нужно ли выводить теги (метки в Trello) в отчете?', update)
-        # finished with last action for /trello_client_get_lists
-        command_data[consts.NEXT_ACTION] = None
+        button_list = [[
+            telegram.InlineKeyboardButton("Да", callback_data="tasks_report_data__add_list__yes"),
+            telegram.InlineKeyboardButton("Нет", callback_data="tasks_report_data__add_list__no"),
+        ]]
+        reply_markup = telegram.InlineKeyboardMarkup(button_list)
+        reply('Нужно ли выводить теги (метки в Trello) в отчете?', update, reply_markup=reply_markup)
+        set_next_action(command_data, PlainTextUserAction.CHOOSE_IF_FILL_LISTS)
         return
+    elif next_action == PlainTextUserAction.CHOOSE_IF_FILL_LISTS:
+        add_lists = update.callback_query.data == 'tasks_report_data__add_list__yes'
+        reply(f'here is add_lists with {add_lists}', update)
+        # finished with last action for /trello_client_get_lists
+        set_next_action(command_data, None)
     else:
         logger.error(f'Unknown user action: {next_action}')
+
+
+def set_next_action(command_data: dict, next_action: PlainTextUserAction):
+    command_data[consts.NEXT_ACTION] = next_action.value if next_action else next_action

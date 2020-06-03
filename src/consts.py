@@ -81,6 +81,7 @@ class PlainTextUserAction(Enum):
     ENTER_BOARD_URL = 'get_tasks_report__board_url'
     ENTER_LIST_NUMBER = 'get_tasks_report__list_number'
     ENTER_INTRO = 'get_tasks_report__introduction'
+    CHOOSE_IF_FILL_LISTS = 'get_tasks_report__fill_lists'
 
 
 class GetTasksReportData:
