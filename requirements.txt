@@ -11,8 +11,13 @@ decorator==4.4.2
 deepdiff==4.3.2
 freezegun==0.3.15
 future==0.18.2
-google-auth==1.13.1
+google-api-core==1.17.0
+google-api-python-client==1.9.1
+google-auth==1.16.0
+google-auth-httplib2==0.0.3
+googleapis-common-protos==1.51.0
 gspread==3.4.2
+httplib2==0.18.1
 idna==2.9
 importlib-metadata==1.6.0
 isort==4.3.21
@@ -23,6 +28,7 @@ ordered-set==3.1.1
 packaging==20.3
 pathspec==0.8.0
 pluggy==0.13.1
+protobuf==3.12.2
 py==1.8.1
 pyaes==1.6.1
 pyasn1==0.4.8
@@ -34,6 +40,7 @@ pytest==5.4.1
 pytest-asyncio==0.12.0
 python-dateutil==2.8.1
 python-telegram-bot==12.6.1
+pytz==2020.1
 regex==2020.4.4
 requests==2.23.0
 rsa==4.0
@@ -44,6 +51,7 @@ Telethon==1.14.0
 toml==0.10.0
 tornado==6.0.4
 typed-ast==1.4.1
+uritemplate==3.0.1
 urllib3==1.25.8
 wcwidth==0.1.9
 wrapt==1.11.2
