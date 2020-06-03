@@ -111,6 +111,11 @@ class SysBlokBot:
             handlers.set_config,
             'установить новое значение в конфиге'
         )
+        self.add_manager_handler(
+            'get_tasks_report',
+            self.manager_reply_handler('tasks_report_job'),
+            'получить отчет по направлению с перечнем задач для участников'
+        )
 
         # admin-only DB cmds
         self.add_admin_handler(
