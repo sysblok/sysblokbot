@@ -14,4 +14,3 @@ from .fill_posts_list_job import FillPostsListJob
 from .publication_plans_job import PublicationPlansJob
 from .sample_job import SampleJob
 from .trello_board_state_job import TrelloBoardStateJob
-from .tasks_report_job import TasksReportJob

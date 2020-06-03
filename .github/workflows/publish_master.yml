@@ -35,7 +35,7 @@ jobs:
       - name: Python Pytest Github Action
         uses: fylein/python-pytest-github-action@v2
         with:
-          args: pip3 install -e . && pip3 install -r requirements.txt && pytest
+          args: pip3 install -e . && pip3 install -r requirements.txt && pytest tests/unit
 
   # Push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
