@@ -69,6 +69,11 @@ class SysBlokBot:
             self.manager_reply_handler('editorial_report_job'),
             'получить сводку по результатам редакторского созвона'
         )
+        self.add_manager_handler(
+            'get_illustrative_report',
+            self.manager_reply_handler('illustrative_report_job'),
+            'получить сводку для созвона иллюстраторов'
+        )
 
         # admin-only technical cmds
         self.add_admin_handler(
