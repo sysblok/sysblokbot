@@ -47,6 +47,12 @@ class TrelloClient(Singleton):
         ]
         logger.debug(f'get_lists: {lists}')
         return lists
+    
+    def get_list(self, list_id):
+        _, data = self._make_request(f'lists/{list_id}')
+        lst = objects.TrelloList.from_dict(data)
+        logger.debug(f'get_list: {list}')
+        return lst
 
     def get_cards(self, list_ids=None, board_id=None):
         if list_ids is not None and len(list_ids) == 1:
