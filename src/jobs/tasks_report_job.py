@@ -98,7 +98,8 @@ class TasksReportJob(BaseJob):
 
     @staticmethod
     def _retrieve_cards_for_paragraph(cards, app_context):
-        paragraphs = ['Всем привет! Собрали задачки на неделю для участников. Проверьте, что все правильно, пожалуйста.']
+        paragraphs = ['Всем привет! Собрали задачки на неделю для участников.'
+                      'Проверьте, что все правильно, пожалуйста.']
         members = TasksReportJob._get_members(cards)
         for member in members:
             member_name = TasksReportJob._make_member_text(member)
