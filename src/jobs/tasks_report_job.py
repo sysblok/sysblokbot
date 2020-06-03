@@ -41,16 +41,7 @@ class TasksReportJob(BaseJob):
         return card_text.strip()
 
     @staticmethod
-    def _make_members_string(card, app_context: AppContext) -> str:
-        members_text = '👤 '
-        # if there are members, should tag both members and their curators
-        members_text += ", ".join(
-            utils.retrieve_usernames(card.members, app_context.db_client)
-        )
-        return members_text
-
-    @staticmethod
-    def _get_members(cards, app_context):
+    def _get_members(cards):
         members = []
         for card in cards:
             for member in card.members:
@@ -80,12 +71,12 @@ class TasksReportJob(BaseJob):
     @staticmethod
     def _make_member_text(member) -> str:
         members_text = '👤 '
-        members_text += f'<b>{member.full_name} </b>' + '(@' + member.username + '):'
+        members_text += f'<b>{member.full_name} </b>(@{member.username}):'
         return members_text
 
     @staticmethod
     def _get_deadline(card) -> str:
-        date_text = 'До ' + f'{card.due.strftime("%d.%m")}' + ' — '
+        date_text = f'До {card.due.strftime("%d.%m")} — '
         return date_text
 
     @staticmethod
@@ -108,7 +99,7 @@ class TasksReportJob(BaseJob):
     @staticmethod
     def _retrieve_cards_for_paragraph(cards, app_context):
         paragraphs = ['Всем привет! Собрали задачки на неделю для участников. Проверьте, что все правильно, пожалуйста.']
-        members = TasksReportJob._get_members(cards, app_context)
+        members = TasksReportJob._get_members(cards)
         for member in members:
             member_name = TasksReportJob._make_member_text(member)
             paragraphs.append(member_name)
