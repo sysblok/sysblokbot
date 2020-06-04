@@ -56,7 +56,7 @@ jobs:
         run: |
           curl -X POST \
             -H 'Content-Type: application/json' \
-            -d '{"chat_id": ${{ env.TELEGRAM_ERROR_CHAT_ID }}, "text": "[github CI] Unit tests [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{env.GITHUB_RUN_ID}})"}' \
+            -d '{"chat_id": ${{ env.TELEGRAM_ERROR_CHAT_ID }}, "text": "[github CI] Unit tests [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})"}' \
             https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
   
   # Push image to GitHub Packages.
