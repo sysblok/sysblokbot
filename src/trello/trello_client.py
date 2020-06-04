@@ -25,6 +25,13 @@ class TrelloClient(Singleton):
         _, data = self._make_request(f'boards/{board_id or self.board_id}')
         return objects.TrelloBoard.from_dict(data)
 
+    def get_board_by_url(self, board_url):
+        _, data = self._make_request(f'members/me/boards')
+        for board in data:
+            if board.get('url') == board_url:
+                return objects.TrelloBoard.from_dict(board)
+        raise ValueError(f'Board {board_url} not found!')
+
     def get_board_labels(self, board_id=None):
         _, data = self._make_request(f'boards/{board_id or self.board_id}/labels')
         labels = [
@@ -40,6 +47,12 @@ class TrelloClient(Singleton):
         ]
         logger.debug(f'get_lists: {lists}')
         return lists
+
+    def get_list(self, list_id):
+        _, data = self._make_request(f'lists/{list_id}')
+        lst = objects.TrelloList.from_dict(data)
+        logger.debug(f'get_list: {list}')
+        return lst
 
     def get_cards(self, list_ids=None, board_id=None):
         if list_ids is not None and len(list_ids) == 1:

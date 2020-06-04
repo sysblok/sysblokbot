@@ -59,7 +59,9 @@ def get_sender_id(update) -> int:
 
 
 def get_chat_id(update) -> int:
-    return update.message.chat_id
+    if update.message is not None:
+        return update.message.chat_id
+    return update.callback_query.message.chat_id
 
 
 def get_sender_username(update) -> str:
@@ -70,5 +72,5 @@ def is_group_chat(update) -> bool:
     return update.message.chat.type in ('group', 'supergroup')
 
 
-def reply(message: str, tg_update):
-    TelegramSender().send_to_chat_id(message, get_chat_id(tg_update))
+def reply(message: str, tg_update, **kwargs):
+    TelegramSender().send_to_chat_id(message, get_chat_id(tg_update), **kwargs)
