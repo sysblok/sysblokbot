@@ -25,6 +25,7 @@ CONFIG_RELOAD_MINUTES = 15
 TELEGRAM_CONFIG = 'telegram'
 TRELLO_CONFIG = 'trello'
 SHEETS_CONFIG = 'sheets'
+DRIVE_CONFIG = 'drive'
 JOBS_CONFIG = 'jobs'
 DB_CONFIG = 'db'
 
