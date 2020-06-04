@@ -109,6 +109,9 @@ def handle_user_message(update: telegram.Update, tg_context: telegram.ext.Callba
         set_next_action(command_data, PlainTextUserAction.CHOOSE_IF_FILL_LABELS)
         return
     elif next_action == PlainTextUserAction.CHOOSE_IF_FILL_LABELS:
+        if update.callback_query is None:
+            reply('Нажми кнопку :)', update)
+            return
         add_labels = update.callback_query.data == 'tasks_report_data__add_list__yes'
         # reply(f'here is add_lists with {add_labels}', update)
         # finished with last action for /trello_client_get_lists
@@ -122,6 +125,7 @@ def handle_user_message(update: telegram.Update, tg_context: telegram.ext.Callba
         for message in messages:
             reply(message, update)
         set_next_action(command_data, None)
+        return
     else:
         logger.error(f'Unknown user action: {next_action}')
 
