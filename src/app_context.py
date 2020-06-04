@@ -4,7 +4,6 @@ from .consts import TRELLO_CONFIG
 
 from .config_manager import ConfigManager
 from .db.db_client import DBClient
-from .drive.drive_client import GoogleDriveClient
 from .sheets.sheets_client import GoogleSheetsClient
 from .tg.sender import TelegramSender
 from .trello.trello_client import TrelloClient
@@ -34,14 +33,6 @@ class AppContext(Singleton):
         except Exception as e:
             self.sheets_client = None
             logger.critical(f'Could not initialize GoogleSheetsClient: {e}')
-        try:
-            self.drive_client = GoogleDriveClient(
-                config=config_manager.get_drive_config()
-            )
-        except Exception as e:
-            self.drive_client = None
-            logger.critical(f'Could not initialize GoogleDriveClient: {e}')
-
         try:
             self.db_client = DBClient(config=config_manager.get_db_config())
         except Exception as e:

@@ -35,7 +35,7 @@ def handle_user_message(update: telegram.Update, tg_context: telegram.ext.Callba
         return
     next_action = PlainTextUserAction(next_action)
     user_input = update.message.text.strip() if update.message is not None else None
-        
+
     # Below comes a long switch of possible next_action.
     # Following conventions are used:
     # - If you got an exception or `user_input` is invalid, call `reply('...', update)` explaining
@@ -53,9 +53,9 @@ def handle_user_message(update: telegram.Update, tg_context: telegram.ext.Callba
         except Exception:
             reply(
                 (
-                    'Не могу найти такую доску. Пожалуйста, проверь, нет ли ошибки в ссылке на доску. '
-                    'Если найдешь ошибку, пришли, пожалуйста, правильную ссылку. '
-                    'Если нет – напиши Ире @irinoise или Илье @bulgak0v.'
+                    'Не могу найти такую доску. Пожалуйста, проверь, нет ли ошибки в '
+                    'ссылке на доску. Если найдешь ошибку, пришли, пожалуйста, '
+                    'правильную ссылку. Если нет – напиши Ире @irinoise или Илье @bulgak0v.'
                 ),
                 update
             )
@@ -63,7 +63,9 @@ def handle_user_message(update: telegram.Update, tg_context: telegram.ext.Callba
         command_data[consts.GetTasksReportData.BOARD_ID] = user_input
         command_data[consts.GetTasksReportData.LISTS] = [lst.to_dict() for lst in trello_lists]
 
-        trello_lists_formatted = '\n'.join([f'{i + 1}) {lst.name}' for i, lst in enumerate(trello_lists)])
+        trello_lists_formatted = '\n'.join(
+            [f'{i + 1}) {lst.name}' for i, lst in enumerate(trello_lists)]
+        )
         reply(
             (
                 f'Пожалуйста, пришли номер списка, задачи из которого попадут в отчет. '
@@ -100,7 +102,10 @@ def handle_user_message(update: telegram.Update, tg_context: telegram.ext.Callba
             telegram.InlineKeyboardButton("Нет", callback_data="tasks_report_data__add_list__no"),
         ]]
         reply_markup = telegram.InlineKeyboardMarkup(button_list)
-        reply('Нужно ли выводить теги (метки в Trello) в отчете?', update, reply_markup=reply_markup)
+        reply(
+            'Нужно ли выводить теги (метки в Trello) в отчете?',
+            update, reply_markup=reply_markup
+        )
         set_next_action(command_data, PlainTextUserAction.CHOOSE_IF_FILL_LABELS)
         return
     elif next_action == PlainTextUserAction.CHOOSE_IF_FILL_LABELS:
@@ -108,7 +113,12 @@ def handle_user_message(update: telegram.Update, tg_context: telegram.ext.Callba
         # reply(f'here is add_lists with {add_labels}', update)
         # finished with last action for /trello_client_get_lists
         list_id = command_data[consts.GetTasksReportData.LIST_ID]
-        messages = get_tasks_report_handler.generate_report_messages(list_id, add_labels)
+        introduction = command_data[consts.GetTasksReportData.INTRO_TEXT]
+        messages = get_tasks_report_handler.generate_report_messages(
+            list_id,
+            introduction,
+            add_labels
+        )
         for message in messages:
             reply(message, update)
         set_next_action(command_data, None)

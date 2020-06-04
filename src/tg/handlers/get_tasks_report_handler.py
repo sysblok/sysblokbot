@@ -23,7 +23,7 @@ def get_tasks_report(update: telegram.Update, tg_context: telegram.ext.CallbackC
     reply("Привет! Пришли, пожалуйста, ссылку на доску в Trello.", update)
 
 
-def generate_report_messages(list_id: str, add_labels: bool) -> List[str]:
+def generate_report_messages(list_id: str, introduction: str, add_labels: bool) -> List[str]:
     app_context = AppContext()
     paragraphs = []  # list of paragraph strings
 
@@ -32,29 +32,58 @@ def generate_report_messages(list_id: str, add_labels: bool) -> List[str]:
         f'<b>{trello_list.name}</b>'
     )
 
-    list_cards = app_context.trello_client.get_cards(list_id)
-    members_with_cards = set()
-    for card in list_cards:
-        members_with_cards = members_with_cards.union(set(card.members))
-
+    list_cards = app_context.trello_client.get_cards([list_id])
     paragraphs += (_retrieve_cards_for_paragraph(
-        list_cards, app_context
-        ))
+        list_cards, introduction, add_labels, app_context
+    ))
     return paragraphs_to_messages(paragraphs)
 
 
-def _format_card(card, app_context) -> str:
-    # Name and url always present.
-    card_text = f'<a href="{card.url}">{card.name}</a>\n'
-    return card_text.strip()
+def _retrieve_cards_for_paragraph(
+        cards,
+        introduction: str,
+        need_label: bool,
+        app_context: AppContext
+):
+    paragraphs = [introduction]
+    members = _get_members(cards)
+
+    for member in members:
+        lines = []
+        member_name = _make_member_text(member)
+        lines.append(member_name)
+        member_cards = _get_member_cards(member, cards)
+        cards_text = _group_cards_by_date(
+            member_cards, need_label, app_context)
+        lines += cards_text
+        paragraphs.append('\n'.join(lines))
+
+    # cards without members at the end
+    cards_without_members = _get_cards_without_members(cards)
+    if cards_without_members:
+        lines = ['<b>Разное:</b>']
+        cards_without_members_text = _group_cards_by_date(
+            cards_without_members, need_label, app_context)
+        lines += cards_without_members_text
+        paragraphs.append('\n'.join(lines))
+    return paragraphs
+
+
+def _format_card(card, need_label: bool) -> str:
+    # Name and url always present, labels optional
+    labels_text = ''
+    if need_label and card.labels:
+        labels = [f'"{label.name}"' for label in card.labels]
+        labels_text = f'({", ".join(labels)})'
+    return f'<a href="{card.url}">{card.name}</a> {labels_text}'.strip()
 
 
 def _get_members(cards):
-    members = []
+    members = set()
     for card in cards:
         for member in card.members:
-            members.append(member)
-    return sorted(list(set(members)))
+            members.add(member)
+    return sorted(list(members))
 
 
 def _get_member_cards(member, cards):
@@ -88,40 +117,18 @@ def _get_deadline(card) -> str:
     return date_text
 
 
-def _group_cards_by_date(cards, app_context):
+def _group_cards_by_date(cards, need_label: bool, app_context: AppContext) -> List[str]:
     # generates the text of the cards based on availability of the dates
     result = []
     card_text_without_dates = []
     for card in cards:
         if card.due:
             deadline = _get_deadline(card)
-            card_text = _format_card(card, app_context)
+            card_text = _format_card(card, need_label)
             result.append(deadline + card_text)  # with the date and task
-        if not card.due:
+        else:
             card_text_without_dates.append(
-                _format_card(card, app_context))
+                _format_card(card, need_label))
     # cards without dates at the end
     result += card_text_without_dates
     return result
-
-
-def _retrieve_cards_for_paragraph(cards, app_context):
-    paragraphs = ['Всем привет! Собрали задачки на неделю для участников.'
-                    'Проверьте, что все правильно, пожалуйста.']
-    members = _get_members(cards)
-    for member in members:
-        member_name = _make_member_text(member)
-        paragraphs.append(member_name)
-        member_cards = _get_member_cards(member, cards)
-        cards_text = _group_cards_by_date(
-            member_cards, app_context)
-        paragraphs += cards_text
-
-    # cards without members at the end
-    cards_without_members = _get_cards_without_members(cards)
-    if cards_without_members:
-        paragraphs.append('<b>Разное:</b>')
-        cards_without_members_text = _group_cards_by_date(
-            cards_without_members, app_context)
-        paragraphs += cards_without_members_text
-    return paragraphs
