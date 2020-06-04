@@ -102,10 +102,10 @@ jobs:
       - name: Notify us about failure
         if: ${{ failure() }}
         env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_TEST_TOKEN: ${{ secrets.TELEGRAM_TEST_TOKEN }}
           TELEGRAM_ERROR_CHAT_ID: ${{ secrets.TELEGRAM_ERROR_CHAT_ID }}
         run: |
           curl -X POST \
             -H 'Content-Type: application/json' \
-            -d '{"chat_id": ${{ TELEGRAM_ERROR_CHAT_ID }}, "text": "[github CI] Build [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{env.GITHUB_RUN_ID}})"}' \
-            https://api.telegram.org/bot${{TELEGRAM_TOKEN}}/sendMessage
+            -d '{"chat_id": ${{ env.TELEGRAM_ERROR_CHAT_ID }}, "text": "[github CI] Build [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{env.GITHUB_RUN_ID}})"}' \
+            https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
