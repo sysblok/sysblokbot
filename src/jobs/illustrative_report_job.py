@@ -19,7 +19,7 @@ class IllustrativeReportJob(BaseJob):
         errors = {}
 
         paragraphs += IllustrativeReportJob._retrieve_cards_for_paragraph(
-            trello_client=app_context.trello_client,
+            app_context=app_context,
             title='На редактуре',
             list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, ),
             errors=errors,
@@ -39,7 +39,7 @@ class IllustrativeReportJob(BaseJob):
 
     @staticmethod
     def _retrieve_cards_for_paragraph(
-            trello_client: TrelloClient,
+            app_context: AppContext,
             title: str,
             list_aliases: List[TrelloListAlias],
             errors: dict,
@@ -53,8 +53,8 @@ class IllustrativeReportJob(BaseJob):
         Returns a list of paragraphs that should always go in a single message.
         '''
         logger.info(f'Started counting: "{title}"')
-        list_ids = [trello_client.lists_config[alias] for alias in list_aliases]
-        cards = trello_client.get_cards(list_ids)
+        list_ids = [app_context.trello_client.lists_config[alias] for alias in list_aliases]
+        cards = app_context.trello_client.get_cards(list_ids)
         parse_failure_counter = 0
 
         paragraphs = [f'<b>{title}: {len(cards)}</b>']
@@ -64,7 +64,7 @@ class IllustrativeReportJob(BaseJob):
                 parse_failure_counter += 1
                 continue
 
-            card_fields = trello_client.get_custom_fields(card.id)
+            card_fields = app_context.trello_client.get_custom_fields(card.id)
 
             label_names = [
                 label.name for label in card.labels if label.color != TrelloCardColor.BLACK
@@ -75,7 +75,9 @@ class IllustrativeReportJob(BaseJob):
 
             if (
                     title.title is None and
-                    card.lst.id != trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK]
+                    card.lst.id != app_context.trello_client.lists_config[
+                        TrelloListAlias.EDITED_NEXT_WEEK
+                    ]
             ):
                 this_card_bad_fields.append('название поста')
             if card_fields.google_doc is None:

@@ -443,6 +443,7 @@ class CardCustomFields:
         self.authors = None
         self.editors = None
         self.illustrators = None
+        self.cover = None
         self.title = None
         self.google_doc = None
 

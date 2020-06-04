@@ -66,3 +66,4 @@ class TrelloCustomFieldTypeAlias(Enum):
     EDITOR = 'Редактор'
     TITLE = 'Название поста'
     ILLUSTRATOR = 'Иллюстратор'
+    COVER = 'Обложка'

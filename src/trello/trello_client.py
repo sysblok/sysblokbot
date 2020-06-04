@@ -124,6 +124,10 @@ class TrelloClient(Singleton):
             card_fields_dict[TrelloCustomFieldTypeAlias.ILLUSTRATOR].value.split(',')
             if TrelloCustomFieldTypeAlias.ILLUSTRATOR in card_fields_dict else []
         )
+        card_fields.cover = (
+            card_fields_dict[TrelloCustomFieldTypeAlias.COVER].value
+            if TrelloCustomFieldTypeAlias.COVER in card_fields_dict else None
+        )
         card_fields.google_doc = (
             card_fields_dict[TrelloCustomFieldTypeAlias.GOOGLE_DOC].value
             if TrelloCustomFieldTypeAlias.GOOGLE_DOC in card_fields_dict else None
