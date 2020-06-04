@@ -60,7 +60,7 @@ def handle_user_message(update: telegram.Update, tg_context: telegram.ext.Callba
                 update
             )
             return
-        command_data[consts.GetTasksReportData.BOARD_ID] = user_input
+        command_data[consts.GetTasksReportData.BOARD_ID] = board.id
         command_data[consts.GetTasksReportData.LISTS] = [lst.to_dict() for lst in trello_lists]
 
         trello_lists_formatted = '\n'.join(
@@ -113,17 +113,18 @@ def handle_user_message(update: telegram.Update, tg_context: telegram.ext.Callba
             reply('Нажми кнопку :)', update)
             return
         add_labels = update.callback_query.data == 'tasks_report_data__add_list__yes'
-        # reply(f'here is add_lists with {add_labels}', update)
-        # finished with last action for /trello_client_get_lists
+        board_id = command_data[consts.GetTasksReportData.BOARD_ID]
         list_id = command_data[consts.GetTasksReportData.LIST_ID]
         introduction = command_data[consts.GetTasksReportData.INTRO_TEXT]
         messages = get_tasks_report_handler.generate_report_messages(
+            board_id,
             list_id,
             introduction,
             add_labels
         )
         for message in messages:
             reply(message, update)
+        # finished with last action for /trello_client_get_lists
         set_next_action(command_data, None)
         return
     else:

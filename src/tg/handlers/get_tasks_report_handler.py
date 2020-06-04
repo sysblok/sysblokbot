@@ -23,7 +23,12 @@ def get_tasks_report(update: telegram.Update, tg_context: telegram.ext.CallbackC
     reply("Привет! Пришли, пожалуйста, ссылку на доску в Trello.", update)
 
 
-def generate_report_messages(list_id: str, introduction: str, add_labels: bool) -> List[str]:
+def generate_report_messages(
+        board_id: str,
+        list_id: str,
+        introduction: str,
+        add_labels: bool
+) -> List[str]:
     app_context = AppContext()
     paragraphs = []  # list of paragraph strings
 
@@ -32,7 +37,7 @@ def generate_report_messages(list_id: str, introduction: str, add_labels: bool) 
         f'<b>{trello_list.name}</b>'
     )
 
-    list_cards = app_context.trello_client.get_cards([list_id])
+    list_cards = app_context.trello_client.get_cards([list_id], board_id)
     paragraphs += (_retrieve_cards_for_paragraph(
         list_cards, introduction, add_labels, app_context
     ))
