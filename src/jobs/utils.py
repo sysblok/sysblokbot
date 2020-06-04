@@ -113,13 +113,13 @@ def pretty_send(
     '''
     Send a bunch of paragraphs grouped into messages with adequate delays
     '''
-    for i, message in enumerate(_paragraphs_to_messages(paragraphs)):
+    for i, message in enumerate(paragraphs_to_messages(paragraphs)):
         if i > 0:
             time.sleep(MESSAGE_DELAY_SEC)
         send(message)
 
 
-def _paragraphs_to_messages(
+def paragraphs_to_messages(
         paragraphs: List[str],
         char_limit=telegram.constants.MAX_MESSAGE_LENGTH,
         delimiter='\n\n',

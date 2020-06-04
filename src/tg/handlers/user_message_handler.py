@@ -3,6 +3,7 @@ import logging
 import telegram
 
 from .utils import reply
+from ...tg.handlers import get_tasks_report_handler
 from ...trello.trello_client import TrelloClient
 from ... import consts
 from ...consts import PlainTextUserAction
@@ -100,12 +101,16 @@ def handle_user_message(update: telegram.Update, tg_context: telegram.ext.Callba
         ]]
         reply_markup = telegram.InlineKeyboardMarkup(button_list)
         reply('Нужно ли выводить теги (метки в Trello) в отчете?', update, reply_markup=reply_markup)
-        set_next_action(command_data, PlainTextUserAction.CHOOSE_IF_FILL_LISTS)
+        set_next_action(command_data, PlainTextUserAction.CHOOSE_IF_FILL_LABELS)
         return
-    elif next_action == PlainTextUserAction.CHOOSE_IF_FILL_LISTS:
-        add_lists = update.callback_query.data == 'tasks_report_data__add_list__yes'
-        reply(f'here is add_lists with {add_lists}', update)
+    elif next_action == PlainTextUserAction.CHOOSE_IF_FILL_LABELS:
+        add_labels = update.callback_query.data == 'tasks_report_data__add_list__yes'
+        # reply(f'here is add_lists with {add_labels}', update)
         # finished with last action for /trello_client_get_lists
+        list_id = command_data[consts.GetTasksReportData.LIST_ID]
+        messages = get_tasks_report_handler.generate_report_messages(list_id, add_labels)
+        for message in messages:
+            reply(message, update)
         set_next_action(command_data, None)
     else:
         logger.error(f'Unknown user action: {next_action}')
