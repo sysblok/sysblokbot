@@ -1,3 +1,4 @@
+import datetime
 import logging
 from typing import Callable, List
 
@@ -96,8 +97,7 @@ def _get_member_cards(member, cards):
     for card in cards:
         if member in card.members:
             member_cards.append(card)
-    member_cards = sorted(member_cards, key=lambda card: card.due)
-    return member_cards
+    return cards_sorted_by_date(member_cards)
 
 
 def _get_cards_without_members(cards):
@@ -105,10 +105,7 @@ def _get_cards_without_members(cards):
     for card in cards:
         if not card.members:
             cards_without_members.append(card)
-    cards_without_members = sorted(
-        cards_without_members,
-        key=lambda card: card.due)
-    return cards_without_members
+    return cards_sorted_by_date(cards_without_members)
 
 
 def _make_member_text(member, db_client) -> str:
@@ -116,8 +113,7 @@ def _make_member_text(member, db_client) -> str:
 
 
 def _get_deadline(card) -> str:
-    date_text = f'До {card.due.strftime("%d.%m")} — '
-    return date_text
+    return f'До {card.due.strftime("%d.%m")} — ' if card.due else ''
 
 
 def _group_cards_by_date(cards, need_label: bool, app_context: AppContext) -> List[str]:
@@ -135,3 +131,10 @@ def _group_cards_by_date(cards, need_label: bool, app_context: AppContext) -> Li
     # cards without dates at the end
     result += card_text_without_dates
     return result
+
+
+def cards_sorted_by_date(cards):
+    return sorted(
+        cards,
+        key=lambda card: card.due or datetime.datetime(datetime.MINYEAR, 1, 1)
+    )
