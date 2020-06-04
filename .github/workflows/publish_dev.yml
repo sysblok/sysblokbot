@@ -98,3 +98,14 @@ jobs:
               -v /home/${{ env.DO_USERNAME }}/config_gs_testing.json:/app/config_gs.json \
               -v /home/${{ env.DO_USERNAME }}/sysblokbot.sqlite:/app/sysblokbot.sqlite \
               docker.pkg.github.com/sysblok/sysblokbot/${{ env.IMAGE_NAME }}:testing
+
+      - name: Notify us about failure
+        if: ${{ failure() }}
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_ERROR_CHAT_ID: ${{ secrets.TELEGRAM_ERROR_CHAT_ID }}
+        run: |
+          curl -X POST \
+            -H 'Content-Type: application/json' \
+            -d '{"chat_id": ${{ TELEGRAM_ERROR_CHAT_ID }}, "text": "[github CI] Build [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{env.GITHUB_RUN_ID}})"}' \
+            https://api.telegram.org/bot${{TELEGRAM_TOKEN}}/sendMessage
