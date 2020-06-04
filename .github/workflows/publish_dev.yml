@@ -127,6 +127,7 @@ jobs:
               -v /home/${{ env.DO_USERNAME }}/config_override_testing.json:/app/config_override.json \
               -v /home/${{ env.DO_USERNAME }}/config_gs_testing.json:/app/config_gs.json \
               -v /home/${{ env.DO_USERNAME }}/sysblokbot.sqlite:/app/sysblokbot.sqlite \
+              -v /home/${{ env.DO_USERNAME }}/persistent_storage_testing.pickle:/app/persistent_storage.pickle \
               docker.pkg.github.com/sysblok/sysblokbot/${{ env.IMAGE_NAME }}:testing
 
       - name: Notify us about failure
