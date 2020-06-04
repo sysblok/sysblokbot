@@ -37,6 +37,17 @@ jobs:
         with:
           args: pip3 install -e . && pip3 install -r requirements.txt && pytest tests/unit
 
+      - name: Notify us about failure
+        if: ${{ failure() }}
+        env:
+          TELEGRAM_TEST_TOKEN: ${{ secrets.TELEGRAM_TEST_TOKEN }}
+          TELEGRAM_ERROR_CHAT_ID: ${{ secrets.TELEGRAM_ERROR_CHAT_ID }}
+        run: |
+          curl -X POST \
+            -H 'Content-Type: application/json' \
+            -d '{"chat_id": ${{ env.TELEGRAM_ERROR_CHAT_ID }}, "text": "[github CI] Tests [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{env.GITHUB_RUN_ID}})"}' \
+            https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
+  
   # Push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
   push:
