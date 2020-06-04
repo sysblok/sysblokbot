@@ -94,6 +94,9 @@ class IllustrativeReportJob(BaseJob):
                 errors[card] = this_card_bad_fields
                 continue
 
+            if not card_fields.cover:
+                card_fields.cover = app_context.drive_client.create_folder_for_card(card)
+
             paragraphs.append(
                 IllustrativeReportJob._format_card(
                     card,
@@ -107,7 +110,7 @@ class IllustrativeReportJob(BaseJob):
         return paragraphs
 
     @staticmethod
-    def _format_card(card, card_fields, is_archive_card=False, drive_folder_url='') -> str:
+    def _format_card(card, card_fields, is_archive_card=False) -> str:
         card_text = (
             f'<a href="{card_fields.google_doc or card.url}">'
             f'{card_fields.title or card.name}</a>\n'
@@ -123,8 +126,8 @@ class IllustrativeReportJob(BaseJob):
             'Иллюстратор', card_fields.illustrators
         )
 
-        if drive_folder_url and not is_archive_card:
-            card_text += f'\n<a href="{drive_folder_url}">Папка для обложки</a>'
+        if card_fields.cover and not is_archive_card:
+            card_text += f'\n<a href="{card_fields.cover}">Папка для обложки</a>'
 
         return card_text.strip()
 
