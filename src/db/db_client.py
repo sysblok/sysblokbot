@@ -26,8 +26,7 @@ class DBClient(Singleton):
     def _update_from_config(self):
         self.engine = create_engine(self._db_config['uri'], echo=True)
         session_factory = sessionmaker(bind=self.engine)
-        Session = scoped_session(session_factory)
-        self.session = Session()
+        self.Session = scoped_session(session_factory)
         Base.metadata.create_all(self.engine)
 
     def fetch_all(self, sheets_client: GoogleSheetsClient):
@@ -35,39 +34,43 @@ class DBClient(Singleton):
         self.fetch_curators_sheet(sheets_client)
 
     def fetch_authors_sheet(self, sheets_client: GoogleSheetsClient):
+        session = self.Session()
         try:
             # clean this table
-            self.session.query(Author).delete()
+            session.query(Author).delete()
             # re-download it
             authors = sheets_client.fetch_authors()
             for author_dict in authors:
                 author = Author.from_dict(author_dict)
-                self.session.add(author)
-            self.session.commit()
+                session.add(author)
+            session.commit()
         except Exception as e:
             logger.warning(f"Failed to update authors table from sheet: {e}")
-            self.session.rollback()
+            session.rollback()
             return 0
         return len(authors)
 
     def fetch_curators_sheet(self, sheets_client: GoogleSheetsClient):
+        session = self.Session()
         try:
             # clean this table
-            self.session.query(Curator).delete()
+            session.query(Curator).delete()
             # re-download it
             curators = sheets_client.fetch_curators()
             for curator_dict in curators:
                 curator = Curator.from_dict(curator_dict)
-                self.session.add(curator)
-            self.session.commit()
+                session.add(curator)
+            session.commit()
         except Exception as e:
             logger.warning(f"Failed to update curators table from sheet: {e}")
-            self.session.rollback()
+            session.rollback()
             return 0
         return len(curators)
 
     def find_author_telegram_by_trello(self, trello_id: str):
-        author = self.session.query(Author).filter(
+        # TODO: make batch queries
+        session = self.Session()
+        author = session.query(Author).filter(
             Author.trello == trello_id
         ).first()
         if author is None:
@@ -76,7 +79,9 @@ class DBClient(Singleton):
         return author.telegram
 
     def find_curators_by_author_trello(self, trello_id: str) -> List[Curator]:
-        curators = self.session.query(Author).join(Curator).filter(
+        # TODO: make batch queries
+        session = self.Session()
+        curators = session.query(Curator).join(Author).filter(
             Author.trello == trello_id
         ).all()
         if not curators:
@@ -84,7 +89,9 @@ class DBClient(Singleton):
         return curators
 
     def find_curators_by_trello_label(self, trello_label: str) -> List[Curator]:
-        curators = self.session.query(Curator).filter(
+        # TODO: make batch queries
+        session = self.Session()
+        curators = session.query(Curator).filter(
             Curator.trello_labels.contains(trello_label)
         ).all()
         if not curators:

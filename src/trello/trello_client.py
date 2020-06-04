@@ -21,31 +21,44 @@ class TrelloClient(Singleton):
         self._update_from_config()
         logger.info('TrelloClient successfully initialized')
 
-    def get_board(self):
-        _, data = self._make_request(f'boards/{self.board_id}')
+    def get_board(self, board_id=None):
+        _, data = self._make_request(f'boards/{board_id or self.board_id}')
         return objects.TrelloBoard.from_dict(data)
 
-    def get_board_labels(self):
-        _, data = self._make_request(f'boards/{self.board_id}/labels')
+    def get_board_by_url(self, board_url):
+        _, data = self._make_request(f'members/me/boards')
+        for board in data:
+            if board.get('url') == board_url:
+                return objects.TrelloBoard.from_dict(board)
+        raise ValueError(f'Board {board_url} not found!')
+
+    def get_board_labels(self, board_id=None):
+        _, data = self._make_request(f'boards/{board_id or self.board_id}/labels')
         labels = [
             objects.TrelloBoardLabel.from_dict(label) for label in data
         ]
         logger.debug(f'get_board_labels: {labels}')
         return labels
 
-    def get_lists(self):
-        _, data = self._make_request(f'boards/{self.board_id}/lists')
+    def get_lists(self, board_id=None):
+        _, data = self._make_request(f'boards/{board_id or self.board_id}/lists')
         lists = [
             objects.TrelloList.from_dict(trello_list) for trello_list in data
         ]
         logger.debug(f'get_lists: {lists}')
         return lists
 
-    def get_cards(self, list_ids=None):
+    def get_list(self, list_id):
+        _, data = self._make_request(f'lists/{list_id}')
+        lst = objects.TrelloList.from_dict(data)
+        logger.debug(f'get_list: {list}')
+        return lst
+
+    def get_cards(self, list_ids=None, board_id=None):
         if list_ids is not None and len(list_ids) == 1:
             _, data = self._make_request(f'lists/{list_ids[0]}/cards')
         else:
-            _, data = self._make_request(f'boards/{self.board_id}/cards')
+            _, data = self._make_request(f'boards/{board_id or self.board_id}/cards')
             if list_ids:
                 data = [
                     card_dict for card_dict in data
@@ -53,8 +66,8 @@ class TrelloClient(Singleton):
                 ]
         cards = []
         # TODO: move this to app state
-        members = self.get_members()
-        lists = self.get_lists()
+        members = self.get_members(board_id)
+        lists = self.get_lists(board_id)
         for card_dict in data:
             card = objects.TrelloCard.from_dict(card_dict)
             # TODO: move this to app state
@@ -75,8 +88,8 @@ class TrelloClient(Singleton):
         logger.debug(f'get_cards: {cards}')
         return cards
 
-    def get_board_custom_field_types(self):
-        _, data = self._make_request(f'boards/{self.board_id}/customFields')
+    def get_board_custom_field_types(self, board_id=None):
+        _, data = self._make_request(f'boards/{board_id or self.board_id}/customFields')
         custom_field_types = [
             objects.TrelloCustomFieldType.from_dict(custom_field_type)
             for custom_field_type in data
@@ -117,8 +130,14 @@ class TrelloClient(Singleton):
             card_fields_dict[TrelloCustomFieldTypeAlias.ILLUSTRATOR].value.split(',')
             if TrelloCustomFieldTypeAlias.ILLUSTRATOR in card_fields_dict else []
         )
-        card_fields.google_doc = card_fields_dict.get(TrelloCustomFieldTypeAlias.GOOGLE_DOC, None)
-        card_fields.title = card_fields_dict.get(TrelloCustomFieldTypeAlias.TITLE, None)
+        card_fields.google_doc = (
+            card_fields_dict[TrelloCustomFieldTypeAlias.GOOGLE_DOC].value
+            if TrelloCustomFieldTypeAlias.GOOGLE_DOC in card_fields_dict else None
+        )
+        card_fields.title = (
+            card_fields_dict[TrelloCustomFieldTypeAlias.TITLE].value
+            if TrelloCustomFieldTypeAlias.TITLE in card_fields_dict else None
+        )
         return card_fields
 
     def get_action_create_card(self, card_id):
@@ -155,8 +174,8 @@ class TrelloClient(Singleton):
             card_actions[card_id] = self.get_action_update_card(card_id)
         return card_actions
 
-    def get_members(self):
-        _, data = self._make_request(f'boards/{self.board_id}/members')
+    def get_members(self, board_id=None):
+        _, data = self._make_request(f'boards/{board_id or self.board_id}/members')
         members = [objects.TrelloMember.from_dict(member) for member in data]
         logger.debug(f'get_members: {members}')
         return members
