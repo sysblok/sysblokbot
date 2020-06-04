@@ -5,7 +5,7 @@ import telegram
 
 from ... import consts
 from ...app_context import AppContext
-from ...jobs.utils import paragraphs_to_messages
+from ...jobs.utils import paragraphs_to_messages, retrieve_username
 from .utils import manager_only, reply
 
 TASK_NAME = 'get_tasks_report'
@@ -50,7 +50,7 @@ def _retrieve_cards_for_paragraph(
 
     for member in members:
         lines = []
-        member_name = _make_member_text(member)
+        member_name = _make_member_text(member, app_context.db_client)
         lines.append(member_name)
         member_cards = _get_member_cards(member, cards)
         cards_text = _group_cards_by_date(
@@ -106,10 +106,8 @@ def _get_cards_without_members(cards):
     return cards_without_members
 
 
-def _make_member_text(member) -> str:
-    members_text = '👤 '
-    members_text += f'<b>{member.full_name} </b>(@{member.username}):'
-    return members_text
+def _make_member_text(member, db_client) -> str:
+    return f'👤 <b>{retrieve_username(member, db_client)}</b>:'
 
 
 def _get_deadline(card) -> str:
