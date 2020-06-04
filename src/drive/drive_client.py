@@ -10,6 +10,7 @@ from ..utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
 SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly']
+BASE_URL = 'https://drive.google.com/drive/u/1/folders/'
 
 
 class GoogleDriveClient(Singleton):
@@ -30,4 +31,10 @@ class GoogleDriveClient(Singleton):
         self.illustrations_folder_key = self._drive_config['illustrations_folder_key']
 
     def create_folder_for_card(self, trello_card: TrelloCard):
-        pass
+        file_metadata = {
+            'name': trello_card.name,
+            'description': trello_card.url,
+            'mimeType': 'application/vnd.google-apps.folder'
+        }
+        file = self.service.files().create(body=file_metadata, fields='id').execute()
+        return f'{BASE_URL}{file.get("id")}/'
