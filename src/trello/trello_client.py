@@ -102,7 +102,7 @@ class TrelloClient(Singleton):
         custom_fields = [
             objects.TrelloCustomField.from_dict(custom_field) for custom_field in data
         ]
-        logger.debug(f'get_card_custom_fields: {custom_fields}')
+        logger.info(f'get_card_custom_fields: {custom_fields}')
         return custom_fields
 
     def get_card_custom_fields_dict(self, card_id):
@@ -118,6 +118,7 @@ class TrelloClient(Singleton):
         # TODO: think about better naming
         card_fields_dict = self.get_card_custom_fields_dict(card_id)
         card_fields = objects.CardCustomFields(card_id)
+        card_fields._data = card_fields_dict
         card_fields.authors = (
             card_fields_dict[TrelloCustomFieldTypeAlias.AUTHOR].value.split(',')
             if TrelloCustomFieldTypeAlias.AUTHOR in card_fields_dict else []
@@ -143,6 +144,10 @@ class TrelloClient(Singleton):
             if TrelloCustomFieldTypeAlias.TITLE in card_fields_dict else None
         )
         return card_fields
+
+    def put_card_custom_field(self, card_id, field_id, data):
+        code = self._make_put_request(f'cards/{card_id}/customFieldItems/{field_id}', payload=data)
+        logger.info(f'put_card_custom_field: {code}')
 
     def get_action_create_card(self, card_id):
         _, data = self._make_request(
@@ -222,3 +227,13 @@ class TrelloClient(Singleton):
         )
         logger.debug(f'{response.url}')
         return response.status_code, response.json()
+
+    def _make_put_request(self, uri, payload={}):
+        response = requests.put(
+            f'{BASE_URL}{uri}',
+            params=self.default_payload,
+            data=payload,
+        )
+        logger.info(f'{response.url}')
+        logger.info(f'{payload}')
+        return response.status_code
