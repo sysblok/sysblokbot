@@ -34,6 +34,7 @@ class AppContext(Singleton):
         except Exception as e:
             self.sheets_client = None
             logger.critical(f'Could not initialize GoogleSheetsClient: {e}')
+
         try:
             self.drive_client = GoogleDriveClient(
                 config=config_manager.get_drive_config()
@@ -41,7 +42,6 @@ class AppContext(Singleton):
         except Exception as e:
             self.drive_client = None
             logger.critical(f'Could not initialize GoogleDriveClient: {e}')
-
 
         try:
             self.db_client = DBClient(config=config_manager.get_db_config())
