@@ -8,7 +8,7 @@ from .base_job import BaseJob
 from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias, TrelloCardColor
 from ..trello.trello_client import TrelloClient
 from ..trello.trello_objects import TrelloCustomField
-from .utils import format_errors, pretty_send
+from .utils import format_errors, format_possibly_plural, pretty_send
 
 logger = logging.getLogger(__name__)
 
@@ -33,10 +33,6 @@ class IllustrativeReportJob(BaseJob):
         logger.warning(paragraphs)
 
         pretty_send(paragraphs, send)
-
-    @staticmethod
-    def _card_is_urgent(card):
-        return 'Срочно' in [label.name for label in card.labels]
 
     @staticmethod
     def _retrieve_cards_for_paragraph(
@@ -123,24 +119,11 @@ class IllustrativeReportJob(BaseJob):
             f'{card_fields.title or card.name}</a>\n'
         )
 
-        card_text += IllustrativeReportJob._format_possibly_plural(
-            'Автор', card_fields.authors
-        )
-        card_text += IllustrativeReportJob._format_possibly_plural(
-            'Редактор', card_fields.editors
-        )
-        card_text += IllustrativeReportJob._format_possibly_plural(
-            'Иллюстратор', card_fields.illustrators
-        )
+        card_text += format_possibly_plural('Автор', card_fields.authors)
+        card_text += format_possibly_plural('Редактор', card_fields.editors)
+        card_text += format_possibly_plural('Иллюстратор', card_fields.illustrators)
 
         if card_fields.cover and not is_archive_card:
             card_text += f'\n<a href="{card_fields.cover}">Папка для обложки</a>'
 
         return card_text.strip()
-
-    @staticmethod
-    def _format_possibly_plural(name: str, values: List[str]) -> str:
-        if len(values) == 0:
-            return ''
-        # yeah that's a bit sexist
-        return f'{name}{"ы" if len(values) > 1 else ""}: {", ".join(values)}. '

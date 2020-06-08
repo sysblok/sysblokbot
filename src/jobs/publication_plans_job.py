@@ -7,7 +7,7 @@ from ..app_context import AppContext
 from .base_job import BaseJob
 from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias, TrelloCardColor
 from ..trello.trello_client import TrelloClient
-from .utils import format_errors, pretty_send
+from .utils import format_errors, format_possibly_plural, pretty_send
 
 logger = logging.getLogger(__name__)
 
@@ -131,21 +131,12 @@ class PublicationPlansJob(BaseJob):
             f'{card_fields.title or card.name}</a>\n'
         )
 
-        card_text += PublicationPlansJob._format_possibly_plural('Автор', card_fields.authors)
-        card_text += PublicationPlansJob._format_possibly_plural('Редактор', card_fields.editors)
-        card_text += PublicationPlansJob._format_possibly_plural(
-            'Иллюстратор', card_fields.illustrators
-        )
+        card_text += format_possibly_plural('Автор', card_fields.authors)
+        card_text += format_possibly_plural('Редактор', card_fields.editors)
+        card_text += format_possibly_plural('Иллюстратор', card_fields.illustrators)
 
         if show_due:
             card_text = (
                 f'<b>{card.due.strftime("%d.%m (%a)").lower()}</b> — {card_text}'
             )
         return card_text.strip()
-
-    @staticmethod
-    def _format_possibly_plural(name: str, values: List[str]) -> str:
-        if len(values) == 0:
-            return ''
-        # yeah that's a bit sexist
-        return f'{name}{"ы" if len(values) > 1 else ""}: {", ".join(values)}. '

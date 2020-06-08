@@ -2,6 +2,8 @@ import json
 import logging
 import requests
 
+from urllib.parse import urljoin
+
 
 from . import trello_objects as objects
 from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias
@@ -227,7 +229,7 @@ class TrelloClient(Singleton):
     def _make_request(self, uri, payload={}):
         payload.update(self.default_payload)
         response = requests.get(
-            f'{BASE_URL}{uri}',
+            urljoin(BASE_URL, uri),
             params=payload,
         )
         logger.debug(f'{response.url}')
@@ -235,7 +237,7 @@ class TrelloClient(Singleton):
 
     def _make_put_request(self, uri, data={}):
         response = requests.put(
-            f'{BASE_URL}{uri}',
+            urljoin(BASE_URL, uri),
             params=self.default_payload,
             data=json.dumps(data),
             headers={'Content-Type': 'application/json'},

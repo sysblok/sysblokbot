@@ -1,5 +1,7 @@
 import logging
 
+from urllib.parse import urljoin
+
 # https://developers.google.com/analytics/devguides/config/mgmt/v3/quickstart/service-py
 from apiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
@@ -33,7 +35,7 @@ class GoogleDriveClient(Singleton):
     def create_folder_for_card(self, trello_card: TrelloCard):
         existing = self._lookup_file_by_name(trello_card.name)
         if existing:
-            return f'{BASE_URL}{existing}/'
+            return urljoin(BASE_URL, existing)
         file_metadata = {
             'name': trello_card.name,
             'description': trello_card.url,
@@ -41,7 +43,7 @@ class GoogleDriveClient(Singleton):
             'mimeType': 'application/vnd.google-apps.folder'
         }
         file = self.service.files().create(body=file_metadata, fields='id').execute()
-        return f'{BASE_URL}{file.get("id")}/'
+        return urljoin(BASE_URL, file.get("id"))
 
     def _lookup_file_by_name(self, name: str):
         page_token = None
