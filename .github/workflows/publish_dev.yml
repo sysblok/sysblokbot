@@ -40,10 +40,7 @@ jobs:
         run: |
           curl -X POST \
             -H 'Content-Type: application/json' \
-            -d '{ \
-              "parse_mode": "markdown", \
-              "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", \
-              "text": "[github CI] pycodestyle [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
+            -d '{"parse_mode": "markdown", "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", "text": "[github CI] pycodestyle [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
             }' \
             https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
 
@@ -60,10 +57,7 @@ jobs:
         run: |
           curl -X POST \
             -H 'Content-Type: application/json' \
-            -d '{ \
-              "parse_mode": "markdown", \
-              "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", \
-              "text": "[github CI] Unit tests [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
+            -d '{"parse_mode": "markdown", "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", "text": "[github CI] pycodestyle [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
             }' \
             https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
   
@@ -138,9 +132,6 @@ jobs:
         run: |
           curl -X POST \
             -H 'Content-Type: application/json' \
-            -d '{ \
-              "parse_mode": "markdown", \
-              "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", \
-              "text": "[github CI] Build [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{env.GITHUB_RUN_ID}})" \
+            -d '{"parse_mode": "markdown", "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", "text": "[github CI] pycodestyle [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
             }' \
             https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
