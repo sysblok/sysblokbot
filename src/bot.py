@@ -71,6 +71,11 @@ class SysBlokBot:
             'получить сводку по результатам редакторского созвона'
         )
         self.add_manager_handler(
+            'get_illustrative_report',
+            self.manager_reply_handler('illustrative_report_job'),
+            'получить сводку для созвона иллюстраторов'
+        )
+        self.add_manager_handler(
             'get_tasks_report',
             direct_message_only(handlers.get_tasks_report),
             'получить список задач из Trello'
