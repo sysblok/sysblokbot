@@ -25,7 +25,6 @@ CONFIG_RELOAD_MINUTES = 15
 TELEGRAM_CONFIG = 'telegram'
 TRELLO_CONFIG = 'trello'
 SHEETS_CONFIG = 'sheets'
-DRIVE_CONFIG = 'drive'
 JOBS_CONFIG = 'jobs'
 DB_CONFIG = 'db'
 
@@ -68,3 +67,30 @@ class TrelloCustomFieldTypeAlias(Enum):
     TITLE = 'Название поста'
     ILLUSTRATOR = 'Иллюстратор'
     COVER = 'Обложка'
+
+
+# constants for interactive commands (data stored in update.chat_data)
+LAST_ACTIONABLE_COMMAND = 'last_actionable_command'
+NEXT_ACTION = 'next_action'
+
+
+class PlainTextUserAction(Enum):
+    """
+    When adding an item here, go to user_message_handler.py to process it
+    """
+    # /get_tasks_report items
+    ENTER_BOARD_URL = 'get_tasks_report__board_url'
+    ENTER_LIST_NUMBER = 'get_tasks_report__list_number'
+    ENTER_INTRO = 'get_tasks_report__introduction'
+    CHOOSE_IF_FILL_LABELS = 'get_tasks_report__fill_labels'
+
+
+class GetTasksReportData:
+    """
+    state constants for /get_tasks_report
+    """
+    BOARD_ID = 'board_id'
+    LIST_ID = 'list_id'
+    LISTS = 'lists'
+    INTRO_TEXT = 'introduction'
+    INCLUDE_LABELS = 'include_labels'

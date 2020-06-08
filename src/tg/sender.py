@@ -57,7 +57,7 @@ class TelegramSender(Singleton):
         for chat_id in chat_ids:
             self.send_to_chat_id(message_text, chat_id)
 
-    def send_to_chat_id(self, message_text: str, chat_id: int):
+    def send_to_chat_id(self, message_text: str, chat_id: int, **kwargs):
         """
         Sends a message to a single chat_id.
         """
@@ -67,7 +67,8 @@ class TelegramSender(Singleton):
                 chat_id=chat_id,
                 disable_notification=self.is_silent,
                 disable_web_page_preview=self.disable_web_page_preview,
-                parse_mode=telegram.ParseMode.HTML
+                parse_mode=telegram.ParseMode.HTML,
+                **kwargs
             )
         except telegram.TelegramError as e:
             logger.error(f'Could not send a message: {e}')

@@ -2,14 +2,14 @@ import logging
 import os
 from typing import Callable
 
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import (CallbackQueryHandler, CommandHandler, Filters,
+                          MessageHandler, PicklePersistence, Updater)
 
 from .app_context import AppContext
 from .config_manager import ConfigManager
 from .jobs.utils import get_job_runnable
 from .tg import handlers, sender
-from .tg.handlers.utils import admin_only, manager_only, direct_message_only
-
+from .tg.handlers.utils import admin_only, direct_message_only, manager_only
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +22,7 @@ class SysBlokBot:
             tg_config['token'],
             use_context=True,
             user_sig_handler=signal_handler,
+            persistence=PicklePersistence(filename='persistent_storage.pickle')
         )
         self.dp = self.updater.dispatcher
         self.app_context = AppContext(config_manager)
@@ -74,6 +75,11 @@ class SysBlokBot:
             self.manager_reply_handler('illustrative_report_job'),
             'получить сводку для созвона иллюстраторов'
         )
+        self.add_manager_handler(
+            'get_tasks_report',
+            direct_message_only(handlers.get_tasks_report),
+            'получить список задач из Trello'
+        )
 
         # admin-only technical cmds
         self.add_admin_handler(
@@ -111,17 +117,17 @@ class SysBlokBot:
             handlers.set_config,
             'установить новое значение в конфиге'
         )
-        self.add_manager_handler(
-            'get_tasks_report',
-            self.manager_reply_handler('tasks_report_job'),
-            'получить отчет по направлению с перечнем задач для участников'
-        )
 
         # admin-only DB cmds
         self.add_admin_handler(
             'db_fetch_authors_sheet',
             self.admin_reply_handler('db_fetch_authors_sheet_job'),
             'обновить таблицу с авторами из Google Sheets'
+        )
+        self.add_admin_handler(
+            'db_fetch_curators_sheet',
+            self.admin_reply_handler('db_fetch_curators_sheet_job'),
+            'обновить таблицу с кураторами из Google Sheets'
         )
 
         # general purpose cmds
@@ -139,6 +145,7 @@ class SysBlokBot:
             Filters.text,
             handlers.handle_user_message)
         )
+        self.dp.add_handler(CallbackQueryHandler(handlers.handle_callback_query))
 
         # log all errors
         self.dp.add_error_handler(handlers.error)
