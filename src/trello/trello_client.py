@@ -1,3 +1,4 @@
+import json
 import logging
 import requests
 
@@ -102,7 +103,7 @@ class TrelloClient(Singleton):
         custom_fields = [
             objects.TrelloCustomField.from_dict(custom_field) for custom_field in data
         ]
-        logger.info(f'get_card_custom_fields: {custom_fields}')
+        logger.debug(f'get_card_custom_fields: {custom_fields}')
         return custom_fields
 
     def get_card_custom_fields_dict(self, card_id):
@@ -145,9 +146,13 @@ class TrelloClient(Singleton):
         )
         return card_fields
 
-    def put_card_custom_field(self, card_id, field_id, data):
-        code = self._make_put_request(f'cards/{card_id}/customFieldItems/{field_id}', payload=data)
-        logger.info(f'put_card_custom_field: {code}')
+    def set_card_custom_field(self, card_id, field_alias, value):
+        data = {"value": {"text": value}}
+        field_id = self.custom_fields_config[field_alias]
+        code = self._make_put_request(
+            f'cards/{card_id}/customField/{field_id}/item', data=data
+        )
+        logger.debug(f'set_card_custom_field: {code}')
 
     def get_action_create_card(self, card_id):
         _, data = self._make_request(
@@ -228,12 +233,12 @@ class TrelloClient(Singleton):
         logger.debug(f'{response.url}')
         return response.status_code, response.json()
 
-    def _make_put_request(self, uri, payload={}):
+    def _make_put_request(self, uri, data={}):
         response = requests.put(
             f'{BASE_URL}{uri}',
             params=self.default_payload,
-            data=payload,
+            data=json.dumps(data),
+            headers={'Content-Type': 'application/json'},
         )
-        logger.info(f'{response.url}')
-        logger.info(f'{payload}')
+        logger.debug(f'{response.url}')
         return response.status_code

@@ -97,13 +97,11 @@ class IllustrativeReportJob(BaseJob):
 
             if not card_fields.cover or True:
                 card_fields.cover = app_context.drive_client.create_folder_for_card(card)
-                logger.info(f'Trying to put {card_fields.cover} as cover field')
-                cover_field_data = card_fields._data[TrelloCustomFieldTypeAlias.COVER]
-                cover_field_data.value = card_fields.cover
-                app_context.trello_client.put_card_custom_field(
+                logger.info(f'Trying to put {card_fields.cover} as cover field for {card.url}')
+                app_context.trello_client.set_card_custom_field(
                     card.id,
-                    cover_field_data.id,
-                    cover_field_data.to_dict(),
+                    TrelloCustomFieldTypeAlias.COVER,
+                    card_fields.cover,
                 )
 
             paragraphs.append(
