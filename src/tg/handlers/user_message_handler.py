@@ -6,7 +6,7 @@ from .utils import reply
 from ...tg.handlers import get_tasks_report_handler
 from ...trello.trello_client import TrelloClient
 from ... import consts
-from ...consts import PlainTextUserAction
+from ...consts import PlainTextUserAction, ButtonValues
 
 logger = logging.getLogger(__name__)
 
@@ -16,10 +16,14 @@ def handle_callback_query(update: telegram.Update, tg_context: telegram.ext.Call
     Handler for handling button callbacks. Redirects to handle_user_message
     """
     update.callback_query.answer()
-    handle_user_message(update, tg_context)
+    handle_user_message(update, tg_context, ButtonValues(update.callback_query.data))
 
 
-def handle_user_message(update: telegram.Update, tg_context: telegram.ext.CallbackContext):
+def handle_user_message(
+        update: telegram.Update,
+        tg_context: telegram.ext.CallbackContext,
+        button: ButtonValues = None
+):
     """
     Determines the last command for the user, its current state and responds accordingly
     """
@@ -45,7 +49,7 @@ def handle_user_message(update: telegram.Update, tg_context: telegram.ext.Callba
     # - If it's the last piece of info expected from user, you should call
     #   `set_next_action(command_data, None)` so that we won't talk to user anymore,
     #   until they start a new command.
-    if next_action == PlainTextUserAction.ENTER_BOARD_URL:
+    if next_action == PlainTextUserAction.GET_TASKS_REPORT__ENTER_BOARD_URL:
         trello_client = TrelloClient()
         try:
             board = trello_client.get_board_by_url(user_input)
@@ -73,9 +77,9 @@ def handle_user_message(update: telegram.Update, tg_context: telegram.ext.Callba
             ),
             update
         )
-        set_next_action(command_data, PlainTextUserAction.ENTER_LIST_NUMBER)
+        set_next_action(command_data, PlainTextUserAction.GET_TASKS_REPORT__ENTER_LIST_NUMBER)
         return
-    elif next_action == PlainTextUserAction.ENTER_LIST_NUMBER:
+    elif next_action == PlainTextUserAction.GET_TASKS_REPORT__ENTER_LIST_NUMBER:
         try:
             trello_lists = command_data.get(consts.GetTasksReportData.LISTS, [])
             list_idx = int(user_input) - 1
@@ -86,33 +90,51 @@ def handle_user_message(update: telegram.Update, tg_context: telegram.ext.Callba
             reply('Попробуй ещё раз', update)
             return
         command_data[consts.GetTasksReportData.LIST_ID] = list_id
+
+        reply_markup = telegram.InlineKeyboardMarkup(
+            [[telegram.InlineKeyboardButton(
+                "Без текста",
+                callback_data=ButtonValues.GET_TASKS_REPORT__NO_INTRO.value
+            )]]
+        )
         reply(
             (
                 'Спасибо! Хочешь добавить какой-то приветственный текст к отчету? '
                 'Текст будет отображаться перед перечнем всех задач.'
             ),
-            update
+            update,
+            reply_markup=reply_markup
         )
-        set_next_action(command_data, PlainTextUserAction.ENTER_INTRO)
+        set_next_action(command_data, PlainTextUserAction.GET_TASKS_REPORT__ENTER_INTRO)
         return
-    elif next_action == PlainTextUserAction.ENTER_INTRO:
-        command_data[consts.GetTasksReportData.INTRO_TEXT] = user_input
+    elif next_action == PlainTextUserAction.GET_TASKS_REPORT__ENTER_INTRO:
+        if button is not None and button == ButtonValues.GET_TASKS_REPORT__NO_INTRO:
+            command_data[consts.GetTasksReportData.INTRO_TEXT] = None
+        else:
+            command_data[consts.GetTasksReportData.INTRO_TEXT] = user_input
+
         button_list = [[
-            telegram.InlineKeyboardButton("Да", callback_data="tasks_report_data__add_list__yes"),
-            telegram.InlineKeyboardButton("Нет", callback_data="tasks_report_data__add_list__no"),
+            telegram.InlineKeyboardButton(
+                "Да",
+                callback_data=ButtonValues.GET_TASKS_REPORT__LABELS__YES.value
+            ),
+            telegram.InlineKeyboardButton(
+                "Нет",
+                callback_data=ButtonValues.GET_TASKS_REPORT__LABELS__NO.value
+            ),
         ]]
         reply_markup = telegram.InlineKeyboardMarkup(button_list)
         reply(
             'Нужно ли выводить теги (метки в Trello) в отчете?',
             update, reply_markup=reply_markup
         )
-        set_next_action(command_data, PlainTextUserAction.CHOOSE_IF_FILL_LABELS)
+        set_next_action(command_data, PlainTextUserAction.GET_TASKS_REPORT__CHOOSE_IF_FILL_LABELS)
         return
-    elif next_action == PlainTextUserAction.CHOOSE_IF_FILL_LABELS:
-        if update.callback_query is None:
+    elif next_action == PlainTextUserAction.GET_TASKS_REPORT__CHOOSE_IF_FILL_LABELS:
+        if button is None:
             reply('Нажми кнопку :)', update)
             return
-        add_labels = update.callback_query.data == 'tasks_report_data__add_list__yes'
+        add_labels = (button == ButtonValues.GET_TASKS_REPORT__LABELS__YES)
         board_id = command_data[consts.GetTasksReportData.BOARD_ID]
         list_id = command_data[consts.GetTasksReportData.LIST_ID]
         introduction = command_data[consts.GetTasksReportData.INTRO_TEXT]
