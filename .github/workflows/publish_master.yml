@@ -121,7 +121,7 @@ jobs:
           port: ${{ secrets.MASTER_PORT }}
           envs: GITHUB_USERNAME, GITHUB_TOKEN, IMAGE_NAME, DO_USERNAME
           script: |
-            docker stop ----time=30 $(docker ps -aq --filter name=prod)
+            docker stop --time=30 $(docker ps -aq --filter name=prod)
             docker rm $(docker ps -aq --filter name=prod)
             docker rmi $(docker images -a --filter reference='docker.pkg.github.com/sysblok/sysblokbot/sysblokbot:prod')
             docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
