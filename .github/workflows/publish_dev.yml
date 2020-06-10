@@ -57,7 +57,7 @@ jobs:
         run: |
           curl -X POST \
             -H 'Content-Type: application/json' \
-            -d '{"parse_mode": "markdown", "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", "text": "[github CI] pycodestyle [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
+            -d '{"parse_mode": "markdown", "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", "text": "[github CI] unit tests [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
             }' \
             https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
   
@@ -96,6 +96,18 @@ jobs:
           image_tag: testing
           build_extra_args: "--build-arg=COMMIT_HASH --build-arg=COMMIT_HASH_SHORT"
 
+      - name: Notify us about failure
+        if: ${{ failure() }}
+        env:
+          TELEGRAM_TEST_TOKEN: ${{ secrets.TELEGRAM_TEST_TOKEN }}
+          TELEGRAM_ERROR_CHAT_ID: ${{ secrets.TELEGRAM_ERROR_CHAT_ID }}
+        run: |
+          curl -X POST \
+            -H 'Content-Type: application/json' \
+            -d '{"parse_mode": "markdown", "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", "text": "[github CI] build [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
+            }' \
+            https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
+  
       - name: Deploy package to digitalocean
         uses: appleboy/ssh-action@master
         env:
@@ -132,6 +144,6 @@ jobs:
         run: |
           curl -X POST \
             -H 'Content-Type: application/json' \
-            -d '{"parse_mode": "markdown", "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", "text": "[github CI] pycodestyle [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
+            -d '{"parse_mode": "markdown", "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", "text": "[github CI] deploy [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
             }' \
             https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
