@@ -112,5 +112,6 @@ jobs:
           TELEGRAM_APP_HASH: ${{ secrets.TELEGRAM_APP_HASH }}
           TELETHON_SESSION: ${{ secrets.TELETHON_SESSION }}
           TELEGRAM_BOT_NAME: ${{ secrets.TELEGRAM_BOT_NAME }}
+          TELEGRAM_ERROR_CHAT_ID: ${{ secrets.TELEGRAM_ERROR_CHAT_ID }}
         with:
-          args: pip3 install -e . && pip3 install -r requirements.txt && pytest tests/integration
+          args: pip3 install -e . && pip3 install -r requirements.txt && pytest tests/integration &&  python tests/integration/report_test_result.py $?
