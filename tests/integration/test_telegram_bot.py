@@ -14,7 +14,7 @@ telegram_bot_name = os.environ["TELEGRAM_BOT_NAME"]
 @pytest.mark.parametrize(
     'command, response_parts',
     (
-        ('/start', ('Привет')),
+        ('/start', ('Хэллоу')),
         ('/get_trello_board_state', ('Еженедельная сводка')),
         ('/get_publication_plans', ('Всем привет')),
         ('/get_editorial_report', ('Всем привет')),

@@ -48,7 +48,7 @@ regex==2020.4.4
 requests==2.23.0
 requests-oauthlib==1.3.0
 rsa==4.0
-schedule==0.6.0
+-e git+https://github.com/dbader/schedule@41f88b33b8e20c8b87c0148d15f654ccea01440c#egg=schedule
 six==1.14.0
 SQLAlchemy==1.3.17
 Telethon==1.14.0
