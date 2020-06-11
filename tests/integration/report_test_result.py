@@ -15,7 +15,7 @@ telegram_chat_id = int(os.environ["TELEGRAM_ERROR_CHAT_ID"])
 telegram_bot_name = os.environ["TELEGRAM_BOT_NAME"]
 
 
-async def report_test_result(passed: bool, failed_tests: str=''):
+async def report_test_result(passed: bool, failed_tests: str = ''):
     client = TelegramClient(
         StringSession(session_str), api_id, api_hash,
         sequential_updates=True
