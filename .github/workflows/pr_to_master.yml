@@ -114,4 +114,4 @@ jobs:
           TELEGRAM_BOT_NAME: ${{ secrets.TELEGRAM_BOT_NAME }}
           TELEGRAM_ERROR_CHAT_ID: ${{ secrets.TELEGRAM_ERROR_CHAT_ID }}
         with:
-          args: pip3 install -e . && pip3 install -r requirements.txt && pytest tests/integration -q | grep 'FAILED' | grep -Po "(?<=\[)[^-]*" | tee errors.txt && python tests/integration/report_test_result.py errors.txt
+          args: pip3 install -e . && pip3 install -r requirements.txt && pytest tests/integration -q | grep 'FAILED' | sed -e 's/.*\[\(.*\)-.*/\1/' | tee errors.txt && python tests/integration/report_test_result.py errors.txt
