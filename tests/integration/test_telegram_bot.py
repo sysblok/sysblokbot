@@ -16,7 +16,7 @@ telegram_bot_name = os.environ["TELEGRAM_BOT_NAME"]
     (
         ('/start', ('Хэллоу')),
         ('/get_trello_board_state', ('Еженедельная сводка')),
-        ('/get_publication_plans', ('Всем привет')),
+        ('/get_publication_plans', ('Всем чвак')),
         ('/get_editorial_report', ('Всем привет')),
     )
 )
