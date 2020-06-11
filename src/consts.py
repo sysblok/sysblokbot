@@ -25,6 +25,7 @@ CONFIG_RELOAD_MINUTES = 15
 TELEGRAM_CONFIG = 'telegram'
 TRELLO_CONFIG = 'trello'
 SHEETS_CONFIG = 'sheets'
+DRIVE_CONFIG = 'drive'
 JOBS_CONFIG = 'jobs'
 DB_CONFIG = 'db'
 
@@ -66,6 +67,7 @@ class TrelloCustomFieldTypeAlias(Enum):
     EDITOR = 'Редактор'
     TITLE = 'Название поста'
     ILLUSTRATOR = 'Иллюстратор'
+    COVER = 'Обложка'
 
 
 # constants for interactive commands (data stored in update.chat_data)
@@ -78,10 +80,10 @@ class PlainTextUserAction(Enum):
     When adding an item here, go to user_message_handler.py to process it
     """
     # /get_tasks_report items
-    ENTER_BOARD_URL = 'get_tasks_report__board_url'
-    ENTER_LIST_NUMBER = 'get_tasks_report__list_number'
-    ENTER_INTRO = 'get_tasks_report__introduction'
-    CHOOSE_IF_FILL_LABELS = 'get_tasks_report__fill_labels'
+    GET_TASKS_REPORT__ENTER_BOARD_URL = 'get_tasks_report__board_url'
+    GET_TASKS_REPORT__ENTER_LIST_NUMBER = 'get_tasks_report__list_number'
+    GET_TASKS_REPORT__ENTER_INTRO = 'get_tasks_report__introduction'
+    GET_TASKS_REPORT__CHOOSE_IF_FILL_LABELS = 'get_tasks_report__fill_labels'
 
 
 class GetTasksReportData:
@@ -93,3 +95,12 @@ class GetTasksReportData:
     LISTS = 'lists'
     INTRO_TEXT = 'introduction'
     INCLUDE_LABELS = 'include_labels'
+
+
+class ButtonValues(Enum):
+    """
+    Enum for button payload constants.
+    """
+    GET_TASKS_REPORT__NO_INTRO = 'tasks_report_data__no_intro'
+    GET_TASKS_REPORT__LABELS__YES = 'tasks_report_data__labels__yes'
+    GET_TASKS_REPORT__LABELS__NO = 'tasks_report_data__labels__no'

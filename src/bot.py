@@ -3,7 +3,7 @@ import os
 from typing import Callable
 
 from telegram.ext import (CallbackQueryHandler, CommandHandler, Filters,
-                          MessageHandler, Updater)
+                          MessageHandler, PicklePersistence, Updater)
 
 from .app_context import AppContext
 from .config_manager import ConfigManager
@@ -22,6 +22,7 @@ class SysBlokBot:
             tg_config['token'],
             use_context=True,
             user_sig_handler=signal_handler,
+            persistence=PicklePersistence(filename='persistent_storage.pickle')
         )
         self.dp = self.updater.dispatcher
         self.app_context = AppContext(config_manager)
@@ -68,6 +69,11 @@ class SysBlokBot:
             'get_editorial_report',
             self.manager_reply_handler('editorial_report_job'),
             'получить сводку по результатам редакторского созвона'
+        )
+        self.add_manager_handler(
+            'get_illustrative_report',
+            self.manager_reply_handler('illustrative_report_job'),
+            'получить сводку для созвона иллюстраторов'
         )
         self.add_manager_handler(
             'get_tasks_report',

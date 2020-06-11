@@ -190,3 +190,10 @@ def format_errors(errors: dict):
         'Пожалуйста, заполни требуемые поля в карточках и запусти генерацию снова.'
     ]
     return paragraphs
+
+
+def format_possibly_plural(name: str, values: List[str]) -> str:
+    if len(values) == 0:
+        return ''
+    # yeah that's a bit sexist
+    return f'{name}{"ы" if len(values) > 1 else ""}: {", ".join(values)}. '

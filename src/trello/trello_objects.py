@@ -273,7 +273,7 @@ class TrelloCustomField:
     def to_dict(self):
         return {
             'id': self.id,
-            'value': self.value,
+            'value': {'text': self.value},
             'idCustomField': self.type_id,
         }
 
@@ -443,8 +443,10 @@ class CardCustomFields:
         self.authors = None
         self.editors = None
         self.illustrators = None
+        self.cover = None
         self.title = None
         self.google_doc = None
+        self._data = None
 
     def __repr__(self):
         return f'CardCustomFields<id={self.card_id}, title={self.title}>'

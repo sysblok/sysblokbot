@@ -40,10 +40,7 @@ jobs:
         run: |
           curl -X POST \
             -H 'Content-Type: application/json' \
-            -d '{ \
-              "parse_mode": "markdown", \
-              "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", \
-              "text": "[github CI] pycodestyle [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
+            -d '{"parse_mode": "markdown", "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", "text": "[github CI] pycodestyle [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
             }' \
             https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
 
@@ -60,10 +57,7 @@ jobs:
         run: |
           curl -X POST \
             -H 'Content-Type: application/json' \
-            -d '{ \
-              "parse_mode": "markdown", \
-              "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", \
-              "text": "[github CI] Unit tests [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
+            -d '{"parse_mode": "markdown", "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", "text": "[github CI] unit tests [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
             }' \
             https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
   
@@ -102,6 +96,18 @@ jobs:
           image_tag: testing
           build_extra_args: "--build-arg=COMMIT_HASH --build-arg=COMMIT_HASH_SHORT"
 
+      - name: Notify us about failure
+        if: ${{ failure() }}
+        env:
+          TELEGRAM_TEST_TOKEN: ${{ secrets.TELEGRAM_TEST_TOKEN }}
+          TELEGRAM_ERROR_CHAT_ID: ${{ secrets.TELEGRAM_ERROR_CHAT_ID }}
+        run: |
+          curl -X POST \
+            -H 'Content-Type: application/json' \
+            -d '{"parse_mode": "markdown", "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", "text": "[github CI] build [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
+            }' \
+            https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
+  
       - name: Deploy package to digitalocean
         uses: appleboy/ssh-action@master
         env:
@@ -117,7 +123,7 @@ jobs:
           port: ${{ secrets.MASTER_PORT }}
           envs: GITHUB_USERNAME, GITHUB_TOKEN, IMAGE_NAME, DO_USERNAME
           script: |
-            docker stop $(docker ps -aq --filter name=testing)
+            docker stop --time=30 $(docker ps -aq --filter name=testing)
             docker rm $(docker ps -aq --filter name=testing)
             docker rmi $(docker images -a --filter reference='docker.pkg.github.com/sysblok/sysblokbot/sysblokbot:testing')
             docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
@@ -127,6 +133,7 @@ jobs:
               -v /home/${{ env.DO_USERNAME }}/config_override_testing.json:/app/config_override.json \
               -v /home/${{ env.DO_USERNAME }}/config_gs_testing.json:/app/config_gs.json \
               -v /home/${{ env.DO_USERNAME }}/sysblokbot.sqlite:/app/sysblokbot.sqlite \
+              -v /home/${{ env.DO_USERNAME }}/persistent_storage_testing.pickle:/app/persistent_storage.pickle \
               docker.pkg.github.com/sysblok/sysblokbot/${{ env.IMAGE_NAME }}:testing
 
       - name: Notify us about failure
@@ -137,9 +144,6 @@ jobs:
         run: |
           curl -X POST \
             -H 'Content-Type: application/json' \
-            -d '{ \
-              "parse_mode": "markdown", \
-              "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", \
-              "text": "[github CI] Build [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{env.GITHUB_RUN_ID}})" \
+            -d '{"parse_mode": "markdown", "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", "text": "[github CI] deploy [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
             }' \
             https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
