@@ -1,11 +1,10 @@
 import logging
 import requests
-
+import urllib
 
 from . import trello_objects as objects
 from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias
 from ..utils.singleton import Singleton
-
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +25,8 @@ class TrelloClient(Singleton):
         return objects.TrelloBoard.from_dict(data)
 
     def get_board_by_url(self, board_url):
+        # Safari may copy unquoted url with cyrillic symbols
+        board_url = urllib.parse.quote(board_url, safe=':/%')
         _, data = self._make_request(f'members/me/boards')
         for board in data:
             if board.get('url') == board_url:
