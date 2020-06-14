@@ -91,7 +91,7 @@ class IllustrativeReportJob(BaseJob):
                 errors[card] = this_card_bad_fields
                 continue
 
-            if not card_fields.cover or True:
+            if not card_fields.cover and not is_archive_card:
                 card_fields.cover = app_context.drive_client.create_folder_for_card(card)
                 logger.info(f'Trying to put {card_fields.cover} as cover field for {card.url}')
                 app_context.trello_client.set_card_custom_field(
