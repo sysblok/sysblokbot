@@ -112,14 +112,14 @@ jobs:
           GITHUB_USERNAME: sysblok
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
-          env.ROOT_DIR: /home/${{ secrets.MASTER_DO_USER }}/prod
+          ROOT_DIR: /home/${{ secrets.MASTER_DO_USER }}/prod
         with:
           host: ${{ secrets.MASTER_HOST }}
           username: ${{ secrets.MASTER_DO_USER }}
           passphrase: ${{ secrets.MASTER_DO_SSH_KEY_PASSWORD }}
           key: ${{ secrets.MASTER_DO_SSH_KEY }}
           port: ${{ secrets.MASTER_PORT }}
-          envs: GITHUB_USERNAME, GITHUB_TOKEN, IMAGE_NAME, env.ROOT_DIR
+          envs: GITHUB_USERNAME, GITHUB_TOKEN, IMAGE_NAME, ROOT_DIR
           script: |
             export CONTAINER_ID=$(docker ps -aq --filter name=prod)
             export IMAGE_ID=$(docker images -aq --filter reference='docker.pkg.github.com/sysblok/sysblokbot/sysblokbot:prod')
