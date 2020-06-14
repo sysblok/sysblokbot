@@ -50,7 +50,7 @@ telegram_bot_name = os.environ["TELEGRAM_BOT_NAME"]
         ),
     )
 )
-async def test_not_failing(client: TelegramClient, command: str, 
+async def test_not_failing(client: TelegramClient, command: str,
                            possible_response_parts: List[str]):
     # Create a conversation
     async with client.conversation(telegram_bot_name, timeout=30) as conv:
