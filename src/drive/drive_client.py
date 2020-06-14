@@ -56,7 +56,7 @@ class GoogleDriveClient(Singleton):
 
     def _lookup_file_by_name(self, name: str):
         page_token = None
-        name = name.replace('"','\\"')
+        name = name.replace('"', '\\"')
         try:
             results = self.service.files().list(
                 q=f'name contains "{name}" and "{self.illustrations_folder_key}" in parents',
