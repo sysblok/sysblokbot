@@ -46,6 +46,9 @@ class ConfigUpdaterJob(BaseJob):
                 # update config['sheets']
                 app_context.sheets_client.update_config(
                     job_scheduler.config_manager.get_sheets_config())
+                # update config['drive']
+                app_context.drive_client.update_config(
+                    job_scheduler.config_manager.get_drive_config())
                 send('Config updated successfully')
             except Exception as e:
                 send(f'Failed to update config: {e}')

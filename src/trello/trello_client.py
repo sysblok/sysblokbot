@@ -1,11 +1,11 @@
+import json
 import logging
 import requests
-
+from urllib.parse import quote, urljoin
 
 from . import trello_objects as objects
-from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias
+from ..consts import TrelloListAlias, TrelloCustomFieldTypes, TrelloCustomFieldTypeAlias
 from ..utils.singleton import Singleton
-
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +26,8 @@ class TrelloClient(Singleton):
         return objects.TrelloBoard.from_dict(data)
 
     def get_board_by_url(self, board_url):
+        # Safari may copy unquoted url with cyrillic symbols
+        board_url = quote(board_url, safe=':/%')
         _, data = self._make_request(f'members/me/boards')
         for board in data:
             if board.get('url') == board_url:
@@ -100,7 +102,8 @@ class TrelloClient(Singleton):
     def get_card_custom_fields(self, card_id):
         _, data = self._make_request(f'cards/{card_id}/customFieldItems')
         custom_fields = [
-            objects.TrelloCustomField.from_dict(custom_field) for custom_field in data
+            objects.TrelloCustomField.from_dict(custom_field, self.custom_fields_type_config)
+            for custom_field in data
         ]
         logger.debug(f'get_card_custom_fields: {custom_fields}')
         return custom_fields
@@ -118,6 +121,7 @@ class TrelloClient(Singleton):
         # TODO: think about better naming
         card_fields_dict = self.get_card_custom_fields_dict(card_id)
         card_fields = objects.CardCustomFields(card_id)
+        card_fields._data = card_fields_dict
         card_fields.authors = (
             card_fields_dict[TrelloCustomFieldTypeAlias.AUTHOR].value.split(',')
             if TrelloCustomFieldTypeAlias.AUTHOR in card_fields_dict else []
@@ -130,6 +134,10 @@ class TrelloClient(Singleton):
             card_fields_dict[TrelloCustomFieldTypeAlias.ILLUSTRATOR].value.split(',')
             if TrelloCustomFieldTypeAlias.ILLUSTRATOR in card_fields_dict else []
         )
+        card_fields.cover = (
+            card_fields_dict[TrelloCustomFieldTypeAlias.COVER].value
+            if TrelloCustomFieldTypeAlias.COVER in card_fields_dict else None
+        )
         card_fields.google_doc = (
             card_fields_dict[TrelloCustomFieldTypeAlias.GOOGLE_DOC].value
             if TrelloCustomFieldTypeAlias.GOOGLE_DOC in card_fields_dict else None
@@ -139,6 +147,14 @@ class TrelloClient(Singleton):
             if TrelloCustomFieldTypeAlias.TITLE in card_fields_dict else None
         )
         return card_fields
+
+    def set_card_custom_field(self, card_id, field_alias, value):
+        data = {"value": {"text": value}}
+        field_id = self.custom_fields_config[field_alias]
+        code = self._make_put_request(
+            f'cards/{card_id}/customField/{field_id}/item', data=data
+        )
+        logger.debug(f'set_card_custom_field: {code}')
 
     def get_action_create_card(self, card_id):
         _, data = self._make_request(
@@ -195,26 +211,49 @@ class TrelloClient(Singleton):
             'token': self.token,
         }
         lists = self.get_lists()
-        self.lists_config = self._fill_id_alias_map(lists, TrelloListAlias)
+        self.lists_config = self._fill_alias_id_map(lists, TrelloListAlias)
         custom_field_types = self.get_board_custom_field_types()
-        self.custom_fields_config = self._fill_id_alias_map(
+        self.custom_fields_type_config = self._fill_id_type_map(
+            custom_field_types, TrelloCustomFieldTypes
+        )
+        self.custom_fields_config = self._fill_alias_id_map(
             custom_field_types, TrelloCustomFieldTypeAlias
         )
 
-    def _fill_id_alias_map(self, items, item_enum):
+    def get_list_id_from_aliases(self, list_aliases):
+        return [self.lists_config[alias] for alias in list_aliases if alias in self.lists_config]
+
+    def _fill_alias_id_map(self, items, item_enum):
         result = {}
         for alias in item_enum:
             suitable_items = [item for item in items if item.name.startswith(alias.value)]
-            if len(suitable_items) != 1:
+            if len(suitable_items) > 1:
                 raise ValueError(f'Enum {item_enum.__name__} name {alias.value} is ambiguous!')
-            result[alias] = suitable_items[0].id
+            if len(suitable_items) > 0:
+                result[alias] = suitable_items[0].id
+        return result
+
+    def _fill_id_type_map(self, items, item_enum):
+        result = {}
+        for item in items:
+            result[item.id] = TrelloCustomFieldTypes(item.type)
         return result
 
     def _make_request(self, uri, payload={}):
         payload.update(self.default_payload)
         response = requests.get(
-            f'{BASE_URL}{uri}',
+            urljoin(BASE_URL, uri),
             params=payload,
         )
         logger.debug(f'{response.url}')
         return response.status_code, response.json()
+
+    def _make_put_request(self, uri, data={}):
+        response = requests.put(
+            urljoin(BASE_URL, uri),
+            params=self.default_payload,
+            data=json.dumps(data),
+            headers={'Content-Type': 'application/json'},
+        )
+        logger.debug(f'{response.url}')
+        return response.status_code

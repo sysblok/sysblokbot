@@ -5,9 +5,9 @@ from typing import Callable, List
 
 from ..app_context import AppContext
 from .base_job import BaseJob
-from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias, TrelloCardColor
+from ..consts import TrelloListAlias, TrelloCardColor
 from ..trello.trello_client import TrelloClient
-from .utils import format_errors, pretty_send
+from .utils import format_errors, format_possibly_plural, pretty_send
 
 logger = logging.getLogger(__name__)
 
@@ -81,8 +81,8 @@ class EditorialReportJob(BaseJob):
         Returns a list of paragraphs that should always go in a single message.
         '''
         logger.info(f'Started counting: "{title}"')
-        list_ids = [trello_client.lists_config[alias] for alias in list_aliases]
-        list_moved_from_ids = [trello_client.lists_config[alias] for alias in moved_from_exclusive]
+        list_ids = trello_client.get_list_id_from_aliases(list_aliases)
+        list_moved_from_ids = trello_client.get_list_id_from_aliases(moved_from_exclusive)
         cards = trello_client.get_cards(list_ids)
         parse_failure_counter = 0
 
@@ -183,8 +183,8 @@ class EditorialReportJob(BaseJob):
             f'{card_fields.title or card.name}</a>\n'
         )
 
-        card_text += EditorialReportJob._format_possibly_plural('Автор', card_fields.authors)
-        card_text += EditorialReportJob._format_possibly_plural('Редактор', card_fields.editors)
+        card_text += format_possibly_plural('Автор', card_fields.authors)
+        card_text += format_possibly_plural('Редактор', card_fields.editors)
 
         if card.due:
             card_text = (
@@ -196,10 +196,3 @@ class EditorialReportJob(BaseJob):
                 f'<b>с ??.??</b> — {card_text}'
             )
         return card_text.strip()
-
-    @staticmethod
-    def _format_possibly_plural(name: str, values: List[str]) -> str:
-        if len(values) == 0:
-            return ''
-        # yeah that's a bit sexist
-        return f'{name}{"ы" if len(values) > 1 else ""}: {", ".join(values)}. '

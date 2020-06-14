@@ -58,5 +58,52 @@
       "name": "Иллюстратор",
       "pos": 81920,
       "type": "text"
+    },
+    {
+      "id": "type_5",
+      "idModel": "5e91d48a9e9d947b95fb0df7",
+      "modelType": "board",
+      "fieldGroup": "92cc10f007fa367cd04b35929c26db94cc5d292247fdf04b575d0117c4282481",
+      "display": {
+        "cardFront": true
+      },
+      "name": "Обложка",
+      "pos": 81920,
+      "type": "text"
+    },
+    {
+      "id": "type_6",
+      "idModel": "5e91d48a9e9d947b95fb0df7",
+      "modelType": "board",
+      "fieldGroup": "28c157040ba1375386ba5971564bfb17325043de973feae6128950036e5de20b",
+      "display": {
+        "cardFront": false
+      },
+      "name": "Сайт",
+      "pos": 196608,
+      "type": "checkbox"
+    },
+    {
+      "id": "type_7",
+      "idModel": "5e91d48a9e9d947b95fb0df7",
+      "modelType": "board",
+      "fieldGroup": "488f1b95d2449518badfd840b7a066d9b62debf1ccb4ec0805c68565320cde5a",
+      "display": {
+        "cardFront": false
+      },
+      "name": "Селектор",
+      "pos": 212992,
+      "options": [
+        {
+          "id": "5ede91f8c9525241e8c6785a",
+          "idCustomField": "5ede91f8c9525241e8c67856",
+          "value": {
+            "text": "нет"
+          },
+          "color": "none",
+          "pos": 69632
+        }
+      ],
+      "type": "list"
     }
 ]

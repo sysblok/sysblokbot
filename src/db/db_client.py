@@ -24,7 +24,11 @@ class DBClient(Singleton):
         logger.info('DBClient successfully initialized')
 
     def _update_from_config(self):
-        self.engine = create_engine(self._db_config['uri'], echo=True)
+        self.engine = create_engine(
+            self._db_config['uri'],
+            connect_args={'check_same_thread': False},
+            echo=True,
+        )
         session_factory = sessionmaker(bind=self.engine)
         self.Session = scoped_session(session_factory)
         Base.metadata.create_all(self.engine)
