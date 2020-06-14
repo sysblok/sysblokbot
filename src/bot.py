@@ -117,6 +117,16 @@ class SysBlokBot:
             handlers.set_config,
             'установить новое значение в конфиге'
         )
+        self.add_admin_handler(
+            'add_manager',
+            handlers.add_manager,
+            'добавить менеджера в список'
+        )
+        self.add_admin_handler(
+            'change_board',
+            handlers.change_board,
+            'изменить Trello board_id'
+        )
 
         # admin-only DB cmds
         self.add_admin_handler(
