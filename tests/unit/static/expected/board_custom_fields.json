@@ -1,26 +1,50 @@
 [
     {
       "id": "type_0",
-      "name": "Автор"
+      "name": "Автор",
+      "type": "text"
     },
     {
       "id": "type_1",
-      "name": "Google Doc"
+      "name": "Google Doc",
+      "type": "text"
     },
     {
       "id": "type_2",
-      "name": "Редактор"
+      "name": "Редактор",
+      "type": "text"
     },
     {
       "id": "type_3",
-      "name": "Название поста"
+      "name": "Название поста",
+      "type": "text"
     },
     {
       "id": "type_4",
-      "name": "Иллюстратор"
+      "name": "Иллюстратор",
+      "type": "text"
     },
     {
       "id": "type_5",
-      "name": "Обложка"
+      "name": "Обложка",
+      "type": "text"
+    },
+    {
+      "id": "type_6",
+      "name": "Сайт",
+      "type": "checkbox"
+    },
+    {
+      "id": "type_7",
+      "name": "Селектор",
+      "options": [
+        {
+          "id": "5ede91f8c9525241e8c6785a",
+          "value": {
+            "text": "нет"
+          }
+        }
+      ],
+      "type": "list"
     }
 ]

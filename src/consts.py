@@ -68,6 +68,15 @@ class TrelloCustomFieldTypeAlias(Enum):
     TITLE = 'Название поста'
     ILLUSTRATOR = 'Иллюстратор'
     COVER = 'Обложка'
+    WEBSITE = 'Сайт'
+    VKONTAKTE = 'ВКонтакте'
+    TELEGRAM = 'Telegram'
+
+
+class TrelloCustomFieldTypes(Enum):
+    TEXT = 'text'
+    CHECKBOX = 'checkbox'
+    LIST = 'list'
 
 
 # constants for interactive commands (data stored in update.chat_data)
