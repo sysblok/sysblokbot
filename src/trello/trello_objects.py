@@ -186,7 +186,7 @@ class TrelloCard:
         card = cls()
         try:
             card.id = data['id']
-            card.name = data['name']
+            card.name = html.escape(data['name'])
             card.labels = [TrelloCardLabel.from_dict(label) for label in data['labels']]
             card.url = data['shortUrl']
             card.due = (datetime.strptime(data['due'], TIME_FORMAT)

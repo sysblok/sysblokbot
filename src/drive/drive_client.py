@@ -24,6 +24,11 @@ class GoogleDriveClient(Singleton):
         self._update_from_config()
         logger.info('DriveClient successfully initialized')
 
+    def update_config(self, new_drive_config: dict):
+        """To be called after config automatic update"""
+        self._drive_config = new_drive_config
+        self._update_from_config()
+
     def _update_from_config(self):
         '''Update attributes according to current self._sheets_config'''
         self._credentials = ServiceAccountCredentials.from_json_keyfile_name(
@@ -42,17 +47,26 @@ class GoogleDriveClient(Singleton):
             'parents': [self.illustrations_folder_key],
             'mimeType': 'application/vnd.google-apps.folder'
         }
-        file = self.service.files().create(body=file_metadata, fields='id').execute()
+        try:
+            file = self.service.files().create(body=file_metadata, fields='id').execute()
+        except Exception as e:
+            logger.error(f'Failed to create a folder for {trello_card.url} in Google drive: {e}')
+            return None
         return urljoin(BASE_URL, file.get("id"))
 
     def _lookup_file_by_name(self, name: str):
         page_token = None
-        results = self.service.files().list(
-            q=f'name contains "{name}" and "{self.illustrations_folder_key}" in parents',
-            pageSize=10,
-            fields='nextPageToken, files(id, name)',
-            pageToken=page_token
-        ).execute()
+        name = name.replace('"', '\\"')
+        try:
+            results = self.service.files().list(
+                q=f'name contains "{name}" and "{self.illustrations_folder_key}" in parents',
+                pageSize=10,
+                fields='nextPageToken, files(id, name)',
+                pageToken=page_token
+            ).execute()
+        except Exception as e:
+            logger.error(f'Failed to query Google drive for existing folder {name}: {e}')
+            return None
         items = results.get('files', [])
         if len(items) == 0:
             return None
@@ -60,4 +74,7 @@ class GoogleDriveClient(Singleton):
         return items[0].get('id')
 
     def _delete_file_by_id(self, file_id: str):
-        self.service.files().delete(fileId=file_id).execute()
+        try:
+            self.service.files().delete(fileId=file_id).execute()
+        except Exception as e:
+            logger.error(f'Failed to delete Google drive file {file_id}: {e}')

@@ -6,11 +6,6 @@ on:
     branches:
       - dev
 
-  # for integration tests
-  pull_request:
-    branches:
-      - master
-
 env:
   IMAGE_NAME: sysblokbot
 
@@ -114,26 +109,28 @@ jobs:
           GITHUB_USERNAME: sysblok
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
-          DO_USERNAME: ${{ secrets.MASTER_DO_USER }}
+          env.ROOT_DIR: /home/${{ secrets.MASTER_DO_USER }}/prod
         with:
           host: ${{ secrets.MASTER_HOST }}
           username: ${{ secrets.MASTER_DO_USER }}
           passphrase: ${{ secrets.MASTER_DO_SSH_KEY_PASSWORD }}
           key: ${{ secrets.MASTER_DO_SSH_KEY }}
           port: ${{ secrets.MASTER_PORT }}
-          envs: GITHUB_USERNAME, GITHUB_TOKEN, IMAGE_NAME, DO_USERNAME
+          envs: GITHUB_USERNAME, GITHUB_TOKEN, IMAGE_NAME, env.ROOT_DIR
           script: |
-            docker stop --time=30 $(docker ps -aq --filter name=testing)
-            docker rm $(docker ps -aq --filter name=testing)
-            docker rmi $(docker images -a --filter reference='docker.pkg.github.com/sysblok/sysblokbot/sysblokbot:testing')
+            export CONTAINER_ID=$(docker ps -aq --filter name=testing)
+            export IMAGE_ID=$(docker images -aq --filter reference='docker.pkg.github.com/sysblok/sysblokbot/sysblokbot:testing')
+            docker stop --time=30 $CONTAINER_ID
+            docker rm $CONTAINER_ID
+            docker rmi $IMAGE_ID
             docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
-            touch /home/${{ env.DO_USERNAME }}/sysblokbot.sqlite
+            touch ${{ env.ROOT_DIR }}/sysblokbot.sqlite
             docker run -dit --name sysblokbot-testing \
               --env APP_SOURCE="github CI" \
-              -v /home/${{ env.DO_USERNAME }}/config_override_testing.json:/app/config_override.json \
-              -v /home/${{ env.DO_USERNAME }}/config_gs_testing.json:/app/config_gs.json \
-              -v /home/${{ env.DO_USERNAME }}/sysblokbot.sqlite:/app/sysblokbot.sqlite \
-              -v /home/${{ env.DO_USERNAME }}/persistent_storage_testing.pickle:/app/persistent_storage.pickle \
+              -v ${{ env.ROOT_DIR }}/config_override.json:/app/config_override.json \
+              -v ${{ env.ROOT_DIR }}/config_gs.json:/app/config_gs.json \
+              -v ${{ env.ROOT_DIR }}/sysblokbot.sqlite:/app/sysblokbot.sqlite \
+              -v ${{ env.ROOT_DIR }}/persistent_storage.pickle:/app/persistent_storage.pickle \
               docker.pkg.github.com/sysblok/sysblokbot/${{ env.IMAGE_NAME }}:testing
 
       - name: Notify us about failure
@@ -152,7 +149,6 @@ jobs:
     needs: push
 
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
 
     steps:
       - uses: actions/checkout@v2
