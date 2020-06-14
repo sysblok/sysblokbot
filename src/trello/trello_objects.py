@@ -3,7 +3,7 @@ import logging
 
 from datetime import datetime
 
-from ..consts import TrelloCardColor
+from ..consts import TrelloCardColor, TrelloCustomFieldTypes
 
 
 logger = logging.getLogger(__name__)
@@ -212,6 +212,8 @@ class TrelloCustomFieldType:
     def __init__(self):
         self.id = None
         self.name = None
+        self.type = None
+        self.options = None
 
         self._ok = True
 
@@ -222,7 +224,7 @@ class TrelloCustomFieldType:
         return self.name
 
     def __repr__(self):
-        return f'CustomFieldType<id={self.id}, name={self.name}>'
+        return f'CustomFieldType<id={self.id}, name={self.name}, type={self.type}>'
 
     @classmethod
     def from_dict(cls, data):
@@ -230,16 +232,28 @@ class TrelloCustomFieldType:
         try:
             field_type.id = data['id']
             field_type.name = html.escape(data['name'])
+            field_type.type = TrelloCustomFieldTypes(data['type'])
+            if field_type.type == TrelloCustomFieldTypes.LIST:
+                field_type.options = {
+                    option['id']: option['value']['text'] for option in data['options']
+                }
         except Exception:
             field_type._ok = False
             logger.error(f"Bad field type json {data}")
         return field_type
 
     def to_dict(self):
-        return {
+        dct = {
             'id': self.id,
             'name': self.name,
+            'type': self.type.value,
         }
+        if self.type == TrelloCustomFieldTypes.LIST:
+            dct['options'] = [
+                {'id': idValue, 'value': {'text': value}}
+                for idValue, value in self.options.items()
+            ]
+        return dct
 
 
 class TrelloCustomField:
@@ -249,6 +263,7 @@ class TrelloCustomField:
         self.type_id = None
 
         self._ok = True
+        self._custom_fields_type_config = None
 
     def __bool__(self):
         return self._ok
@@ -260,23 +275,29 @@ class TrelloCustomField:
         return f'CustomField<id={self.id}, value={self.value}, type_id={self.type_id}>'
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data, custom_fields_type_config):
         custom_field = cls()
+        custom_field._custom_fields_type_config = custom_fields_type_config
         try:
             custom_field.id = data['id']
-            custom_field.value = html.escape(data['value']['text'])
             custom_field.type_id = data['idCustomField']
+            # TODO probably support other custom field value types
+            if custom_fields_type_config[custom_field.type_id] == TrelloCustomFieldTypes.TEXT:
+                custom_field.value = html.escape(data['value']['text'])
         except Exception:
             custom_field._ok = False
             logger.error(f"Bad custom field json {data}")
         return custom_field
 
     def to_dict(self):
-        return {
+        dct = {
             'id': self.id,
-            'value': {'text': self.value},
             'idCustomField': self.type_id,
         }
+        # TODO probably support other custom field value types
+        if self._custom_fields_type_config[self.type_id] == TrelloCustomFieldTypes.TEXT:
+            dct['value'] = {'text': self.value}
+        return dct
 
 
 class TrelloActionCreateCard:
