@@ -34,6 +34,12 @@ EVERY = 'every'
 AT = 'at'
 SEND_TO = 'send_to'
 
+# Telegram keys
+TELEGRAM_MANAGER_IDS = 'manager_chat_ids'
+
+# Trello keys
+TRELLO_BOARD_ID = 'board_id'
+
 
 class TrelloCardColor(Enum):
     GREEN = 'green'
