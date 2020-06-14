@@ -1,3 +1,4 @@
+import html
 import logging
 
 from datetime import datetime
@@ -32,7 +33,7 @@ class TrelloBoard:
         board = cls()
         try:
             board.id = data['id']
-            board.name = data['name']
+            board.name = html.escape(data['name'])
             board.url = data['shortUrl']
         except Exception:
             board._ok = False
@@ -69,7 +70,7 @@ class TrelloBoardLabel:
         label = cls()
         try:
             label.id = data['id']
-            label.name = data['name']
+            label.name = html.escape(data['name'])
             label.color = data['color']
         except Exception:
             label._ok = False
@@ -106,7 +107,7 @@ class TrelloList:
         trello_list = cls()
         try:
             trello_list.id = data['id']
-            trello_list.name = data['name']
+            trello_list.name = html.escape(data['name'])
             trello_list.board_id = data['idBoard']
         except Exception:
             trello_list._ok = False
@@ -143,7 +144,7 @@ class TrelloCardLabel:
         label = cls()
         try:
             label.id = data['id']
-            label.name = data['name']
+            label.name = html.escape(data['name'])
             label.color = TrelloCardColor(data['color'])
         except Exception:
             label._ok = False
@@ -228,7 +229,7 @@ class TrelloCustomFieldType:
         field_type = cls()
         try:
             field_type.id = data['id']
-            field_type.name = data['name']
+            field_type.name = html.escape(data['name'])
         except Exception:
             field_type._ok = False
             logger.error(f"Bad field type json {data}")
@@ -263,7 +264,7 @@ class TrelloCustomField:
         custom_field = cls()
         try:
             custom_field.id = data['id']
-            custom_field.value = data['value']['text']
+            custom_field.value = html.escape(data['value']['text'])
             custom_field.type_id = data['idCustomField']
         except Exception:
             custom_field._ok = False
