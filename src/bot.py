@@ -127,6 +127,10 @@ class SysBlokBot:
             handlers.change_board,
             'изменить Trello board_id'
         )
+        self.add_admin_handler(
+            'db_fetch_trello_state',
+            handlers.db_fetch_trello_state,
+        )
 
         # admin-only DB cmds
         self.add_admin_handler(
@@ -182,7 +186,8 @@ class SysBlokBot:
         See tg.utils#admin_only
         """
         self.add_handler(handler_cmd, handler_func)
-        self.admin_handlers[f'/{handler_cmd}'] = description
+        if description:
+            self.admin_handlers[f'/{handler_cmd}'] = description
 
     def add_manager_handler(self, handler_cmd: str, handler_func: Callable, description: str = ''):
         """
@@ -191,7 +196,8 @@ class SysBlokBot:
         See tg.utils#manager_only
         """
         self.add_handler(handler_cmd, handler_func)
-        self.manager_handlers[f'/{handler_cmd}'] = description
+        if description:
+            self.manager_handlers[f'/{handler_cmd}'] = description
 
     def add_user_handler(self, handler_cmd: str, handler_func: Callable, description: str = ''):
         """Adds handler. It will be listed in /help for everybody"""

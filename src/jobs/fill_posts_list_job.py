@@ -20,7 +20,7 @@ class FillPostsListJob(BaseJob):
         registry_posts = []
 
         registry_posts += FillPostsListJob._retrieve_cards_for_registry(
-            trello_client=app_context.trello_client,
+            app_context=app_context,
             title='Публикуем на неделе',
             list_aliases=(TrelloListAlias.PROOFREADING, TrelloListAlias.DONE),
             errors=errors,
@@ -48,7 +48,7 @@ class FillPostsListJob(BaseJob):
 
     @staticmethod
     def _retrieve_cards_for_registry(
-            trello_client: TrelloClient,
+            app_context: AppContext,
             title: str,
             list_aliases: List[str],
             errors: dict,
@@ -60,8 +60,8 @@ class FillPostsListJob(BaseJob):
         Returns a list of paragraphs that should always go in a single message.
         '''
         logger.info(f'Started counting: "{title}"')
-        list_ids = trello_client.get_list_id_from_aliases(list_aliases)
-        cards = trello_client.get_cards(list_ids)
+        list_ids = app_context.db_client.get_list_ids_by_aliases(list_aliases)
+        cards = app_context.trello_client.get_cards(list_ids)
         if show_due:
             cards.sort(key=lambda card: card.due or datetime.datetime.min)
         parse_failure_counter = 0
@@ -73,7 +73,9 @@ class FillPostsListJob(BaseJob):
                 parse_failure_counter += 1
                 continue
 
-            card_fields = trello_client.get_custom_fields(card.id)
+            card_fields = app_context.trello_client.get_custom_fields(
+                card.id, app_context.db_client
+            )
 
             label_names = [
                 label.name for label in card.labels if label.color != TrelloCardColor.BLACK
@@ -84,7 +86,9 @@ class FillPostsListJob(BaseJob):
             this_card_bad_fields = []
             if (
                     title.title is None and
-                    card.lst.id != trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK]
+                    card.lst.id != app_context.db_client.get_list_ids_by_aliases(
+                        [TrelloListAlias.EDITED_NEXT_WEEK]
+                    )[0]
             ):
                 this_card_bad_fields.append('название поста')
             if card_fields.google_doc is None:

@@ -74,9 +74,6 @@ class TrelloCustomFieldTypeAlias(Enum):
     TITLE = 'Название поста'
     ILLUSTRATOR = 'Иллюстратор'
     COVER = 'Обложка'
-    WEBSITE = 'Сайт'
-    VKONTAKTE = 'ВКонтакте'
-    TELEGRAM = 'Telegram'
 
 
 class TrelloCustomFieldTypes(Enum):

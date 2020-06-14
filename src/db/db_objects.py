@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 
-class Author(Base):
+class DBAuthor(Base):
     __tablename__ = 'authors'
 
     name = Column(String, primary_key=True)
@@ -27,7 +27,7 @@ class Author(Base):
         return author
 
 
-class Curator(Base):
+class DBCurator(Base):
     __tablename__ = 'curators'
 
     name = Column(String, primary_key=True)
@@ -50,6 +50,31 @@ class Curator(Base):
         curator.section = _get_str_data_item(data, 'section')
         curator.trello_labels = _get_str_data_item(data, 'trello_labels')
         return curator
+
+
+class DBTrelloList(Base):
+    __tablename__ = 'trello_lists'
+
+    board_id = Column(String, primary_key=True)
+    alias = Column(String, primary_key=True)
+    name = Column(String)
+    list_id = Column(String)
+
+    def __repr__(self):
+        return f'Trello list {self.alias} on board {self.board_id}'
+
+
+class DBTrelloCustomFieldType(Base):
+    __tablename__ = 'trello_custom_field_types'
+
+    board_id = Column(String, primary_key=True)
+    alias = Column(String, primary_key=True)
+    name = Column(String)
+    value_type = Column(String)
+    id = Column(String)
+
+    def __repr__(self):
+        return f'Trello custom field type {self.alias} on board {self.board_id}'
 
 
 def _get_str_data_item(data: dict, item_name: str) -> str:

@@ -50,7 +50,7 @@ class IllustrativeReportJob(BaseJob):
         Returns a list of paragraphs that should always go in a single message.
         '''
         logger.info(f'Started counting: "{title}"')
-        list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
+        list_ids = app_context.db_client.get_list_ids_by_aliases(list_aliases)
         cards = app_context.trello_client.get_cards(list_ids)
         parse_failure_counter = 0
 
@@ -61,7 +61,9 @@ class IllustrativeReportJob(BaseJob):
                 parse_failure_counter += 1
                 continue
 
-            card_fields = app_context.trello_client.get_custom_fields(card.id)
+            card_fields = app_context.trello_client.get_custom_fields(
+                card.id, app_context.db_client
+            )
 
             label_names = [
                 label.name for label in card.labels if label.color != TrelloCardColor.BLACK
@@ -72,9 +74,9 @@ class IllustrativeReportJob(BaseJob):
 
             if (
                     title.title is None and
-                    card.lst.id != app_context.trello_client.lists_config[
-                        TrelloListAlias.EDITED_NEXT_WEEK
-                    ]
+                    card.lst.id != app_context.db_client.get_list_ids_by_aliases(
+                        [TrelloListAlias.EDITED_NEXT_WEEK]
+                    )[0]
             ):
                 this_card_bad_fields.append('название поста')
             if card_fields.google_doc is None:
@@ -95,6 +97,7 @@ class IllustrativeReportJob(BaseJob):
                 card_fields.cover = app_context.drive_client.create_folder_for_card(card)
                 logger.info(f'Trying to put {card_fields.cover} as cover field for {card.url}')
                 app_context.trello_client.set_card_custom_field(
+                    app_context.db_client,
                     card.id,
                     TrelloCustomFieldTypeAlias.COVER,
                     card_fields.cover,

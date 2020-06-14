@@ -100,7 +100,7 @@ class TrelloBoardStateJob(BaseJob):
         Returns a list of paragraphs that should always go in a single message.
         '''
         logger.info(f'Started counting: "{title}"')
-        list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
+        list_ids = app_context.db_client.get_list_ids_by_aliases(list_aliases)
         cards = list(filter(filter_func, app_context.trello_client.get_cards(list_ids)))
         parse_failure_counter = 0
 

@@ -35,9 +35,9 @@ class TrelloBoard:
             board.id = data['id']
             board.name = html.escape(data['name'])
             board.url = data['shortUrl']
-        except Exception:
+        except Exception as e:
             board._ok = False
-            logger.error(f"Bad board json {data}")
+            logger.error(f"Bad board json {data}: {e}")
         return board
 
     def to_dict(self):
@@ -72,9 +72,9 @@ class TrelloBoardLabel:
             label.id = data['id']
             label.name = html.escape(data['name'])
             label.color = data['color']
-        except Exception:
+        except Exception as e:
             label._ok = False
-            logger.error(f"Bad board label json {data}")
+            logger.error(f"Bad board label json {data}: {e}")
         return label
 
     def to_dict(self):
@@ -109,9 +109,9 @@ class TrelloList:
             trello_list.id = data['id']
             trello_list.name = html.escape(data['name'])
             trello_list.board_id = data['idBoard']
-        except Exception:
+        except Exception as e:
             trello_list._ok = False
-            logger.error(f"Bad list json {data}")
+            logger.error(f"Bad list json {data}: {e}")
         return trello_list
 
     def to_dict(self):
@@ -146,9 +146,9 @@ class TrelloCardLabel:
             label.id = data['id']
             label.name = html.escape(data['name'])
             label.color = TrelloCardColor(data['color'])
-        except Exception:
+        except Exception as e:
             label._ok = False
-            logger.error(f"Bad card label json {data}")
+            logger.error(f"Bad card label json {data}: {e}")
         return label
 
     def to_dict(self):
@@ -191,9 +191,9 @@ class TrelloCard:
             card.url = data['shortUrl']
             card.due = (datetime.strptime(data['due'], TIME_FORMAT)
                         if data['due'] else None)
-        except Exception:
+        except Exception as e:
             card._ok = False
-            logger.error(f"Bad card json {data}")
+            logger.error(f"Bad card json {data}: {e}")
         return card
 
     def to_dict(self):
@@ -237,9 +237,9 @@ class TrelloCustomFieldType:
                 field_type.options = {
                     option['id']: option['value']['text'] for option in data['options']
                 }
-        except Exception:
+        except Exception as e:
             field_type._ok = False
-            logger.error(f"Bad field type json {data}")
+            logger.error(f"Bad field type json {data}: {e}")
         return field_type
 
     def to_dict(self):
@@ -261,9 +261,9 @@ class TrelloCustomField:
         self.id = None
         self.value = None
         self.type_id = None
+        self.type = None
 
         self._ok = True
-        self._custom_fields_type_config = None
 
     def __bool__(self):
         return self._ok
@@ -275,18 +275,22 @@ class TrelloCustomField:
         return f'CustomField<id={self.id}, value={self.value}, type_id={self.type_id}>'
 
     @classmethod
-    def from_dict(cls, data, custom_fields_type_config):
+    def from_dict(cls, data, db_client):
         custom_field = cls()
-        custom_field._custom_fields_type_config = custom_fields_type_config
         try:
             custom_field.id = data['id']
             custom_field.type_id = data['idCustomField']
-            # TODO probably support other custom field value types
-            if custom_fields_type_config[custom_field.type_id] == TrelloCustomFieldTypes.TEXT:
-                custom_field.value = html.escape(data['value']['text'])
-        except Exception:
+            custom_field_type = db_client.get_custom_field_type_by_id(custom_field.type_id)
+            if custom_field_type:
+                custom_field.type = custom_field_type
+                # TODO probably support other custom field value types
+                if TrelloCustomFieldTypes(
+                    custom_field_type.value_type
+                ) == TrelloCustomFieldTypes.TEXT:
+                    custom_field.value = html.escape(data['value']['text'])
+        except Exception as e:
             custom_field._ok = False
-            logger.error(f"Bad custom field json {data}")
+            logger.error(f"Bad custom field json {data}: {e}")
         return custom_field
 
     def to_dict(self):
@@ -295,7 +299,7 @@ class TrelloCustomField:
             'idCustomField': self.type_id,
         }
         # TODO probably support other custom field value types
-        if self._custom_fields_type_config[self.type_id] == TrelloCustomFieldTypes.TEXT:
+        if TrelloCustomFieldTypes(self.type.value_type) == TrelloCustomFieldTypes.TEXT:
             dct['value'] = {'text': self.value}
         return dct
 
@@ -333,9 +337,9 @@ class TrelloActionCreateCard:
             if 'list' in data['data']:
                 action.list_id = data['data']['list'].get('id')
                 action.list_name = data['data']['list'].get('name')
-        except Exception:
+        except Exception as e:
             action._ok = False
-            logger.error(f"Bad card action json {data}")
+            logger.error(f"Bad card action json {data}: {e}")
         return action
 
     def to_dict(self):
@@ -394,9 +398,9 @@ class TrelloActionUpdateCard:
             if 'listAfter' in data['data']:
                 action.list_after_id = data['data']['listAfter']['id']
                 action.list_after_name = data['data']['listAfter']['name']
-        except Exception:
+        except Exception as e:
             action._ok = False
-            logger.error(f"Bad card action json {data}")
+            logger.error(f"Bad card action json {data}: {e}")
         return action
 
     def to_dict(self):
@@ -426,6 +430,11 @@ class TrelloMember:
         self.username = None
         self.full_name = None
 
+        self._ok = True
+
+    def __bool__(self):
+        return self._ok
+
     def __str__(self):
         return self.username
 
@@ -446,9 +455,13 @@ class TrelloMember:
     @classmethod
     def from_dict(cls, data):
         member = cls()
-        member.id = data['id']
-        member.username = data['username']
-        member.full_name = data['fullName']
+        try:
+            member.id = data['id']
+            member.username = data['username']
+            member.full_name = data['fullName']
+        except Exception as e:
+            member._ok = False
+            logger.error(f"Bad member json {data}: {e}")
         return member
 
     def to_dict(self):

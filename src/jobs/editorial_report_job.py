@@ -20,7 +20,7 @@ class EditorialReportJob(BaseJob):
         paragraphs.append('Всем привет! Еженедельный редакторский отчет. #cб_редчет')
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
-            trello_client=app_context.trello_client,
+            app_context=app_context,
             title='Отредактировано и ожидает финальной проверки',
             list_aliases=(TrelloListAlias.EDITED_SOMETIMES, TrelloListAlias.TO_CHIEF_EDITOR),
             errors=errors,
@@ -29,7 +29,7 @@ class EditorialReportJob(BaseJob):
         )
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
-            trello_client=app_context.trello_client,
+            app_context=app_context,
             title='На доработке у автора',
             list_aliases=(TrelloListAlias.IN_PROGRESS, ),
             errors=errors,
@@ -38,7 +38,7 @@ class EditorialReportJob(BaseJob):
         )
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
-            trello_client=app_context.trello_client,
+            app_context=app_context,
             title='На редактуре',
             list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, ),
             errors=errors,
@@ -46,7 +46,7 @@ class EditorialReportJob(BaseJob):
         )
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
-            trello_client=app_context.trello_client,
+            app_context=app_context,
             title='Ожидает редактуры',
             list_aliases=(TrelloListAlias.TO_EDITOR, ),
             errors=errors,
@@ -67,7 +67,7 @@ class EditorialReportJob(BaseJob):
 
     @staticmethod
     def _retrieve_cards_for_paragraph(
-            trello_client: TrelloClient,
+            app_context: AppContext,
             title: str,
             list_aliases: List[TrelloListAlias],
             errors: dict,
@@ -81,15 +81,15 @@ class EditorialReportJob(BaseJob):
         Returns a list of paragraphs that should always go in a single message.
         '''
         logger.info(f'Started counting: "{title}"')
-        list_ids = trello_client.get_list_id_from_aliases(list_aliases)
-        list_moved_from_ids = trello_client.get_list_id_from_aliases(moved_from_exclusive)
-        cards = trello_client.get_cards(list_ids)
+        list_ids = app_context.db_client.get_list_ids_by_aliases(list_aliases)
+        list_moved_from_ids = app_context.db_client.get_list_ids_by_aliases(moved_from_exclusive)
+        cards = app_context.trello_client.get_cards(list_ids)
         parse_failure_counter = 0
 
         card_ids = [card.id for card in cards]
         # TODO: merge them somehow
-        cards_actions = trello_client.get_action_update_cards(card_ids)
-        cards_actions_create = trello_client.get_action_create_cards(card_ids)
+        cards_actions = app_context.trello_client.get_action_update_cards(card_ids)
+        cards_actions_create = app_context.trello_client.get_action_create_cards(card_ids)
 
         cards_filtered = []
 
@@ -137,7 +137,9 @@ class EditorialReportJob(BaseJob):
                 parse_failure_counter += 1
                 continue
 
-            card_fields = trello_client.get_custom_fields(card.id)
+            card_fields = app_context.trello_client.get_custom_fields(
+                card.id, app_context.db_client
+            )
 
             label_names = [
                 label.name for label in card.labels if label.color != TrelloCardColor.BLACK

@@ -7,7 +7,7 @@ import telegram
 
 from ..app_context import AppContext
 from ..db.db_client import DBClient
-from ..db.db_objects import Curator
+from ..db.db_objects import DBCurator
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..trello.trello_objects import TrelloMember
 from .. import jobs
@@ -95,7 +95,7 @@ def retrieve_curator_names_by_categories(labels: List[str], db_client: DBClient)
     return [_make_curator_string(curator) for curator in curators]
 
 
-def _make_curator_string(curator: Curator):
+def _make_curator_string(curator: DBCurator):
     """
     Returns: (pretty_curator_string, tg_login_or_None)
     """
