@@ -24,6 +24,11 @@ class GoogleDriveClient(Singleton):
         self._update_from_config()
         logger.info('DriveClient successfully initialized')
 
+    def update_config(self, new_drive_config: dict):
+        """To be called after config automatic update"""
+        self._drive_config = new_drive_config
+        self._update_from_config()
+
     def _update_from_config(self):
         '''Update attributes according to current self._sheets_config'''
         self._credentials = ServiceAccountCredentials.from_json_keyfile_name(
@@ -47,6 +52,7 @@ class GoogleDriveClient(Singleton):
 
     def _lookup_file_by_name(self, name: str):
         page_token = None
+        name = name.replace('"','\\"')
         results = self.service.files().list(
             q=f'name contains "{name}" and "{self.illustrations_folder_key}" in parents',
             pageSize=10,

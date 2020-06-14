@@ -23,6 +23,11 @@ class DBClient(Singleton):
         self._update_from_config()
         logger.info('DBClient successfully initialized')
 
+    def update_config(self, new_db_config: dict):
+        """To be called after config automatic update"""
+        self._db_config = new_db_config
+        self._update_from_config()
+
     def _update_from_config(self):
         self.engine = create_engine(
             self._db_config['uri'],

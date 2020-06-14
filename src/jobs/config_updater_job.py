@@ -49,6 +49,9 @@ class ConfigUpdaterJob(BaseJob):
                 # update config['drive']
                 app_context.drive_client.update_config(
                     job_scheduler.config_manager.get_drive_config())
+                # update config['db']
+                app_context.db_client.update_config(
+                    job_scheduler.config_manager.get_db_config())
                 send('Config updated successfully')
             except Exception as e:
                 send(f'Failed to update config: {e}')
