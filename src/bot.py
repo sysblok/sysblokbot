@@ -80,6 +80,11 @@ class SysBlokBot:
             direct_message_only(handlers.get_tasks_report),
             'получить список задач из Trello'
         )
+        self.add_manager_handler(
+            'get_chat_id',
+            handlers.get_chat_id,
+            'получить chat_id (свой или группы)'
+        )
 
         # admin-only technical cmds
         self.add_admin_handler(
