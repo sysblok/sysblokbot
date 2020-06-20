@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, Date, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -50,6 +50,27 @@ class Curator(Base):
         curator.section = _get_str_data_item(data, 'section')
         curator.trello_labels = _get_str_data_item(data, 'trello_labels')
         return curator
+
+
+class Statistic(Base):
+    __tablename__ = 'statistic'
+    date = Column(String, primary_key=True)
+    topic_suggestion = Column(String)
+    topic_ready = Column(String)
+    in_progress = Column(String)
+    expect_this_week = Column(String)
+    editors_check = Column(String)
+
+    @classmethod
+    def from_dict(cls, data):
+        statistic = cls()
+        statistic.date = _get_str_data_item(data, 'date')
+        statistic.topic_suggestion = _get_str_data_item(data, 'topic_suggestion')
+        statistic.topic_ready = _get_str_data_item(data, 'topic_ready')
+        statistic.in_progress = _get_str_data_item(data, 'in_progress')
+        statistic.expect_this_week = _get_str_data_item(data, 'expect_this_week')
+        statistic.editors_check = _get_str_data_item(data, 'editors_check')
+        return statistic
 
 
 def _get_str_data_item(data: dict, item_name: str) -> str:

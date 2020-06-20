@@ -1,13 +1,14 @@
 import inspect
 import logging
 import time
+import datetime
 from typing import Callable, List
 
 import telegram
 
 from ..app_context import AppContext
 from ..db.db_client import DBClient
-from ..db.db_objects import Curator
+from ..db.db_objects import Curator, Statistic
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..trello.trello_objects import TrelloMember
 from .. import jobs
@@ -197,3 +198,39 @@ def format_possibly_plural(name: str, values: List[str]) -> str:
         return ''
     # yeah that's a bit sexist
     return f'{name}{"ы" if len(values) > 1 else ""}: {", ".join(values)}. '
+
+
+def retrieve_statistc(db_client: DBClient):
+    try:
+        statistics = db_client.find_the_latest_statistics()
+        return sorted(
+            [_make_statistic_string(statistic) for statistic in statistics],
+            key=lambda k: k['date']
+            )
+    except Exception as e:
+        logger.error(f'Failed to retrieve statistic')
+
+
+def add_statistic(db_client: DBClient, data):
+    try:
+        db_client.add_item_to_statistics_table(data)
+    except Exception as e:
+        logger.error(f'Failed to add statistic item')
+
+
+def _make_statistic_string(statistic: Statistic):
+    """
+    Returns: (pretty_curator_string, tg_login_or_None)
+    """
+    if statistic.date and statistic.topic_suggestion and statistic.topic_ready \
+            and statistic.in_progress and statistic.expect_this_week and statistic.editors_check:
+        return {
+            'date': datetime.datetime.strptime(statistic.date, '%Y-%m-%d'),
+            'topic_suggestion': statistic.topic_suggestion,
+            'topic_ready': statistic.topic_ready,
+            'in_progress': statistic.in_progress,
+            'expect_this_week': statistic.expect_this_week,
+            'editors_check': statistic.editors_check
+        }
+    else:
+        return None

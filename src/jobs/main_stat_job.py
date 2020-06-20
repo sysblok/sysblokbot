@@ -1,0 +1,116 @@
+import datetime
+import logging
+from typing import Callable, List
+
+from .base_job import BaseJob
+from . import utils
+from ..app_context import AppContext
+from ..consts import TrelloCardColor, TrelloListAlias
+from ..db.db_client import DBClient
+from ..trello.trello_client import TrelloClient
+from ..sheets.sheets_client import GoogleSheetsClient
+
+logger = logging.getLogger(__name__)
+
+
+class MainStatJob(BaseJob):
+    new_statistic = {}
+
+    @staticmethod
+    def _execute(app_context: AppContext, send: Callable[[str], None]):
+        paragraphs = []
+        paragraphs.append(
+            'Всем привет! Еженедельная статистика работы редакции:\n#сб_stats'
+        )
+
+        paragraphs += MainStatJob._retrieve_cards_for_paragraph(
+            app_context=app_context,
+            title='Темы в ожидании одобрения',
+            list_aliases=(
+                TrelloListAlias.TOPIC_SUGGESTION,
+            ),
+            column_name='topic_suggestion'
+        )
+        paragraphs += MainStatJob._retrieve_cards_for_paragraph(
+            app_context=app_context,
+            title='В поиске автора',
+            list_aliases=(
+                TrelloListAlias.TOPIC_READY,
+            ),
+            column_name='topic_ready'
+        )
+
+        paragraphs += MainStatJob._retrieve_cards_for_paragraph(
+            app_context=app_context,
+            title='В работе у авторов',
+            list_aliases=(
+                TrelloListAlias.IN_PROGRESS,
+            ),
+            column_name='in_progress'
+        )
+
+        paragraphs += MainStatJob._retrieve_cards_for_paragraph(
+            app_context=app_context,
+            title='Ожидает готовности на неделе',
+            list_aliases=(
+                TrelloListAlias.IN_PROGRESS,
+            ),
+            filter_func=MainStatJob._is_card_deadline,
+            column_name='expect_this_week'
+        )
+
+        paragraphs += MainStatJob._retrieve_cards_for_paragraph(
+            app_context=app_context,
+            title='В работе у редакторов',
+            list_aliases=(
+                TrelloListAlias.TO_EDITOR,
+                TrelloListAlias.EDITED_NEXT_WEEK,
+                TrelloListAlias.EDITED_SOMETIMES,
+                TrelloListAlias.TO_CHIEF_EDITOR,
+            ),
+            column_name='editors_check'
+        )
+
+        MainStatJob.add_new_statistics(app_context, MainStatJob.new_statistic)
+
+        utils.pretty_send(paragraphs, send)
+
+    @staticmethod
+    def _is_card_deadline(card) -> bool:
+        return card.due is not None
+
+    @staticmethod
+    def _retrieve_cards_for_paragraph(
+            app_context: AppContext,
+            title: str,
+            list_aliases: List[str],
+            column_name: str,
+            filter_func=None,
+    ) -> List[str]:
+        '''
+        Returns a list of paragraphs that should always go in a single message.
+        '''
+        logger.info(f'Started counting: "{title}"')
+        list_ids = [app_context.trello_client.lists_config[alias] for alias in list_aliases]
+        cards = list(filter(filter_func, app_context.trello_client.get_cards(list_ids)))
+        statitc = MainStatJob._get_last_statistic(app_context)
+        if statitc:
+            delta = len(cards) - int(statitc[column_name])
+            paragraphs = [f'{title}: {len(cards)}'
+                          f'<b>({"+" + str(delta) if delta > 0 else delta} за неделю)</b>']
+            MainStatJob.new_statistic[column_name] = str(len(cards))
+            return paragraphs
+        else:
+            return [f'{title}: {len(cards)}']
+
+    @staticmethod
+    def _get_last_statistic(app_context):
+        statistic_data = utils.retrieve_statistc(app_context.db_client)  # last week's statistics
+        if statistic_data:
+            last_weeks_statistics = statistic_data[-1]
+            return last_weeks_statistics
+
+    @staticmethod
+    def add_new_statistics(app_context, data):
+        data['date'] = str(datetime.date.today())
+        utils.add_statistic(app_context.db_client, data)

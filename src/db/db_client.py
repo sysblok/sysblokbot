@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from .db_objects import Author, Base, Curator
+from .db_objects import Author, Base, Curator, Statistic
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..utils.singleton import Singleton
 
@@ -106,3 +106,18 @@ class DBClient(Singleton):
         if not curators:
             logger.warning(f'Curators not found for label {trello_label}')
         return curators
+
+    def add_item_to_statistics_table(self, data) -> None:
+        session = self.Session()
+        try:
+            statistic = Statistic.from_dict(data)
+            session.add(statistic)
+            session.commit()
+        except Exception as e:
+            logger.warning(f"Failed to add add statistic: {e}")
+            session.rollback()
+
+    def find_the_latest_statistics(self):
+        session = self.Session()
+        statistic = session.query(Statistic).all()
+        return statistic
