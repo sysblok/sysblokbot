@@ -99,6 +99,13 @@ class PlainTextUserAction(Enum):
     GET_TASKS_REPORT__ENTER_LIST_NUMBER = 'get_tasks_report__list_number'
     GET_TASKS_REPORT__ENTER_INTRO = 'get_tasks_report__introduction'
     GET_TASKS_REPORT__CHOOSE_IF_FILL_LABELS = 'get_tasks_report__fill_labels'
+    # /manage_reminders items
+    MANAGE_REMINDERS__CHOOSE_ACTION = 'manage_reminders__action'
+    MANAGE_REMINDERS__ENTER_CHAT_ID = 'manage_reminders__chat_id'
+    MANAGE_REMINDERS__ENTER_TEXT = 'manage_reminders__text'
+    MANAGE_REMINDERS__ENTER_WEEKDAY = 'manage_reminders__weekday'
+    MANAGE_REMINDERS__ENTER_TIME = 'manage_reminders__time'
+    MANAGE_REMINDERS__ENTER_FREQUENCY = 'manage_reminders__frequency'
 
 
 class GetTasksReportData:
@@ -119,3 +126,6 @@ class ButtonValues(Enum):
     GET_TASKS_REPORT__NO_INTRO = 'tasks_report_data__no_intro'
     GET_TASKS_REPORT__LABELS__YES = 'tasks_report_data__labels__yes'
     GET_TASKS_REPORT__LABELS__NO = 'tasks_report_data__labels__no'
+    MANAGE_REMINDERS__ACTIONS__NEW = 'tasks_repost__actions__new'
+    MANAGE_REMINDERS__ACTIONS__EDIT = 'tasks_repost__actions__edit'
+    MANAGE_REMINDERS__ACTIONS__DELETE = 'tasks_repost__actions__delete'

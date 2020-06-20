@@ -80,6 +80,11 @@ class SysBlokBot:
             direct_message_only(handlers.get_tasks_report),
             'получить список задач из Trello'
         )
+        self.add_manager_handler(
+            'manage_reminders',
+            handlers.manage_reminders,
+            'настроить напоминания'
+        )
 
         # admin-only technical cmds
         self.add_admin_handler(

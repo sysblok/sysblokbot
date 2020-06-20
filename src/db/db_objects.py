@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, 
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -55,3 +55,30 @@ class Curator(Base):
 def _get_str_data_item(data: dict, item_name: str) -> str:
     """Preprocess string data item from sheets"""
     return data[item_name].strip() if data.get(item_name) else ''
+
+
+def _get_str_data_item(data: dict, item_name: str) -> str:
+    """Preprocess string data item from sheets"""
+    return data[item_name].strip() if data.get(item_name) else ''
+
+
+class Chat(Base):
+    __tablename__ = 'chats'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
+
+class Reminder(Base):
+    __tablename__ = 'reminders'
+
+    id = Column(Integer, primary_key=True, sqlite_autoincrement=True)
+    chat_id = Column(Integer, ForeignKey('chats.id'))
+    name = Column(String)  # short reminder name
+    text = Column(String)  # full reminder text
+    weekday = Column(String)   # e.g. "wednesday"
+    time = Column(String)  # e.g. "15:00"
+    frequency = Column(String)  #
+
+    def __repr__(self):
+        return f'Reminder {self.name} chat_id={self.chat_id}'
