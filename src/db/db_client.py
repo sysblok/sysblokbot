@@ -6,10 +6,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from .db_objects import Author, Base, Curator, Reminder
+from .db_objects import Author, Base, Chat, Curator, Reminder
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..utils.singleton import Singleton
-
 
 logger = logging.getLogger(__name__)
 
@@ -106,6 +105,15 @@ class DBClient(Singleton):
         if not curators:
             logger.warning(f'Curators not found for label {trello_label}')
         return curators
+
+    def set_chat_name(self, chat_id: int, chat_name: str):
+        session = self.Session()
+        chat = session.query(Chat).get(chat_id)
+        if chat:
+            session.query(Chat).filter(Chat.id == chat_id).update({Chat.name: chat_name})
+        else:
+            session.add(Chat(id=chat_id, name=chat_name))
+        session.commit()
 
     def get_reminders_by_user_id(self, user_chat_id: int) -> List[Reminder]:
         pass

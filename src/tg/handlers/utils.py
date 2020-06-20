@@ -64,6 +64,12 @@ def get_chat_id(update) -> int:
     return update.callback_query.message.chat_id
 
 
+def get_chat_name(update) -> str:
+    if update.message is not None:
+        return update.message.chat.title or update.message.chat.username
+    return ''
+
+
 def get_sender_username(update) -> str:
     return update.message.from_user.username
 

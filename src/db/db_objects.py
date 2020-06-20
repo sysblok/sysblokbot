@@ -57,11 +57,6 @@ def _get_str_data_item(data: dict, item_name: str) -> str:
     return data[item_name].strip() if data.get(item_name) else ''
 
 
-def _get_str_data_item(data: dict, item_name: str) -> str:
-    """Preprocess string data item from sheets"""
-    return data[item_name].strip() if data.get(item_name) else ''
-
-
 class Chat(Base):
     __tablename__ = 'chats'
 
@@ -78,7 +73,6 @@ class Reminder(Base):
     text = Column(String)  # full reminder text
     weekday = Column(String)   # e.g. "wednesday"
     time = Column(String)  # e.g. "15:00"
-    frequency = Column(String)  #
 
     def __repr__(self):
         return f'Reminder {self.name} chat_id={self.chat_id}'
