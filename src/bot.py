@@ -26,7 +26,7 @@ class SysBlokBot:
         )
         self.dp = self.updater.dispatcher
         self.app_context = AppContext(config_manager)
-        self.telegram_sender = sender.TelegramSender(self.dp.bot, tg_config)
+        self.telegram_sender = sender.TelegramSender(bot=self.dp.bot, tg_config=tg_config)
         self.user_handlers = {}
         self.admin_handlers = {}
         self.manager_handlers = {}
@@ -84,6 +84,11 @@ class SysBlokBot:
             'get_tasks_report',
             direct_message_only(handlers.get_tasks_report),
             'получить список задач из Trello'
+        )
+        self.add_manager_handler(
+            'get_chat_id',
+            handlers.get_chat_id,
+            'получить chat_id (свой или группы)'
         )
 
         # admin-only technical cmds
@@ -161,6 +166,10 @@ class SysBlokBot:
             handlers.handle_user_message)
         )
         self.dp.add_handler(CallbackQueryHandler(handlers.handle_callback_query))
+        self.dp.add_handler(MessageHandler(
+            Filters.status_update.new_chat_members,
+            handlers.handle_new_members
+        ))
 
         # log all errors
         self.dp.add_error_handler(handlers.error)

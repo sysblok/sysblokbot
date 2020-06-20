@@ -6,7 +6,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
+<<<<<<< HEAD
 from .db_objects import Author, Base, Curator, Statistic
+=======
+from .db_objects import Author, Base, Chat, Curator
+>>>>>>> 8000479c74207cd80c79c7a8d5268782a02c2eba
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..utils.singleton import Singleton
 
@@ -15,11 +19,11 @@ logger = logging.getLogger(__name__)
 
 
 class DBClient(Singleton):
-    def __init__(self, config=None):
+    def __init__(self, db_config=None):
         if self.was_initialized():
             return
 
-        self._db_config = config
+        self._db_config = db_config
         self._update_from_config()
         logger.info('DBClient successfully initialized')
 
@@ -107,17 +111,11 @@ class DBClient(Singleton):
             logger.warning(f'Curators not found for label {trello_label}')
         return curators
 
-    def add_item_to_statistics_table(self, data) -> None:
+    def set_chat_name(self, chat_id: int, chat_name: str):
         session = self.Session()
-        try:
-            statistic = Statistic.from_dict(data)
-            session.add(statistic)
-            session.commit()
-        except Exception as e:
-            logger.warning(f"Failed to add add statistic: {e}")
-            session.rollback()
-
-    def find_the_latest_statistics(self):
-        session = self.Session()
-        statistic = session.query(Statistic).all()
-        return statistic
+        chat = session.query(Chat).get(chat_id)
+        if chat:
+            session.query(Chat).filter(Chat.id == chat_id).update({Chat.name: chat_name})
+        else:
+            session.add(Chat(id=chat_id, name=chat_name))
+        session.commit()

@@ -7,6 +7,7 @@ from .base_job import BaseJob
 logger = logging.getLogger(__name__)
 
 
+# TODO: merge with fetch authors job
 class DBFetchCuratorsSheetJob(BaseJob):
     @staticmethod
     def _execute(app_context: AppContext, send: Callable[[str], None]):

@@ -110,14 +110,17 @@ def _make_curator_string(curator: Curator):
 def pretty_send(
         paragraphs: List[str],
         send: Callable[[str], None]
-):
+) -> str:
     '''
-    Send a bunch of paragraphs grouped into messages with adequate delays
+    Send a bunch of paragraphs grouped into messages with adequate delays.
+    Return the whole message for testing purposes.
     '''
-    for i, message in enumerate(paragraphs_to_messages(paragraphs)):
+    messages = paragraphs_to_messages(paragraphs)
+    for i, message in enumerate(messages):
         if i > 0:
             time.sleep(MESSAGE_DELAY_SEC)
         send(message)
+    return '\n'.join(messages)
 
 
 def paragraphs_to_messages(

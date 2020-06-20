@@ -25,11 +25,11 @@ class AppContext(Singleton):
 
         self.config_manager = config_manager
         self.trello_client = TrelloClient(
-            config=config_manager.get_trello_config()
+            trello_config=config_manager.get_trello_config()
         )
         try:
             self.sheets_client = GoogleSheetsClient(
-                config=config_manager.get_sheets_config()
+                sheets_config=config_manager.get_sheets_config()
             )
         except Exception as e:
             self.sheets_client = None
@@ -37,14 +37,14 @@ class AppContext(Singleton):
 
         try:
             self.drive_client = GoogleDriveClient(
-                config=config_manager.get_drive_config()
+                drive_config=config_manager.get_drive_config()
             )
         except Exception as e:
             self.drive_client = None
             logger.critical(f'Could not initialize GoogleDriveClient: {e}')
 
         try:
-            self.db_client = DBClient(config=config_manager.get_db_config())
+            self.db_client = DBClient(db_config=config_manager.get_db_config())
         except Exception as e:
             self.db_client = None
             logger.critical(f'Could not initialize DBClient: {e}')
@@ -54,8 +54,6 @@ class AppContext(Singleton):
 
         # TODO: move that to db
         tg_config = config_manager.get_telegram_config()
-        trello_config = config_manager.get_trello_config()
-
         self.set_access_rights(tg_config)
 
     def set_access_rights(self, tg_config: dict):
