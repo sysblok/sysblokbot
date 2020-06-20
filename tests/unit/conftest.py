@@ -80,7 +80,7 @@ def mock_sheets_client(monkeypatch, mock_config_manager):
             return load_json('curators_sheet.json')
         elif sheet_key == 'rubrics_registry_sheet_key':
             return load_json('rubrics_registry_sheet.json')
-    
+
     monkeypatch.setattr(GoogleSheetsClient, '_authorize', _authorize)
     monkeypatch.setattr(GoogleSheetsClient, '_parse_gs_res', _parse_gs_res)
 
@@ -98,7 +98,7 @@ def mock_drive_client(monkeypatch, mock_config_manager):
 
     def _lookup_file_by_name(self, name: str) -> str:
         pass
-    
+
     monkeypatch.setattr(GoogleDriveClient, '_authorize', _authorize)
     monkeypatch.setattr(GoogleDriveClient, '_create_file', _create_file)
     monkeypatch.setattr(GoogleDriveClient, '_lookup_file_by_name', _lookup_file_by_name)

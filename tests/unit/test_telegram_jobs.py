@@ -62,12 +62,13 @@ from conftest import mock_sender
         ),
     )
 )
-def test_job(monkeypatch, mock_trello, mock_sheets_client, mock_config_manager, mock_sender, job, output_parts):
-    
+def test_job(monkeypatch, mock_trello, mock_sheets_client, mock_config_manager, mock_sender,
+             job, output_parts):
+
     def send_to_chat_id(message_text: str, chat_id: int, **kwargs):
         for part in output_parts:
             assert part in message_text
-    
+
     monkeypatch.setattr(
         mock_sender,
         'send_to_chat_id',
@@ -88,12 +89,13 @@ def test_job(monkeypatch, mock_trello, mock_sheets_client, mock_config_manager, 
         (jobs.sample_job.SampleJob, ['Error']),
     )
 )
-def test_job_failed(monkeypatch, mock_trello, mock_sheets_client, mock_config_manager, mock_sender, job, output_parts):
-    
+def test_job_failed(monkeypatch, mock_trello, mock_sheets_client, mock_config_manager, mock_sender,
+                    job, output_parts):
+
     def send_to_chat_id(message_text: str, chat_id: int, **kwargs):
         for part in output_parts:
             assert part in message_text
-    
+
     monkeypatch.setattr(
         mock_sender,
         'send_to_chat_id',

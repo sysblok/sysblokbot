@@ -30,7 +30,9 @@ def test_cards(mock_trello):
 
 def test_board_custom_fields(mock_trello):
     custom_field_types = mock_trello.get_board_custom_field_types()
-    json_loader.assert_equal([typ.to_dict() for typ in custom_field_types], 'board_custom_fields.json')
+    json_loader.assert_equal(
+        [typ.to_dict() for typ in custom_field_types], 'board_custom_fields.json'
+    )
 
 
 def test_card_custom_fields(mock_trello):
