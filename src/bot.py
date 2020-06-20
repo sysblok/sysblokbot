@@ -26,7 +26,7 @@ class SysBlokBot:
         )
         self.dp = self.updater.dispatcher
         self.app_context = AppContext(config_manager)
-        self.telegram_sender = sender.TelegramSender(self.dp.bot, tg_config)
+        self.telegram_sender = sender.TelegramSender(bot=self.dp.bot, tg_config=tg_config)
         self.user_handlers = {}
         self.admin_handlers = {}
         self.manager_handlers = {}

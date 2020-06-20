@@ -6,74 +6,25 @@ import os
 from deepdiff import DeepDiff
 from typing import List, Dict
 
+from utils.json_loader import JsonLoader
+
+from src.config_manager import ConfigManager
+from src.db.db_client import DBClient
+from src.drive.drive_client import GoogleDriveClient
+from src.sheets.sheets_client import GoogleSheetsClient
+from src.tg.sender import TelegramSender
+from src.trello.trello_client import TrelloClient
+
 
 ROOT_TEST_DIR = os.path.abspath(os.path.dirname(__file__))
-SHEETS_TEST_PATH = os.path.join(
+SHEETS_TEST_DIR = os.path.join(
     os.path.join(ROOT_TEST_DIR, 'static'), 'sheets')
-TRELLO_TEST_PATH = os.path.join(
+TRELLO_TEST_DIR = os.path.join(
     os.path.join(ROOT_TEST_DIR, 'static'), 'trello')
-EXPECTED_TEST_PATH = os.path.join(
-    os.path.join(ROOT_TEST_DIR, 'static'), 'expected')
 
 
 @pytest.fixture
-def mock_trello():
-
-    def _make_request(_, uri: str, payload={}) -> (int, Dict):
-
-        def load_json(filename: str) -> Dict:
-            with open(os.path.join(TRELLO_TEST_PATH, filename), 'r') as fin:
-                return json.loads(fin.read())
-
-        if uri.startswith('boards'):
-            if uri.endswith('lists'):
-                return 200, load_json('lists.json')
-            elif uri.endswith('cards'):
-                return 200, load_json('cards.json')
-            elif uri.endswith('members'):
-                return 200, load_json('members.json')
-            elif uri.endswith('customFields'):
-                return 200, load_json('board_custom_fields.json')
-            else:
-                return 200, load_json('board.json')
-        elif uri.startswith('cards'):
-            if uri.endswith('customFieldItems'):
-                return 200, load_json('card_custom_fields.json')
-            if uri.endswith('actions'):
-                return 200, load_json('card_actions.json')
-        elif uri.startswith('lists'):
-            if uri.endswith('cards'):
-                return 200, load_json('cards.json')
-
-    return _make_request
-
-
-@pytest.fixture
-def assert_equal():
-
-    def _assert_equal(response: Dict, expected_filename: str):
-
-        def load_json(filename: str) -> Dict:
-            with open(os.path.join(EXPECTED_TEST_PATH, filename), 'r') as fin:
-                return json.loads(fin.read())
-
-        expected_response = load_json(expected_filename)
-        assert not DeepDiff(response, expected_response)
-
-    return _assert_equal
-
-
-def mock_sender(substring_list_to_check: List[str]):
-
-    def send_to_chat_id(_, message_text: str, chat_id: int):
-        for string in substring_list_to_check:
-            assert string in message_text
-
-    return send_to_chat_id
-
-
-@pytest.fixture
-def mock_config_manager():
+def mock_config_manager(monkeypatch):
 
     def get_latest_config(_):
         return {
@@ -101,31 +52,110 @@ def mock_config_manager():
             "jobs": {},
             "db": {
                 "uri": "sqlite:///:memory:"
+            },
+            "drive": {
+                "api_key_path": "stub",
+                "illustrations_folder_key": "illustrations_folder_key"
             }
         }
 
-    return get_latest_config
+    monkeypatch.setattr(ConfigManager, 'get_latest_config', get_latest_config)
+
+    return ConfigManager()
 
 
 @pytest.fixture
-def mock_sheets_client(mock_config_manager):
+def mock_trello(monkeypatch, mock_config_manager):
 
-    def _update_from_config(self):
-        """Update attributes according to current self._sheets_config"""
-        self.authors_sheet_key = self._sheets_config['authors_sheet_key']
-        self.curators_sheet_key = self._sheets_config['curators_sheet_key']
-        self.post_registry_sheet_key = self._sheets_config['post_registry_sheet_key']
-        self.rubrics_registry_sheet_key = self._sheets_config['rubrics_registry_sheet_key']
+    def _make_request(_, uri: str, payload={}) -> (int, Dict):
+
+        load_json = JsonLoader(TRELLO_TEST_DIR).load_json
+
+        if uri.startswith('boards'):
+            if uri.endswith('lists'):
+                return 200, load_json('lists.json')
+            elif uri.endswith('cards'):
+                return 200, load_json('cards.json')
+            elif uri.endswith('members'):
+                return 200, load_json('members.json')
+            elif uri.endswith('customFields'):
+                return 200, load_json('board_custom_fields.json')
+            else:
+                return 200, load_json('board.json')
+        elif uri.startswith('cards'):
+            if uri.endswith('customFieldItems'):
+                return 200, load_json('card_custom_fields.json')
+            if uri.endswith('actions'):
+                return 200, load_json('card_actions.json')
+        elif uri.startswith('lists'):
+            if uri.endswith('cards'):
+                return 200, load_json('cards.json')
+
+    monkeypatch.setattr(TrelloClient, '_make_request', _make_request)
+
+    return TrelloClient(trello_config=mock_config_manager.get_trello_config())
+
+
+@pytest.fixture
+def mock_sheets_client(monkeypatch, mock_config_manager):
+
+    def _authorize(self):
+        pass
 
     def _parse_gs_res(_, title_key_map: Dict, sheet_key: str) -> List[Dict]:
 
-        def load_json(filename: str) -> Dict:
-            with open(os.path.join(SHEETS_TEST_PATH, filename), 'r') as fin:
-                return json.loads(fin.read())
+        load_json = JsonLoader(SHEETS_TEST_DIR).load_json
 
         if sheet_key == 'authors_sheet_key':
             return load_json('authors_sheet.json')
         elif sheet_key == 'curators_sheet_key':
             return load_json('curators_sheet.json')
+        elif sheet_key == 'rubrics_registry_sheet_key':
+            return load_json('rubrics_registry_sheet.json')
+    
+    monkeypatch.setattr(GoogleSheetsClient, '_authorize', _authorize)
+    monkeypatch.setattr(GoogleSheetsClient, '_parse_gs_res', _parse_gs_res)
 
-    return _update_from_config, _parse_gs_res
+    return GoogleSheetsClient(sheets_config=mock_config_manager.get_sheets_config())
+
+
+@pytest.fixture
+def mock_drive_client(monkeypatch, mock_config_manager):
+
+    def _authorize(self):
+        pass
+
+    def _create_file(self, name: str, description: str, parents: List[str]) -> str:
+        pass
+
+    def _lookup_file_by_name(self, name: str) -> str:
+        pass
+    
+    monkeypatch.setattr(GoogleDriveClient, '_authorize', _authorize)
+    monkeypatch.setattr(GoogleDriveClient, '_create_file', _create_file)
+    monkeypatch.setattr(GoogleDriveClient, '_lookup_file_by_name', _lookup_file_by_name)
+
+    return GoogleDriveClient(drive_config=mock_config_manager.get_drive_config())
+
+
+@pytest.fixture
+def mock_telegram_bot(monkeypatch, mock_config_manager):
+    return {}
+
+
+@pytest.fixture
+def mock_sender(monkeypatch, mock_config_manager, mock_telegram_bot):
+
+    def send_to_chat_id(self, message_text: str, chat_id: int, **kwargs):
+        pass
+
+    monkeypatch.setattr(TelegramSender, 'send_to_chat_id', send_to_chat_id)
+
+    return TelegramSender(
+        bot=mock_telegram_bot, tg_config=mock_config_manager.get_telegram_config()
+    )
+
+
+@pytest.fixture
+def mock_db_client(mock_config_manager):
+    return DBClient(db_config=mock_config_manager.get_db_config())
