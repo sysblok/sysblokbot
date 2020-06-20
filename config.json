@@ -22,8 +22,8 @@
     },
     "jobs": {
         "sample_job": {
-            "every": "sunday",
-            "at": "20:00",
+            "every": "wednesday",
+            "at": "10:00",
             "send_to": []
         }
     },
