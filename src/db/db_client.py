@@ -15,11 +15,11 @@ logger = logging.getLogger(__name__)
 
 
 class DBClient(Singleton):
-    def __init__(self, config=None):
+    def __init__(self, db_config=None):
         if self.was_initialized():
             return
 
-        self._db_config = config
+        self._db_config = db_config
         self._update_from_config()
         logger.info('DBClient successfully initialized')
 

@@ -12,7 +12,6 @@ from src.bot import SysBlokBot
 from src.config_manager import ConfigManager
 
 from fakes import fake_job
-from fakes.fake_sender import FakeTelegramSender
 
 logger = logging.getLogger(__name__)
 
@@ -33,12 +32,11 @@ logger = logging.getLogger(__name__)
         ({"job": {"every": "day", "at": "10"}}, 0),
     ]
 )
-def test_jobs_scheduled(jobs_config, num_jobs):
+def test_jobs_scheduled(jobs_config, num_jobs, mock_config_manager, mock_sender):
     for job_id in jobs_config:
         setattr(jobs, job_id, fake_job)
 
-    config_manager = ConfigManager()
-    config_manager._latest_config = {'jobs': jobs_config}
+    mock_config_manager._latest_config = {'jobs': jobs_config}
 
     scheduler.schedule.clear()
 
@@ -46,17 +44,16 @@ def test_jobs_scheduled(jobs_config, num_jobs):
     scheduler.JobScheduler.drop_instance()
     job_scheduler = scheduler.JobScheduler()
     job_scheduler.app_context = None
-    job_scheduler.telegram_sender = FakeTelegramSender()
+    job_scheduler.telegram_sender = mock_sender
     job_scheduler.init_jobs()
 
     assert len(scheduler.schedule.jobs) == num_jobs
 
 
-def test_jobs_executed():
+def test_jobs_executed(mock_config_manager, mock_sender):
     setattr(jobs, "job", fake_job)
 
-    config_manager = ConfigManager()
-    config_manager._latest_config = {'jobs': {"job": {"every": "day", "at": "12:00"}}}
+    mock_config_manager._latest_config = {'jobs': {"job": {"every": "day", "at": "12:00"}}}
 
     scheduler.schedule.clear()
     fake_job.reset_run_counter()
@@ -65,7 +62,7 @@ def test_jobs_executed():
     scheduler.JobScheduler.drop_instance()
     job_scheduler = scheduler.JobScheduler()
     job_scheduler.app_context = None
-    job_scheduler.telegram_sender = FakeTelegramSender()
+    job_scheduler.telegram_sender = mock_sender
 
     with freeze_time("2020-05-01 11:59:00"):
         job_scheduler.init_jobs()
