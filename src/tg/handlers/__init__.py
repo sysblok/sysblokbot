@@ -9,7 +9,7 @@ from .help_handler import help
 from .get_tasks_report_handler import get_tasks_report
 
 # Plain text message handler
-from .user_message_handler import handle_callback_query, handle_user_message
+from .user_message_handler import handle_callback_query, handle_user_message, handle_new_members
 # Error handler
 from .error_handler import error
 

@@ -156,6 +156,10 @@ class SysBlokBot:
             handlers.handle_user_message)
         )
         self.dp.add_handler(CallbackQueryHandler(handlers.handle_callback_query))
+        self.dp.add_handler(MessageHandler(
+            Filters.status_update.new_chat_members,
+            handlers.handle_new_members
+        ))
 
         # log all errors
         self.dp.add_error_handler(handlers.error)
