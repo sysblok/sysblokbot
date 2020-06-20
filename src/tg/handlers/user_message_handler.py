@@ -2,7 +2,8 @@ import logging
 
 import telegram
 
-from .utils import reply
+from .utils import get_chat_id, get_chat_name, reply
+from ...db.db_client import DBClient
 from ...tg.handlers import get_tasks_report_handler
 from ...trello.trello_client import TrelloClient
 from ... import consts
@@ -155,3 +156,12 @@ def handle_user_message(
 
 def set_next_action(command_data: dict, next_action: PlainTextUserAction):
     command_data[consts.NEXT_ACTION] = next_action.value if next_action else next_action
+
+
+def handle_new_members(
+    update: telegram.Update,
+    tg_context: telegram.ext.CallbackContext
+):
+    # writes chat_id and chat name to db when anybody (including the bot) is added to a new chat
+    # very heuristic solution
+    DBClient().set_chat_name(get_chat_id(update), get_chat_name(update))
