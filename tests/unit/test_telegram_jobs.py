@@ -9,7 +9,6 @@ from src import jobs
 from src.tg.sender import TelegramSender
 from src.trello.trello_client import TrelloClient
 
-from fakes import fake_sender
 from conftest import mock_sender
 
 

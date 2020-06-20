@@ -17,51 +17,19 @@ from src.trello.trello_client import TrelloClient
 
 
 ROOT_TEST_DIR = os.path.abspath(os.path.dirname(__file__))
-SHEETS_TEST_DIR = os.path.join(
-    os.path.join(ROOT_TEST_DIR, 'static'), 'sheets')
-TRELLO_TEST_DIR = os.path.join(
-    os.path.join(ROOT_TEST_DIR, 'static'), 'trello')
+STATIC_TEST_DIR = os.path.join(ROOT_TEST_DIR, 'static')
+SHEETS_TEST_DIR = os.path.join(STATIC_TEST_DIR, 'sheets')
+TRELLO_TEST_DIR = os.path.join(STATIC_TEST_DIR, 'trello')
+
+CONFIG_PATH = os.path.join(STATIC_TEST_DIR, 'config.json')
+CONFIG_OVERRIDE_PATH = os.path.join(STATIC_TEST_DIR, 'config_override.json')
 
 
 @pytest.fixture
 def mock_config_manager(monkeypatch):
-
-    def get_latest_config(_):
-        return {
-            "telegram": {
-                "token": "stub",
-                "is_silent": False,
-                "disable_web_page_preview": False,
-                "admin_chat_ids": [],
-                "manager_chat_ids": [],
-                "important_events_recipients": [],
-                "error_logs_recipients": []
-            },
-            "trello": {
-                "api_key": "stub",
-                "token": "stub",
-                "board_id": "board_id"
-            },
-            "sheets": {
-                "api_key_path": "stub",
-                "authors_sheet_key": "authors_sheet_key",
-                "curators_sheet_key": "curators_sheet_key",
-                "post_registry_sheet_key": "post_registry_sheet_key",
-                "rubrics_registry_sheet_key": "rubrics_registry_sheet_key"
-            },
-            "jobs": {},
-            "db": {
-                "uri": "sqlite:///:memory:"
-            },
-            "drive": {
-                "api_key_path": "stub",
-                "illustrations_folder_key": "illustrations_folder_key"
-            }
-        }
-
-    monkeypatch.setattr(ConfigManager, 'get_latest_config', get_latest_config)
-
-    return ConfigManager()
+    config_manager = ConfigManager(CONFIG_PATH, CONFIG_OVERRIDE_PATH)
+    config_manager.load_config_with_override()
+    return config_manager
 
 
 @pytest.fixture
