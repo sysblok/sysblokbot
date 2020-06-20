@@ -1,0 +1,13 @@
+{
+    "telegram": {
+        "is_silent": false,
+        "disable_web_page_preview": false,
+        "admin_chat_ids": [],
+        "manager_chat_ids": [],
+        "important_events_recipients": [],
+        "error_logs_recipients": []
+    },
+    "db": {
+        "uri": "sqlite:///:memory:"
+    }
+}

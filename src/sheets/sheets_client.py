@@ -18,11 +18,11 @@ scope = (
 
 
 class GoogleSheetsClient(Singleton):
-    def __init__(self, config: dict):
+    def __init__(self, sheets_config: dict):
         if self.was_initialized():
             return
 
-        self._sheets_config = config
+        self._sheets_config = sheets_config
         self._update_from_config()
         logger.info('GoogleSheetsClient successfully initialized')
 
@@ -33,65 +33,16 @@ class GoogleSheetsClient(Singleton):
 
     def _update_from_config(self):
         """Update attributes according to current self._sheets_config"""
-        self._credentials = Credentials.from_service_account_file(
-            self._sheets_config['api_key_path'], scopes=scope)
-        self.client = gspread.authorize(self._credentials)
         self.authors_sheet_key = self._sheets_config['authors_sheet_key']
         self.curators_sheet_key = self._sheets_config['curators_sheet_key']
         self.post_registry_sheet_key = self._sheets_config['post_registry_sheet_key']
         self.rubrics_registry_sheet_key = self._sheets_config['rubrics_registry_sheet_key']
+        self._authorize()
 
-    def find_author_curators(
-            self,
-            find_by: str,
-            val: str
-    ) -> Optional[List[Dict]]:
-        authors = self.fetch_authors()
-        author = next(
-            (author for author in authors if author[find_by] == val), None)
-        if author is None:
-            return
-
-        curators = self.fetch_curators()
-        found_curators = []
-        for curator in curators:
-            if curator['role'].strip() == author['curator'].strip():
-                found_curators.append(curator)
-        return found_curators
-
-    def find_curator_authors(
-            self,
-            find_by: str,
-            val: str
-    ) -> Optional[List[Dict]]:
-        curators = self.fetch_curators()
-        curator = next(
-            (curator for curator in curators if curator[find_by] == val), None)
-        if curator is None:
-            return
-
-        authors = self.fetch_authors()
-        found_authors = []
-        for author in authors:
-            if curator['role'].strip() == author['curator'].strip():
-                found_authors.append(curator)
-        return found_authors
-
-    def find_telegram_id_by_trello_id(self, trello: str) -> Optional[str]:
-        authors = self.fetch_authors()
-        return next(
-            (author['telegram']
-                for author in authors if author['trello'] == trello),
-            None
-        )
-
-    def find_trello_id_by_telegram_id(self, telegram: str) -> Optional[str]:
-        authors = self.fetch_authors()
-        return next(
-            (author['telegram']
-                for author in authors if author['trello'] == telegram),
-            None
-        )
+    def _authorize(self):
+        self._credentials = Credentials.from_service_account_file(
+            self._sheets_config['api_key_path'], scopes=scope)
+        self.client = gspread.authorize(self._credentials)
 
     def fetch_authors(self) -> List[Dict]:
         title_key_map = {
@@ -178,7 +129,7 @@ class GoogleSheetsClient(Singleton):
                     None,  # Оценка редактора
                     None,  # План по контенту
                     None,  # Тип обложки
-                    None,  # Обложка
+                    entry.cover,  # Обложка
                     entry.illustrators,
                     None,  # Дата (сайт)
                     None,  # Статус публикации (сайт)
@@ -203,8 +154,6 @@ class GoogleSheetsClient(Singleton):
             )
         except Exception as e:
             logger.error(f'Failed to update post registry: {e}')
-        num_of_posts_after = len(worksheet.get_all_values()) - 2  # table formatting
-        assert num_of_posts_after == num_of_posts + count_updated
         return [row[1] for row in new_data]
 
     def _has_string(self, worksheet, string: str):

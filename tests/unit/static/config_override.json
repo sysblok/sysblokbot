@@ -1,0 +1,25 @@
+{
+    "telegram": {
+        "token": "stub"
+    },
+    "trello": {
+        "api_key": "stub",
+        "token": "stub",
+        "board_id": "board_id"
+    },
+    "sheets": {
+        "api_key_path": "stub",
+        "authors_sheet_key": "authors_sheet_key",
+        "curators_sheet_key": "curators_sheet_key",
+        "post_registry_sheet_key": "post_registry_sheet_key",
+        "rubrics_registry_sheet_key": "rubrics_registry_sheet_key"
+    },
+    "jobs": {},
+    "drive": {
+        "api_key_path": "stub",
+        "illustrations_folder_key": "illustrations_folder_key"
+    },
+    "db": {
+        "uri": "sqlite:///:memory:"
+    }
+}

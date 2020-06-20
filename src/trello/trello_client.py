@@ -13,11 +13,11 @@ BASE_URL = 'https://api.trello.com/1/'
 
 
 class TrelloClient(Singleton):
-    def __init__(self, config=None):
+    def __init__(self, trello_config=None):
         if self.was_initialized():
             return
 
-        self._trello_config = config
+        self._trello_config = trello_config
         self._update_from_config()
         logger.info('TrelloClient successfully initialized')
 
@@ -163,6 +163,7 @@ class TrelloClient(Singleton):
         card_actions = [
             objects.TrelloActionCreateCard.from_dict(action)
             for action in data
+            if action['type'] == 'createCard'
         ]
         logger.debug(f'get_action_create_card: {card_actions}')
         return card_actions
@@ -180,6 +181,7 @@ class TrelloClient(Singleton):
         card_actions = [
             objects.TrelloActionUpdateCard.from_dict(action)
             for action in data
+            if action['type'] == 'updateCard'
         ]
         logger.debug(f'get_action_update_card: {card_actions}')
         return card_actions
@@ -210,6 +212,7 @@ class TrelloClient(Singleton):
             'key': self.api_key,
             'token': self.token,
         }
+        # TODO(alexeyqu): move to DB
         lists = self.get_lists()
         self.lists_config = self._fill_alias_id_map(lists, TrelloListAlias)
         custom_field_types = self.get_board_custom_field_types()

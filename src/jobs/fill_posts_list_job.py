@@ -79,7 +79,8 @@ class FillPostsListJob(BaseJob):
                 label.name for label in card.labels if label.color != TrelloCardColor.BLACK
             ]
 
-            is_archive_card = 'Архив' in label_names
+            is_main_post = 'Главный пост' in [label.name for label in card.labels]
+            is_archive_post = 'Архив' in [label.name for label in card.labels]
 
             this_card_bad_fields = []
             if (
@@ -93,9 +94,11 @@ class FillPostsListJob(BaseJob):
                 this_card_bad_fields.append('автор')
             if len(card_fields.editors) == 0:  # and 'Архив' not in label_names:
                 this_card_bad_fields.append('редактор')
+            if card_fields.cover is None and not is_archive_post:
+                this_card_bad_fields.append('обложка')
             if (
                     len(card_fields.illustrators) == 0 and need_illustrators and
-                    'Архив' not in label_names
+                    not is_archive_post
             ):
                 this_card_bad_fields.append('иллюстратор')
             if card.due is None and show_due:
@@ -105,16 +108,13 @@ class FillPostsListJob(BaseJob):
 
             if (
                     len(this_card_bad_fields) > 0
-                    and not (is_archive_card and not strict_archive_rules)
+                    and not (is_archive_post and not strict_archive_rules)
             ):
                 logger.info(
                     f'Trello card is unsuitable for publication: {card.url} {this_card_bad_fields}'
                 )
                 errors[card] = this_card_bad_fields
                 continue
-
-            is_main_post = 'Главный пост' in [label.name for label in card.labels]
-            is_archive_post = 'Архив' in [label.name for label in card.labels]
 
             registry_posts.append(
                 RegistryPost(
