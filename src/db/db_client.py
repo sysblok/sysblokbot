@@ -129,7 +129,7 @@ class DBClient(Singleton):
             Reminder.creator_chat_id == user_chat_id
         ).all()
         return reminders
-    
+
     def get_reminders_to_send(self) -> List[Reminder]:
         session = self.Session()
         reminders = session.query(Reminder).filter(
