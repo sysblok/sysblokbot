@@ -85,6 +85,11 @@ class SysBlokBot:
             handlers.get_chat_id,
             'получить chat_id (свой или группы)'
         )
+        self.add_manager_handler(
+            'manage_reminders',
+            handlers.manage_reminders,
+            'настроить напоминания'
+        )
 
         # admin-only technical cmds
         self.add_admin_handler(

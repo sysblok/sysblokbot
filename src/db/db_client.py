@@ -1,15 +1,15 @@
+from datetime import datetime, timedelta
 import logging
 import requests
-from typing import List
+from typing import List, Tuple
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from .db_objects import Author, Base, Chat, Curator
+from .db_objects import Author, Base, Chat, Curator, Reminder
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..utils.singleton import Singleton
-
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +111,52 @@ class DBClient(Singleton):
         session = self.Session()
         chat = session.query(Chat).get(chat_id)
         if chat:
-            session.query(Chat).filter(Chat.id == chat_id).update({Chat.name: chat_name})
+            session.query(Chat).filter(Chat.id == chat_id).update({Chat.title: chat_name})
         else:
-            session.add(Chat(id=chat_id, name=chat_name))
+            session.add(Chat(id=chat_id, title=chat_name))
+        session.commit()
+
+    def get_chat_name(self, chat_id: int) -> str:
+        session = self.Session()
+        chat = session.query(Chat).filter(Chat.id == chat_id).first()
+        if chat is None:
+            raise ValueError(f'No chat found with id {chat_id}')
+        return chat.title
+
+    def get_reminders_by_user_id(self, user_chat_id: int) -> List[Tuple[Reminder, Chat]]:
+        session = self.Session()
+        reminders = session.query(Reminder, Chat).filter(
+            Reminder.creator_chat_id == user_chat_id
+        ).all()
+        return reminders
+
+    def add_reminder(
+            self,
+            creator_chat_id: int,
+            group_chat_id: int,
+            name: str,
+            text: str,
+            weekday_num: int,
+            time: str,
+            frequency_days: int = 7
+    ):
+        session = self.Session()
+        today = datetime.today()
+        hour, minute = map(int, time.split(':'))
+
+        next_reminder = today + timedelta(days=(weekday_num - today.weekday()))
+        next_reminder = next_reminder.replace(hour=hour, minute=minute, second=0, microsecond=0)
+        if next_reminder < datetime.now():
+            next_reminder = next_reminder + timedelta(days=7)
+
+        session.add(Reminder(
+            group_chat_id=group_chat_id,
+            creator_chat_id=creator_chat_id,
+            name=name,
+            text=text,
+            weekday=weekday_num,
+            time=time,
+            next_reminder_datetime=next_reminder,
+            frequency_days=frequency_days,
+        ))
         session.commit()
