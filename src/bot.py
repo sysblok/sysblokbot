@@ -137,6 +137,11 @@ class SysBlokBot:
             handlers.change_board,
             'изменить Trello board_id'
         )
+        self.add_admin_handler(
+            'send_reminders',
+            self.admin_reply_handler('send_reminders_job'),
+            'отослать напоминания вне расписания'
+        )
 
         # admin-only DB cmds
         self.add_admin_handler(
