@@ -145,6 +145,34 @@ class DBClient(Singleton):
             )
         return reminders
 
+    def get_reminders_to_send(self) -> List[Reminder]:
+        session = self.Session()
+        reminders = session.query(Reminder).filter(
+            Reminder.next_reminder_datetime <= datetime.now()
+        ).all()
+        for reminder in reminders:
+            next_date = reminder.next_reminder_datetime + timedelta(days=reminder.frequency_days)
+            session.query(Reminder).filter(
+                Reminder.id == reminder.id
+            ).update(
+                {Reminder.next_reminder_datetime: next_date}
+            )
+        return reminders
+
+    def get_reminders_to_send(self) -> List[Reminder]:
+        session = self.Session()
+        reminders = session.query(Reminder).filter(
+            Reminder.next_reminder_datetime <= datetime.now()
+        ).all()
+        for reminder in reminders:
+            next_date = reminder.next_reminder_datetime + timedelta(days=reminder.frequency_days)
+            session.query(Reminder).filter(
+                Reminder.id == reminder.id
+            ).update(
+                {Reminder.next_reminder_datetime: next_date}
+            )
+        return reminders
+
     def add_reminder(
             self,
             creator_chat_id: int,
