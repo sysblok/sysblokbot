@@ -55,7 +55,6 @@ def manage_reminders(update: telegram.Update, tg_context: telegram.ext.CallbackC
 
 def _get_reminders_text(reminders: List[Tuple[Reminder, Chat]]) -> str:
     text = 'Привет! Вот какие напоминания у тебя настроены:\n'
-    print(reminders)
     text += '\n'.join(
         f'{i+1}) {chat.title}: {reminder.name}'
         for i, (reminder, chat) in enumerate(reminders)
