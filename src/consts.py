@@ -102,10 +102,10 @@ class PlainTextUserAction(Enum):
     # /manage_reminders items
     MANAGE_REMINDERS__CHOOSE_ACTION = 'manage_reminders__action'
     MANAGE_REMINDERS__ENTER_CHAT_ID = 'manage_reminders__chat_id'
+    MANAGE_REMINDERS__ENTER_NAME = 'manage_reminders__name'
     MANAGE_REMINDERS__ENTER_TEXT = 'manage_reminders__text'
     MANAGE_REMINDERS__ENTER_WEEKDAY = 'manage_reminders__weekday'
     MANAGE_REMINDERS__ENTER_TIME = 'manage_reminders__time'
-    MANAGE_REMINDERS__ENTER_FREQUENCY = 'manage_reminders__frequency'
 
 
 class GetTasksReportData:
@@ -119,6 +119,18 @@ class GetTasksReportData:
     INCLUDE_LABELS = 'include_labels'
 
 
+class ManageRemindersData:
+    """
+    state constants for /manager_reminders
+    """
+    GROUP_CHAT_ID = 'chat_id'
+    REMINDER_NAME = 'name'
+    REMINDER_TEXT = 'text'
+    WEEKDAY_NUM = 'weekday_num'
+    WEEKDAY_NAME = 'weekday_name'
+    TIME = 'time'
+
+
 class ButtonValues(Enum):
     """
     Enum for button payload constants.
@@ -129,3 +141,10 @@ class ButtonValues(Enum):
     MANAGE_REMINDERS__ACTIONS__NEW = 'tasks_repost__actions__new'
     MANAGE_REMINDERS__ACTIONS__EDIT = 'tasks_repost__actions__edit'
     MANAGE_REMINDERS__ACTIONS__DELETE = 'tasks_repost__actions__delete'
+    MANAGE_REMINDERS__MON = '0:Пн'
+    MANAGE_REMINDERS__TUE = '1:Вт'
+    MANAGE_REMINDERS__WED = '2:Ср'
+    MANAGE_REMINDERS__THU = '3:Чт'
+    MANAGE_REMINDERS__FRI = '4:Пт'
+    MANAGE_REMINDERS__SAT = '5:Сб'
+    MANAGE_REMINDERS__SUN = '6:Вс'
