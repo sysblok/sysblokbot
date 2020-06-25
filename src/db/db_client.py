@@ -125,7 +125,7 @@ class DBClient(Singleton):
 
     def get_reminders_by_user_id(self, user_chat_id: int) -> List[Tuple[Reminder, Chat]]:
         session = self.Session()
-        reminders = session.query(Reminder, Chat).filter(
+        reminders = session.query(Reminder, Chat).join(Chat).filter(
             Reminder.creator_chat_id == user_chat_id
         ).all()
         return reminders
