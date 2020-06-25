@@ -8,6 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from .db_objects import Author, Base, Chat, Curator, Reminder
+from .. import consts
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..utils.singleton import Singleton
 
@@ -133,7 +134,7 @@ class DBClient(Singleton):
     def get_reminders_to_send(self) -> List[Reminder]:
         session = self.Session()
         reminders = session.query(Reminder).filter(
-            Reminder.next_reminder_datetime <= datetime.now()
+            Reminder.next_reminder_datetime <= self._get_now_msk_naive()
         ).all()
         for reminder in reminders:
             next_date = reminder.next_reminder_datetime + timedelta(days=reminder.frequency_days)
@@ -142,20 +143,7 @@ class DBClient(Singleton):
             ).update(
                 {Reminder.next_reminder_datetime: next_date}
             )
-        return reminders
-
-    def get_reminders_to_send(self) -> List[Reminder]:
-        session = self.Session()
-        reminders = session.query(Reminder).filter(
-            Reminder.next_reminder_datetime <= datetime.now()
-        ).all()
-        for reminder in reminders:
-            next_date = reminder.next_reminder_datetime + timedelta(days=reminder.frequency_days)
-            session.query(Reminder).filter(
-                Reminder.id == reminder.id
-            ).update(
-                {Reminder.next_reminder_datetime: next_date}
-            )
+        session.commit()
         return reminders
 
     def add_reminder(
@@ -173,8 +161,14 @@ class DBClient(Singleton):
         hour, minute = map(int, time.split(':'))
 
         next_reminder = today + timedelta(days=(weekday_num - today.weekday()))
-        next_reminder = next_reminder.replace(hour=hour, minute=minute, second=0, microsecond=0)
-        if next_reminder < datetime.now():
+        next_reminder = next_reminder.replace(
+            hour=hour,
+            minute=minute,
+            second=0,
+            microsecond=0,
+        )
+
+        if next_reminder < self._get_now_msk_naive():
             next_reminder = next_reminder + timedelta(days=7)
 
         session.add(Reminder(
@@ -188,3 +182,11 @@ class DBClient(Singleton):
             frequency_days=frequency_days,
         ))
         session.commit()
+
+    @staticmethod
+    def _get_now_msk_naive() -> datetime:
+        """
+        Returns naive (not timezone-aware) datetime object
+        representing current time in Europe/Moscow timezone.
+        """
+        return datetime.now(consts.MSK_TIMEZONE).replace(tzinfo=None)

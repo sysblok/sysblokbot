@@ -74,7 +74,7 @@ class Reminder(Base):
     text = Column(String)  # full reminder text
     weekday = Column(Integer)   # e.g. monday is 0
     time = Column(String)  # e.g. "15:00"
-    next_reminder_datetime = Column(DateTime)
+    next_reminder_datetime = Column(DateTime)  # Moscow timezone
     frequency_days = Column(Integer)
 
     def __repr__(self):
