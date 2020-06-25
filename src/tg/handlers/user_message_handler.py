@@ -234,7 +234,7 @@ def handle_user_message(
         set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_TIME)
         reply(
             (
-                'В какое время отправлять напоминание? Пожалуйста, укажи время '
+                'В какое время отправлять напоминание? Пожалуйста, укажи московское время '
                 'в формате hh:mm (например, 15:00)'
             ),
             update

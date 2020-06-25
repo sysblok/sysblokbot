@@ -1,5 +1,6 @@
 """App-level constants"""
 import os
+from datetime import timedelta, timezone
 from enum import Enum
 
 LOG_FORMAT = '%(asctime)s - %(name)s\t- %(levelname)s\t- %(message)s'
@@ -20,6 +21,7 @@ CONFIG_PATH = os.path.join(ROOT_DIR, 'config.json')
 CONFIG_OVERRIDE_PATH = os.path.join(ROOT_DIR, 'config_override.json')
 
 CONFIG_RELOAD_MINUTES = 15
+MSK_TIMEZONE = timezone(timedelta(hours=3))
 
 # Upper level config keys
 TELEGRAM_CONFIG = 'telegram'
