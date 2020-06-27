@@ -155,12 +155,59 @@ def handle_user_message(
         if button is None:
             reply('Нажми кнопку :)', update)
             return
-        # TODO: add switch on buttons
-        reply((
-            'Пришли, пожалуйста, id чата, куда должно отправляться напоминание. Для получения id '
-            'тебе нужно добавить меня в этот чат и вызвать там команду /get_chat_id.'
-        ), update)
-        set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_CHAT_ID)
+        if button == ButtonValues.MANAGE_REMINDERS__ACTIONS__NEW:
+            reply((
+                'Пришли, пожалуйста, id чата, куда должно отправляться напоминание. Для получения id '
+                'тебе нужно добавить меня в этот чат и вызвать там команду /get_chat_id.'
+            ), update)
+            set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_CHAT_ID)
+        elif button == ButtonValues.MANAGE_REMINDERS__ACTIONS__DELETE:
+            reply('Пожалуйста, пришли номер напоминания, которое ты хочешь удалить.', update)
+            set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_REMINDER_NUMBER)
+        elif button == ButtonValues.MANAGE_REMINDERS__ACTIONS__EDIT:
+            reply('Пока редактирование недоступно :(', update)
+        return
+    elif next_action == PlainTextUserAction.MANAGE_REMINDERS__ENTER_REMINDER_NUMBER:
+        reminder_ids = command_data[consts.ManageRemindersData.EXISTING_REMINDERS]
+        try:
+            assert 0 < int(user_input) <= len(reminder_ids)
+            reminder_id, reminder_name = reminder_ids[int(user_input) - 1]
+        except Exception:
+            reply('Кажется, в номере ошибка. Пожалуйста, введи правильный номер.', update)
+            return
+        command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID] = reminder_id
+
+        # keyboard
+        button_list = [[
+            telegram.InlineKeyboardButton(
+                "Да",
+                callback_data=ButtonValues.MANAGE_REMINDERS__DELETE__YES.value
+            ),
+            telegram.InlineKeyboardButton(
+                "Нет",
+                callback_data=ButtonValues.MANAGE_REMINDERS__DELETE__NO.value
+            ),
+        ]]
+        reply_markup = telegram.InlineKeyboardMarkup(button_list)
+        reply(
+            f'Пожалуйста, подтверди, что ты хочешь удалить напоминание “{reminder_name}”.',
+            update,
+            reply_markup=reply_markup
+        )
+        set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__DELETE_REQUEST)
+    elif next_action == PlainTextUserAction.MANAGE_REMINDERS__DELETE_REQUEST:
+        if button is None:
+            reply('Нажми кнопку :)', update)
+            return
+        if button == ButtonValues.MANAGE_REMINDERS__DELETE__YES:
+            DBClient().delete_reminder(
+                command_data.get(consts.ManageRemindersData.CHOSEN_REMINDER_ID)
+            )
+            reply('Напоминание удалено.', update)
+            set_next_action(command_data, None)
+        elif button == ButtonValues.MANAGE_REMINDERS__DELETE__NO:
+            reply('Напоминание не было удалено.', update)
+            set_next_action(command_data, None)
         return
     elif next_action == PlainTextUserAction.MANAGE_REMINDERS__ENTER_CHAT_ID:
         try:

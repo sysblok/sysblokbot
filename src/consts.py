@@ -108,6 +108,8 @@ class PlainTextUserAction(Enum):
     MANAGE_REMINDERS__ENTER_TEXT = 'manage_reminders__text'
     MANAGE_REMINDERS__ENTER_WEEKDAY = 'manage_reminders__weekday'
     MANAGE_REMINDERS__ENTER_TIME = 'manage_reminders__time'
+    MANAGE_REMINDERS__ENTER_REMINDER_NUMBER = 'manage_reminders__reminder_number'
+    MANAGE_REMINDERS__DELETE_REQUEST = 'manage_reminders__delete'
 
 
 class GetTasksReportData:
@@ -125,6 +127,9 @@ class ManageRemindersData:
     """
     state constants for /manager_reminders
     """
+    ACTION_TYPE = 'action_type'
+    EXISTING_REMINDERS = 'existing_reminders_ids'
+    CHOSEN_REMINDER_ID = 'reminder_id'
     GROUP_CHAT_ID = 'chat_id'
     REMINDER_NAME = 'name'
     REMINDER_TEXT = 'text'
@@ -150,3 +155,5 @@ class ButtonValues(Enum):
     MANAGE_REMINDERS__FRI = '4:Пт'
     MANAGE_REMINDERS__SAT = '5:Сб'
     MANAGE_REMINDERS__SUN = '6:Вс'
+    MANAGE_REMINDERS__DELETE__YES = 'manage_reminders__delete__yes'
+    MANAGE_REMINDERS__DELETE__NO = 'manage_reminders__delete__no'
