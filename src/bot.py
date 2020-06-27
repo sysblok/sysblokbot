@@ -85,6 +85,11 @@ class SysBlokBot:
             handlers.get_chat_id,
             'получить chat_id (свой или группы)'
         )
+        self.add_manager_handler(
+            'manage_reminders',
+            handlers.manage_reminders,
+            'настроить напоминания'
+        )
 
         # admin-only technical cmds
         self.add_admin_handler(
@@ -131,6 +136,11 @@ class SysBlokBot:
             'change_board',
             handlers.change_board,
             'изменить Trello board_id'
+        )
+        self.add_admin_handler(
+            'send_reminders',
+            self.admin_reply_handler('send_reminders_job'),
+            'отослать напоминания вне расписания'
         )
 
         # admin-only DB cmds

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -61,4 +61,21 @@ class Chat(Base):
     __tablename__ = 'chats'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String)
+    title = Column(String)
+
+
+class Reminder(Base):
+    __tablename__ = 'reminders'
+
+    id = Column(Integer, primary_key=True)
+    group_chat_id = Column(Integer, ForeignKey('chats.id'))
+    creator_chat_id = Column(Integer)
+    name = Column(String)  # short reminder name
+    text = Column(String)  # full reminder text
+    weekday = Column(Integer)   # e.g. monday is 0
+    time = Column(String)  # e.g. "15:00"
+    next_reminder_datetime = Column(DateTime)  # Moscow timezone
+    frequency_days = Column(Integer)
+
+    def __repr__(self):
+        return f'Reminder {self.name} group_chat_id={self.group_chat_id}'
