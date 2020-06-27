@@ -26,5 +26,6 @@ class RegistryPost:
         self.google_doc = custom_fields.google_doc
         self.editors = ','.join(custom_fields.editors)
         self.illustrators = ','.join(custom_fields.illustrators)
+        self.cover = custom_fields.cover
         self.is_main_post = is_main_post
         self.is_archive_post = is_archive_post

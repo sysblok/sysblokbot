@@ -183,6 +183,11 @@ class DBClient(Singleton):
         ))
         session.commit()
 
+    def delete_reminder(self, reminder_id: int):
+        session = self.Session()
+        session.query(Reminder).filter(Reminder.id == reminder_id).delete()
+        session.commit()
+
     @staticmethod
     def _get_now_msk_naive() -> datetime:
         """
