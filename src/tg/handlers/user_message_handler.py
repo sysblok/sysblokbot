@@ -157,13 +157,16 @@ def handle_user_message(
             return
         if button == ButtonValues.MANAGE_REMINDERS__ACTIONS__NEW:
             reply((
-                'Пришли, пожалуйста, id чата, куда должно отправляться напоминание. Для получения id '
-                'тебе нужно добавить меня в этот чат и вызвать там команду /get_chat_id.'
+                'Пришли, пожалуйста, id чата, куда должно отправляться напоминание. '
+                'Для получения id тебе нужно добавить меня в этот чат и вызвать там '
+                'команду /get_chat_id.'
             ), update)
             set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_CHAT_ID)
         elif button == ButtonValues.MANAGE_REMINDERS__ACTIONS__DELETE:
             reply('Пожалуйста, пришли номер напоминания, которое ты хочешь удалить.', update)
-            set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_REMINDER_NUMBER)
+            set_next_action(
+                command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_REMINDER_NUMBER
+            )
         elif button == ButtonValues.MANAGE_REMINDERS__ACTIONS__EDIT:
             reply('Пока редактирование недоступно :(', update)
         return

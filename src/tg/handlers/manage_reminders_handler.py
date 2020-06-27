@@ -30,7 +30,6 @@ def manage_reminders(update: telegram.Update, tg_context: telegram.ext.CallbackC
         callback_data=consts.ButtonValues.MANAGE_REMINDERS__ACTIONS__DELETE.value
     )
 
-
     # set initial dialogue data
     reminders = DBClient().get_reminders_by_user_id(get_sender_id(update))
 

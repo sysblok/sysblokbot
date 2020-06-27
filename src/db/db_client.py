@@ -182,7 +182,7 @@ class DBClient(Singleton):
             frequency_days=frequency_days,
         ))
         session.commit()
-    
+
     def delete_reminder(self, reminder_id: int):
         session = self.Session()
         session.query(Reminder).filter(Reminder.id == reminder_id).delete()
