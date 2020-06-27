@@ -45,7 +45,7 @@ class SysBlokBot:
             'получить сводку о состоянии доски')
         self.add_manager_handler(
             'get_main_stat',
-            self.manager_reply_handler('main_stat_job', called_from_handler=True),
+            self.manager_reply_handler('main_stat_job'),
             'получить статистику изменений за неделю'
         )
         self.add_admin_handler(
@@ -237,11 +237,11 @@ class SysBlokBot:
         """
         return admin_only(self._create_reply_handler(job_name))
 
-    def manager_reply_handler(self, job_name: str, called_from_handler=False) -> Callable:
+    def manager_reply_handler(self, job_name: str) -> Callable:
         """
         Handler that replies if manager invokes it (DM or chat).
         """
-        return manager_only(self._create_reply_handler(job_name, called_from_handler=called_from_handler))
+        return manager_only(self._create_reply_handler(job_name, ))
 
     def user_handler(self, job_name: str) -> Callable:
         """
@@ -249,17 +249,14 @@ class SysBlokBot:
         """
         return self._create_reply_handler(job_name)
 
-    def _create_reply_handler(self, job_name: str, called_from_handler=False) -> Callable:
+    def _create_reply_handler(self, job_name: str) -> Callable:
         """
         Creates a handler that replies to a message of given user.
         """
-        print('_create_reply_handler')
-        print(job_name)
-        print(called_from_handler)
         return lambda update, tg_context: get_job_runnable(job_name)(
                 app_context=self.app_context,
                 send=self.telegram_sender.create_reply_send(update),
-                called_from_handler=called_from_handler
+                called_from_handler=True
             )
 
     def _create_broadcast_handler(self, job_name: str) -> Callable:
@@ -269,5 +266,6 @@ class SysBlokBot:
         chat_ids = self.config_manager.get_job_send_to(job_name)
         return lambda update, tg_context: get_job_runnable(job_name)(
                 app_context=self.app_context,
-                send=self.telegram_sender.create_chat_ids_send(chat_ids)
+                send=self.telegram_sender.create_chat_ids_send(chat_ids),
+                called_from_handler=True
             )

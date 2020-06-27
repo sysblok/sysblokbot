@@ -28,7 +28,7 @@ class BaseJob:
         logger.info(f'Finished {module}')
 
     @staticmethod
-    def _execute(app_context: AppContext, send: Callable[[str], None]):
+    def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
         """
         Must be overridden.
         """
