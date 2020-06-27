@@ -67,7 +67,7 @@ class TrelloAnalyticsJob(BaseJob):
             ),
             column_name='editors_check'
         )
-        if called_from_handler:
+        if not called_from_handler:
             TrelloAnalyticsJob.add_new_statistics(app_context, TrelloAnalyticsJob.new_statistic)
 
         utils.pretty_send(paragraphs, send)
