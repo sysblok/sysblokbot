@@ -21,7 +21,7 @@ class BaseJob:
         module = cls.__name__
         logger.info(f'Starting {module}...')
         try:
-            cls._execute(app_context, send)
+            cls._execute(app_context, send, called_from_handler)
         except Exception as e:
             # should not raise exception, so that schedule module won't go mad retrying
             logging.exception(f'Could not run job {module}', exc_info=e)
