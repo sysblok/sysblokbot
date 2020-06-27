@@ -5,12 +5,7 @@ from typing import List
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
-
-<<<<<<< HEAD
-from .db_objects import Author, Base, Curator, Statistic
-=======
 from .db_objects import Author, Base, Chat, Curator
->>>>>>> 8000479c74207cd80c79c7a8d5268782a02c2eba
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..utils.singleton import Singleton
 

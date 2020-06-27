@@ -223,7 +223,7 @@ def add_statistic(db_client: DBClient, data):
 
 def _make_statistic_string(statistic: Statistic):
     """
-    Returns: (pretty_curator_string, tg_login_or_None)
+    Returns the dictionary with statistics data
     """
     if statistic.date and statistic.topic_suggestion and statistic.topic_ready \
             and statistic.in_progress and statistic.expect_this_week and statistic.editors_check:
