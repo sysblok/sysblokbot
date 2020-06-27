@@ -25,10 +25,6 @@
             "every": "wednesday",
             "at": "10:00",
             "send_to": []
-        },
-        "send_reminders_job": {
-            "every": "minute",
-            "send_to": []
         }
     },
     "db": {
