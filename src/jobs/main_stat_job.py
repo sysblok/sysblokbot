@@ -14,7 +14,7 @@ class TrelloAnalyticsJob(BaseJob):
     new_statistic = {}
 
     @staticmethod
-    def _execute(app_context: AppContext, send: Callable[[str], None]):
+    def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler:bool=False):
         paragraphs = []
         paragraphs.append(
             'Всем привет! Еженедельная статистика работы редакции:\n#сб_stats'
@@ -67,8 +67,13 @@ class TrelloAnalyticsJob(BaseJob):
             ),
             column_name='editors_check'
         )
+        print('1111111111111111called_from_handler1111111111111111')
+        print(called_from_handler)
 
-        TrelloAnalyticsJob.add_new_statistics(app_context, TrelloAnalyticsJob.new_statistic)
+        if called_from_handler:
+            print('1111111111111111called_from_handler1111111111111111')
+            print(called_from_handler)
+            TrelloAnalyticsJob.add_new_statistics(app_context, TrelloAnalyticsJob.new_statistic)
 
         utils.pretty_send(paragraphs, send)
 
@@ -109,5 +114,7 @@ class TrelloAnalyticsJob(BaseJob):
 
     @staticmethod
     def add_new_statistics(app_context, data):
+        print('1111111111111111called_from_handler1111111111111111')
+        print('Добавляем новую статистику')
         data['date'] = str(datetime.date.today())
         utils.add_statistic(app_context.db_client, data)

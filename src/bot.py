@@ -45,7 +45,7 @@ class SysBlokBot:
             'получить сводку о состоянии доски')
         self.add_manager_handler(
             'get_main_stat',
-            self.manager_reply_handler('main_stat_job'),
+            self.manager_reply_handler('main_stat_job', called_from_handler=True),
             'получить статистику изменений за неделю'
         )
         self.add_admin_handler(
@@ -89,6 +89,11 @@ class SysBlokBot:
             'get_chat_id',
             handlers.get_chat_id,
             'получить chat_id (свой или группы)'
+        )
+        self.add_manager_handler(
+            'manage_reminders',
+            handlers.manage_reminders,
+            'настроить напоминания'
         )
 
         # admin-only technical cmds
@@ -136,6 +141,11 @@ class SysBlokBot:
             'change_board',
             handlers.change_board,
             'изменить Trello board_id'
+        )
+        self.add_admin_handler(
+            'send_reminders',
+            self.admin_reply_handler('send_reminders_job'),
+            'отослать напоминания вне расписания'
         )
 
         # admin-only DB cmds
@@ -227,11 +237,11 @@ class SysBlokBot:
         """
         return admin_only(self._create_reply_handler(job_name))
 
-    def manager_reply_handler(self, job_name: str) -> Callable:
+    def manager_reply_handler(self, job_name: str, called_from_handler=False) -> Callable:
         """
         Handler that replies if manager invokes it (DM or chat).
         """
-        return manager_only(self._create_reply_handler(job_name))
+        return manager_only(self._create_reply_handler(job_name, called_from_handler=called_from_handler))
 
     def user_handler(self, job_name: str) -> Callable:
         """
@@ -239,13 +249,17 @@ class SysBlokBot:
         """
         return self._create_reply_handler(job_name)
 
-    def _create_reply_handler(self, job_name: str) -> Callable:
+    def _create_reply_handler(self, job_name: str, called_from_handler=False) -> Callable:
         """
         Creates a handler that replies to a message of given user.
         """
+        print('_create_reply_handler')
+        print(job_name)
+        print(called_from_handler)
         return lambda update, tg_context: get_job_runnable(job_name)(
                 app_context=self.app_context,
-                send=self.telegram_sender.create_reply_send(update)
+                send=self.telegram_sender.create_reply_send(update),
+                called_from_handler=called_from_handler
             )
 
     def _create_broadcast_handler(self, job_name: str) -> Callable:

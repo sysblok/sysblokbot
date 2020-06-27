@@ -129,7 +129,7 @@ class GoogleSheetsClient(Singleton):
                     None,  # Оценка редактора
                     None,  # План по контенту
                     None,  # Тип обложки
-                    None,  # Обложка
+                    entry.cover,  # Обложка
                     entry.illustrators,
                     None,  # Дата (сайт)
                     None,  # Статус публикации (сайт)

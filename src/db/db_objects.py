@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -52,16 +52,6 @@ class Curator(Base):
         return curator
 
 
-class Statistic(Base):
-    __tablename__ = 'statistic'
-    date = Column(String, primary_key=True)
-    topic_suggestion = Column(Integer)
-    topic_ready = Column(Integer)
-    in_progress = Column(Integer)
-    expect_this_week = Column(Integer)
-    editors_check = Column(Integer)
-
-
 def _get_str_data_item(data: dict, item_name: str) -> str:
     """Preprocess string data item from sheets"""
     return data[item_name].strip() if data.get(item_name) else ''
@@ -71,4 +61,31 @@ class Chat(Base):
     __tablename__ = 'chats'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String)
+    title = Column(String)
+
+
+class Reminder(Base):
+    __tablename__ = 'reminders'
+
+    id = Column(Integer, primary_key=True)
+    group_chat_id = Column(Integer, ForeignKey('chats.id'))
+    creator_chat_id = Column(Integer)
+    name = Column(String)  # short reminder name
+    text = Column(String)  # full reminder text
+    weekday = Column(Integer)   # e.g. monday is 0
+    time = Column(String)  # e.g. "15:00"
+    next_reminder_datetime = Column(DateTime)  # Moscow timezone
+    frequency_days = Column(Integer)
+
+    def __repr__(self):
+        return f'Reminder {self.name} group_chat_id={self.group_chat_id}'
+
+
+class Statistic(Base):
+    __tablename__ = 'statistic'
+    date = Column(String, primary_key=True)
+    topic_suggestion = Column(Integer)
+    topic_ready = Column(Integer)
+    in_progress = Column(Integer)
+    expect_this_week = Column(Integer)
+    editors_check = Column(Integer)
