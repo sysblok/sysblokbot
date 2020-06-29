@@ -14,7 +14,9 @@ class TrelloAnalyticsJob(BaseJob):
     new_statistic = {}
 
     @staticmethod
-    def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler:bool=False):
+    def _execute(app_context: AppContext,
+                 send: Callable[[str], None],
+                 called_from_handler: bool = False):
         paragraphs = []
         paragraphs.append(
             'Всем привет! Еженедельная статистика работы редакции:\n#сб_stats'
@@ -91,11 +93,11 @@ class TrelloAnalyticsJob(BaseJob):
         list_ids = [app_context.trello_client.lists_config[alias] for alias in list_aliases]
         cards = list(filter(filter_func, app_context.trello_client.get_cards(list_ids)))
         statistics = TrelloAnalyticsJob._get_last_statistic(app_context)
+        TrelloAnalyticsJob.new_statistic[column_name] = len(cards)
         if statistics:
             delta = len(cards) - int(statistics[column_name])
             paragraphs = [f'{title}: {len(cards)}'
                           f'<b>({"+" if delta > 0 else ""}{delta} за неделю)</b>']
-            TrelloAnalyticsJob.new_statistic[column_name] = str(len(cards))
             return paragraphs
         else:
             return [f'{title}: {len(cards)}']

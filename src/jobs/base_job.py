@@ -12,7 +12,7 @@ class BaseJob:
             cls,
             app_context: AppContext,
             send: Callable[[str], None] = lambda msg: None,
-            called_from_handler = False
+            called_from_handler=False
     ):
         """
         Not intended to be overridden.

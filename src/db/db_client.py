@@ -206,7 +206,6 @@ class DBClient(Singleton):
             logger.warning(f"Failed to add statistic: {e}")
             session.rollback()
 
-
     def find_the_latest_statistics(self):
         session = self.Session()
         statistic = session.query(Statistic).all()

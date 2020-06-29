@@ -93,10 +93,10 @@ class Statistic(Base):
     @classmethod
     def from_dict(cls, data):
         statistic = cls()
-        statistic.date = _get_str_data_item(data, 'date')
-        statistic.topic_suggestion = _get_str_data_item(data, 'topic_suggestion')
-        statistic.topic_ready = _get_str_data_item(data, 'topic_ready')
-        statistic.in_progress = _get_str_data_item(data, 'in_progress')
-        statistic.expect_this_week = _get_str_data_item(data, 'expect_this_week')
-        statistic.editors_check = _get_str_data_item(data, 'editors_check')
+        statistic.date = data['date']
+        statistic.topic_suggestion = data['topic_suggestion']
+        statistic.topic_ready = data['topic_ready']
+        statistic.in_progress = data['in_progress']
+        statistic.expect_this_week = data['expect_this_week']
+        statistic.editors_check = data['editors_check']
         return statistic
