@@ -2,7 +2,7 @@
     "telegram": {
         "token": "do_not_set_here_please_go_to_config_override",
         "is_silent": false,
-        "disable_web_page_preview": false,
+        "disable_web_page_preview": true,
         "admin_chat_ids": [],
         "manager_chat_ids": [],
         "important_events_recipients": [],
@@ -11,7 +11,7 @@
     "trello": {
         "api_key": "do_not_set_here_please_go_to_config_override",
         "token": "do_not_set_here_please_go_to_config_override",
-        "board_id": "5e91d48a9e9d947b95fb0df7"
+        "board_id": "do_not_set_here_please_go_to_config_override"
     },
     "sheets": {
         "api_key_path": "do_not_set_here_please_go_to_config_override",
@@ -20,10 +20,18 @@
         "post_registry_sheet_key": "do_not_set_here_please_go_to_config_override",
         "rubrics_registry_sheet_key": "do_not_set_here_please_go_to_config_override"
     },
+    "drive": {
+        "api_key_path": "do_not_set_here_please_go_to_config_override",
+        "illustrations_folder_key": "do_not_set_here_please_go_to_config_override"
+    },
     "jobs": {
         "sample_job": {
             "every": "wednesday",
             "at": "10:00",
+            "send_to": []
+        },
+        "send_reminders_job": {
+            "every": "minute",
             "send_to": []
         }
     },
