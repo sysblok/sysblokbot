@@ -1,3 +1,4 @@
+import calendar
 from datetime import datetime
 import logging
 
@@ -168,36 +169,83 @@ def handle_user_message(
                 command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_REMINDER_NUMBER
             )
         elif button == ButtonValues.MANAGE_REMINDERS__ACTIONS__EDIT:
-            reply('Пока редактирование недоступно :(', update)
+            reply('Пожалуйста, пришли номер напоминания, которое ты хочешь изменить.', update)
+            set_next_action(
+                command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_REMINDER_NUMBER
+            )
+        command_data[consts.ManageRemindersData.ACTION_TYPE] = button
         return
     elif next_action == PlainTextUserAction.MANAGE_REMINDERS__ENTER_REMINDER_NUMBER:
         reminder_ids = command_data[consts.ManageRemindersData.EXISTING_REMINDERS]
         try:
             assert 0 < int(user_input) <= len(reminder_ids)
-            reminder_id, reminder_name = reminder_ids[int(user_input) - 1]
+            reminder_id, chat_title, reminder_name = reminder_ids[int(user_input) - 1]
         except Exception:
             reply('Кажется, в номере ошибка. Пожалуйста, введи правильный номер.', update)
             return
         command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID] = reminder_id
 
-        # keyboard
-        button_list = [[
-            telegram.InlineKeyboardButton(
-                "Да",
-                callback_data=ButtonValues.MANAGE_REMINDERS__DELETE__YES.value
-            ),
-            telegram.InlineKeyboardButton(
-                "Нет",
-                callback_data=ButtonValues.MANAGE_REMINDERS__DELETE__NO.value
-            ),
-        ]]
-        reply_markup = telegram.InlineKeyboardMarkup(button_list)
-        reply(
-            f'Пожалуйста, подтверди, что ты хочешь удалить напоминание “{reminder_name}”.',
-            update,
-            reply_markup=reply_markup
-        )
-        set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__DELETE_REQUEST)
+        action = command_data[consts.ManageRemindersData.ACTION_TYPE]
+        if action == ButtonValues.MANAGE_REMINDERS__ACTIONS__DELETE:
+            # keyboard for delete
+            button_list = [[
+                telegram.InlineKeyboardButton(
+                    "Да",
+                    callback_data=ButtonValues.MANAGE_REMINDERS__DELETE__YES.value
+                ),
+                telegram.InlineKeyboardButton(
+                    "Нет",
+                    callback_data=ButtonValues.MANAGE_REMINDERS__DELETE__NO.value
+                ),
+            ]]
+            reply_markup = telegram.InlineKeyboardMarkup(button_list)
+            reply(
+                f'Пожалуйста, подтверди, что ты хочешь удалить напоминание '
+                f'<b>{chat_title}: {reminder_name}</b>.',
+                update,
+                reply_markup=reply_markup
+            )
+            set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__DELETE_REQUEST)
+        elif action == ButtonValues.MANAGE_REMINDERS__ACTIONS__EDIT:
+            reminder = DBClient().get_reminder_by_id(reminder_id)
+            # keyboard for edit
+            button_list = [[
+                telegram.InlineKeyboardButton(
+                    "Изменить текст",
+                    callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__TEXT.value
+                ),
+                telegram.InlineKeyboardButton(
+                    "Изменить время",
+                    callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__DATETIME.value
+                ),
+            ]]
+            reply_markup = telegram.InlineKeyboardMarkup(button_list)
+            weekday_str = calendar.TextCalendar().formatweekday(int(reminder.weekday), 15).strip()
+            reply(
+                f'<b>{weekday_str} {reminder.time} (раз в неделю)</b>\n\n"{reminder.text}"',
+                update,
+                reply_markup=reply_markup
+            )
+            set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__CHOOSE_EDIT_ACTION)
+        else:
+            logger.error(f'Bad reminder action "{action}"')
+    elif next_action == PlainTextUserAction.MANAGE_REMINDERS__CHOOSE_EDIT_ACTION:
+        if button is None:
+            reply('Нажми кнопку :)', update)
+            return
+        if button == ButtonValues.MANAGE_REMINDERS__EDIT__TEXT:
+            reply('Пожалуйста, введи текст напоминания.', update)
+            set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_TEXT)
+            return
+        elif button == ButtonValues.MANAGE_REMINDERS__EDIT__DATETIME:
+            reply_markup = telegram.InlineKeyboardMarkup(consts.WEEKDAY_BUTTONS)
+            reply(
+                'Пожалуйста, выбери день для отправки напоминания в чат.',
+                update,
+                reply_markup=reply_markup
+            )
+            set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__CHOOSE_WEEKDAY)
+            return
     elif next_action == PlainTextUserAction.MANAGE_REMINDERS__DELETE_REQUEST:
         if button is None:
             reply('Нажми кнопку :)', update)
@@ -236,45 +284,23 @@ def handle_user_message(
         return
     elif next_action == PlainTextUserAction.MANAGE_REMINDERS__ENTER_TEXT:
         command_data[consts.ManageRemindersData.REMINDER_TEXT] = user_input
-        button_list = [[
-            telegram.InlineKeyboardButton(
-                "Пн",
-                callback_data=ButtonValues.MANAGE_REMINDERS__MON.value
-            ),
-            telegram.InlineKeyboardButton(
-                "Вт",
-                callback_data=ButtonValues.MANAGE_REMINDERS__TUE.value
-            ),
-            telegram.InlineKeyboardButton(
-                "Ср",
-                callback_data=ButtonValues.MANAGE_REMINDERS__WED.value
-            ),
-            telegram.InlineKeyboardButton(
-                "Чт",
-                callback_data=ButtonValues.MANAGE_REMINDERS__THU.value
-            ),
-            telegram.InlineKeyboardButton(
-                "Пт",
-                callback_data=ButtonValues.MANAGE_REMINDERS__FRI.value
-            ),
-            telegram.InlineKeyboardButton(
-                "Сб",
-                callback_data=ButtonValues.MANAGE_REMINDERS__SAT.value
-            ),
-            telegram.InlineKeyboardButton(
-                "Вc",
-                callback_data=ButtonValues.MANAGE_REMINDERS__SUN.value
+        action = command_data[consts.ManageRemindersData.ACTION_TYPE]
+
+        if action == ButtonValues.MANAGE_REMINDERS__ACTIONS__NEW:
+            reply_markup = telegram.InlineKeyboardMarkup(consts.WEEKDAY_BUTTONS)
+            set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__CHOOSE_WEEKDAY)
+            reply(
+                'Пожалуйста, выбери день для отправки напоминания в чат.',
+                update,
+                reply_markup=reply_markup
             )
-        ]]
-        reply_markup = telegram.InlineKeyboardMarkup(button_list)
-        set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_WEEKDAY)
-        reply(
-            'Пожалуйста, выбери день для отправки напоминания в чат.',
-            update,
-            reply_markup=reply_markup
-        )
+        elif action == ButtonValues.MANAGE_REMINDERS__ACTIONS__EDIT:
+            reminder_id = int(command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID])
+            DBClient().update_reminder(reminder_id, text=user_input)
+            reply('Спасибо, текст напоминания сохранен.', update)
+            set_next_action(command_data, None)
         return
-    elif next_action == PlainTextUserAction.MANAGE_REMINDERS__ENTER_WEEKDAY:
+    elif next_action == PlainTextUserAction.MANAGE_REMINDERS__CHOOSE_WEEKDAY:
         if button is None:
             reply('Нажми кнопку :)', update)
             return
@@ -284,15 +310,16 @@ def handle_user_message(
         set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_TIME)
         reply(
             (
-                'В какое время отправлять напоминание? Пожалуйста, укажи московское время '
-                'в формате hh:mm (например, 15:00)'
+                f'Буду присылать напоминание в <b>{weekday_name}</b>.\n\n'
+                f'В какое время отправлять напоминание? Пожалуйста, укажи московское время '
+                f'в формате hh:mm (например, 15:00)'
             ),
             update
         )
         return
     elif next_action == PlainTextUserAction.MANAGE_REMINDERS__ENTER_TIME:
         try:
-            datetime.strptime(user_input, '%H:%M')
+            datetime.strptime(user_input or '', '%H:%M')
         except ValueError:
             reply(
                 (
@@ -306,20 +333,26 @@ def handle_user_message(
             return
         command_data[consts.ManageRemindersData.TIME] = user_input
 
-        name = command_data[consts.ManageRemindersData.REMINDER_NAME]
-        text = command_data[consts.ManageRemindersData.REMINDER_TEXT]
         weekday_num = command_data[consts.ManageRemindersData.WEEKDAY_NUM]
         weekday_name = command_data[consts.ManageRemindersData.WEEKDAY_NAME]
         time = command_data[consts.ManageRemindersData.TIME]
-        group_chat_id = command_data[consts.ManageRemindersData.GROUP_CHAT_ID]
-        DBClient().add_reminder(
-            creator_chat_id=get_sender_id(update),
-            group_chat_id=group_chat_id,
-            name=name,
-            text=text,
-            weekday_num=weekday_num,
-            time=time
-        )
+        action = command_data[consts.ManageRemindersData.ACTION_TYPE]
+
+        if action == ButtonValues.MANAGE_REMINDERS__ACTIONS__NEW:
+            name = command_data[consts.ManageRemindersData.REMINDER_NAME]
+            text = command_data[consts.ManageRemindersData.REMINDER_TEXT]
+            group_chat_id = command_data[consts.ManageRemindersData.GROUP_CHAT_ID]
+            DBClient().add_reminder(
+                creator_chat_id=get_sender_id(update),
+                group_chat_id=group_chat_id,
+                name=name,
+                text=text,
+                weekday_num=weekday_num,
+                time=time
+            )
+        elif action == ButtonValues.MANAGE_REMINDERS__ACTIONS__EDIT:
+            reminder_id = int(command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID])
+            DBClient().update_reminder(reminder_id, weekday=weekday_num, time=time)
         set_next_action(command_data, None)
         reply(
             (
