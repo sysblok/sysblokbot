@@ -183,6 +183,17 @@ class DBClient(Singleton):
         ))
         session.commit()
 
+    def get_reminder_by_id(self, reminder_id: int) -> Reminder:
+        session = self.Session()
+        return session.query(Reminder).filter(Reminder.id == reminder_id).first()
+
+    def update_reminder(self, reminder_id: int, **kwargs):
+        session = self.Session()
+        session.query(Reminder).filter(
+            Reminder.id == reminder_id
+        ).update(kwargs)
+        session.commit()
+
     def delete_reminder(self, reminder_id: int):
         session = self.Session()
         session.query(Reminder).filter(Reminder.id == reminder_id).delete()

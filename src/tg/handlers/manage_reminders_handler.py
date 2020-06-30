@@ -37,7 +37,7 @@ def manage_reminders(update: telegram.Update, tg_context: telegram.ext.CallbackC
     tg_context.chat_data[TASK_NAME] = {
         consts.NEXT_ACTION: consts.PlainTextUserAction.MANAGE_REMINDERS__CHOOSE_ACTION.value,
         consts.ManageRemindersData.EXISTING_REMINDERS: [
-            (reminder.id, reminder.name) for reminder, chat in reminders
+            (reminder.id, chat.title, reminder.name) for reminder, chat in reminders
         ]
     }
     if reminders:
