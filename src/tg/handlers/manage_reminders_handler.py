@@ -62,6 +62,7 @@ def _get_reminders_text(reminders: List[Tuple[Reminder, Chat]]) -> str:
     text = 'Привет! Вот какие напоминания у тебя настроены:\n'
     text += '\n'.join(
         f'{i+1}) {chat.title}: {reminder.name}'
+        f'{"" if reminder.is_active else " <b>(приостановлено)</b>"}'
         for i, (reminder, chat) in enumerate(reminders)
     )
     return text
