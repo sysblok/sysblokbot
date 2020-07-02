@@ -218,6 +218,10 @@ def handle_user_message(
                     "Изменить время",
                     callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__DATETIME.value
                 ),
+                telegram.InlineKeyboardButton(
+                    "Приостановить" if reminder.is_active else "Возобновить",
+                    callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__SUSPEND.value
+                ),
             ]]
             reply_markup = telegram.InlineKeyboardMarkup(button_list)
             weekday_str = calendar.TextCalendar().formatweekday(int(reminder.weekday), 15).strip()
@@ -245,6 +249,22 @@ def handle_user_message(
                 reply_markup=reply_markup
             )
             set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__CHOOSE_WEEKDAY)
+            return
+        elif button == ButtonValues.MANAGE_REMINDERS__EDIT__SUSPEND:
+            db_client = DBClient()
+            reminder_id = int(command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID])
+            reminder = db_client.get_reminder_by_id(reminder_id)
+            if reminder.is_active:
+                db_client.update_reminder(reminder_id, is_active=False)
+                reply(f'Напоминание <code>{reminder.name}</code> было приостановлено', update)
+            else:
+                db_client.update_reminder(reminder_id, is_active=True)
+                reply(
+                    f'Напоминание было возобновлено. Следующее напоминание в '
+                    f'<code>{reminder.next_reminder_datetime}</code>.',
+                    update
+                )
+            set_next_action(command_data, None)
             return
     elif next_action == PlainTextUserAction.MANAGE_REMINDERS__DELETE_REQUEST:
         if button is None:
@@ -310,7 +330,7 @@ def handle_user_message(
         set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_TIME)
         reply(
             (
-                f'Буду присылать напоминание в <b>{weekday_name}</b>.\n\n'
+                f'Буду присылать напоминание в <code>{weekday_name}</code>.\n\n'
                 f'В какое время отправлять напоминание? Пожалуйста, укажи московское время '
                 f'в формате hh:mm (например, 15:00)'
             ),

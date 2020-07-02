@@ -162,6 +162,7 @@ class ButtonValues(Enum):
     MANAGE_REMINDERS__DELETE__NO = 'manage_reminders__delete__no'
     MANAGE_REMINDERS__EDIT__TEXT = 'manage_reminders__edit__text'
     MANAGE_REMINDERS__EDIT__DATETIME = 'manage_reminders__edit__datetime'
+    MANAGE_REMINDERS__EDIT__SUSPEND = 'manage_reminders__edit__suspend'
 
 
 WEEKDAY_BUTTONS = [[

@@ -180,6 +180,7 @@ class DBClient(Singleton):
             time=time,
             next_reminder_datetime=next_reminder,
             frequency_days=frequency_days,
+            is_active=True,
         ))
         session.commit()
 
