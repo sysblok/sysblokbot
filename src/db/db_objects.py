@@ -30,9 +30,9 @@ class Author(Base):
 class Curator(Base):
     __tablename__ = 'curators'
 
+    role = Column(String, ForeignKey('authors.curator'), primary_key=True)  # e.g. "Куратор NLP 1"
     name = Column(String, primary_key=True)
     telegram = Column(String)
-    role = Column(String, ForeignKey('authors.curator'))  # e.g. "Куратор NLP 1"
     team = Column(String)  # e.g. "Авторы"
     section = Column(String)  # e.g. "NLP"
     trello_labels = Column(String)  # e.g. "NLP,Теорлингв"
