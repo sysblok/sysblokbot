@@ -12,7 +12,7 @@ run_counter = 0
 
 class FakeJob(BaseJob):
     @staticmethod
-    def _execute(app_context, send):
+    def _execute(app_context, send, called_from_handler=False):
         logger.info('FakeJob executing')
         global run_counter
         run_counter += 1
