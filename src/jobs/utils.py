@@ -8,7 +8,7 @@ import telegram
 
 from ..app_context import AppContext
 from ..db.db_client import DBClient
-from ..db.db_objects import Curator, Statistic
+from ..db.db_objects import Curator, TrelloAnalytics
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..trello.trello_objects import TrelloMember
 from .. import jobs
@@ -221,7 +221,7 @@ def add_statistic(db_client: DBClient, data):
         logger.error(f'Failed to add statistic item')
 
 
-def _make_statistic_string(statistic: Statistic):
+def _make_statistic_string(statistic: TrelloAnalytics):
     """
     Returns the dictionary with statistics data
     """

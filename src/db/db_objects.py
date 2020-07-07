@@ -81,8 +81,8 @@ class Reminder(Base):
         return f'Reminder {self.name} group_chat_id={self.group_chat_id}'
 
 
-class Statistic(Base):
-    __tablename__ = 'statistic'
+class TrelloAnalytics(Base):
+    __tablename__ = 'trello_analytics'
     date = Column(String, primary_key=True)
     topic_suggestion = Column(Integer)
     topic_ready = Column(Integer)
