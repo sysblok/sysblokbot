@@ -71,7 +71,7 @@ class IllustrativeReportJob(BaseJob):
             this_card_bad_fields = []
 
             if (
-                    title.title is None and
+                    card_fields.title is None and
                     card.lst.id != app_context.trello_client.lists_config[
                         TrelloListAlias.EDITED_NEXT_WEEK
                     ]

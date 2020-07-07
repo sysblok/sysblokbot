@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -30,9 +30,9 @@ class Author(Base):
 class Curator(Base):
     __tablename__ = 'curators'
 
+    role = Column(String, ForeignKey('authors.curator'), primary_key=True)  # e.g. "Куратор NLP 1"
     name = Column(String, primary_key=True)
     telegram = Column(String)
-    role = Column(String, ForeignKey('authors.curator'))  # e.g. "Куратор NLP 1"
     team = Column(String)  # e.g. "Авторы"
     section = Column(String)  # e.g. "NLP"
     trello_labels = Column(String)  # e.g. "NLP,Теорлингв"
@@ -76,6 +76,7 @@ class Reminder(Base):
     time = Column(String)  # e.g. "15:00"
     next_reminder_datetime = Column(DateTime)  # Moscow timezone
     frequency_days = Column(Integer)
+    is_active = Column(Boolean, default=True)
 
     def __repr__(self):
         return f'Reminder {self.name} group_chat_id={self.group_chat_id}'

@@ -3,6 +3,8 @@ import os
 from datetime import timedelta, timezone
 from enum import Enum
 
+import telegram
+
 LOG_FORMAT = '%(asctime)s - %(name)s\t- %(levelname)s\t- %(message)s'
 
 COMMIT_URL = f'https://github.com/sysblok/sysblokbot/commit/{os.environ.get("COMMIT_HASH")}'
@@ -106,10 +108,11 @@ class PlainTextUserAction(Enum):
     MANAGE_REMINDERS__ENTER_CHAT_ID = 'manage_reminders__chat_id'
     MANAGE_REMINDERS__ENTER_NAME = 'manage_reminders__name'
     MANAGE_REMINDERS__ENTER_TEXT = 'manage_reminders__text'
-    MANAGE_REMINDERS__ENTER_WEEKDAY = 'manage_reminders__weekday'
+    MANAGE_REMINDERS__CHOOSE_WEEKDAY = 'manage_reminders__weekday'
     MANAGE_REMINDERS__ENTER_TIME = 'manage_reminders__time'
     MANAGE_REMINDERS__ENTER_REMINDER_NUMBER = 'manage_reminders__reminder_number'
     MANAGE_REMINDERS__DELETE_REQUEST = 'manage_reminders__delete'
+    MANAGE_REMINDERS__CHOOSE_EDIT_ACTION = 'manage_reminders__edit_action'
 
 
 class GetTasksReportData:
@@ -142,18 +145,53 @@ class ButtonValues(Enum):
     """
     Enum for button payload constants.
     """
+    MON = '0:Пн'
+    TUE = '1:Вт'
+    WED = '2:Ср'
+    THU = '3:Чт'
+    FRI = '4:Пт'
+    SAT = '5:Сб'
+    SUN = '6:Вс'
     GET_TASKS_REPORT__NO_INTRO = 'tasks_report_data__no_intro'
     GET_TASKS_REPORT__LABELS__YES = 'tasks_report_data__labels__yes'
     GET_TASKS_REPORT__LABELS__NO = 'tasks_report_data__labels__no'
     MANAGE_REMINDERS__ACTIONS__NEW = 'tasks_repost__actions__new'
     MANAGE_REMINDERS__ACTIONS__EDIT = 'tasks_repost__actions__edit'
     MANAGE_REMINDERS__ACTIONS__DELETE = 'tasks_repost__actions__delete'
-    MANAGE_REMINDERS__MON = '0:Пн'
-    MANAGE_REMINDERS__TUE = '1:Вт'
-    MANAGE_REMINDERS__WED = '2:Ср'
-    MANAGE_REMINDERS__THU = '3:Чт'
-    MANAGE_REMINDERS__FRI = '4:Пт'
-    MANAGE_REMINDERS__SAT = '5:Сб'
-    MANAGE_REMINDERS__SUN = '6:Вс'
     MANAGE_REMINDERS__DELETE__YES = 'manage_reminders__delete__yes'
     MANAGE_REMINDERS__DELETE__NO = 'manage_reminders__delete__no'
+    MANAGE_REMINDERS__EDIT__TEXT = 'manage_reminders__edit__text'
+    MANAGE_REMINDERS__EDIT__DATETIME = 'manage_reminders__edit__datetime'
+    MANAGE_REMINDERS__EDIT__SUSPEND = 'manage_reminders__edit__suspend'
+
+
+WEEKDAY_BUTTONS = [[
+    telegram.InlineKeyboardButton(
+        "Пн",
+        callback_data=ButtonValues.MON.value
+    ),
+    telegram.InlineKeyboardButton(
+        "Вт",
+        callback_data=ButtonValues.TUE.value
+    ),
+    telegram.InlineKeyboardButton(
+        "Ср",
+        callback_data=ButtonValues.WED.value
+    ),
+    telegram.InlineKeyboardButton(
+        "Чт",
+        callback_data=ButtonValues.THU.value
+    ),
+    telegram.InlineKeyboardButton(
+        "Пт",
+        callback_data=ButtonValues.FRI.value
+    ),
+    telegram.InlineKeyboardButton(
+        "Сб",
+        callback_data=ButtonValues.SAT.value
+    ),
+    telegram.InlineKeyboardButton(
+        "Вc",
+        callback_data=ButtonValues.SUN.value
+    )
+]]
