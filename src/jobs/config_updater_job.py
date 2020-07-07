@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class ConfigUpdaterJob(BaseJob):
     @staticmethod
-    def _execute(app_context: AppContext, send: Callable[[str], None]):
+    def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
         """A very special job checking config for recent changes"""
         # get the scheduler instance
         job_scheduler = JobScheduler()

@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 # TODO: merge with fetch authors job
 class DBFetchCuratorsSheetJob(BaseJob):
     @staticmethod
-    def _execute(app_context: AppContext, send: Callable[[str], None]):
+    def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
         num_authors = app_context.db_client.fetch_curators_sheet(app_context.sheets_client)
         logger.info(f'Fetched {num_authors} curators')
         send(f'Fetched {num_authors} curators')

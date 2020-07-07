@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class FillPostsListJob(BaseJob):
     @staticmethod
-    def _execute(app_context: AppContext, send: Callable[[str], None]):
+    def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
         errors = {}
         registry_posts = []
 

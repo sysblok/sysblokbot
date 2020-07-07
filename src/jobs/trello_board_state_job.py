@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class TrelloBoardStateJob(BaseJob):
     @staticmethod
-    def _execute(app_context: AppContext, send: Callable[[str], None]):
+    def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
         paragraphs = []  # list of paragraph strings
         paragraphs.append(
             'Всем привет! Еженедельная сводка о состоянии Trello-доски.\n#доскаживи'

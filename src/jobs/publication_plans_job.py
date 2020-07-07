@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class PublicationPlansJob(BaseJob):
     @staticmethod
-    def _execute(app_context: AppContext, send: Callable[[str], None]):
+    def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
         paragraphs = []  # list of paragraph strings
         errors = {}
         paragraphs.append('Всем привет!')
