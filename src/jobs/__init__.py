@@ -16,3 +16,4 @@ from .publication_plans_job import PublicationPlansJob
 from .sample_job import SampleJob
 from .send_reminders_job import SendRemindersJob
 from .trello_board_state_job import TrelloBoardStateJob
+from .main_stat_job import TrelloAnalyticsJob

@@ -43,6 +43,11 @@ class SysBlokBot:
             'get_trello_board_state',
             self.manager_reply_handler('trello_board_state_job'),
             'получить сводку о состоянии доски')
+        self.add_manager_handler(
+            'get_main_stat',
+            self.manager_reply_handler('main_stat_job'),
+            'получить статистику изменений за неделю'
+        )
         self.add_admin_handler(
             'send_publication_plans',
             self.admin_broadcast_handler('publication_plans_job'),
@@ -236,7 +241,7 @@ class SysBlokBot:
         """
         Handler that replies if manager invokes it (DM or chat).
         """
-        return manager_only(self._create_reply_handler(job_name))
+        return manager_only(self._create_reply_handler(job_name, ))
 
     def user_handler(self, job_name: str) -> Callable:
         """
@@ -250,7 +255,8 @@ class SysBlokBot:
         """
         return lambda update, tg_context: get_job_runnable(job_name)(
                 app_context=self.app_context,
-                send=self.telegram_sender.create_reply_send(update)
+                send=self.telegram_sender.create_reply_send(update),
+                called_from_handler=True
             )
 
     def _create_broadcast_handler(self, job_name: str) -> Callable:
@@ -260,5 +266,6 @@ class SysBlokBot:
         chat_ids = self.config_manager.get_job_send_to(job_name)
         return lambda update, tg_context: get_job_runnable(job_name)(
                 app_context=self.app_context,
-                send=self.telegram_sender.create_chat_ids_send(chat_ids)
+                send=self.telegram_sender.create_chat_ids_send(chat_ids),
+                called_from_handler=True
             )

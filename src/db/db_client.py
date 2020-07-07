@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from .db_objects import Author, Base, Chat, Curator, Reminder
+from .db_objects import Author, Base, Chat, Curator, Reminder, TrelloAnalytics
 from .. import consts
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..utils.singleton import Singleton
@@ -207,3 +207,18 @@ class DBClient(Singleton):
         representing current time in Europe/Moscow timezone.
         """
         return datetime.now(consts.MSK_TIMEZONE).replace(tzinfo=None)
+
+    def add_item_to_statistics_table(self, data) -> None:
+        session = self.Session()
+        try:
+            statistic = TrelloAnalytics.from_dict(data)
+            session.add(statistic)
+            session.commit()
+        except Exception as e:
+            logger.warning(f"Failed to add statistic: {e}")
+            session.rollback()
+
+    def find_the_latest_statistics(self):
+        session = self.Session()
+        statistic = session.query(TrelloAnalytics).all()
+        return statistic
