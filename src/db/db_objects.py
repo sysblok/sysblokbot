@@ -101,3 +101,16 @@ class TrelloAnalytics(Base):
         statistic.expect_this_week = data['expect_this_week']
         statistic.editors_check = data['editors_check']
         return statistic
+
+
+class BotMessage(Base):
+    __tablename__ = 'strings'
+    id = Column(String, primary_key=True)
+    value = Column(String)
+
+    @classmethod
+    def from_dict(cls, data):
+        message = cls()
+        message.id = data['id']
+        message.value = data['value']
+        return message

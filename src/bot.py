@@ -44,6 +44,10 @@ class SysBlokBot:
             self.manager_reply_handler('trello_board_state_job'),
             'получить сводку о состоянии доски')
         self.add_manager_handler(
+            'sample',
+            self.manager_reply_handler('sample_job'),
+            'sample_job')
+        self.add_manager_handler(
             'get_main_stat',
             self.manager_reply_handler('main_stat_job'),
             'получить статистику изменений за неделю'

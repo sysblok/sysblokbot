@@ -10,4 +10,4 @@ class SampleJob(BaseJob):
         # Logic here could include retrieving data from trello/sheets
         # and sending a notification to corresponding user.
         # app_context contain all necessary clients inside.
-        send("I am a job and I'm done")
+        send(app_context.db_client.get_string('some_string'))

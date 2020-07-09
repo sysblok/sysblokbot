@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from .db_objects import Author, Base, Chat, Curator, Reminder, TrelloAnalytics
+from .db_objects import Author, Base, Chat, Curator, Reminder, TrelloAnalytics, BotMessage
 from .. import consts
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..utils.singleton import Singleton
@@ -42,6 +42,7 @@ class DBClient(Singleton):
     def fetch_all(self, sheets_client: GoogleSheetsClient):
         self.fetch_authors_sheet(sheets_client)
         self.fetch_curators_sheet(sheets_client)
+        self.fetch_messages_sheet(sheets_client)
 
     def fetch_authors_sheet(self, sheets_client: GoogleSheetsClient):
         session = self.Session()
@@ -77,6 +78,23 @@ class DBClient(Singleton):
             return 0
         return len(curators)
 
+    def fetch_messages_sheet(self, sheets_client: GoogleSheetsClient):
+        session = self.Session()
+        try:
+            # clean this table
+            session.query(BotMessage).delete()
+            # re-download it
+            messages = sheets_client.fetch_bot_messages()
+            for message_dict in messages:
+                message = BotMessage.from_dict(message_dict)
+                session.add(message)
+            session.commit()
+        except Exception as e:
+            logger.warning(f"Failed to update messages table from sheet: {e}")
+            session.rollback()
+            return 0
+        return len(messages)
+
     def find_author_telegram_by_trello(self, trello_id: str):
         # TODO: make batch queries
         session = self.Session()
@@ -97,6 +115,15 @@ class DBClient(Singleton):
         if not curators:
             logger.warning(f'Curators not found for author {trello_id}')
         return curators
+
+    def get_string(self, string_id: str) -> str:
+        session = self.Session()
+        message = session.query(BotMessage).filter(
+            BotMessage.id == string_id
+        ).first()
+        if not message:
+            logger.warning(f'Message not found for id {string_id}')
+        return message.value
 
     def find_curators_by_trello_label(self, trello_label: str) -> List[Curator]:
         # TODO: make batch queries
