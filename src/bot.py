@@ -44,10 +44,6 @@ class SysBlokBot:
             self.manager_reply_handler('trello_board_state_job'),
             'получить сводку о состоянии доски')
         self.add_manager_handler(
-            'sample',
-            self.manager_reply_handler('sample_job'),
-            'sample_job')
-        self.add_manager_handler(
             'get_main_stat',
             self.manager_reply_handler('main_stat_job'),
             'получить статистику изменений за неделю'
@@ -152,6 +148,12 @@ class SysBlokBot:
             'отослать напоминания вне расписания'
         )
 
+        # sample handler
+        self.add_admin_handler(
+            'sample_handler',
+            self.admin_reply_handler('sample_job'),
+        )
+
         # admin-only DB cmds
         self.add_admin_handler(
             'db_fetch_authors_sheet',
@@ -162,6 +164,11 @@ class SysBlokBot:
             'db_fetch_curators_sheet',
             self.admin_reply_handler('db_fetch_curators_sheet_job'),
             'обновить таблицу с кураторами из Google Sheets'
+        )
+        self.add_admin_handler(
+            'db_fetch_strings_sheet',
+            self.admin_reply_handler('db_fetch_strings_sheet_job'),
+            'обновить таблицу со строками из Google Sheets'
         )
 
         # general purpose cmds
@@ -203,28 +210,31 @@ class SysBlokBot:
         """Adds handler silently. Noone will see it in /help output"""
         self.dp.add_handler(CommandHandler(handler_cmd, handler_func))
 
-    def add_admin_handler(self, handler_cmd: str, handler_func: Callable, description: str = ''):
+    def add_admin_handler(self, handler_cmd: str, handler_func: Callable, description: str = None):
         """
         Adds handler. It will be listed in /help for admins only
         Note: method does not automatically handle invokation restrictions.
         See tg.utils#admin_only
         """
         self.add_handler(handler_cmd, handler_func)
-        self.admin_handlers[f'/{handler_cmd}'] = description
+        if description is not None:
+            self.admin_handlers[f'/{handler_cmd}'] = description
 
-    def add_manager_handler(self, handler_cmd: str, handler_func: Callable, description: str = ''):
+    def add_manager_handler(self, handler_cmd: str, handler_func: Callable, description: str = None):
         """
         Adds handler. It will be listed in /help for admins and managers only
         Note: method does not automatically handle invokation restrictions.
         See tg.utils#manager_only
         """
         self.add_handler(handler_cmd, handler_func)
-        self.manager_handlers[f'/{handler_cmd}'] = description
+        if description is not None:
+            self.manager_handlers[f'/{handler_cmd}'] = description
 
-    def add_user_handler(self, handler_cmd: str, handler_func: Callable, description: str = ''):
+    def add_user_handler(self, handler_cmd: str, handler_func: Callable, description: str = None):
         """Adds handler. It will be listed in /help for everybody"""
         self.add_handler(handler_cmd, handler_func)
-        self.user_handlers[f'/{handler_cmd}'] = description
+        if description is not None:
+            self.user_handlers[f'/{handler_cmd}'] = description
 
     # Methods, creating handlers from jobs with proper invocation restrictions
     def admin_broadcast_handler(self, job_name: str) -> Callable:

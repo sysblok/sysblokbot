@@ -4,10 +4,11 @@ import time
 from typing import Callable, List
 
 from ..app_context import AppContext
-from .base_job import BaseJob
 from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias, TrelloCardColor
+from ..strings import load
 from ..trello.trello_client import TrelloClient
 from ..trello.trello_objects import TrelloCustomField
+from .base_job import BaseJob
 from .utils import format_errors, format_possibly_plural, pretty_send
 
 logger = logging.getLogger(__name__)
@@ -21,7 +22,7 @@ class IllustrativeReportJob(BaseJob):
 
         paragraphs += IllustrativeReportJob._retrieve_cards_for_paragraph(
             app_context=app_context,
-            title='На редактуре',
+            title=load('illustrative_report_job_title_editors'),
             list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, ),
             errors=errors,
             strict_archive_rules=False,
@@ -54,7 +55,9 @@ class IllustrativeReportJob(BaseJob):
         cards = app_context.trello_client.get_cards(list_ids)
         parse_failure_counter = 0
 
-        paragraphs = [f'<b>{title}: {len(cards)}</b>']
+        paragraphs = [
+            load('illustrative_report_job_title_and_size', title=title, length=len(cards))
+        ]
 
         for card in cards:
             if not card:
@@ -100,11 +103,19 @@ class IllustrativeReportJob(BaseJob):
                     card_fields.cover,
                 )
 
+            cover = ''
+            if card_fields.cover and not is_archive_card:
+                cover=load('illustrative_report_job_card_cover', url=card_fields.cover)
+
             paragraphs.append(
-                IllustrativeReportJob._format_card(
-                    card,
-                    card_fields,
-                    is_archive_card=is_archive_card,
+                load(
+                    'illustrative_report_job_card',
+                    url=card_fields.google_doc or card.url,
+                    name=card_fields.title or card.name,
+                    authors=format_possibly_plural('Автор', card_fields.authors),
+                    editors=format_possibly_plural('Редактор', card_fields.editors),
+                    illustrators=format_possibly_plural('Иллюстратор', card_fields.illustrators),
+                    cover=cover,
                 )
             )
 

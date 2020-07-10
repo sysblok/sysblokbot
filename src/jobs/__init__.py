@@ -9,6 +9,7 @@ Jobs can be ran from scheduler or from anywhere else for a one-off action.
 from .config_updater_job import ConfigUpdaterJob
 from .db_fetch_authors_sheet_job import DBFetchAuthorsSheetJob
 from .db_fetch_curators_sheet_job import DBFetchCuratorsSheetJob
+from .db_fetch_strings_sheet_job import DBFetchStringsSheetJob
 from .editorial_report_job import EditorialReportJob
 from .illustrative_report_job import IllustrativeReportJob
 from .fill_posts_list_job import FillPostsListJob

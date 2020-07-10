@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from .db_objects import Author, Base, Chat, Curator, Reminder, TrelloAnalytics, BotMessage
+from .db_objects import Author, Base, Chat, Curator, Reminder, TrelloAnalytics, DBString
 from .. import consts
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..utils.singleton import Singleton
@@ -42,7 +42,7 @@ class DBClient(Singleton):
     def fetch_all(self, sheets_client: GoogleSheetsClient):
         self.fetch_authors_sheet(sheets_client)
         self.fetch_curators_sheet(sheets_client)
-        self.fetch_messages_sheet(sheets_client)
+        self.fetch_strings_sheet(sheets_client)
 
     def fetch_authors_sheet(self, sheets_client: GoogleSheetsClient):
         session = self.Session()
@@ -78,15 +78,18 @@ class DBClient(Singleton):
             return 0
         return len(curators)
 
-    def fetch_messages_sheet(self, sheets_client: GoogleSheetsClient):
+    def fetch_strings_sheet(self, sheets_client: GoogleSheetsClient):
         session = self.Session()
         try:
             # clean this table
-            session.query(BotMessage).delete()
+            session.query(DBString).delete()
             # re-download it
-            messages = sheets_client.fetch_bot_messages()
+            messages = sheets_client.fetch_strings()
             for message_dict in messages:
-                message = BotMessage.from_dict(message_dict)
+                if message_dict['id'] is None:
+                    # we use that to separate different strings
+                    continue
+                message = DBString.from_dict(message_dict)
                 session.add(message)
             session.commit()
         except Exception as e:
@@ -118,11 +121,12 @@ class DBClient(Singleton):
 
     def get_string(self, string_id: str) -> str:
         session = self.Session()
-        message = session.query(BotMessage).filter(
-            BotMessage.id == string_id
+        message = session.query(DBString).filter(
+            DBString.id == string_id
         ).first()
         if not message:
             logger.warning(f'Message not found for id {string_id}')
+            return ''
         return message.value
 
     def find_curators_by_trello_label(self, trello_label: str) -> List[Curator]:

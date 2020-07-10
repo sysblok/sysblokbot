@@ -103,7 +103,7 @@ class TrelloAnalytics(Base):
         return statistic
 
 
-class BotMessage(Base):
+class DBString(Base):
     __tablename__ = 'strings'
     id = Column(String, primary_key=True)
     value = Column(String)

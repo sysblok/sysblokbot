@@ -7,6 +7,7 @@ from deepdiff import DeepDiff
 
 from ..app_context import AppContext
 from ..scheduler import JobScheduler
+from ..strings import load
 from ..tg.sender import TelegramSender
 from ..trello.trello_client import TrelloClient
 from .base_job import BaseJob
@@ -30,7 +31,7 @@ class ConfigUpdaterJob(BaseJob):
         if diff:
             logger.info(f'Config was changed, diff: {diff}')
             TelegramSender().send_important_event(
-                f'<b>Config changed:</b>\n<code>{json.dumps(dict(diff), indent=2)}</code>'
+                load('config_updater_job_config_diff', diff=json.dumps(dict(diff), indent=2))
             )
             try:
                 # update config['jobs']
@@ -52,9 +53,9 @@ class ConfigUpdaterJob(BaseJob):
                 # update config['db']
                 app_context.db_client.update_config(
                     job_scheduler.config_manager.get_db_config())
-                send('Config updated successfully')
+                send(load('config_updater_job_config_changed'))
             except Exception as e:
                 send(f'Failed to update config: {e}')
         else:
             logger.info('No config changes detected')
-            send('No config changes detected')
+            send(load('config_updater_job_config_not_changed'))

@@ -37,7 +37,7 @@ class GoogleSheetsClient(Singleton):
         self.curators_sheet_key = self._sheets_config['curators_sheet_key']
         self.post_registry_sheet_key = self._sheets_config['post_registry_sheet_key']
         self.rubrics_registry_sheet_key = self._sheets_config['rubrics_registry_sheet_key']
-        self.bot_messages_sheet_key = self._sheets_config['bot_messages_sheet_key']
+        self.strings_sheet_key = self._sheets_config['strings_sheet_key']
         self._authorize()
 
     def _authorize(self):
@@ -74,12 +74,12 @@ class GoogleSheetsClient(Singleton):
         }
         return self._parse_gs_res(title_key_map, self.rubrics_registry_sheet_key)
 
-    def fetch_bot_messages(self) -> List[Dict]:
+    def fetch_strings(self) -> List[Dict]:
         title_key_map = {
             "Идентификатор строки": "id",
             "Сообщение": "value",
         }
-        return self._parse_gs_res(title_key_map, self.bot_messages_sheet_key)
+        return self._parse_gs_res(title_key_map, self.strings_sheet_key)
 
     def update_posts_registry(self, entries: List[RegistryPost]):
         sheet = self._open_by_key(self.post_registry_sheet_key)
