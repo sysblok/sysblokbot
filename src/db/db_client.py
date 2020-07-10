@@ -157,19 +157,7 @@ class DBClient(Singleton):
             frequency_days: int = 7
     ):
         session = self.Session()
-        today = datetime.today()
-        hour, minute = map(int, time.split(':'))
-
-        next_reminder = today + timedelta(days=(weekday_num - today.weekday()))
-        next_reminder = next_reminder.replace(
-            hour=hour,
-            minute=minute,
-            second=0,
-            microsecond=0,
-        )
-
-        if next_reminder < self._get_now_msk_naive():
-            next_reminder = next_reminder + timedelta(days=7)
+        next_reminder = self._make_next_reminder_ts(weekday_num, time)
 
         session.add(Reminder(
             group_chat_id=group_chat_id,
@@ -190,6 +178,11 @@ class DBClient(Singleton):
 
     def update_reminder(self, reminder_id: int, **kwargs):
         session = self.Session()
+        if 'time' in kwargs:
+            kwargs['next_reminder_datetime'] = self._make_next_reminder_ts(
+                kwargs['weekday'],
+                kwargs['time']
+            )
         session.query(Reminder).filter(
             Reminder.id == reminder_id
         ).update(kwargs)
@@ -207,6 +200,22 @@ class DBClient(Singleton):
         representing current time in Europe/Moscow timezone.
         """
         return datetime.now(consts.MSK_TIMEZONE).replace(tzinfo=None)
+
+    @staticmethod
+    def _make_next_reminder_ts(weekday_num: int, time: str):
+        hour, minute = map(int, time.split(':'))
+        today = datetime.today()
+
+        next_reminder = today + timedelta(days=(weekday_num - today.weekday()))
+        next_reminder = next_reminder.replace(
+            hour=hour,
+            minute=minute,
+            second=0,
+            microsecond=0,
+        )
+        if next_reminder < DBClient._get_now_msk_naive():
+            next_reminder = next_reminder + timedelta(days=7)
+        return next_reminder
 
     def add_item_to_statistics_table(self, data) -> None:
         session = self.Session()

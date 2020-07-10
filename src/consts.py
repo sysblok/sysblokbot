@@ -161,9 +161,13 @@ class ButtonValues(Enum):
     MANAGE_REMINDERS__DELETE__YES = 'manage_reminders__delete__yes'
     MANAGE_REMINDERS__DELETE__NO = 'manage_reminders__delete__no'
     MANAGE_REMINDERS__EDIT__TEXT = 'manage_reminders__edit__text'
+    MANAGE_REMINDERS__EDIT__TITLE = 'manage_reminders__edit__title'
     MANAGE_REMINDERS__EDIT__DATETIME = 'manage_reminders__edit__datetime'
+    MANAGE_REMINDERS__EDIT__CHAT = 'manage_reminders__edit__chat'
     MANAGE_REMINDERS__EDIT__SUSPEND = 'manage_reminders__edit__suspend'
 
+
+WEEKDAYS_SHORT = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
 
 WEEKDAY_BUTTONS = [[
     telegram.InlineKeyboardButton(
