@@ -149,7 +149,7 @@ class SysBlokBot:
         )
 
         # sample handler
-        self.add_admin_handler(
+        self.add_handler(
             'sample_handler',
             self.admin_reply_handler('sample_job'),
         )
@@ -210,31 +210,28 @@ class SysBlokBot:
         """Adds handler silently. Noone will see it in /help output"""
         self.dp.add_handler(CommandHandler(handler_cmd, handler_func))
 
-    def add_admin_handler(self, handler_cmd: str, handler_func: Callable, description: str = None):
+    def add_admin_handler(self, handler_cmd: str, handler_func: Callable, description: str = ''):
         """
         Adds handler. It will be listed in /help for admins only
         Note: method does not automatically handle invokation restrictions.
         See tg.utils#admin_only
         """
         self.add_handler(handler_cmd, handler_func)
-        if description is not None:
-            self.admin_handlers[f'/{handler_cmd}'] = description
+        self.admin_handlers[f'/{handler_cmd}'] = description
 
-    def add_manager_handler(self, handler_cmd: str, handler_func: Callable, description: str = None):
+    def add_manager_handler(self, handler_cmd: str, handler_func: Callable, description: str = ''):
         """
         Adds handler. It will be listed in /help for admins and managers only
         Note: method does not automatically handle invokation restrictions.
         See tg.utils#manager_only
         """
         self.add_handler(handler_cmd, handler_func)
-        if description is not None:
-            self.manager_handlers[f'/{handler_cmd}'] = description
+        self.manager_handlers[f'/{handler_cmd}'] = description
 
-    def add_user_handler(self, handler_cmd: str, handler_func: Callable, description: str = None):
+    def add_user_handler(self, handler_cmd: str, handler_func: Callable, description: str = ''):
         """Adds handler. It will be listed in /help for everybody"""
         self.add_handler(handler_cmd, handler_func)
-        if description is not None:
-            self.user_handlers[f'/{handler_cmd}'] = description
+        self.user_handlers[f'/{handler_cmd}'] = description
 
     # Methods, creating handlers from jobs with proper invocation restrictions
     def admin_broadcast_handler(self, job_name: str) -> Callable:
