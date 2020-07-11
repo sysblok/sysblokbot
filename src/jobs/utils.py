@@ -10,6 +10,7 @@ from ..app_context import AppContext
 from ..db.db_client import DBClient
 from ..db.db_objects import Curator, TrelloAnalytics
 from ..sheets.sheets_client import GoogleSheetsClient
+from ..strings import load
 from ..trello.trello_objects import TrelloMember
 from .. import jobs
 
@@ -73,7 +74,7 @@ def retrieve_curator_names_by_author(
         logger.error(f'Could not retrieve curators by author: {e}')
         return
     if not curators:
-        return None
+        return []
     return [_make_curator_string(curator) for curator in curators]
 
 
@@ -92,7 +93,7 @@ def retrieve_curator_names_by_categories(labels: List[str], db_client: DBClient)
         logger.error(f'Could not retrieve curators by category: {e}')
         return
     if not curators:
-        return None
+        return []
     return [_make_curator_string(curator) for curator in curators]
 
 
@@ -183,15 +184,17 @@ def format_errors(errors: dict):
     # probably will move it to BaseJob
     error_messages = []
     for bad_card, bad_fields in errors.items():
-        card_error_message = (
-            f'В карточке <a href="{bad_card.url}">{bad_card.name}</a>'
-            f' не заполнено: {", ".join(bad_fields)}'
+        card_error_message = load(
+            'jobs__utils__format_errors_error',
+            url=bad_card.url,
+            name=bad_card.name,
+            fields=', '.join(bad_fields),
         )
         error_messages.append(card_error_message)
     paragraphs = [
-        'Не могу сгенерировать сводку.',
+        load('jobs__utils__format_errors_intro'),
         '\n'.join(error_messages),
-        'Пожалуйста, заполни требуемые поля в карточках и запусти генерацию снова.'
+        load('jobs__utils__format_errors_outro'),
     ]
     return paragraphs
 

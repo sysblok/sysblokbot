@@ -4,11 +4,12 @@ import time
 from typing import Callable, List
 
 from ..app_context import AppContext
-from .base_job import BaseJob
 from ..consts import TrelloListAlias, TrelloCardColor
-from ..trello.trello_client import TrelloClient
-from .utils import format_errors, pretty_send
 from ..sheets.sheets_objects import RegistryPost
+from ..strings import load
+from ..trello.trello_client import TrelloClient
+from .base_job import BaseJob
+from .utils import format_errors, pretty_send
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,6 @@ class FillPostsListJob(BaseJob):
 
         registry_posts += FillPostsListJob._retrieve_cards_for_registry(
             trello_client=app_context.trello_client,
-            title='Публикуем на неделе',
             list_aliases=(TrelloListAlias.PROOFREADING, TrelloListAlias.DONE),
             errors=errors,
             show_due=True,
@@ -31,12 +31,9 @@ class FillPostsListJob(BaseJob):
         if len(errors) == 0:
             posts_added = app_context.sheets_client.update_posts_registry(registry_posts)
             if len(posts_added) == 0:
-                paragraphs = [
-                    'Информация о публикуемых на следующей неделе постах уже внесена в реестр. '
-                    'Внести необходимые изменения можно в таблице “Реестр постов”.'
-                ]
+                paragraphs = [load('fill_posts_list_job__unchanged')]
             else:
-                paragraphs = ['<b>Добавлено в реестр постов:</b>'] + [
+                paragraphs = [load('fill_posts_list_job__success')] + [
                     '\n'.join(
                         f'{index + 1}) {post_name}' for index, post_name in enumerate(posts_added)
                     )
@@ -49,7 +46,6 @@ class FillPostsListJob(BaseJob):
     @staticmethod
     def _retrieve_cards_for_registry(
             trello_client: TrelloClient,
-            title: str,
             list_aliases: List[str],
             errors: dict,
             show_due=True,
@@ -59,7 +55,6 @@ class FillPostsListJob(BaseJob):
         '''
         Returns a list of paragraphs that should always go in a single message.
         '''
-        logger.info(f'Started counting: "{title}"')
         list_ids = trello_client.get_list_id_from_aliases(list_aliases)
         cards = trello_client.get_cards(list_ids)
         if show_due:

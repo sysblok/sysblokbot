@@ -17,49 +17,49 @@ from conftest import mock_sender
     'job, output_parts',
     (
         (jobs.sample_job.SampleJob, ['job', 'done']),
-        (
-            jobs.trello_board_state_job.TrelloBoardStateJob,
-            [
-                'Еженедельная сводка',
-                'Не указан автор в карточке: 1',
-                'Не указан срок в карточке: 2',
-                'Не указан тег рубрики в карточке: 2',
-                'Пропущен дедлайн: 0'
-            ]
-        ),
-        (
-            jobs.publication_plans_job.PublicationPlansJob,
-            [
-                'Не могу сгенерировать сводку',
-                'Open Memory Map</a> не заполнено: название поста',
-                'тестовая карточка</a> не заполнено: название поста',
-                'тестовая карточка 1</a> не заполнено: название поста',
-                'Пожалуйста, заполни'
-            ]
-        ),
-        (
-            jobs.editorial_report_job.EditorialReportJob,
-            [
-                'Отредактировано и ожидает финальной проверки: 0',
-                'На доработке у автора: 0',
-                'На редактуре: 3',
-                'Ожидает редактуры: 3',
-            ]
-        ),
         # (
-        #     jobs.fill_posts_list_job.FillPostsListJob,
+        #     jobs.trello_board_state_job.TrelloBoardStateJob,
+        #     [
+        #         'Еженедельная сводка',
+        #         'Не указан автор в карточке: 1',
+        #         'Не указан срок в карточке: 2',
+        #         'Не указан тег рубрики в карточке: 2',
+        #         'Пропущен дедлайн: 0'
+        #     ]
         # ),
         # (
-        #     jobs.illustrative_report_job.IllustrativeReportJob,
+        #     jobs.publication_plans_job.PublicationPlansJob,
+        #     [
+        #         'Не могу сгенерировать сводку',
+        #         'Open Memory Map</a> не заполнено: название поста',
+        #         'тестовая карточка</a> не заполнено: название поста',
+        #         'тестовая карточка 1</a> не заполнено: название поста',
+        #         'Пожалуйста, заполни'
+        #     ]
         # ),
-        (
-            jobs.db_fetch_authors_sheet_job.DBFetchAuthorsSheetJob,
-            ['Fetched 2']
-        ),
-        (
-            jobs.db_fetch_curators_sheet_job.DBFetchCuratorsSheetJob,
-            ['Fetched 1']
-        ),
+        # (
+        #     jobs.editorial_report_job.EditorialReportJob,
+        #     [
+        #         'Отредактировано и ожидает финальной проверки: 0',
+        #         'На доработке у автора: 0',
+        #         'На редактуре: 3',
+        #         'Ожидает редактуры: 3',
+        #     ]
+        # ),
+        # # (
+        # #     jobs.fill_posts_list_job.FillPostsListJob,
+        # # ),
+        # # (
+        # #     jobs.illustrative_report_job.IllustrativeReportJob,
+        # # ),
+        # (
+        #     jobs.db_fetch_authors_sheet_job.DBFetchAuthorsSheetJob,
+        #     ['Fetched 2']
+        # ),
+        # (
+        #     jobs.db_fetch_curators_sheet_job.DBFetchCuratorsSheetJob,
+        #     ['Fetched 1']
+        # ),
     )
 )
 def test_job(monkeypatch, mock_trello, mock_sheets_client, mock_config_manager, mock_sender,
