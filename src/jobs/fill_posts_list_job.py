@@ -31,9 +31,9 @@ class FillPostsListJob(BaseJob):
         if len(errors) == 0:
             posts_added = app_context.sheets_client.update_posts_registry(registry_posts)
             if len(posts_added) == 0:
-                paragraphs = [load('fill_posts_list_job_unchanged')]
+                paragraphs = [load('fill_posts_list_job__unchanged')]
             else:
-                paragraphs = [load('fill_posts_list_job_success')] + [
+                paragraphs = [load('fill_posts_list_job__success')] + [
                     '\n'.join(
                         f'{index + 1}) {post_name}' for index, post_name in enumerate(posts_added)
                     )

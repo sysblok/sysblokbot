@@ -22,7 +22,7 @@ class IllustrativeReportJob(BaseJob):
 
         paragraphs += IllustrativeReportJob._retrieve_cards_for_paragraph(
             app_context=app_context,
-            title=load('illustrative_report_job_title_editors'),
+            title=load('illustrative_report_job__title_editors'),
             list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, ),
             errors=errors,
             strict_archive_rules=False,
@@ -56,7 +56,7 @@ class IllustrativeReportJob(BaseJob):
         parse_failure_counter = 0
 
         paragraphs = [
-            load('illustrative_report_job_title_and_size', title=title, length=len(cards))
+            load('illustrative_report_job__title_and_size', title=title, length=len(cards))
         ]
 
         for card in cards:
@@ -105,11 +105,11 @@ class IllustrativeReportJob(BaseJob):
 
             cover = ''
             if card_fields.cover and not is_archive_card:
-                cover=load('illustrative_report_job_card_cover', url=card_fields.cover)
+                cover=load('illustrative_report_job__card_cover', url=card_fields.cover)
 
             paragraphs.append(
                 load(
-                    'illustrative_report_job_card',
+                    'illustrative_report_job__card',
                     url=card_fields.google_doc or card.url,
                     name=card_fields.title or card.name,
                     authors=format_possibly_plural('Автор', card_fields.authors),
@@ -122,19 +122,3 @@ class IllustrativeReportJob(BaseJob):
         if parse_failure_counter > 0:
             logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
         return paragraphs
-
-    @staticmethod
-    def _format_card(card, card_fields, is_archive_card=False) -> str:
-        card_text = (
-            f'<a href="{card_fields.google_doc or card.url}">'
-            f'{card_fields.title or card.name}</a>\n'
-        )
-
-        card_text += format_possibly_plural('Автор', card_fields.authors)
-        card_text += format_possibly_plural('Редактор', card_fields.editors)
-        card_text += format_possibly_plural('Иллюстратор', card_fields.illustrators)
-
-        if card_fields.cover and not is_archive_card:
-            card_text += f'\n<a href="{card_fields.cover}">Папка для обложки</a>'
-
-        return card_text.strip()

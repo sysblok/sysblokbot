@@ -13,4 +13,4 @@ class DBFetchAuthorsSheetJob(BaseJob):
     def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
         num_authors = app_context.db_client.fetch_authors_sheet(app_context.sheets_client)
         logger.info(f'Fetched {num_authors} authors')
-        send(load('db_fetch_authors_sheet_job_success', num_authors=num_authors))
+        send(load('db_fetch_authors_sheet_job__success', num_authors=num_authors))

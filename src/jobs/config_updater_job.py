@@ -31,7 +31,7 @@ class ConfigUpdaterJob(BaseJob):
         if diff:
             logger.info(f'Config was changed, diff: {diff}')
             TelegramSender().send_important_event(
-                load('config_updater_job_config_diff', diff=json.dumps(dict(diff), indent=2))
+                load('config_updater_job__config_diff', diff=json.dumps(dict(diff), indent=2))
             )
             try:
                 # update config['jobs']
@@ -53,9 +53,9 @@ class ConfigUpdaterJob(BaseJob):
                 # update config['db']
                 app_context.db_client.update_config(
                     job_scheduler.config_manager.get_db_config())
-                send(load('config_updater_job_config_changed'))
+                send(load('config_updater_job__config_changed'))
             except Exception as e:
                 send(f'Failed to update config: {e}')
         else:
             logger.info('No config changes detected')
-            send(load('config_updater_job_config_not_changed'))
+            send(load('config_updater_job__config_not_changed'))

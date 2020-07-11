@@ -18,11 +18,11 @@ class EditorialReportJob(BaseJob):
     def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
         paragraphs = []  # list of paragraph strings
         errors = {}
-        paragraphs.append(load('editorial_report_job_intro'))
+        paragraphs.append(load('editorial_report_job__intro'))
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
-            title=load('editorial_report_job_title_redacted'),
+            title=load('editorial_report_job__title_redacted'),
             list_aliases=(TrelloListAlias.EDITED_SOMETIMES, TrelloListAlias.TO_CHIEF_EDITOR),
             errors=errors,
             need_title=True,
@@ -31,7 +31,7 @@ class EditorialReportJob(BaseJob):
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
-            title=load('editorial_report_job_title_revision'),
+            title=load('editorial_report_job__title_revision'),
             list_aliases=(TrelloListAlias.IN_PROGRESS, ),
             errors=errors,
             moved_from_exclusive=(TrelloListAlias.EDITED_NEXT_WEEK, ),
@@ -40,7 +40,7 @@ class EditorialReportJob(BaseJob):
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
-            title=load('editorial_report_job_title_editors'),
+            title=load('editorial_report_job__title_editors'),
             list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, ),
             errors=errors,
             strict_archive_rules=False,
@@ -48,7 +48,7 @@ class EditorialReportJob(BaseJob):
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
-            title=load('editorial_report_job_title_editors_pending'),
+            title=load('editorial_report_job__title_editors_pending'),
             list_aliases=(TrelloListAlias.TO_EDITOR, ),
             errors=errors,
             need_editor=False,
@@ -127,7 +127,7 @@ class EditorialReportJob(BaseJob):
             cards_filtered.append(card)
 
         paragraphs = [
-            load('editorial_report_job_title_and_size', title=title, length=len(cards_filtered))
+            load('editorial_report_job__title_and_size', title=title, length=len(cards_filtered))
         ]
 
         for card in sorted(
@@ -169,7 +169,7 @@ class EditorialReportJob(BaseJob):
 
             paragraphs.append(
                 load(
-                    'editorial_report_job_card',
+                    'editorial_report_job__card',
                     date=card.due.strftime('%d.%m').lower() if card.due else '??.??',
                     urgent='(Срочно!)' if EditorialReportJob._card_is_urgent(card) else '',
                     url=card_fields.google_doc or card.url,

@@ -2,6 +2,7 @@ import logging
 from typing import Callable
 
 from ..app_context import AppContext
+from ..strings import load
 from ..tg.sender import TelegramSender
 from .base_job import BaseJob
 
@@ -15,4 +16,4 @@ class SendRemindersJob(BaseJob):
         reminders = app_context.db_client.get_reminders_to_send()
         for reminder in reminders:
             sender.send_to_chat_id(reminder.text, reminder.group_chat_id)
-        send(f'Sent {len(reminders)} reminders')
+        send(load('send_reminders_job__success', length=len(reminders)))
