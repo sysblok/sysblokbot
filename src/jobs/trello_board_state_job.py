@@ -152,7 +152,6 @@ class TrelloBoardStateJob(BaseJob):
     def _make_members_string(card, app_context: AppContext) -> str:
         curators = TrelloBoardStateJob._get_curators(card, app_context.db_client)
         members_text = ', '.join(utils.retrieve_usernames(card.members, app_context.db_client))
-        logger.error(f'{curators}, {members_text}')
         if curators:
             curators = [
                 curator_name for curator_name, telegram in curators
