@@ -11,4 +11,4 @@ class SampleJob(BaseJob):
         # Logic here could include retrieving data from trello/sheets
         # and sending a notification to corresponding user.
         # app_context contain all necessary clients inside.
-        send(load('sample_job_string', status='done'))
+        send(load('sample_job__string', status='done'))

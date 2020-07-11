@@ -105,7 +105,7 @@ class IllustrativeReportJob(BaseJob):
 
             cover = ''
             if card_fields.cover and not is_archive_card:
-                cover=load('illustrative_report_job__card_cover', url=card_fields.cover)
+                cover = load('illustrative_report_job__card_cover', url=card_fields.cover)
 
             paragraphs.append(
                 load(

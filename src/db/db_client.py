@@ -84,19 +84,19 @@ class DBClient(Singleton):
             # clean this table
             session.query(DBString).delete()
             # re-download it
-            messages = sheets_client.fetch_strings()
-            for message_dict in messages:
-                if message_dict['id'] is None:
+            strings = sheets_client.fetch_strings()
+            for string_dict in strings:
+                if string_dict['id'] is None:
                     # we use that to separate different strings
                     continue
-                message = DBString.from_dict(message_dict)
-                session.add(message)
+                string = DBString.from_dict(string_dict)
+                session.add(string)
             session.commit()
         except Exception as e:
-            logger.warning(f"Failed to update messages table from sheet: {e}")
+            logger.warning(f"Failed to update string table from sheet: {e}")
             session.rollback()
             return 0
-        return len(messages)
+        return len(strings)
 
     def find_author_telegram_by_trello(self, trello_id: str):
         # TODO: make batch queries

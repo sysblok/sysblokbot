@@ -95,7 +95,9 @@ class TrelloBoardStateJob(BaseJob):
         cards = list(filter(filter_func, app_context.trello_client.get_cards(list_ids)))
         parse_failure_counter = 0
 
-        paragraphs = [load('trello_board_state_job__title_and_size', title=title, length=len(cards))]
+        paragraphs = [
+            load('trello_board_state_job__title_and_size', title=title, length=len(cards))
+        ]
 
         for card in cards:
             if not card:
@@ -153,7 +155,7 @@ class TrelloBoardStateJob(BaseJob):
         logger.error(f'{curators}, {members_text}')
         if curators:
             curators = [
-                curator_name for curator_name, telegram in curators 
+                curator_name for curator_name, telegram in curators
                 if telegram and telegram not in members_text
             ]
 

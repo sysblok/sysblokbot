@@ -12,7 +12,8 @@
         "authors_sheet_key": "authors_sheet_key",
         "curators_sheet_key": "curators_sheet_key",
         "post_registry_sheet_key": "post_registry_sheet_key",
-        "rubrics_registry_sheet_key": "rubrics_registry_sheet_key"
+        "rubrics_registry_sheet_key": "rubrics_registry_sheet_key",
+        "strings_sheet_key": "strings_sheet_key"
     },
     "jobs": {},
     "drive": {
