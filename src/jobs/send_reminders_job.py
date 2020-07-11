@@ -14,5 +14,8 @@ class SendRemindersJob(BaseJob):
         sender = TelegramSender()
         reminders = app_context.db_client.get_reminders_to_send()
         for reminder in reminders:
-            sender.send_to_chat_id(reminder.text, reminder.group_chat_id)
+            if reminder.is_active:
+                sender.send_to_chat_id(reminder.text, reminder.group_chat_id)
+            else:
+                logger.info(f'Reminder {reminder.name} not sent (deactivated)')
         send(f'Sent {len(reminders)} reminders')
