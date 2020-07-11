@@ -4,9 +4,10 @@ import time
 from typing import Callable, List
 
 from ..app_context import AppContext
-from .base_job import BaseJob
 from ..consts import TrelloListAlias, TrelloCardColor
+from ..strings import load
 from ..trello.trello_client import TrelloClient
+from .base_job import BaseJob
 from .utils import format_errors, format_possibly_plural, pretty_send
 
 logger = logging.getLogger(__name__)
@@ -14,14 +15,14 @@ logger = logging.getLogger(__name__)
 
 class EditorialReportJob(BaseJob):
     @staticmethod
-    def _execute(app_context: AppContext, send: Callable[[str], None]):
+    def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
         paragraphs = []  # list of paragraph strings
         errors = {}
-        paragraphs.append('Всем привет! Еженедельный редакторский отчет. #cб_редчет')
+        paragraphs.append(load('editorial_report_job__intro'))
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
-            title='Отредактировано и ожидает финальной проверки',
+            title=load('editorial_report_job__title_redacted'),
             list_aliases=(TrelloListAlias.EDITED_SOMETIMES, TrelloListAlias.TO_CHIEF_EDITOR),
             errors=errors,
             need_title=True,
@@ -30,7 +31,7 @@ class EditorialReportJob(BaseJob):
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
-            title='На доработке у автора',
+            title=load('editorial_report_job__title_revision'),
             list_aliases=(TrelloListAlias.IN_PROGRESS, ),
             errors=errors,
             moved_from_exclusive=(TrelloListAlias.EDITED_NEXT_WEEK, ),
@@ -39,7 +40,7 @@ class EditorialReportJob(BaseJob):
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
-            title='На редактуре',
+            title=load('editorial_report_job__title_editors'),
             list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, ),
             errors=errors,
             strict_archive_rules=False,
@@ -47,7 +48,7 @@ class EditorialReportJob(BaseJob):
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
-            title='Ожидает редактуры',
+            title=load('editorial_report_job__title_editors_pending'),
             list_aliases=(TrelloListAlias.TO_EDITOR, ),
             errors=errors,
             need_editor=False,
@@ -125,7 +126,9 @@ class EditorialReportJob(BaseJob):
                 card.due = actions_moved_here[0].date
             cards_filtered.append(card)
 
-        paragraphs = [f'<b>{title}: {len(cards_filtered)}</b>']
+        paragraphs = [
+            load('editorial_report_job__title_and_size', title=title, length=len(cards_filtered))
+        ]
 
         for card in sorted(
             cards_filtered,
@@ -165,34 +168,17 @@ class EditorialReportJob(BaseJob):
                 continue
 
             paragraphs.append(
-                EditorialReportJob._format_card(
-                    card,
-                    card_fields,
-                    is_urgent=EditorialReportJob._card_is_urgent(card)
+                load(
+                    'editorial_report_job__card',
+                    date=card.due.strftime('%d.%m').lower() if card.due else '??.??',
+                    urgent='(Срочно!)' if EditorialReportJob._card_is_urgent(card) else '',
+                    url=card_fields.google_doc or card.url,
+                    name=card_fields.title or card.name,
+                    authors=format_possibly_plural('Автор', card_fields.authors),
+                    editors=format_possibly_plural('Редактор', card_fields.editors),
                 )
             )
 
         if parse_failure_counter > 0:
             logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
         return paragraphs
-
-    @staticmethod
-    def _format_card(card, card_fields, is_urgent=False) -> str:
-        card_text = (
-            f'<a href="{card_fields.google_doc or card.url}">'
-            f'{card_fields.title or card.name}</a>\n'
-        )
-
-        card_text += format_possibly_plural('Автор', card_fields.authors)
-        card_text += format_possibly_plural('Редактор', card_fields.editors)
-
-        if card.due:
-            card_text = (
-                f'<b>с {card.due.strftime("%d.%m").lower()} '
-                f'{"(Срочно!)" if is_urgent else ""}</b> — {card_text}'
-            )
-        else:
-            card_text = (
-                f'<b>с ??.??</b> — {card_text}'
-            )
-        return card_text.strip()

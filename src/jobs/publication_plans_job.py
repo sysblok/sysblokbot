@@ -4,9 +4,10 @@ import time
 from typing import Callable, List
 
 from ..app_context import AppContext
-from .base_job import BaseJob
 from ..consts import TrelloListAlias, TrelloCardColor
+from ..strings import load
 from ..trello.trello_client import TrelloClient
+from .base_job import BaseJob
 from .utils import format_errors, format_possibly_plural, pretty_send
 
 logger = logging.getLogger(__name__)
@@ -14,14 +15,13 @@ logger = logging.getLogger(__name__)
 
 class PublicationPlansJob(BaseJob):
     @staticmethod
-    def _execute(app_context: AppContext, send: Callable[[str], None]):
-        paragraphs = []  # list of paragraph strings
+    def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
+        paragraphs = [load('publication_plans_job__intro')]  # list of paragraph strings
         errors = {}
-        paragraphs.append('Всем привет!')
 
         paragraphs += PublicationPlansJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
-            title='Публикуем на неделе',
+            title=load('publication_plans_job__title_publish_this_week'),
             list_aliases=(TrelloListAlias.PROOFREADING, TrelloListAlias.DONE),
             errors=errors,
             show_due=True,
@@ -30,7 +30,7 @@ class PublicationPlansJob(BaseJob):
 
         paragraphs += PublicationPlansJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
-            title='На редактуре',
+            title=load('publication_plans_job__title_editor'),
             list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, ),
             errors=errors,
             show_due=False,
@@ -38,7 +38,7 @@ class PublicationPlansJob(BaseJob):
             strict_archive_rules=False,
         )
 
-        paragraphs.append('Спасибо авторам, редакторам, кураторам и иллюстраторам! 🤖❤️')
+        paragraphs.append(load('publication_plans_job__outro'))
 
         if len(errors) > 0:
             paragraphs = format_errors(errors)
@@ -65,7 +65,7 @@ class PublicationPlansJob(BaseJob):
             cards.sort(key=lambda card: card.due or datetime.datetime.min)
         parse_failure_counter = 0
 
-        paragraphs = [f'<b>{title}: {len(cards)}</b>']
+        paragraphs = [load('publication_plans_job__title_and_size', title=title, length=len(cards))]
 
         for card in cards:
             if not card:
@@ -112,31 +112,22 @@ class PublicationPlansJob(BaseJob):
                 errors[card] = this_card_bad_fields
                 continue
 
+            date = load(
+                'publication_plans_job__card_date', date=card.due.strftime("%d.%m (%a)").lower()
+            ) if show_due else ''
+
             paragraphs.append(
-                PublicationPlansJob._format_card(
-                    card, card_fields, show_due=show_due
+                load(
+                    'publication_plans_job__card',
+                    date=date,
+                    url=card_fields.google_doc or card.url,
+                    name=card_fields.title or card.name,
+                    authors=format_possibly_plural('Автор', card_fields.authors),
+                    editors=format_possibly_plural('Редактор', card_fields.editors),
+                    illustrators=format_possibly_plural('Иллюстратор', card_fields.illustrators),
                 )
             )
 
         if parse_failure_counter > 0:
             logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
         return paragraphs
-
-    @staticmethod
-    def _format_card(
-            card, card_fields, show_due=True
-    ) -> str:
-        card_text = (
-            f'<a href="{card_fields.google_doc or card.url}">'
-            f'{card_fields.title or card.name}</a>\n'
-        )
-
-        card_text += format_possibly_plural('Автор', card_fields.authors)
-        card_text += format_possibly_plural('Редактор', card_fields.editors)
-        card_text += format_possibly_plural('Иллюстратор', card_fields.illustrators)
-
-        if show_due:
-            card_text = (
-                f'<b>{card.due.strftime("%d.%m (%a)").lower()}</b> — {card_text}'
-            )
-        return card_text.strip()

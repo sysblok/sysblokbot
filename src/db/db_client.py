@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from .db_objects import Author, Base, Chat, Curator, Reminder
+from .db_objects import Author, Base, Chat, Curator, Reminder, TrelloAnalytics, DBString
 from .. import consts
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..utils.singleton import Singleton
@@ -42,6 +42,7 @@ class DBClient(Singleton):
     def fetch_all(self, sheets_client: GoogleSheetsClient):
         self.fetch_authors_sheet(sheets_client)
         self.fetch_curators_sheet(sheets_client)
+        self.fetch_strings_sheet(sheets_client)
 
     def fetch_authors_sheet(self, sheets_client: GoogleSheetsClient):
         session = self.Session()
@@ -77,6 +78,26 @@ class DBClient(Singleton):
             return 0
         return len(curators)
 
+    def fetch_strings_sheet(self, sheets_client: GoogleSheetsClient):
+        session = self.Session()
+        try:
+            # clean this table
+            session.query(DBString).delete()
+            # re-download it
+            strings = sheets_client.fetch_strings()
+            for string_dict in strings:
+                if string_dict['id'] is None:
+                    # we use that to separate different strings
+                    continue
+                string = DBString.from_dict(string_dict)
+                session.add(string)
+            session.commit()
+        except Exception as e:
+            logger.warning(f"Failed to update string table from sheet: {e}")
+            session.rollback()
+            return 0
+        return len(strings)
+
     def find_author_telegram_by_trello(self, trello_id: str):
         # TODO: make batch queries
         session = self.Session()
@@ -97,6 +118,16 @@ class DBClient(Singleton):
         if not curators:
             logger.warning(f'Curators not found for author {trello_id}')
         return curators
+
+    def get_string(self, string_id: str) -> str:
+        session = self.Session()
+        message = session.query(DBString).filter(
+            DBString.id == string_id
+        ).first()
+        if not message:
+            logger.warning(f'Message not found for id {string_id}')
+            return ''
+        return message.value
 
     def find_curators_by_trello_label(self, trello_label: str) -> List[Curator]:
         # TODO: make batch queries
@@ -157,19 +188,7 @@ class DBClient(Singleton):
             frequency_days: int = 7
     ):
         session = self.Session()
-        today = datetime.today()
-        hour, minute = map(int, time.split(':'))
-
-        next_reminder = today + timedelta(days=(weekday_num - today.weekday()))
-        next_reminder = next_reminder.replace(
-            hour=hour,
-            minute=minute,
-            second=0,
-            microsecond=0,
-        )
-
-        if next_reminder < self._get_now_msk_naive():
-            next_reminder = next_reminder + timedelta(days=7)
+        next_reminder = self._make_next_reminder_ts(weekday_num, time)
 
         session.add(Reminder(
             group_chat_id=group_chat_id,
@@ -190,6 +209,11 @@ class DBClient(Singleton):
 
     def update_reminder(self, reminder_id: int, **kwargs):
         session = self.Session()
+        if 'time' in kwargs:
+            kwargs['next_reminder_datetime'] = self._make_next_reminder_ts(
+                kwargs['weekday'],
+                kwargs['time']
+            )
         session.query(Reminder).filter(
             Reminder.id == reminder_id
         ).update(kwargs)
@@ -207,3 +231,34 @@ class DBClient(Singleton):
         representing current time in Europe/Moscow timezone.
         """
         return datetime.now(consts.MSK_TIMEZONE).replace(tzinfo=None)
+
+    @staticmethod
+    def _make_next_reminder_ts(weekday_num: int, time: str):
+        hour, minute = map(int, time.split(':'))
+        today = datetime.today()
+
+        next_reminder = today + timedelta(days=(weekday_num - today.weekday()))
+        next_reminder = next_reminder.replace(
+            hour=hour,
+            minute=minute,
+            second=0,
+            microsecond=0,
+        )
+        if next_reminder < DBClient._get_now_msk_naive():
+            next_reminder = next_reminder + timedelta(days=7)
+        return next_reminder
+
+    def add_item_to_statistics_table(self, data) -> None:
+        session = self.Session()
+        try:
+            statistic = TrelloAnalytics.from_dict(data)
+            session.add(statistic)
+            session.commit()
+        except Exception as e:
+            logger.warning(f"Failed to add statistic: {e}")
+            session.rollback()
+
+    def find_the_latest_statistics(self):
+        session = self.Session()
+        statistic = session.query(TrelloAnalytics).all()
+        return statistic

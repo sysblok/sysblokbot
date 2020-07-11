@@ -43,6 +43,11 @@ class SysBlokBot:
             'get_trello_board_state',
             self.manager_reply_handler('trello_board_state_job'),
             'получить сводку о состоянии доски')
+        self.add_manager_handler(
+            'get_main_stats',
+            self.manager_reply_handler('main_stats_job'),
+            'получить статистику изменений за неделю'
+        )
         self.add_admin_handler(
             'send_publication_plans',
             self.admin_broadcast_handler('publication_plans_job'),
@@ -143,6 +148,12 @@ class SysBlokBot:
             'отослать напоминания вне расписания'
         )
 
+        # sample handler
+        self.add_handler(
+            'sample_handler',
+            self.admin_reply_handler('sample_job'),
+        )
+
         # admin-only DB cmds
         self.add_admin_handler(
             'db_fetch_authors_sheet',
@@ -153,6 +164,11 @@ class SysBlokBot:
             'db_fetch_curators_sheet',
             self.admin_reply_handler('db_fetch_curators_sheet_job'),
             'обновить таблицу с кураторами из Google Sheets'
+        )
+        self.add_admin_handler(
+            'db_fetch_strings_sheet',
+            self.admin_reply_handler('db_fetch_strings_sheet_job'),
+            'обновить таблицу со строками из Google Sheets'
         )
 
         # general purpose cmds
@@ -236,7 +252,7 @@ class SysBlokBot:
         """
         Handler that replies if manager invokes it (DM or chat).
         """
-        return manager_only(self._create_reply_handler(job_name))
+        return manager_only(self._create_reply_handler(job_name, ))
 
     def user_handler(self, job_name: str) -> Callable:
         """
@@ -250,7 +266,8 @@ class SysBlokBot:
         """
         return lambda update, tg_context: get_job_runnable(job_name)(
                 app_context=self.app_context,
-                send=self.telegram_sender.create_reply_send(update)
+                send=self.telegram_sender.create_reply_send(update),
+                called_from_handler=True
             )
 
     def _create_broadcast_handler(self, job_name: str) -> Callable:
@@ -260,5 +277,6 @@ class SysBlokBot:
         chat_ids = self.config_manager.get_job_send_to(job_name)
         return lambda update, tg_context: get_job_runnable(job_name)(
                 app_context=self.app_context,
-                send=self.telegram_sender.create_chat_ids_send(chat_ids)
+                send=self.telegram_sender.create_chat_ids_send(chat_ids),
+                called_from_handler=True
             )

@@ -30,9 +30,9 @@ class Author(Base):
 class Curator(Base):
     __tablename__ = 'curators'
 
+    role = Column(String, ForeignKey('authors.curator'), primary_key=True)  # e.g. "Куратор NLP 1"
     name = Column(String, primary_key=True)
     telegram = Column(String)
-    role = Column(String, ForeignKey('authors.curator'))  # e.g. "Куратор NLP 1"
     team = Column(String)  # e.g. "Авторы"
     section = Column(String)  # e.g. "NLP"
     trello_labels = Column(String)  # e.g. "NLP,Теорлингв"
@@ -80,3 +80,37 @@ class Reminder(Base):
 
     def __repr__(self):
         return f'Reminder {self.name} group_chat_id={self.group_chat_id}'
+
+
+class TrelloAnalytics(Base):
+    __tablename__ = 'trello_analytics'
+    date = Column(String, primary_key=True)
+    topic_suggestion = Column(Integer)
+    topic_ready = Column(Integer)
+    in_progress = Column(Integer)
+    expect_this_week = Column(Integer)
+    editors_check = Column(Integer)
+
+    @classmethod
+    def from_dict(cls, data):
+        statistic = cls()
+        statistic.date = data['date']
+        statistic.topic_suggestion = data['topic_suggestion']
+        statistic.topic_ready = data['topic_ready']
+        statistic.in_progress = data['in_progress']
+        statistic.expect_this_week = data['expect_this_week']
+        statistic.editors_check = data['editors_check']
+        return statistic
+
+
+class DBString(Base):
+    __tablename__ = 'strings'
+    id = Column(String, primary_key=True)
+    value = Column(String)
+
+    @classmethod
+    def from_dict(cls, data):
+        message = cls()
+        message.id = data['id']
+        message.value = data['value']
+        return message
