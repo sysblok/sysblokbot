@@ -6,6 +6,7 @@ from .base_job import BaseJob
 from . import utils
 from ..app_context import AppContext
 from ..consts import TrelloListAlias
+from ..strings import load
 
 logger = logging.getLogger(__name__)
 
@@ -17,14 +18,11 @@ class TrelloAnalyticsJob(BaseJob):
     def _execute(app_context: AppContext,
                  send: Callable[[str], None],
                  called_from_handler: bool = False):
-        paragraphs = []
-        paragraphs.append(
-            'Всем привет! Еженедельная статистика работы редакции:\n#сб_stats'
-        )
+        paragraphs = [load('main_stats_job__intro')]
 
         paragraphs += TrelloAnalyticsJob._retrieve_cards_for_paragraph(
             app_context=app_context,
-            title='Темы в ожидании одобрения',
+            title=load('main_stats_job__title_pending_approval'),
             list_aliases=(
                 TrelloListAlias.TOPIC_SUGGESTION,
             ),
@@ -32,7 +30,7 @@ class TrelloAnalyticsJob(BaseJob):
         )
         paragraphs += TrelloAnalyticsJob._retrieve_cards_for_paragraph(
             app_context=app_context,
-            title='В поиске автора',
+            title=load('main_stats_job__title_author_search'),
             list_aliases=(
                 TrelloListAlias.TOPIC_READY,
             ),
@@ -41,7 +39,7 @@ class TrelloAnalyticsJob(BaseJob):
 
         paragraphs += TrelloAnalyticsJob._retrieve_cards_for_paragraph(
             app_context=app_context,
-            title='В работе у авторов',
+            title=load('main_stats_job__title_in_work'),
             list_aliases=(
                 TrelloListAlias.IN_PROGRESS,
             ),
@@ -50,7 +48,7 @@ class TrelloAnalyticsJob(BaseJob):
 
         paragraphs += TrelloAnalyticsJob._retrieve_cards_for_paragraph(
             app_context=app_context,
-            title='Ожидает готовности на неделе',
+            title=load('main_stats_job__title_expect_this_week'),
             list_aliases=(
                 TrelloListAlias.IN_PROGRESS,
             ),
@@ -60,7 +58,7 @@ class TrelloAnalyticsJob(BaseJob):
 
         paragraphs += TrelloAnalyticsJob._retrieve_cards_for_paragraph(
             app_context=app_context,
-            title='В работе у редакторов',
+            title=load('main_stats_job__title_editors_check'),
             list_aliases=(
                 TrelloListAlias.TO_EDITOR,
                 TrelloListAlias.EDITED_NEXT_WEEK,
@@ -96,11 +94,16 @@ class TrelloAnalyticsJob(BaseJob):
         TrelloAnalyticsJob.new_statistic[column_name] = len(cards)
         if statistics:
             delta = len(cards) - int(statistics[column_name])
-            paragraphs = [f'{title}: {len(cards)}'
-                          f'<b>({"+" if delta > 0 else ""}{delta} за неделю)</b>']
+            paragraphs = [load(
+                'main_stats_job__title_and_size_and_diff',
+                title=title,
+                length=len(cards),
+                sign="+" if delta > 0 else "",
+                delta=delta
+            )]
             return paragraphs
         else:
-            return [f'{title}: {len(cards)}']
+            return [load('main_stats_job__title_and_size', title=title, length=len(cards))]
 
     @staticmethod
     def _get_last_statistic(app_context):

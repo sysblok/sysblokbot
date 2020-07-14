@@ -1,0 +1,202 @@
+[
+    {
+        "id": "sample_job__string",
+        "value": "I am a job and I'm {status}"
+    },
+    {
+        "id": "config_updater_job__config_diff",
+        "value": ""
+    },
+    {
+        "id": "config_updater_job__config_changed",
+        "value": ""
+    },
+    {
+        "id": "config_updater_job__config_not_changed",
+        "value": ""
+    },
+    {
+        "id": "db_fetch_authors_sheet_job__success",
+        "value": ""
+    },
+    {
+        "id": "db_fetch_curators_sheet_job__success",
+        "value": ""
+    },
+    {
+        "id": "db_fetch_strings_sheet_job__success",
+        "value": ""
+    },
+    {
+        "id": "editorial_report_job__intro",
+        "value": ""
+    },
+    {
+        "id": "editorial_report_job__title_redacted",
+        "value": ""
+    },
+    {
+        "id": "editorial_report_job__title_revision",
+        "value": ""
+    },
+    {
+        "id": "editorial_report_job__title_editors",
+        "value": ""
+    },
+    {
+        "id": "editorial_report_job__title_editors_pending",
+        "value": ""
+    },
+    {
+        "id": "editorial_report_job__title_and_size",
+        "value": ""
+    },
+    {
+        "id": "editorial_report_job__card",
+        "value": ""
+    },
+    {
+        "id": "fill_posts_list_job__success",
+        "value": ""
+    },
+    {
+        "id": "fill_posts_list_job__unchanged",
+        "value": ""
+    },
+    {
+        "id": "illustrative_report_job__title_editors",
+        "value": ""
+    },
+    {
+        "id": "illustrative_report_job__title_and_size",
+        "value": ""
+    },
+    {
+        "id": "illustrative_report_job__card",
+        "value": ""
+    },
+    {
+        "id": "illustrative_report_job__card_cover",
+        "value": ""
+    },
+    {
+        "id": "main_stats_job__intro",
+        "value": ""
+    },
+    {
+        "id": "main_stats_job__title_pending_approval",
+        "value": ""
+    },
+    {
+        "id": "main_stats_job__title_author_search",
+        "value": ""
+    },
+    {
+        "id": "main_stats_job__title_in_work",
+        "value": ""
+    },
+    {
+        "id": "main_stats_job__title_expect_this_week",
+        "value": ""
+    },
+    {
+        "id": "main_stats_job__title_editors_check",
+        "value": ""
+    },
+    {
+        "id": "main_stats_job__title_and_size",
+        "value": ""
+    },
+    {
+        "id": "main_stats_job__title_and_size_and_diff",
+        "value": ""
+    },
+    {
+        "id": "publication_plans_job__intro",
+        "value": ""
+    },
+    {
+        "id": "publication_plans_job__title_publish_this_week",
+        "value": ""
+    },
+    {
+        "id": "publication_plans_job__title_editor",
+        "value": ""
+    },
+    {
+        "id": "publication_plans_job__outro",
+        "value": ""
+    },
+    {
+        "id": "publication_plans_job__title_and_size",
+        "value": ""
+    },
+    {
+        "id": "publication_plans_job__card",
+        "value": ""
+    },
+    {
+        "id": "publication_plans_job__card_date",
+        "value": ""
+    },
+    {
+        "id": "send_reminders_job__success",
+        "value": ""
+    },
+    {
+        "id": "trello_board_state_job__intro",
+        "value": ""
+    },
+    {
+        "id": "trello_board_state_job__title_author_missing",
+        "value": ""
+    },
+    {
+        "id": "trello_board_state_job__title_due_date_missing",
+        "value": ""
+    },
+    {
+        "id": "trello_board_state_job__title_tag_missing",
+        "value": ""
+    },
+    {
+        "id": "trello_board_state_job__title_free_authors",
+        "value": ""
+    },
+    {
+        "id": "trello_board_state_job__title_due_date_expired",
+        "value": ""
+    },
+    {
+        "id": "trello_board_state_job__title_and_size",
+        "value": ""
+    },
+    {
+        "id": "trello_board_state_job__card",
+        "value": ""
+    },
+    {
+        "id": "trello_board_state_job__card_labels",
+        "value": ""
+    },
+    {
+        "id": "trello_board_state_job__card_date",
+        "value": ""
+    },
+    {
+        "id": "trello_board_state_job__card_members",
+        "value": ""
+    },
+    {
+        "id": "jobs__utils__format_errors_intro",
+        "value": ""
+    },
+    {
+        "id": "jobs__utils__format_errors_outro",
+        "value": ""
+    },
+    {
+        "id": "jobs__utils__format_errors_error",
+        "value": ""
+    }
+]

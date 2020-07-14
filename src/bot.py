@@ -44,8 +44,8 @@ class SysBlokBot:
             self.manager_reply_handler('trello_board_state_job'),
             'получить сводку о состоянии доски')
         self.add_manager_handler(
-            'get_main_stat',
-            self.manager_reply_handler('main_stat_job'),
+            'get_main_stats',
+            self.manager_reply_handler('main_stats_job'),
             'получить статистику изменений за неделю'
         )
         self.add_admin_handler(
@@ -148,6 +148,12 @@ class SysBlokBot:
             'отослать напоминания вне расписания'
         )
 
+        # sample handler
+        self.add_handler(
+            'sample_handler',
+            self.admin_reply_handler('sample_job'),
+        )
+
         # admin-only DB cmds
         self.add_admin_handler(
             'db_fetch_authors_sheet',
@@ -158,6 +164,11 @@ class SysBlokBot:
             'db_fetch_curators_sheet',
             self.admin_reply_handler('db_fetch_curators_sheet_job'),
             'обновить таблицу с кураторами из Google Sheets'
+        )
+        self.add_admin_handler(
+            'db_fetch_strings_sheet',
+            self.admin_reply_handler('db_fetch_strings_sheet_job'),
+            'обновить таблицу со строками из Google Sheets'
         )
 
         # general purpose cmds

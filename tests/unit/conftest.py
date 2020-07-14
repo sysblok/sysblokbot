@@ -80,6 +80,8 @@ def mock_sheets_client(monkeypatch, mock_config_manager):
             return load_json('curators_sheet.json')
         elif sheet_key == 'rubrics_registry_sheet_key':
             return load_json('rubrics_registry_sheet.json')
+        elif sheet_key == 'strings_sheet_key':
+            return load_json('strings_sheet.json')
 
     monkeypatch.setattr(GoogleSheetsClient, '_authorize', _authorize)
     monkeypatch.setattr(GoogleSheetsClient, '_parse_gs_res', _parse_gs_res)
