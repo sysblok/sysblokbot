@@ -29,4 +29,4 @@ def _format_commands_block(handlers: dict):
     lines = []
     for command, description in handlers.items():
         lines.append(f'{command} - {description}' if description else command)
-    return '\n'.join(lines) + '\n\n'
+    return '\n'.join(sorted(lines)) + '\n\n'

@@ -147,6 +147,11 @@ class SysBlokBot:
             self.admin_reply_handler('send_reminders_job'),
             'отослать напоминания вне расписания'
         )
+        self.add_admin_handler(
+            'manage_all_reminders',
+            handlers.manage_all_reminders,
+            'настроить все напоминания'
+        )
 
         # sample handler
         self.add_handler(
