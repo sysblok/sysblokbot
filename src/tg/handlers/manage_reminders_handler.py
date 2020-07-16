@@ -6,7 +6,7 @@ import telegram
 from ... import consts
 from ...db.db_client import DBClient
 from ...db.db_objects import Chat, Reminder
-from .utils import get_sender_id, manager_only, direct_message_only, reply
+from .utils import admin_only, get_sender_id, manager_only, direct_message_only, reply
 
 TASK_NAME = 'manage_reminders'
 
@@ -16,6 +16,16 @@ logger = logging.getLogger(__name__)
 @manager_only
 @direct_message_only
 def manage_reminders(update: telegram.Update, tg_context: telegram.ext.CallbackContext):
+    return _manage_reminders(update, tg_context, get_sender_id(update))
+
+
+@admin_only
+@direct_message_only
+def manage_all_reminders(update: telegram.Update, tg_context: telegram.ext.CallbackContext):
+    return _manage_reminders(update, tg_context, None)
+
+
+def _manage_reminders(update, tg_context, reminder_owner_id: int):
     # create buttons
     button_new = telegram.InlineKeyboardButton(
         "Создать новое",
@@ -31,7 +41,7 @@ def manage_reminders(update: telegram.Update, tg_context: telegram.ext.CallbackC
     )
 
     # set initial dialogue data
-    reminders = DBClient().get_reminders_by_user_id(get_sender_id(update))
+    reminders = DBClient().get_reminders_by_user_id(reminder_owner_id)
 
     tg_context.chat_data[consts.LAST_ACTIONABLE_COMMAND] = TASK_NAME
     tg_context.chat_data[TASK_NAME] = {
