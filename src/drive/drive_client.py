@@ -5,7 +5,6 @@ from urllib.parse import urljoin
 
 # https://developers.google.com/analytics/devguides/config/mgmt/v3/quickstart/service-py
 from apiclient.discovery import build
-from apiclient import errors
 from oauth2client.service_account import ServiceAccountCredentials
 
 from ..trello.trello_objects import TrelloCard
