@@ -139,7 +139,10 @@ class IllustrativeReportJob(BaseJob):
             paragraphs.append(
                 load(
                     'illustrative_report_job__card',
-                    url=card_fields.google_doc or card.url,
+                    url=(
+                        card_fields.google_doc
+                        if urlparse(card_fields.google_doc).scheme else card.url
+                    ),
                     name=card_fields.title or card.name,
                     authors=format_possibly_plural('Автор', card_fields.authors),
                     editors=format_possibly_plural('Редактор', card_fields.editors),
