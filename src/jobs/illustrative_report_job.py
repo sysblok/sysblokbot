@@ -2,6 +2,7 @@ import datetime
 import logging
 import time
 from typing import Callable, List
+from urllib.parse import urlparse
 
 from ..app_context import AppContext
 from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias, TrelloCardColor
@@ -19,6 +20,22 @@ class IllustrativeReportJob(BaseJob):
     def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
         paragraphs = []  # list of paragraph strings
         errors = {}
+
+        paragraphs += IllustrativeReportJob._retrieve_cards_for_paragraph(
+            app_context=app_context,
+            title=load('illustrative_report_job__title_to_chief_editor'),
+            list_aliases=(TrelloListAlias.TO_CHIEF_EDITOR, ),
+            errors=errors,
+            strict_archive_rules=False,
+        )
+
+        paragraphs += IllustrativeReportJob._retrieve_cards_for_paragraph(
+            app_context=app_context,
+            title=load('illustrative_report_job__title_edited_sometimes'),
+            list_aliases=(TrelloListAlias.EDITED_SOMETIMES, ),
+            errors=errors,
+            strict_archive_rules=False,
+        )
 
         paragraphs += IllustrativeReportJob._retrieve_cards_for_paragraph(
             app_context=app_context,
@@ -105,7 +122,19 @@ class IllustrativeReportJob(BaseJob):
 
             cover = ''
             if card_fields.cover and not is_archive_card:
-                cover = load('illustrative_report_job__card_cover', url=card_fields.cover)
+                if urlparse(card_fields.cover).scheme:
+                    if app_context.drive_client.is_folder_empty(card_fields.cover):
+                        cover = load(
+                            'illustrative_report_job__card_cover_url_empty',
+                            url=card_fields.cover
+                        )
+                    else:
+                        cover = load(
+                            'illustrative_report_job__card_cover_url',
+                            url=card_fields.cover
+                        )
+                else:
+                    cover = load('illustrative_report_job__card_cover', name=card_fields.cover)
 
             paragraphs.append(
                 load(

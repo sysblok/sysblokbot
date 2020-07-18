@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 
 # https://developers.google.com/analytics/devguides/config/mgmt/v3/quickstart/service-py
 from apiclient.discovery import build
+from apiclient import errors
 from oauth2client.service_account import ServiceAccountCredentials
 
 from ..trello.trello_objects import TrelloCard
@@ -12,7 +13,7 @@ from ..utils.singleton import Singleton
 
 
 logger = logging.getLogger(__name__)
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
+SCOPES = ['https://www.googleapis.com/auth/drive']
 BASE_URL = 'https://drive.google.com/drive/u/1/folders/'
 
 
@@ -51,6 +52,10 @@ class GoogleDriveClient(Singleton):
             parents=[self.illustrations_folder_key],
         ))
 
+    def is_folder_empty(self, folder_url: str) -> bool:
+        existing = self._lookup_file_by_parent_url(folder_url)
+        return existing is None
+
     def _create_file(self, name: str, description: str, parents: List[str]) -> str:
         file_metadata = {
             'name': name,
@@ -83,3 +88,24 @@ class GoogleDriveClient(Singleton):
             return None
         logger.info(f'Found {len(items)} folders matching {name}.')
         return items[0].get('id')
+
+    def _lookup_file_by_parent_url(self, parent_url: str) -> str:
+        page_token = None
+        try:
+            results = self.service.files().list(
+                q=f'"{self._get_id_from_url(parent_url)}" in parents',
+                pageSize=10,
+                fields='nextPageToken, files(id, name)',
+                pageToken=page_token
+            ).execute()
+        except Exception as e:
+            logger.error(f'Failed to query Google drive for existing parent url {parent_url}: {e}')
+            return None
+        items = results.get('files', [])
+        if len(items) == 0:
+            return None
+        logger.info(f'Found {len(items)} child files for {parent_url}.')
+        return items[0].get('id')
+
+    def _get_id_from_url(self, url: str) -> str:
+        return url.split('/')[-1]
