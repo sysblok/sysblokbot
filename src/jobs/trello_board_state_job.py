@@ -55,7 +55,6 @@ class TrelloBoardStateJob(BaseJob):
         '''
         logger.debug(f'Started counting: "{title_alias}"')
         list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
-        # filtered_cards = list(filter(filter_func, app_context.trello_client.get_cards(list_ids)))
         cards = list(
             filter(
                 filter_func,
@@ -86,11 +85,13 @@ class TrelloBoardStateJob(BaseJob):
 
     @staticmethod
     def _format_card(card, app_context, show_due=True) -> str:
-        labels = ", ".join(
+        labels = load(
+            'trello_board_state_job__card_labels',
+            names=", ".join(
                 # We filter BLACK cards as this is an auxiliary label
                 label.name for label in card.labels
                 if label.color != TrelloCardColor.BLACK
-            ) if card.labels else ''
+            )) if card.labels else ''
 
         # Avoiding message overflow, strip explanations in ()
         list_name = card.lst.name + '('
@@ -101,10 +102,15 @@ class TrelloBoardStateJob(BaseJob):
         #    date=card.due.strftime("%d.%m"),
         # ) if show_due else ''
 
-        members = ','.join(utils.retrieve_usernames(
-            card.members,
-            app_context.db_client
-            )) if card.members else ''
+        members = load(
+            'trello_board_state_job__card_members',
+            members=', '.join(utils.retrieve_usernames(
+                    card.members,
+                    app_context.db_client
+                )),
+            curators=''
+        ) if card.members else ''
+
         return load(
             'trello_board_state_job__card_2',
             url=card.url,
