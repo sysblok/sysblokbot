@@ -369,7 +369,7 @@ def handle_user_message(
             )
         elif action == ButtonValues.MANAGE_REMINDERS__ACTIONS__EDIT:
             reminder_id = int(command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID])
-            DBClient().update_reminder(reminder_id, text=user_input)
+            DBClient().update_reminder(reminder_id, text=text)
             reply('Спасибо, текст напоминания сохранен.', update)
             set_next_action(command_data, None)
         return
