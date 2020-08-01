@@ -7,6 +7,7 @@ from ..consts import TrelloCardColor, TrelloListAlias
 from ..db.db_client import DBClient
 from ..strings import load
 from ..trello.trello_client import TrelloClient
+from ..trello.trello_objects import TrelloCard
 from .base_job import BaseJob
 from . import utils
 
@@ -17,19 +18,19 @@ class TrelloBoardStateJob(BaseJob):
     @staticmethod
     def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
         paragraphs = [load('trello_board_state_job__intro')]  # list of paragraph strings
-        curator_cards = TrelloBoardStateJob._get_curator_cards(app_context)
-        for curator, cards in curator_cards.items():
-            paragraphs += TrelloBoardStateJob.formation_text_for_curator(
-                app_context, curator, cards)
+        curator_cards = TrelloBoardStateJob.get_cards_by_curator(app_context)
+        for curator, curator_cards in curator_cards.items():
+            paragraphs += TrelloBoardStateJob.format_cards_for_curator(
+                app_context, curator, curator_cards)
         utils.pretty_send(paragraphs, send)
 
     @staticmethod
-    def _get_curator_cards(app_context):
+    def get_cards_by_curator(app_context):
         cards = app_context.trello_client.get_cards()
         curator_cards = {}
         for card in cards:
-            curators_names = TrelloBoardStateJob._get_curators(card, app_context.db_client)
-            for curator_name in curators_names:
+            curators = TrelloBoardStateJob._get_curators(card, app_context.db_client)
+            for curator_name, _ in curators:
                 if curator_name in curator_cards:
                     curator_cards[curator_name].append(card)
                 else:
@@ -41,26 +42,31 @@ class TrelloBoardStateJob(BaseJob):
         return card.due is not None and card.due.date() < datetime.datetime.now().date()
 
     @staticmethod
-    def _retrieve_cards_for_paragraph(
+    def _make_paragraphs_for_curator_category(
             app_context: AppContext,
-            title: str,
-            list_aliases: List[str],
+            title_alias: str,
+            list_aliases: List[TrelloListAlias],
             filter_func: Callable,
-            curator_cards: List,
+            curator_cards: List[TrelloCard],
             show_due=True
     ) -> List[str]:
         '''
-        Returns a list of paragraphs that should always go in a single message.
+        Returns a list of paragraphs for given curator cards, filtered
         '''
-        logger.info(f'Started counting: "{title}"')
+        logger.debug(f'Started counting: "{title_alias}"')
         list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
-        filtered_cards = list(filter(filter_func, app_context.trello_client.get_cards(list_ids)))
-        cards = [card for card in curator_cards if card in filtered_cards]
+        # filtered_cards = list(filter(filter_func, app_context.trello_client.get_cards(list_ids)))
+        cards = list(
+            filter(
+                filter_func,
+                [card for card in curator_cards if card.lst.id in list_ids]
+            )
+        )
         parse_failure_counter = 0
 
-        paragraphs = ['❗️' +
-                      load('trello_board_state_job__title_and_size', title=title, length=len(cards))
-                      ]
+        if not cards:
+            return []
+        paragraphs = [load('trello_board_state_job__title_and_size', title=load(title_alias), length=len(cards))]
 
         for card in cards:
             if not card:
@@ -80,7 +86,7 @@ class TrelloBoardStateJob(BaseJob):
 
     @staticmethod
     def _format_card(card, app_context, show_due=True) -> str:
-        labels = '— ' + ", ".join(
+        labels = ", ".join(
                 # We filter BLACK cards as this is an auxiliary label
                 label.name for label in card.labels
                 if label.color != TrelloCardColor.BLACK
@@ -90,23 +96,23 @@ class TrelloBoardStateJob(BaseJob):
         list_name = card.lst.name + '('
         list_name = list_name[:list_name.find('(')].strip()
 
-        date = load(
-            'trello_board_state_job__card_date',
-            date=card.due.strftime("%d.%m"),
-        ) if show_due else ''
+        # date = load(
+        #    'trello_board_state_job__card_date',
+        #    date=card.due.strftime("%d.%m"),
+        # ) if show_due else ''
 
-        authors = '— ' + utils.retrieve_usernames(
+        members = ','.join(utils.retrieve_usernames(
             card.members,
             app_context.db_client
-            ) if card.members else ''
+            )) if card.members else ''
         return load(
-            'trello_board_state_job__card',
+            'trello_board_state_job__card_2',
             url=card.url,
             name=card.name,
-            labels='',
-            list_name='',
-            date=date,
-        ) + f'{labels} {authors}'
+            labels=labels,
+            list_name=list_name,
+            members=members,
+        )
 
     @staticmethod
     def _get_curators(card, db_client):
@@ -122,12 +128,11 @@ class TrelloBoardStateJob(BaseJob):
         return curators
 
     @staticmethod
-    def formation_text_for_curator(app_context, curator, curator_cards):
-        paragraphs = []
-        paragraphs += [f'⭐️Куратор {curator[0]}']
-        paragraphs += TrelloBoardStateJob._retrieve_cards_for_paragraph(
+    def format_cards_for_curator(app_context, curator, curator_cards):
+        error_cards_paragraphs = []
+        error_cards_paragraphs += TrelloBoardStateJob._make_paragraphs_for_curator_category(
             app_context=app_context,
-            title=load('trello_board_state_job__title_author_missing'),
+            title_alias='trello_board_state_job__title_author_missing',
             list_aliases=(
                 TrelloListAlias.IN_PROGRESS,
                 TrelloListAlias.TO_EDITOR,
@@ -141,25 +146,25 @@ class TrelloBoardStateJob(BaseJob):
             show_due=False,
             curator_cards=curator_cards,
         )
-        paragraphs += TrelloBoardStateJob._retrieve_cards_for_paragraph(
+        error_cards_paragraphs += TrelloBoardStateJob._make_paragraphs_for_curator_category(
             app_context=app_context,
-            title=load('trello_board_state_job__title_due_date_expired'),
+            title_alias='trello_board_state_job__title_due_date_expired',
             list_aliases=(TrelloListAlias.IN_PROGRESS, ),
             filter_func=TrelloBoardStateJob._is_deadline_missed,
             curator_cards=curator_cards,
             show_due=True,
         )
-        paragraphs += TrelloBoardStateJob._retrieve_cards_for_paragraph(
+        error_cards_paragraphs += TrelloBoardStateJob._make_paragraphs_for_curator_category(
             app_context=app_context,
-            title=load('trello_board_state_job__title_due_date_missing'),
+            title_alias='trello_board_state_job__title_due_date_missing',
             list_aliases=(TrelloListAlias.IN_PROGRESS, ),
             filter_func=lambda card: not card.due,
             curator_cards=curator_cards,
             show_due=False
         )
-        paragraphs += TrelloBoardStateJob._retrieve_cards_for_paragraph(
+        error_cards_paragraphs += TrelloBoardStateJob._make_paragraphs_for_curator_category(
             app_context=app_context,
-            title=load('trello_board_state_job__title_tag_missing'),
+            title_alias='trello_board_state_job__title_tag_missing',
             list_aliases=(
                 TrelloListAlias.IN_PROGRESS,
                 TrelloListAlias.TO_EDITOR,
@@ -173,4 +178,6 @@ class TrelloBoardStateJob(BaseJob):
             curator_cards=curator_cards,
             show_due=False
         )
-        return paragraphs
+        if error_cards_paragraphs:
+            return [f'⭐️ <b>Куратор</b>: {curator}'] + error_cards_paragraphs
+        return []
