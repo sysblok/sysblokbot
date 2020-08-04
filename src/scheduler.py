@@ -3,6 +3,7 @@ import time
 import threading
 from typing import List
 
+import html
 import schedule
 import telegram
 
@@ -86,7 +87,7 @@ class JobScheduler(Singleton):
 
     @staticmethod
     def list_jobs() -> List[str]:
-        return list(map(str, schedule.jobs))
+        return [html.escape(str(job)) for job in schedule.jobs]
 
     def reschedule_jobs(self):
         logger.info('Clearing all scheduled jobs...')
