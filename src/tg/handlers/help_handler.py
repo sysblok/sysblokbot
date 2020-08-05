@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 @direct_message_only
 def help(update, tg_context, handlers_info: dict):
     message = ''
-    
+
     for category_alias in sorted(handlers_info.keys()):
         handlers = handlers_info[category_alias]
         listed_handlers = []
@@ -32,7 +32,6 @@ def help(update, tg_context, handlers_info: dict):
 def _format_commands_block(category_alias: str, handlers: list):
     lines = []
     for command, description in handlers:
-        print(command, description)
         lines.append(f'{command} - {description}' if description else command)
     lines.sort()
     lines = [load(category_alias)] + lines
