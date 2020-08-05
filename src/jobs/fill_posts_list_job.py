@@ -74,32 +74,32 @@ class FillPostsListJob(BaseJob):
                 label.name for label in card.labels if label.color != TrelloCardColor.BLACK
             ]
 
-            is_main_post = 'Главный пост' in [label.name for label in card.labels]
-            is_archive_post = 'Архив' in [label.name for label in card.labels]
+            is_main_post = load('common__label_main_post') in [label.name for label in card.labels]
+            is_archive_post = load('common__label_archive') in [label.name for label in card.labels]
 
             this_card_bad_fields = []
             if (
                     card_fields.title is None and
                     card.lst.id != trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK]
             ):
-                this_card_bad_fields.append('название поста')
+                this_card_bad_fields.append(load('common__post_title'))
             if card_fields.google_doc is None:
-                this_card_bad_fields.append('google doc')
+                this_card_bad_fields.append(load('common__post_google_doc'))
             if len(card_fields.authors) == 0:
-                this_card_bad_fields.append('автор')
-            if len(card_fields.editors) == 0:  # and 'Архив' not in label_names:
-                this_card_bad_fields.append('редактор')
+                this_card_bad_fields.append(load('common__post_author'))
+            if len(card_fields.editors) == 0:  # and load('common__label_archive') not in label_names:
+                this_card_bad_fields.append(load('common__post_editor'))
             if card_fields.cover is None and not is_archive_post:
-                this_card_bad_fields.append('обложка')
+                this_card_bad_fields.append(load('common__post_cover'))
             if (
                     len(card_fields.illustrators) == 0 and need_illustrators and
                     not is_archive_post
             ):
-                this_card_bad_fields.append('иллюстратор')
+                this_card_bad_fields.append(load('common__post_illustrator'))
             if card.due is None and show_due:
-                this_card_bad_fields.append('дата публикации')
+                this_card_bad_fields.append(load('common__post_date'))
             if len(label_names) == 0:
-                this_card_bad_fields.append('рубрика')
+                this_card_bad_fields.append(load('common__post_rubric'))
 
             if (
                     len(this_card_bad_fields) > 0

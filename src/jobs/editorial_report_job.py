@@ -64,7 +64,7 @@ class EditorialReportJob(BaseJob):
 
     @staticmethod
     def _card_is_urgent(card):
-        return 'Срочно' in [label.name for label in card.labels]
+        return load('common__label_urgent') in [label.name for label in card.labels]
 
     @staticmethod
     def _retrieve_cards_for_paragraph(
@@ -145,17 +145,17 @@ class EditorialReportJob(BaseJob):
             label_names = [
                 label.name for label in card.labels if label.color != TrelloCardColor.BLACK
             ]
-            is_archive_card = 'Архив' in label_names
+            is_archive_card = load('common__label_archive') in label_names
 
             this_card_bad_fields = []
             if card_fields.title is None and need_title:
-                this_card_bad_fields.append('название поста')
+                this_card_bad_fields.append(load('common__post_title'))
             if card_fields.google_doc is None:
-                this_card_bad_fields.append('google doc')
+                this_card_bad_fields.append(load('common__post_google_doc'))
             if len(card_fields.authors) == 0:
-                this_card_bad_fields.append('автор')
+                this_card_bad_fields.append(load('common__post_author'))
             if len(card_fields.editors) == 0 and need_editor:
-                this_card_bad_fields.append('редактор')
+                this_card_bad_fields.append(load('common__post_editor'))
 
             if (
                     len(this_card_bad_fields) > 0

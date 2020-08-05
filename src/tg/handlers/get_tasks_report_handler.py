@@ -6,8 +6,9 @@ import telegram
 
 from ... import consts
 from ...app_context import AppContext
-from ...trello.trello_objects import TrelloCard
 from ...jobs.utils import paragraphs_to_messages, retrieve_username
+from ...strings import load
+from ...trello.trello_objects import TrelloCard
 from .utils import manager_only, reply
 
 TASK_NAME = 'get_tasks_report'
@@ -22,7 +23,7 @@ def get_tasks_report(update: telegram.Update, tg_context: telegram.ext.CallbackC
     tg_context.chat_data[TASK_NAME] = {
         consts.NEXT_ACTION: consts.PlainTextUserAction.GET_TASKS_REPORT__ENTER_BOARD_URL.value
     }
-    reply("Привет! Пришли, пожалуйста, ссылку на доску в Trello.", update)
+    reply(load('get_tasks_report_handler__intro'), update)
 
 
 def generate_report_messages(
@@ -35,9 +36,7 @@ def generate_report_messages(
     paragraphs = []  # list of paragraph strings
 
     trello_list = app_context.trello_client.get_list(list_id)
-    paragraphs.append(
-        f'<b>{trello_list.name}</b>'
-    )
+    paragraphs.append(load('common__bold_wrapper', arg=trello_list.name))
 
     list_cards = app_context.trello_client.get_cards([list_id], board_id)
     paragraphs += (_create_paragraphs_from_cards(
@@ -70,7 +69,7 @@ def _create_paragraphs_from_cards(
     # cards without members at the end
     cards_without_members = _get_cards_without_members(cards)
     if cards_without_members:
-        lines = ['<b>Разное:</b>']
+        lines = [load('get_tasks_report_handler__misc')]
         cards_without_members_text = _make_cards_text(
             cards_without_members, need_label, app_context)
         lines += cards_without_members_text
@@ -85,8 +84,13 @@ def _format_card(card: TrelloCard, need_label: bool) -> str:
         labels = [f'"{label.name}"' for label in card.labels]
         labels_text = f'({", ".join(labels)})'
     return (
-        f'{_make_deadline_text(card) if card.due else ""}'
-        f'<a href="{card.url}">{card.name}</a> {labels_text}'
+        load(
+            'get_tasks_report_handler__card',
+            deadline=_make_deadline_text(card),
+            url=card.url,
+            name=card.name,
+            labels_text=labels_text,
+        )
     ).strip()
 
 
@@ -115,11 +119,13 @@ def _get_cards_without_members(cards: Iterable[TrelloCard]):
 
 
 def _make_member_text(member, db_client) -> str:
-    return f'👤 <b>{retrieve_username(member, db_client)}</b>:'
+    return load('get_tasks_report_handler__member', username=retrieve_username(member, db_client))
 
 
 def _make_deadline_text(card: TrelloCard) -> str:
-    return f'До {card.due.strftime("%d.%m")} — ' if card.due else ''
+    if not card.due:
+        return ''
+    return load('get_tasks_report_handler__card_deadline', due=card.due.strftime("%d.%m"))
 
 
 def _make_cards_text(
