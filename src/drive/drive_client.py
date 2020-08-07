@@ -117,7 +117,9 @@ class GoogleDriveClient(Singleton):
                 pageToken=page_token
             ).execute()
         except Exception as e:
-            logger.warning(f'Failed to query Google drive for existing parent url {parent_url}: {e}')
+            logger.warning(
+                f'Failed to query Google drive for existing parent url {parent_url}: {e}'
+            )
             return None
         items = results.get('files', [])
         if len(items) == 0:
