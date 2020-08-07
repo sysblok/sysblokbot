@@ -95,7 +95,7 @@ class TrelloAnalyticsJob(BaseJob):
         if statistics:
             delta = len(cards) - int(statistics[column_name])
             paragraphs = [load(
-                'main_stats_job__title_and_size_and_diff',
+                'common_report__list_title_and_size',
                 title=title,
                 length=len(cards),
                 sign="+" if delta > 0 else "",
@@ -103,7 +103,7 @@ class TrelloAnalyticsJob(BaseJob):
             )]
             return paragraphs
         else:
-            return [load('main_stats_job__title_and_size', title=title, length=len(cards))]
+            return [load('common_report__list_title_and_size', title=title, length=len(cards))]
 
     @staticmethod
     def _get_last_statistic(app_context):

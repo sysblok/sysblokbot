@@ -5,6 +5,7 @@ from .utils import admin_only, reply
 from ... import consts, jobs
 from ...app_context import AppContext
 from ...config_manager import ConfigManager
+from ...strings import load
 from ...tg.sender import TelegramSender
 
 
@@ -21,10 +22,13 @@ def get_config(update, tg_context):
             for config_item in config_path.split('.'):
                 config = config[config_item]
     except Exception as e:
-        reply('<b>Usage example:</b>\n/get_config jobs.sample_job', update)
+        reply(load('access_config_handler__get_config_usage_example'), update)
         logger.warning(f'Failed to get config: {e}')
         return
-    reply(f'<code>{json.dumps(ConfigManager.redact(config), indent=2)}</code>', update)
+    reply(
+        load('common__code_wrapper', arg=json.dumps(ConfigManager.redact(config), indent=2)),
+        update
+    )
 
 
 @admin_only
@@ -36,10 +40,7 @@ def set_config(update, tg_context):
         new_value = json.loads(tokens[2])
         _set_config(update, config_path, new_value, ConfigManager())
     except Exception as e:
-        reply((
-            '<b>Usage example:</b>\n/set_config jobs.sample_job.at "15:00"\n\n'
-            'Try to /get_config first and follow the existing format'
-        ), update)
+        reply(load('access_config_handler__set_config_usage_example'), update)
         logger.warning(f'Failed to set config: {e}')
         return
 
@@ -64,7 +65,7 @@ def add_manager(update, tg_context):
             config_manager
         )
     except Exception as e:
-        reply(('<b>Usage example:</b>\n/add_manager 12345 or /add_manager "tg_login"'), update)
+        reply(load('access_config_handler__add_manager_usage_example'), update)
         logger.warning(f'Failed to add manager: {e}')
         return
 
@@ -82,7 +83,7 @@ def change_board(update, tg_context):
             ConfigManager()
         )
     except Exception as e:
-        reply(('<b>Usage example:</b>\n/change_board "12345"'), update)
+        reply(load('access_config_handler__change_board_usage_example'), update)
         logger.warning(f'Failed to change boards: {e}')
         return
 
@@ -92,29 +93,34 @@ def _set_config(update, config_path: str, new_value, config_manager: ConfigManag
     for config_item in config_path.split('.'):
         current_config = current_config[config_item]
     if isinstance(current_config, dict):
-        reply((
-            f'Subconfig <code>{config_path}</code> is a complex object. '
-            'Dict reassignment is not supported. '
-            'Please, specify your request to str, bool, int or list field'
-        ), update)
+        reply(
+            load('access_config_handler__set_config_subconfig_dict', config_path=config_path),
+            update
+        )
         return
     if type(current_config) != type(new_value):
-        reply((
-            f'Type mismatch. Old value was <code>{type(current_config).__name__}</code>, '
-            f'new value is <code>{type(new_value).__name__}</code>. '
-            'Try /get_config to see current value format'
-        ), update)
+        reply(
+            load(
+                'access_config_handler__set_config_type_mismatch',
+                old_value=type(current_config).__name__,
+                new_value=type(new_value).__name__
+            ),
+            update
+        )
         return
     if current_config == new_value:
-        reply('New value equals to existing. Nothing was updated', update)
+        reply(load('access_config_handler__set_config_no_update'), update)
         return
 
     config_manager.set_value_to_config_override(config_path, new_value)
-    reply((
-        f'Successfully updated!\n'
-        f'Old value: <code>{current_config}</code>\n'
-        f'New value: <code>{new_value}</code>'
-    ), update)
+    reply(
+        load(
+            'access_config_handler__set_config_updated',
+            old_value=current_config,
+            new_value=new_value
+        ),
+        update
+    )
     # run config update job after config_override successfully updated
     chat_ids = config_manager.get_job_send_to('config_updater_job')
     jobs.ConfigUpdaterJob.execute(AppContext(), TelegramSender().create_chat_ids_send(chat_ids))

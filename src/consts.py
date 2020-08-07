@@ -165,6 +165,7 @@ class ButtonValues(Enum):
     MANAGE_REMINDERS__EDIT__DATETIME = 'manage_reminders__edit__datetime'
     MANAGE_REMINDERS__EDIT__CHAT = 'manage_reminders__edit__chat'
     MANAGE_REMINDERS__EDIT__SUSPEND = 'manage_reminders__edit__suspend'
+    MANAGE_REMINDERS__EDIT__RESUME = 'manage_reminders__edit__resume'
 
 
 WEEKDAYS_SHORT = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
