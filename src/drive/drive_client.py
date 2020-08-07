@@ -57,6 +57,9 @@ class GoogleDriveClient(Singleton):
         return existing is None
     
     def is_open_for_edit(self, file_url: str) -> bool:
+        """
+        Checks file_url is a Google Doc with "anyone: edit" permission granted.
+        """
         file_id = GoogleDriveClient._get_id_from_url(file_url)
         try:
             permissions = self.service.permissions().list(
