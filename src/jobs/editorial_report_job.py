@@ -6,9 +6,10 @@ from typing import Callable, List
 from ..app_context import AppContext
 from ..consts import TrelloListAlias, TrelloCardColor
 from ..strings import load
+from ..drive.drive_client import GoogleDriveClient
 from ..trello.trello_client import TrelloClient
 from .base_job import BaseJob
-from .utils import format_errors, format_possibly_plural, pretty_send
+from .utils import format_errors, format_possibly_plural, get_no_access_marker, pretty_send
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,7 @@ class EditorialReportJob(BaseJob):
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
+            drive_client=app_context.drive_client,
             title=load('editorial_report_job__title_redacted'),
             list_aliases=(TrelloListAlias.EDITED_SOMETIMES, TrelloListAlias.TO_CHIEF_EDITOR),
             errors=errors,
@@ -31,6 +33,7 @@ class EditorialReportJob(BaseJob):
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
+            drive_client=app_context.drive_client,
             title=load('editorial_report_job__title_revision'),
             list_aliases=(TrelloListAlias.IN_PROGRESS, ),
             errors=errors,
@@ -40,6 +43,7 @@ class EditorialReportJob(BaseJob):
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
+            drive_client=app_context.drive_client,
             title=load('editorial_report_job__title_editors'),
             list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, ),
             errors=errors,
@@ -48,6 +52,7 @@ class EditorialReportJob(BaseJob):
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
+            drive_client=app_context.drive_client,
             title=load('editorial_report_job__title_editors_pending'),
             list_aliases=(TrelloListAlias.TO_EDITOR, ),
             errors=errors,
@@ -69,6 +74,7 @@ class EditorialReportJob(BaseJob):
     @staticmethod
     def _retrieve_cards_for_paragraph(
             trello_client: TrelloClient,
+            drive_client: GoogleDriveClient,
             title: str,
             list_aliases: List[TrelloListAlias],
             errors: dict,
@@ -167,12 +173,14 @@ class EditorialReportJob(BaseJob):
                 errors[card] = this_card_bad_fields
                 continue
 
+            url = card_fields.google_doc or card.url
             paragraphs.append(
                 load(
-                    'editorial_report_job__card',
+                    'editorial_report_job__card_2',
                     date=card.due.strftime('%d.%m').lower() if card.due else '??.??',
                     urgent='(Срочно!)' if EditorialReportJob._card_is_urgent(card) else '',
-                    url=card_fields.google_doc or card.url,
+                    no_file_access=get_no_access_marker(url, drive_client),
+                    url=url,
                     name=card_fields.title or card.name,
                     authors=format_possibly_plural('Автор', card_fields.authors),
                     editors=format_possibly_plural('Редактор', card_fields.editors),

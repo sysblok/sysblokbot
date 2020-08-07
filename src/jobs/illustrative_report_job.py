@@ -10,7 +10,7 @@ from ..strings import load
 from ..trello.trello_client import TrelloClient
 from ..trello.trello_objects import TrelloCustomField
 from .base_job import BaseJob
-from .utils import format_errors, format_possibly_plural, pretty_send
+from .utils import format_errors, format_possibly_plural, get_no_access_marker, pretty_send
 
 logger = logging.getLogger(__name__)
 
@@ -136,20 +136,20 @@ class IllustrativeReportJob(BaseJob):
                 else:
                     cover = load('illustrative_report_job__card_cover', name=card_fields.cover)
 
-            paragraphs.append(
-                load(
-                    'illustrative_report_job__card',
-                    url=(
-                        card_fields.google_doc
-                        if urlparse(card_fields.google_doc).scheme else card.url
-                    ),
-                    name=card_fields.title or card.name,
-                    authors=format_possibly_plural('Автор', card_fields.authors),
-                    editors=format_possibly_plural('Редактор', card_fields.editors),
-                    illustrators=format_possibly_plural('Иллюстратор', card_fields.illustrators),
-                    cover=cover,
-                )
+            file_url = (
+                card_fields.google_doc if urlparse(card_fields.google_doc).scheme else card.url
             )
+            no_access_marker = get_no_access_marker(file_url, app_context.drive_client)
+            card_text = load(
+                'illustrative_report_job__card',
+                url=file_url,
+                name=card_fields.title or card.name,
+                authors=format_possibly_plural('Автор', card_fields.authors),
+                editors=format_possibly_plural('Редактор', card_fields.editors),
+                illustrators=format_possibly_plural('Иллюстратор', card_fields.illustrators),
+                cover=cover,
+            )
+            paragraphs.append(no_access_marker + card_text)
 
         if parse_failure_counter > 0:
             logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
