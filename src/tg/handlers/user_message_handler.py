@@ -5,11 +5,12 @@ import logging
 import telegram
 
 from .utils import get_chat_id, get_chat_name, get_sender_id, reply
-from ...db.db_client import DBClient
-from ...tg.handlers import get_tasks_report_handler
-from ...trello.trello_client import TrelloClient
 from ... import consts
 from ...consts import PlainTextUserAction, ButtonValues
+from ...db.db_client import DBClient
+from ...strings import load
+from ...tg.handlers import get_tasks_report_handler
+from ...trello.trello_client import TrelloClient
 
 logger = logging.getLogger(__name__)
 
@@ -58,14 +59,7 @@ def handle_user_message(
             board = trello_client.get_board_by_url(user_input)
             trello_lists = trello_client.get_lists(board.id)
         except Exception:
-            reply(
-                (
-                    'Не могу найти такую доску. Пожалуйста, проверь, нет ли ошибки в '
-                    'ссылке на доску. Если найдешь ошибку, пришли, пожалуйста, '
-                    'правильную ссылку. Если нет – напиши Ире @irinoise или Илье @bulgak0v.'
-                ),
-                update
-            )
+            reply(load('get_tasks_report_handler__board_not_found'), update)
             return
         command_data[consts.GetTasksReportData.BOARD_ID] = board.id
         command_data[consts.GetTasksReportData.LISTS] = [lst.to_dict() for lst in trello_lists]
@@ -74,10 +68,7 @@ def handle_user_message(
             [f'{i + 1}) {lst.name}' for i, lst in enumerate(trello_lists)]
         )
         reply(
-            (
-                f'Пожалуйста, пришли номер списка, задачи из которого попадут в отчет. '
-                f'Вот какие списки есть в твоей доске:\n\n{trello_lists_formatted}'
-            ),
+            load('get_tasks_report_handler__choose_trello_list', lists=trello_lists_formatted),
             update
         )
         set_next_action(command_data, PlainTextUserAction.GET_TASKS_REPORT__ENTER_LIST_NUMBER)
@@ -90,24 +81,17 @@ def handle_user_message(
             list_id = trello_lists[list_idx]['id']
         except Exception as e:
             logger.warning(e)
-            reply('Попробуй ещё раз', update)
+            reply(load('get_tasks_report_handler__try_again'), update)
             return
         command_data[consts.GetTasksReportData.LIST_ID] = list_id
 
         reply_markup = telegram.InlineKeyboardMarkup(
             [[telegram.InlineKeyboardButton(
-                "Без текста",
+                load('get_tasks_report_handler__no_text_btn'),
                 callback_data=ButtonValues.GET_TASKS_REPORT__NO_INTRO.value
             )]]
         )
-        reply(
-            (
-                'Спасибо! Хочешь добавить какой-то приветственный текст к отчету? '
-                'Текст будет отображаться перед перечнем всех задач.'
-            ),
-            update,
-            reply_markup=reply_markup
-        )
+        reply(load('get_tasks_report_handler__enter_intro'), update, reply_markup=reply_markup)
         set_next_action(command_data, PlainTextUserAction.GET_TASKS_REPORT__ENTER_INTRO)
         return
     elif next_action == PlainTextUserAction.GET_TASKS_REPORT__ENTER_INTRO:
@@ -118,24 +102,24 @@ def handle_user_message(
 
         button_list = [[
             telegram.InlineKeyboardButton(
-                "Да",
+                load('common__yes'),
                 callback_data=ButtonValues.GET_TASKS_REPORT__LABELS__YES.value
             ),
             telegram.InlineKeyboardButton(
-                "Нет",
+                load('common__no'),
                 callback_data=ButtonValues.GET_TASKS_REPORT__LABELS__NO.value
             ),
         ]]
         reply_markup = telegram.InlineKeyboardMarkup(button_list)
         reply(
-            'Нужно ли выводить теги (метки в Trello) в отчете?',
+            load('get_tasks_report_handler__choose_if_fill_labels'),
             update, reply_markup=reply_markup
         )
         set_next_action(command_data, PlainTextUserAction.GET_TASKS_REPORT__CHOOSE_IF_FILL_LABELS)
         return
     elif next_action == PlainTextUserAction.GET_TASKS_REPORT__CHOOSE_IF_FILL_LABELS:
         if button is None:
-            reply('Нажми кнопку :)', update)
+            reply(load('user_message_handler__press_button_please'), update)
             return
         add_labels = (button == ButtonValues.GET_TASKS_REPORT__LABELS__YES)
         board_id = command_data[consts.GetTasksReportData.BOARD_ID]
@@ -154,22 +138,18 @@ def handle_user_message(
         return
     elif next_action == PlainTextUserAction.MANAGE_REMINDERS__CHOOSE_ACTION:
         if button is None:
-            reply('Нажми кнопку :)', update)
+            reply(load('user_message_handler__press_button_please'), update)
             return
         if button == ButtonValues.MANAGE_REMINDERS__ACTIONS__NEW:
-            reply((
-                'Пришли, пожалуйста, id чата, куда должно отправляться напоминание. '
-                'Для получения id тебе нужно добавить меня в этот чат и вызвать там '
-                'команду /get_chat_id.'
-            ), update)
+            reply(load('manager_reminders_handler__enter_chat_id'), update)
             set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_CHAT_ID)
         elif button == ButtonValues.MANAGE_REMINDERS__ACTIONS__DELETE:
-            reply('Пожалуйста, пришли номер напоминания, которое ты хочешь удалить.', update)
+            reply(load('manage_reminders_handler__enter_reminder_number_to_delete'), update)
             set_next_action(
                 command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_REMINDER_NUMBER
             )
         elif button == ButtonValues.MANAGE_REMINDERS__ACTIONS__EDIT:
-            reply('Пожалуйста, пришли номер напоминания, которое ты хочешь изменить.', update)
+            reply(load('manage_reminders_handler__enter_reminder_number_to_edit'), update)
             set_next_action(
                 command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_REMINDER_NUMBER
             )
@@ -181,7 +161,7 @@ def handle_user_message(
             assert 0 < int(user_input) <= len(reminder_ids)
             reminder_id, chat_title, reminder_name = reminder_ids[int(user_input) - 1]
         except Exception:
-            reply('Кажется, в номере ошибка. Пожалуйста, введи правильный номер.', update)
+            reply(load('manage_reminders_handler__reminder_number_bad'), update)
             return
         command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID] = reminder_id
 
@@ -190,18 +170,21 @@ def handle_user_message(
             # keyboard for delete
             button_list = [[
                 telegram.InlineKeyboardButton(
-                    "Да",
+                    load('common__yes'),
                     callback_data=ButtonValues.MANAGE_REMINDERS__DELETE__YES.value
                 ),
                 telegram.InlineKeyboardButton(
-                    "Нет",
+                    load('common__no'),
                     callback_data=ButtonValues.MANAGE_REMINDERS__DELETE__NO.value
                 ),
             ]]
             reply_markup = telegram.InlineKeyboardMarkup(button_list)
             reply(
-                f'Пожалуйста, подтверди, что ты хочешь удалить напоминание '
-                f'<b>{chat_title}: {reminder_name}</b>.',
+                load(
+                    'manage_reminders_handler__confirm_delete',
+                    chat=chat_title,
+                    reminder=reminder_name
+                ),
                 update,
                 reply_markup=reply_markup
             )
@@ -211,30 +194,39 @@ def handle_user_message(
             # keyboard for edit
             button_list = [[
                 telegram.InlineKeyboardButton(
-                    "Изменить текст",
+                    load('manage_reminders_handler__edit_text_btn'),
                     callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__TEXT.value
                 )],
                 [telegram.InlineKeyboardButton(
-                    "Изменить время",
+                    load('manage_reminders_handler__edit_datetime_btn'),
                     callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__DATETIME.value
                 )],
                 [telegram.InlineKeyboardButton(
-                    "Изменить название",
+                    load('manage_reminders_handler__edit_title_btn'),
                     callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__TITLE.value
                 )],
                 [telegram.InlineKeyboardButton(
-                    "Изменить чат",
+                    load('manage_reminders_handler__edit_chat_btn'),
                     callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__CHAT.value
                 )],
                 [telegram.InlineKeyboardButton(
-                    "Приостановить" if reminder.is_active else "Возобновить",
+                    load('manage_reminders_handler__edit_suspend_btn'),
                     callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__SUSPEND.value
-                ),
-            ]]
+                ) if reminder.is_active else
+                telegram.InlineKeyboardButton(
+                    load('manage_reminders_handler__edit_resume_btn'),
+                    callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__RESUME.value
+                )],
+            ]
             reply_markup = telegram.InlineKeyboardMarkup(button_list)
             weekday_str = calendar.TextCalendar().formatweekday(int(reminder.weekday), 15).strip()
             reply(
-                f'<b>{weekday_str} {reminder.time} (раз в неделю)</b>\n\n"{reminder.text}"',
+                load(
+                    'manage_reminders_handler__weekly_reminder',
+                    weekday=weekday_str,
+                    time=reminder.time,
+                    text=reminder.text,
+                ),
                 update,
                 reply_markup=reply_markup
             )
@@ -243,27 +235,25 @@ def handle_user_message(
             logger.error(f'Bad reminder action "{action}"')
     elif next_action == PlainTextUserAction.MANAGE_REMINDERS__CHOOSE_EDIT_ACTION:
         if button is None:
-            reply('Нажми кнопку :)', update)
+            reply(load('manage_reminders_handler__press_button_please'), update)
             return
         db_client = DBClient()
         reminder_id = int(command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID])
         reminder = db_client.get_reminder_by_id(reminder_id)
         if button == ButtonValues.MANAGE_REMINDERS__EDIT__TEXT:
-            reply('Пожалуйста, введи текст напоминания.', update)
+            reply(load('manage_reminders_handler__enter_text'), update)
             set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_TEXT)
             return
         elif button == ButtonValues.MANAGE_REMINDERS__EDIT__TITLE:
             reply(
-                f'Пожалуйста, введи новое название для напоминания <b>{reminder.name}</b>.',
+                load('manage_reminders_handler__enter_new_name', old_name=reminder.name),
                 update
             )
             set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_NAME)
             return
         elif button == ButtonValues.MANAGE_REMINDERS__EDIT__CHAT:
             reply(
-                f'Пришли, пожалуйста, id чата, куда должно отправляться напоминание '
-                f'<b>{reminder.name}</b>. Для получения id тебе нужно добавить '
-                'меня в этот чат и вызвать там команду /get_chat_id.',
+                load('manage_reminders_handler__enter_chat_id', name=reminder.name),
                 update
             )
             set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_CHAT_ID)
@@ -271,42 +261,43 @@ def handle_user_message(
         elif button == ButtonValues.MANAGE_REMINDERS__EDIT__DATETIME:
             reply_markup = telegram.InlineKeyboardMarkup(consts.WEEKDAY_BUTTONS)
             reply(
-                'Пожалуйста, выбери день для отправки напоминания в чат.',
+                load('manage_reminders_handler__choose_weekday'),
                 update,
                 reply_markup=reply_markup
             )
             set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__CHOOSE_WEEKDAY)
             return
         elif button == ButtonValues.MANAGE_REMINDERS__EDIT__SUSPEND:
-            if reminder.is_active:
-                db_client.update_reminder(reminder_id, is_active=False)
-                reply(
-                    f'Напоминание <code>{reminder.name}</code> было приостановлено. '
-                    'Чтобы возобновить рассылку напоминаний, пожалуйста, '
-                    'перейди в режим редактирования напоминания.',
-                    update
-                )
-            else:
-                db_client.update_reminder(reminder_id, is_active=True)
-                reply(
-                    f'Напоминание было возобновлено. Следующее напоминание в '
-                    f'<code>{reminder.next_reminder_datetime}</code>.',
-                    update
-                )
+            db_client.update_reminder(reminder_id, is_active=False)
+            reply(
+                load('manage_reminders_handler__reminder_was_suspended', name=reminder.name),
+                update
+            )
+            set_next_action(command_data, None)
+            return
+        elif button == ButtonValues.MANAGE_REMINDERS__EDIT__RESUME:
+            db_client.update_reminder(reminder_id, is_active=True)
+            reply(
+                load(
+                    'manage_reminders_handler__reminder_was_resumed',
+                    next_reminder_datetime=reminder.next_reminder_datetime,
+                ),
+                update
+            )
             set_next_action(command_data, None)
             return
     elif next_action == PlainTextUserAction.MANAGE_REMINDERS__DELETE_REQUEST:
         if button is None:
-            reply('Нажми кнопку :)', update)
+            reply(load('user_message_handler__press_button_please'), update)
             return
         if button == ButtonValues.MANAGE_REMINDERS__DELETE__YES:
             DBClient().delete_reminder(
                 command_data.get(consts.ManageRemindersData.CHOSEN_REMINDER_ID)
             )
-            reply('Напоминание удалено.', update)
+            reply(load('manage_reminders_handler__reminder_was_deleted'), update)
             set_next_action(command_data, None)
         elif button == ButtonValues.MANAGE_REMINDERS__DELETE__NO:
-            reply('Напоминание не было удалено.', update)
+            reply(load('manage_reminders_handler__reminder_was_not_deleted'), update)
             set_next_action(command_data, None)
         return
     elif next_action == PlainTextUserAction.MANAGE_REMINDERS__ENTER_CHAT_ID:
@@ -314,28 +305,28 @@ def handle_user_message(
             chat_id = int(user_input)
             chat_title = DBClient().get_chat_name(chat_id)
         except Exception as e:
-            reply((
-                'Пожалуйста, проверь, нет ли ошибки в id. Если найдешь ошибку, пришли, '
-                'пожалуйста, правильный id. Если нет – напиши Ире @irinoise или Илье @bulgak0v.'
-            ), update)
+            reply(load('manage_reminders_handler__bad_chat_id'), update)
             logger.info(e)
             return
         command_data[consts.ManageRemindersData.GROUP_CHAT_ID] = chat_id
         action = command_data[consts.ManageRemindersData.ACTION_TYPE]
 
         if action == ButtonValues.MANAGE_REMINDERS__ACTIONS__NEW:
-            reply((
-                f'Пожалуйста, введи название напоминания, которое ты хочешь отправлять в чат '
-                f'"{chat_title}". Название будет отображаться в списке твоих активных напоминаний.'
-            ), update)
+            reply(
+                load('manage_reminders_handler__enter_name', chat_title=chat_title),
+                update
+            )
             set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_NAME)
         elif action == ButtonValues.MANAGE_REMINDERS__ACTIONS__EDIT:
             reminder_id = int(command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID])
             reminder = DBClient().get_reminder_by_id(reminder_id)
             DBClient().update_reminder(reminder_id, group_chat_id=chat_id)
             reply(
-                f'Принято. Теперь напоминание <b>{reminder.name}</b> будет отправляться '
-                f'в чат <b>{chat_title}</b>.',
+                load(
+                    'manage_reminders_handler__reminder_set',
+                    name=reminder.name,
+                    chat_title=chat_title
+                ),
                 update
             )
             set_next_action(command_data, None)
@@ -345,12 +336,12 @@ def handle_user_message(
         action = command_data[consts.ManageRemindersData.ACTION_TYPE]
 
         if action == ButtonValues.MANAGE_REMINDERS__ACTIONS__NEW:
-            reply('Пожалуйста, введи текст напоминания.', update)
+            reply(load('manage_reminders_handler__enter_text'), update)
             set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_TEXT)
         elif action == ButtonValues.MANAGE_REMINDERS__ACTIONS__EDIT:
             reminder_id = int(command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID])
             DBClient().update_reminder(reminder_id, name=user_input)
-            reply('Название напоминания изменено.', update)
+            reply(load('manage_reminders_handler__reminder_name_was_changed'), update)
             set_next_action(command_data, None)
         return
     elif next_action == PlainTextUserAction.MANAGE_REMINDERS__ENTER_TEXT:
@@ -363,30 +354,26 @@ def handle_user_message(
             reply_markup = telegram.InlineKeyboardMarkup(consts.WEEKDAY_BUTTONS)
             set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__CHOOSE_WEEKDAY)
             reply(
-                'Пожалуйста, выбери день для отправки напоминания в чат.',
+                load('manage_reminders_handler__choose_weekday'),
                 update,
                 reply_markup=reply_markup
             )
         elif action == ButtonValues.MANAGE_REMINDERS__ACTIONS__EDIT:
             reminder_id = int(command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID])
             DBClient().update_reminder(reminder_id, text=text)
-            reply('Спасибо, текст напоминания сохранен.', update)
+            reply(load('manage_reminders_handler__reminder_text_was_changed'), update)
             set_next_action(command_data, None)
         return
     elif next_action == PlainTextUserAction.MANAGE_REMINDERS__CHOOSE_WEEKDAY:
         if button is None:
-            reply('Нажми кнопку :)', update)
+            reply(load('user_message_handler__press_button_please'), update)
             return
         weekday_num, weekday_name = button.value.split(':')
         command_data[consts.ManageRemindersData.WEEKDAY_NUM] = int(weekday_num)
         command_data[consts.ManageRemindersData.WEEKDAY_NAME] = weekday_name
         set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__ENTER_TIME)
         reply(
-            (
-                f'Буду присылать напоминание в <code>{weekday_name}</code>.\n\n'
-                f'В какое время отправлять напоминание? Пожалуйста, укажи московское время '
-                f'в формате hh:mm (например, 15:00)'
-            ),
+            load('manage_reminders_handler__enter_time', weekday_name=weekday_name),
             update
         )
         return
@@ -395,12 +382,7 @@ def handle_user_message(
             datetime.strptime(user_input or '', '%H:%M')
         except ValueError:
             reply(
-                (
-                    'Не могу установить напоминание на это время. Пожалуйста, проверь, нет ли '
-                    'ошибки в формате hh:mm (например, 15:00). Если найдешь ошибку, пришли, '
-                    'пожалуйста, правильное время. '
-                    'Если нет – напиши Ире @irinoise или Илье @bulgak0v.'
-                ),
+                load('manage_reminders_handler__time_bad'),
                 update
             )
             return
@@ -428,10 +410,7 @@ def handle_user_message(
             DBClient().update_reminder(reminder_id, weekday=weekday_num, time=time)
         set_next_action(command_data, None)
         reply(
-            (
-                f'Принято! Напоминание будет отправляться раз в неделю '
-                f'в <code>{weekday_name} {time}</code>.'
-            ),
+            load('manage_reminders_handler__success_time', weekday_name=weekday_name, time=time),
             update
         )
     else:

@@ -96,7 +96,7 @@ class TrelloBoardStateJob(BaseJob):
         parse_failure_counter = 0
 
         paragraphs = [
-            load('trello_board_state_job__title_and_size', title=title, length=len(cards))
+            load('common_report__list_title_and_size', title=title, length=len(cards))
         ]
 
         for card in cards:
@@ -132,7 +132,7 @@ class TrelloBoardStateJob(BaseJob):
         list_name = list_name[:list_name.find('(')].strip()
 
         date = load(
-            'trello_board_state_job__card_date',
+            'common_report__card_date',
             date=card.due.strftime("%d.%m"),
         ) if show_due else ''
 

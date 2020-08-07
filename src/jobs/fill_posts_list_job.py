@@ -9,7 +9,7 @@ from ..sheets.sheets_objects import RegistryPost
 from ..strings import load
 from ..trello.trello_client import TrelloClient
 from .base_job import BaseJob
-from .utils import format_errors, pretty_send
+from .utils import check_trello_card, format_errors, pretty_send
 
 logger = logging.getLogger(__name__)
 
@@ -70,46 +70,36 @@ class FillPostsListJob(BaseJob):
 
             card_fields = trello_client.get_custom_fields(card.id)
 
-            label_names = [
-                label.name for label in card.labels if label.color != TrelloCardColor.BLACK
-            ]
-
-            is_main_post = 'Главный пост' in [label.name for label in card.labels]
-            is_archive_post = 'Архив' in [label.name for label in card.labels]
-
-            this_card_bad_fields = []
-            if (
+            card_is_ok = check_trello_card(
+                card,
+                errors,
+                is_bad_title=(
                     card_fields.title is None and
-                    card.lst.id != trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK]
-            ):
-                this_card_bad_fields.append('название поста')
-            if card_fields.google_doc is None:
-                this_card_bad_fields.append('google doc')
-            if len(card_fields.authors) == 0:
-                this_card_bad_fields.append('автор')
-            if len(card_fields.editors) == 0:  # and 'Архив' not in label_names:
-                this_card_bad_fields.append('редактор')
-            if card_fields.cover is None and not is_archive_post:
-                this_card_bad_fields.append('обложка')
-            if (
-                    len(card_fields.illustrators) == 0 and need_illustrators and
+                    card.lst.id != trello_client.lists_config[
+                        TrelloListAlias.EDITED_NEXT_WEEK
+                    ]
+                ),
+                is_bad_google_doc=card_fields.google_doc is None,
+                is_bad_authors=len(card_fields.authors) == 0,
+                is_bad_editors=len(card_fields.editors) == 0,
+                is_bad_cover=card_fields.cover is None and not is_archive_post,
+                is_bad_illustrators=(
+                    len(card_fields.illustrators) == 0 and
+                    need_illustrators and
                     not is_archive_post
-            ):
-                this_card_bad_fields.append('иллюстратор')
-            if card.due is None and show_due:
-                this_card_bad_fields.append('дата публикации')
-            if len(label_names) == 0:
-                this_card_bad_fields.append('рубрика')
+                ),
+                is_bad_due_date=card.due is None and show_due,
+                is_bad_label_names=len([
+                    label for label in card.labels if label.color != TrelloCardColor.BLACK
+                ]) == 0,
+            )
 
-            if (
-                    len(this_card_bad_fields) > 0
-                    and not (is_archive_post and not strict_archive_rules)
-            ):
-                logger.info(
-                    f'Trello card is unsuitable for publication: {card.url} {this_card_bad_fields}'
-                )
-                errors[card] = this_card_bad_fields
+            if not card_is_ok:
                 continue
+
+            label_names = [label.name for label in card.labels]
+            is_main_post = load('common_trello_label__main_post') in label_names
+            is_archive_post = load('common_trello_label__archive') in label_names
 
             registry_posts.append(
                 RegistryPost(

@@ -8,7 +8,7 @@ from ..consts import TrelloListAlias, TrelloCardColor
 from ..strings import load
 from ..trello.trello_client import TrelloClient
 from .base_job import BaseJob
-from .utils import format_errors, format_possibly_plural, pretty_send
+from .utils import check_trello_card, format_errors, format_possibly_plural, pretty_send
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ class PublicationPlansJob(BaseJob):
 
         paragraphs += PublicationPlansJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
-            title=load('publication_plans_job__title_editor'),
+            title=load('common_report__section_title_editorial_board'),
             list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, ),
             errors=errors,
             show_due=False,
@@ -65,7 +65,7 @@ class PublicationPlansJob(BaseJob):
             cards.sort(key=lambda card: card.due or datetime.datetime.min)
         parse_failure_counter = 0
 
-        paragraphs = [load('publication_plans_job__title_and_size', title=title, length=len(cards))]
+        paragraphs = [load('common_report__list_title_and_size', title=title, length=len(cards))]
 
         for card in cards:
             if not card:
@@ -78,42 +78,31 @@ class PublicationPlansJob(BaseJob):
                 label.name for label in card.labels if label.color != TrelloCardColor.BLACK
             ]
 
-            is_archive_card = 'Архив' in label_names
+            is_archive_card = load('common__label_archive') in label_names
 
-            this_card_bad_fields = []
-            if (
+            card_is_ok = check_trello_card(
+                card,
+                errors,
+                is_bad_title=(
                     card_fields.title is None and
-                    card.lst.id != trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK]
-            ):
-                this_card_bad_fields.append('название поста')
-            if card_fields.google_doc is None:
-                this_card_bad_fields.append('google doc')
-            if len(card_fields.authors) == 0:
-                this_card_bad_fields.append('автор')
-            if len(card_fields.editors) == 0:  # and 'Архив' not in label_names:
-                this_card_bad_fields.append('редактор')
-            if (
-                    len(card_fields.illustrators) == 0 and need_illustrators and
+                    card.lst.id != trello_client.lists_config[
+                        TrelloListAlias.EDITED_NEXT_WEEK
+                    ]
+                ),
+                is_bad_illustrators=(
+                    len(card_fields.illustrators) == 0 and
+                    need_illustrators and
                     not is_archive_card
-            ):
-                this_card_bad_fields.append('иллюстратор')
-            if card.due is None and show_due:
-                this_card_bad_fields.append('дата публикации')
-            if len(label_names) == 0:
-                this_card_bad_fields.append('рубрика')
+                ),
+                is_bad_due_date=card.due is None and show_due,
 
-            if (
-                    len(this_card_bad_fields) > 0
-                    and not (is_archive_card and not strict_archive_rules)
-            ):
-                logger.info(
-                    f'Trello card is unsuitable for publication: {card.url} {this_card_bad_fields}'
-                )
-                errors[card] = this_card_bad_fields
+            )
+
+            if not card_is_ok:
                 continue
 
             date = load(
-                'publication_plans_job__card_date', date=card.due.strftime("%d.%m (%a)").lower()
+                'common_report__card_date', date=card.due.strftime("%d.%m (%a)").lower()
             ) if show_due else ''
 
             paragraphs.append(

@@ -6,6 +6,7 @@ import telegram
 from ... import consts
 from ...db.db_client import DBClient
 from ...db.db_objects import Chat, Reminder
+from ...strings import load
 from .utils import admin_only, get_sender_id, manager_only, direct_message_only, reply
 
 TASK_NAME = 'manage_reminders'
@@ -28,15 +29,15 @@ def manage_all_reminders(update: telegram.Update, tg_context: telegram.ext.Callb
 def _manage_reminders(update, tg_context, reminder_owner_id: int):
     # create buttons
     button_new = telegram.InlineKeyboardButton(
-        "Создать новое",
+        load('manage_reminders_handler__create_btn'),
         callback_data=consts.ButtonValues.MANAGE_REMINDERS__ACTIONS__NEW.value
     )
     button_edit = telegram.InlineKeyboardButton(
-        "Редактировать",
+        load('manage_reminders_handler__edit_btn'),
         callback_data=consts.ButtonValues.MANAGE_REMINDERS__ACTIONS__EDIT.value
     )
     button_delete = telegram.InlineKeyboardButton(
-        "Удалить",
+        load('manage_reminders_handler__delete_btn'),
         callback_data=consts.ButtonValues.MANAGE_REMINDERS__ACTIONS__DELETE.value
     )
 
@@ -60,7 +61,7 @@ def _manage_reminders(update, tg_context, reminder_owner_id: int):
         )
     else:
         reply(
-            'Привет! У тебя пока нет напоминаний.',
+            load('manage_reminders_handler__no_reminders'),
             update,
             reply_markup=telegram.InlineKeyboardMarkup(
                 [[button_new]]
@@ -69,11 +70,17 @@ def _manage_reminders(update, tg_context, reminder_owner_id: int):
 
 
 def _get_reminders_text(reminders: List[Tuple[Reminder, Chat]]) -> str:
-    text = 'Привет! Вот какие напоминания у тебя настроены:\n'
-    text += '\n'.join(
-        f'{i+1}) {chat.title}: {reminder.name}'
-        f' <b>({consts.WEEKDAYS_SHORT[int(reminder.weekday)]}, {reminder.time}'
-        f'{"" if reminder.is_active else ", приостановлено"})</b>'
-        for i, (reminder, chat) in enumerate(reminders)
+    reminders = '\n'.join(
+        load(
+            'manage_reminders_handler__reminder',
+            index=i+1,
+            title=chat.title,
+            name=reminder.name,
+            weekday=consts.WEEKDAYS_SHORT[int(reminder.weekday)],
+            time=reminder.time,
+            is_suspended=(
+                '' if reminder.is_active else load('manage_reminders_handler__reminder_suspended')
+            ),
+        ) for i, (reminder, chat) in enumerate(reminders)
     )
-    return text
+    return load('manage_reminders_handler__reminders', reminders=reminders)

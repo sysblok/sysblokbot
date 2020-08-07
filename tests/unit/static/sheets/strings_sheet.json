@@ -48,7 +48,7 @@
         "value": ""
     },
     {
-        "id": "editorial_report_job__title_and_size",
+        "id": "common_report__list_title_and_size",
         "value": ""
     },
     {
@@ -136,7 +136,7 @@
         "value": ""
     },
     {
-        "id": "publication_plans_job__card_date",
+        "id": "common_report__card_date",
         "value": ""
     },
     {
@@ -180,7 +180,7 @@
         "value": ""
     },
     {
-        "id": "trello_board_state_job__card_date",
+        "id": "common_report__card_date",
         "value": ""
     },
     {
