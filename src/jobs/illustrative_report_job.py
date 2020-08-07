@@ -86,7 +86,7 @@ class IllustrativeReportJob(BaseJob):
             label_names = [
                 label.name for label in card.labels if label.color != TrelloCardColor.BLACK
             ]
-            is_archive_card = load('common__label_archive') in label_names
+            is_archive_card = load('common_trello_label__archive') in label_names
 
             card_is_ok = check_trello_card(
                 card,

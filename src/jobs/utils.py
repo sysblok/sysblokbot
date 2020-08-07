@@ -260,7 +260,7 @@ def check_trello_card(
         label.name for label in card.labels if label.color != TrelloCardColor.BLACK
     ]
 
-    is_archive_card = load('common__label_archive') in label_names
+    is_archive_card = load('common_trello_label__archive') in label_names
     if is_archive_card and not strict_archive_rules:
         return True
 
