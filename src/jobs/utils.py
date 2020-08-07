@@ -11,6 +11,7 @@ from ..consts import TrelloCardColor
 from ..db.db_client import DBClient
 from ..db.db_objects import Curator, TrelloAnalytics
 from ..sheets.sheets_client import GoogleSheetsClient
+from ..drive.drive_client import GoogleDriveClient
 from ..strings import load
 from ..trello.trello_objects import TrelloMember
 from .. import jobs
@@ -242,6 +243,14 @@ def _make_statistic_string(statistic: TrelloAnalytics):
     else:
         return None
 
+def get_no_access_marker(file_url: str, drive_client: GoogleDriveClient) -> str:
+    """
+    Returns either marker of Google Doc edit permissions
+    or empty string if not a Google Doc or not open for edit to everyone.
+    """
+    if not drive_client.is_open_for_edit(file_url):
+        return load('common__no_file_access') + ' '
+    return ''
 
 def check_trello_card(
     card,
