@@ -165,6 +165,7 @@ class ButtonValues(Enum):
     MANAGE_REMINDERS__EDIT__DATETIME = 'manage_reminders__edit__datetime'
     MANAGE_REMINDERS__EDIT__CHAT = 'manage_reminders__edit__chat'
     MANAGE_REMINDERS__EDIT__SUSPEND = 'manage_reminders__edit__suspend'
+    MANAGE_REMINDERS__EDIT__RESUME = 'manage_reminders__edit__resume'
 
 
 WEEKDAYS_SHORT = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
@@ -199,3 +200,18 @@ WEEKDAY_BUTTONS = [[
         callback_data=ButtonValues.SUN.value
     )
 ]]
+
+
+class CommandCategories(Enum):
+    """
+    Enum for /help command sections string aliases.
+    """
+    MOST_USED = 'help__00_most_used'
+    DATA_SYNC = 'help__01_synchronize'
+    CONFIG = 'help__02_config'
+    BROADCAST = 'help__03_broadcast'
+    LOGGING = 'help__04_logging'
+    SUMMARY = 'help__05_summary'
+    STATS = 'help__06_stats'
+    REGISTRY = 'help__07_registry'
+    REMINDERS = 'help__08_reminders'

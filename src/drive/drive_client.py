@@ -1,11 +1,12 @@
 import logging
 
 from typing import List
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 # https://developers.google.com/analytics/devguides/config/mgmt/v3/quickstart/service-py
 from apiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
+from googleapiclient.errors import HttpError
 
 from ..trello.trello_objects import TrelloCard
 from ..utils.singleton import Singleton
@@ -55,6 +56,23 @@ class GoogleDriveClient(Singleton):
         existing = self._lookup_file_by_parent_url(folder_url)
         return existing is None
 
+    def is_open_for_edit(self, file_url: str) -> bool:
+        """
+        Checks file_url is a Google Doc with "anyone: edit" permission granted.
+        """
+        file_id = GoogleDriveClient._get_id_from_url(file_url)
+        try:
+            permissions = self.service.permissions().list(
+                fileId=file_id
+            ).execute().get('permissions')
+        except HttpError:
+            logger.debug(f'Could not get google doc: {file_url}')
+            return False
+        for permission in permissions:
+            if permission.get('type') == 'anyone' and permission.get('role') == 'writer':
+                return True
+        return False
+
     def _create_file(self, name: str, description: str, parents: List[str]) -> str:
         file_metadata = {
             'name': name,
@@ -92,7 +110,7 @@ class GoogleDriveClient(Singleton):
         page_token = None
         try:
             results = self.service.files().list(
-                q=f'"{self._get_id_from_url(parent_url)}" in parents',
+                q=f'"{GoogleDriveClient._get_id_from_url(parent_url)}" in parents',
                 pageSize=10,
                 fields='nextPageToken, files(id, name)',
                 pageToken=page_token
@@ -106,5 +124,17 @@ class GoogleDriveClient(Singleton):
         logger.info(f'Found {len(items)} child files for {parent_url}.')
         return items[0].get('id')
 
-    def _get_id_from_url(self, url: str) -> str:
-        return url.split('/')[-1]
+    @staticmethod
+    def _get_id_from_url(url: str) -> str:
+        return GoogleDriveClient._clean_url(url).split('/')[-1]
+
+    @staticmethod
+    def _clean_url(url: str) -> str:
+        """
+        Remove query parameters and /edit suffix. Works with both files and folders.
+        """
+        url_without_query = urlparse(url)._replace(query=None).geturl()
+        edit_suffix = '/edit'
+        if url_without_query.endswith(edit_suffix):
+            url_without_query = url_without_query[:-len(edit_suffix)]
+        return url_without_query

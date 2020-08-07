@@ -125,8 +125,8 @@ class DBClient(Singleton):
             DBString.id == string_id
         ).first()
         if not message:
-            logger.warning(f'Message not found for id {string_id}')
-            return ''
+            logger.error(f'Message not found for id {string_id}')
+            return f'<{string_id}>'
         return message.value
 
     def find_curators_by_trello_label(self, trello_label: str) -> List[Curator]:

@@ -8,4 +8,4 @@ logger = logging.getLogger(__name__)
 
 @admin_only
 def list_jobs(update, tg_context):
-    reply('\n'.join(JobScheduler.list_jobs()), update)
+    reply('\n\n'.join(JobScheduler.list_jobs()), update)
