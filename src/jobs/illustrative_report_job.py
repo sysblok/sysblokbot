@@ -10,7 +10,7 @@ from ..strings import load
 from ..trello.trello_client import TrelloClient
 from ..trello.trello_objects import TrelloCustomField
 from .base_job import BaseJob
-from .utils import format_errors, format_possibly_plural, pretty_send
+from .utils import check_trello_card, format_errors, format_possibly_plural, pretty_send
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class IllustrativeReportJob(BaseJob):
 
         paragraphs += IllustrativeReportJob._retrieve_cards_for_paragraph(
             app_context=app_context,
-            title=load('illustrative_report_job__title_editors'),
+            title=load('common_report__section_title_editorial_board'),
             list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, ),
             errors=errors,
             strict_archive_rules=False,
@@ -88,29 +88,22 @@ class IllustrativeReportJob(BaseJob):
             ]
             is_archive_card = load('common__label_archive') in label_names
 
-            this_card_bad_fields = []
-
-            if (
+            card_is_ok = check_trello_card(
+                card,
+                errors,
+                is_bad_title=(
                     card_fields.title is None and
                     card.lst.id != app_context.trello_client.lists_config[
                         TrelloListAlias.EDITED_NEXT_WEEK
                     ]
-            ):
-                this_card_bad_fields.append(load('common__post_title'))
-            if card_fields.google_doc is None:
-                this_card_bad_fields.append(load('common__post_google_doc'))
-                this_card_bad_fields.append(load('common__post_author'))
+                ),
+                is_bad_google_doc=card_fields.google_doc is None,
+                is_bad_authors=len(card_fields.authors) == 0,
+            )
 
-            if (
-                    len(this_card_bad_fields) > 0
-                    and not is_archive_card
-            ):
-                logger.info(
-                    f'Trello card is unsuitable for publication: {card.url} {this_card_bad_fields}'
-                )
-                errors[card] = this_card_bad_fields
+            if not card_is_ok:
                 continue
-
+            
             if not card_fields.cover and not is_archive_card:
                 card_fields.cover = app_context.drive_client.create_folder_for_card(card)
                 logger.info(f'Trying to put {card_fields.cover} as cover field for {card.url}')
