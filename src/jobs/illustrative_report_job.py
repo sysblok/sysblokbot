@@ -41,7 +41,7 @@ class IllustrativeReportJob(BaseJob):
         paragraphs += IllustrativeReportJob._retrieve_cards_for_paragraph(
             app_context=app_context,
             title=load('common_report__section_title_editorial_board'),
-            list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, ),
+            list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, TrelloListAlias.TO_SEO_EDITOR),
             errors=errors,
             strict_archive_rules=False,
         )
@@ -94,9 +94,10 @@ class IllustrativeReportJob(BaseJob):
                 errors,
                 is_bad_title=(
                     card_fields.title is None and
-                    card.lst.id != app_context.trello_client.lists_config[
-                        TrelloListAlias.EDITED_NEXT_WEEK
-                    ]
+                    card.lst.id not in (
+                        app_context.trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK],
+                        app_context.trello_client.lists_config[TrelloListAlias.TO_SEO_EDITOR]
+                    )
                 ),
                 is_bad_google_doc=card_fields.google_doc is None,
                 is_bad_authors=len(card_fields.authors) == 0,
