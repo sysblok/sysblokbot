@@ -243,6 +243,7 @@ def _make_statistic_string(statistic: TrelloAnalytics):
     else:
         return None
 
+
 def get_no_access_marker(file_url: str, drive_client: GoogleDriveClient) -> str:
     """
     Returns either marker of Google Doc edit permissions
@@ -251,6 +252,7 @@ def get_no_access_marker(file_url: str, drive_client: GoogleDriveClient) -> str:
     if not drive_client.is_open_for_edit(file_url):
         return load('common__no_file_access') + ' '
     return ''
+
 
 def check_trello_card(
     card,

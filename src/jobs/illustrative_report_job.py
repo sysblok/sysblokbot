@@ -10,7 +10,8 @@ from ..strings import load
 from ..trello.trello_client import TrelloClient
 from ..trello.trello_objects import TrelloCustomField
 from .base_job import BaseJob
-from .utils import check_trello_card, format_errors, format_possibly_plural, get_no_access_marker, pretty_send
+from .utils import (check_trello_card, format_errors, format_possibly_plural,
+                    get_no_access_marker, pretty_send)
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +74,7 @@ class IllustrativeReportJob(BaseJob):
         parse_failure_counter = 0
 
         paragraphs = [
-            load('illustrative_report_job__title_and_size', title=title, length=len(cards))
+            load('common_report__list_title_and_size', title=title, length=len(cards))
         ]
 
         for card in cards:

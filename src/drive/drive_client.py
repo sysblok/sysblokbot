@@ -55,7 +55,7 @@ class GoogleDriveClient(Singleton):
     def is_folder_empty(self, folder_url: str) -> bool:
         existing = self._lookup_file_by_parent_url(folder_url)
         return existing is None
-    
+
     def is_open_for_edit(self, file_url: str) -> bool:
         """
         Checks file_url is a Google Doc with "anyone: edit" permission granted.

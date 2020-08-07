@@ -9,7 +9,8 @@ from ..strings import load
 from ..drive.drive_client import GoogleDriveClient
 from ..trello.trello_client import TrelloClient
 from .base_job import BaseJob
-from .utils import check_trello_card, format_errors, format_possibly_plural, get_no_access_marker, pretty_send
+from .utils import (check_trello_card, format_errors, format_possibly_plural,
+                    get_no_access_marker, pretty_send)
 
 logger = logging.getLogger(__name__)
 
