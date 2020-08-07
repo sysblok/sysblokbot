@@ -1,4 +1,5 @@
 import logging
+import re
 
 from typing import List
 from urllib.parse import urljoin, urlparse
@@ -116,7 +117,9 @@ class GoogleDriveClient(Singleton):
                 pageToken=page_token
             ).execute()
         except Exception as e:
-            logger.error(f'Failed to query Google drive for existing parent url {parent_url}: {e}')
+            logger.warning(
+                f'Failed to query Google drive for existing parent url {parent_url}: {e}'
+            )
             return None
         items = results.get('files', [])
         if len(items) == 0:
@@ -126,15 +129,6 @@ class GoogleDriveClient(Singleton):
 
     @staticmethod
     def _get_id_from_url(url: str) -> str:
-        return GoogleDriveClient._clean_url(url).split('/')[-1]
-
-    @staticmethod
-    def _clean_url(url: str) -> str:
-        """
-        Remove query parameters and /edit suffix. Works with both files and folders.
-        """
-        url_without_query = urlparse(url)._replace(query=None).geturl()
-        edit_suffix = '/edit'
-        if url_without_query.endswith(edit_suffix):
-            url_without_query = url_without_query[:-len(edit_suffix)]
-        return url_without_query
+        """Works with any id (doc/drive/sheets)"""
+        match = re.search('google.com.*/([a-zA-Z0-9-_]{25,})', url)
+        return match.group(1) if match else ''

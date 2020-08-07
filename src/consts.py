@@ -63,6 +63,7 @@ class TrelloListAlias(Enum):
     TOPIC_READY = 'Готовая тема'
     IN_PROGRESS = 'Уже пишу'
     TO_EDITOR = 'Редактору'
+    TO_SEO_EDITOR = 'SEO-редактору'
     EDITED_NEXT_WEEK = 'На редактуре на след.неделю'
     EDITED_SOMETIMES = 'Отредактировано впрок'
     TO_CHIEF_EDITOR = 'Финальная проверка и отбор'

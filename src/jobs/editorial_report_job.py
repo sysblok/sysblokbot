@@ -38,7 +38,7 @@ class EditorialReportJob(BaseJob):
             title=load('editorial_report_job__title_revision'),
             list_aliases=(TrelloListAlias.IN_PROGRESS, ),
             errors=errors,
-            moved_from_exclusive=(TrelloListAlias.EDITED_NEXT_WEEK, ),
+            moved_from_exclusive=(TrelloListAlias.EDITED_NEXT_WEEK, TrelloListAlias.TO_SEO_EDITOR),
             strict_archive_rules=False,
         )
 
@@ -46,7 +46,7 @@ class EditorialReportJob(BaseJob):
             trello_client=app_context.trello_client,
             drive_client=app_context.drive_client,
             title=load('common_report__section_title_editorial_board'),
-            list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, ),
+            list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, TrelloListAlias.TO_SEO_EDITOR),
             errors=errors,
             strict_archive_rules=False,
         )
