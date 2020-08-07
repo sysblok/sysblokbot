@@ -142,7 +142,6 @@ class EditorialReportJob(BaseJob):
 
             card_fields = trello_client.get_custom_fields(card.id)
 
-
             card_is_ok = check_trello_card(
                 card,
                 errors,

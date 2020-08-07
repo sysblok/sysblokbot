@@ -244,18 +244,18 @@ def _make_statistic_string(statistic: TrelloAnalytics):
 
 
 def check_trello_card(
-        card,
-        errors,
-        is_bad_title=False,
-        is_bad_google_doc=False,
-        is_bad_authors=False,
-        is_bad_editors=False,
-        is_bad_illustrators=False,
-        is_bad_cover=False,
-        is_bad_due_date=False,
-        is_bad_label_names=False,
-        strict_archive_rules=False,
-    ):
+    card,
+    errors,
+    is_bad_title=False,
+    is_bad_google_doc=False,
+    is_bad_authors=False,
+    is_bad_editors=False,
+    is_bad_illustrators=False,
+    is_bad_cover=False,
+    is_bad_due_date=False,
+    is_bad_label_names=False,
+    strict_archive_rules=False,
+):
     label_names = [
         label.name for label in card.labels if label.color != TrelloCardColor.BLACK
     ]
@@ -263,7 +263,7 @@ def check_trello_card(
     is_archive_card = load('common__label_archive') in label_names
     if is_archive_card and not strict_archive_rules:
         return True
-    
+
     this_card_bad_fields = []
     if is_bad_title:
         this_card_bad_fields.append(load('common_custom_field__post_title').lower())

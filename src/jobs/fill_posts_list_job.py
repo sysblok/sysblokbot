@@ -97,8 +97,9 @@ class FillPostsListJob(BaseJob):
             if not card_is_ok:
                 continue
 
-            is_main_post = load('common_trello_label__main_post') in [label.name for label in card.labels]
-            is_archive_post = load('common_trello_label__archive') in [label.name for label in card.labels]
+            label_names = [label.name for label in card.labels]
+            is_main_post = load('common_trello_label__main_post') in label_names
+            is_archive_post = load('common_trello_label__archive') in label_names
 
             registry_posts.append(
                 RegistryPost(

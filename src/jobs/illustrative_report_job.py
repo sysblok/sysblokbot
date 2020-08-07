@@ -103,7 +103,7 @@ class IllustrativeReportJob(BaseJob):
 
             if not card_is_ok:
                 continue
-            
+
             if not card_fields.cover and not is_archive_card:
                 card_fields.cover = app_context.drive_client.create_folder_for_card(card)
                 logger.info(f'Trying to put {card_fields.cover} as cover field for {card.url}')
