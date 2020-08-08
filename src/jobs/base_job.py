@@ -2,6 +2,7 @@ import logging
 from typing import Callable
 
 from ..app_context import AppContext
+from ..consts import USAGE_LOG_LEVEL
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ class BaseJob:
         Default send function does nothing with all send(...) statements.
         """
         module = cls.__name__
-        logger.info(f'Starting {module}...')
+        logger.usage(f'Job {module} started...')
         try:
             cls._execute(app_context, send, called_from_handler)
         except Exception as e:

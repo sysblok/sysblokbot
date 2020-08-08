@@ -75,6 +75,9 @@ class TelegramSender(Singleton):
 
     def send_error_log(self, error_log: str):
         self.send_to_chat_ids(error_log, self.error_logs_recipients)
+    
+    def send_usage_log(self, usage_log: str):
+        self.send_to_chat_ids(usage_log, self.usage_logs_recipients)
 
     def send_important_event(self, event_text: str):
         logger.info(f'Sending important event: "{event_text}"')
@@ -95,6 +98,9 @@ class TelegramSender(Singleton):
         )
         self.error_logs_recipients = self._tg_config.get(
             'error_logs_recipients'
+        )
+        self.usage_logs_recipients = self._tg_config.get(
+            'usage_logs_recipients'
         )
         self.is_silent = self._tg_config.get('is_silent', True)
         self.disable_web_page_preview = self._tg_config.get('disable_web_page_preview', True)

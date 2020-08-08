@@ -2,10 +2,12 @@
 import os
 from datetime import timedelta, timezone
 from enum import Enum
+from logging import WARNING, INFO
 
 import telegram
 
 LOG_FORMAT = '%(asctime)s - %(name)s\t- %(levelname)s\t- %(message)s'
+USAGE_LOG_LEVEL = (WARNING + INFO) / 2
 
 COMMIT_URL = f'https://github.com/sysblok/sysblokbot/commit/{os.environ.get("COMMIT_HASH")}'
 COMMIT_HASH = os.environ.get('COMMIT_HASH_SHORT')
