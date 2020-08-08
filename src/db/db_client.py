@@ -109,17 +109,17 @@ class DBClient(Singleton):
             return None
         return author.telegram
 
-    def is_curator(self, trello_id: str) -> bool:
+    def get_curator_by_trello_id(self, trello_id: str) -> Curator:
         session = self.Session()
         author = session.query(Author).filter(
             Author.trello == trello_id
         ).first()
         if author is None or not author.telegram:
-            return False
+            return None
         curator = session.query(Curator).filter(
             Curator.telegram == author.telegram
         ).first()
-        return bool(curator)
+        return curator
 
     def find_curators_by_author_trello(self, trello_id: str) -> List[Curator]:
         # TODO: make batch queries

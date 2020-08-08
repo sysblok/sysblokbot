@@ -131,7 +131,6 @@ class TrelloBoardStateJob(BaseJob):
             return False, {}
 
         list_aliases = (
-            TrelloListAlias.IN_PROGRESS,
             TrelloListAlias.TO_EDITOR,
             TrelloListAlias.EDITED_NEXT_WEEK,
             TrelloListAlias.TO_SEO_EDITOR,
@@ -146,12 +145,11 @@ class TrelloBoardStateJob(BaseJob):
     @staticmethod
     def _has_no_doc_access(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dict]:
         doc_url = app_context.trello_client.get_custom_fields(card.id).google_doc or ''
-        if doc_url is None:
+        if not doc_url:
             # should be checked in _is_doc_missing
             return False, {}
 
         list_aliases = (
-            TrelloListAlias.IN_PROGRESS,
             TrelloListAlias.TO_EDITOR,
             TrelloListAlias.EDITED_NEXT_WEEK,
             TrelloListAlias.TO_SEO_EDITOR,
@@ -209,18 +207,18 @@ class TrelloBoardStateJob(BaseJob):
 
     @staticmethod
     def _get_curators(card, db_client):
-        if not card.members:
-            # if no members in a card, should tag curators based on label
-            curators_by_label = utils.retrieve_curator_names_by_categories(
-                card.labels, db_client
-            )
-            if curators_by_label:
-                return curators_by_label
         curators = set()
         for member in card.members:
             curator_names = utils.retrieve_curator_names_by_author(member, db_client)
             curators.update(curator_names)
-        return curators
+        if curators:
+            return curators
+
+        # e.g. if no members in a card, should tag curators based on label
+        curators_by_label = utils.retrieve_curator_names_by_categories(
+            card.labels, db_client
+        )
+        return curators_by_label
 
 
 FILTER_TO_FAILURE_REASON = {
