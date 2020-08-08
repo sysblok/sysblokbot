@@ -253,8 +253,9 @@ class SysBlokBot:
         """Adds handler silently. Noone will see it in /help output"""
         def add_usage_logging(func):
             def wrapper(*args, **kwargs):
-                logger.usage(f'Handler {handler_cmd} was called')
+                logger.usage(f'Handler {handler_cmd} was called...')
                 results = func(*args, **kwargs)
+                logger.usage(f'Handler {handler_cmd} finished')
                 return results
             return wrapper
 

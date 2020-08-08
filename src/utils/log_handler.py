@@ -25,7 +25,7 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
         super().emit(record)
         if record.levelno == USAGE_LOG_LEVEL and not self.is_muted:
             try:
-                usage_message = f'{record.message}'
+                usage_message = f'{record.asctime} - {record.message}'
                 if record.exc_text:
                     usage_message += f' - {record.exc_text}'
                 self.tg_sender.send_usage_log(f'<code>{html.escape(usage_message)}</code>')

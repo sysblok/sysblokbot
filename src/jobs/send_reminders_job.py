@@ -20,3 +20,7 @@ class SendRemindersJob(BaseJob):
             else:
                 logger.info(f'Reminder {reminder.name} not sent (deactivated)')
         send(load('send_reminders_job__success', length=len(reminders)))
+
+    @staticmethod
+    def usage_muted(cls):
+        return True

@@ -20,13 +20,19 @@ class BaseJob:
         Default send function does nothing with all send(...) statements.
         """
         module = cls.__name__
-        logger.usage(f'Job {module} started...')
+        if cls.usage_muted():
+            logger.info(f'Job {module} started...')
+        else:
+            logger.usage(f'Job {module} started...')
         try:
             cls._execute(app_context, send, called_from_handler)
         except Exception as e:
             # should not raise exception, so that schedule module won't go mad retrying
             logging.exception(f'Could not run job {module}', exc_info=e)
-        logger.info(f'Finished {module}')
+        if cls.usage_muted():
+            logger.info(f'Job {module} finished')
+        else:
+            logger.usage(f'Job {module} finished')
 
     @staticmethod
     def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
@@ -38,3 +44,7 @@ class BaseJob:
     @classmethod
     def __str__(cls):
         return cls.__module__
+
+    @classmethod
+    def usage_muted(cls):
+        return False
