@@ -24,9 +24,6 @@ class AppContext(Singleton):
             return
 
         self.config_manager = config_manager
-        self.trello_client = TrelloClient(
-            trello_config=config_manager.get_trello_config()
-        )
         try:
             self.sheets_client = GoogleSheetsClient(
                 sheets_config=config_manager.get_sheets_config()
@@ -51,6 +48,10 @@ class AppContext(Singleton):
 
         if self.sheets_client and self.db_client:
             self.db_client.fetch_all(self.sheets_client)
+
+        self.trello_client = TrelloClient(
+            trello_config=config_manager.get_trello_config()
+        )
 
         # TODO: move that to db
         tg_config = config_manager.get_telegram_config()

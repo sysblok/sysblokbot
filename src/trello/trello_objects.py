@@ -181,6 +181,9 @@ class TrelloCard:
     def __repr__(self):
         return f'Card<id={self.id}, name={self.name}, url={self.url} members={self.members}>'
 
+    def __eq__(self, other):
+        return str(self) == str(other)
+
     @classmethod
     def from_dict(cls, data):
         card = cls()

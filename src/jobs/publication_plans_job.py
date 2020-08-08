@@ -31,7 +31,7 @@ class PublicationPlansJob(BaseJob):
         paragraphs += PublicationPlansJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
             title=load('common_report__section_title_editorial_board'),
-            list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, ),
+            list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, TrelloListAlias.TO_SEO_EDITOR),
             errors=errors,
             show_due=False,
             need_illustrators=False,
@@ -85,9 +85,10 @@ class PublicationPlansJob(BaseJob):
                 errors,
                 is_bad_title=(
                     card_fields.title is None and
-                    card.lst.id != trello_client.lists_config[
-                        TrelloListAlias.EDITED_NEXT_WEEK
-                    ]
+                    card.lst.id not in (
+                        trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK],
+                        trello_client.lists_config[TrelloListAlias.TO_SEO_EDITOR]
+                    )
                 ),
                 is_bad_illustrators=(
                     len(card_fields.illustrators) == 0 and
@@ -111,9 +112,15 @@ class PublicationPlansJob(BaseJob):
                     date=date,
                     url=card_fields.google_doc or card.url,
                     name=card_fields.title or card.name,
-                    authors=format_possibly_plural('Автор', card_fields.authors),
-                    editors=format_possibly_plural('Редактор', card_fields.editors),
-                    illustrators=format_possibly_plural('Иллюстратор', card_fields.illustrators),
+                    authors=format_possibly_plural(
+                        load('common_role__author'), card_fields.authors
+                    ),
+                    editors=format_possibly_plural(
+                        load('common_role__editor'), card_fields.editors
+                    ),
+                    illustrators=format_possibly_plural(
+                        load('common_role__illustrator'), card_fields.illustrators
+                    ),
                 )
             )
 

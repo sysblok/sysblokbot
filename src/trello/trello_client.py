@@ -5,6 +5,7 @@ from urllib.parse import quote, urljoin
 
 from . import trello_objects as objects
 from ..consts import TrelloListAlias, TrelloCustomFieldTypes, TrelloCustomFieldTypeAlias
+from ..strings import load
 from ..utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
@@ -123,15 +124,24 @@ class TrelloClient(Singleton):
         card_fields = objects.CardCustomFields(card_id)
         card_fields._data = card_fields_dict
         card_fields.authors = (
-            card_fields_dict[TrelloCustomFieldTypeAlias.AUTHOR].value.split(',')
+            [
+                author.strip() for author in
+                card_fields_dict[TrelloCustomFieldTypeAlias.AUTHOR].value.split(',')
+            ]
             if TrelloCustomFieldTypeAlias.AUTHOR in card_fields_dict else []
         )
         card_fields.editors = (
-            card_fields_dict[TrelloCustomFieldTypeAlias.EDITOR].value.split(',')
+            [
+                editor.strip() for editor in
+                card_fields_dict[TrelloCustomFieldTypeAlias.EDITOR].value.split(',')
+                ]
             if TrelloCustomFieldTypeAlias.EDITOR in card_fields_dict else []
         )
         card_fields.illustrators = (
-            card_fields_dict[TrelloCustomFieldTypeAlias.ILLUSTRATOR].value.split(',')
+            [
+                illustrator.strip() for illustrator in
+                card_fields_dict[TrelloCustomFieldTypeAlias.ILLUSTRATOR].value.split(',')
+            ]
             if TrelloCustomFieldTypeAlias.ILLUSTRATOR in card_fields_dict else []
         )
         card_fields.cover = (
@@ -215,6 +225,7 @@ class TrelloClient(Singleton):
         # TODO(alexeyqu): move to DB
         lists = self.get_lists()
         self.lists_config = self._fill_alias_id_map(lists, TrelloListAlias)
+        logger.error(self.lists_config)
         custom_field_types = self.get_board_custom_field_types()
         self.custom_fields_type_config = self._fill_id_type_map(
             custom_field_types, TrelloCustomFieldTypes
@@ -224,12 +235,22 @@ class TrelloClient(Singleton):
         )
 
     def get_list_id_from_aliases(self, list_aliases):
-        return [self.lists_config[alias] for alias in list_aliases if alias in self.lists_config]
+        list_ids = [
+            self.lists_config[alias] for alias in list_aliases if alias in self.lists_config
+        ]
+        print(self.lists_config)
+        print(list_ids)
+        if len(list_ids) != len(list_aliases):
+            logger.error(
+                f'list_ids not found for aliases: '
+                f'{[alias for alias in list_aliases if alias not in self.lists_config]}'
+            )
+        return list_ids
 
     def _fill_alias_id_map(self, items, item_enum):
         result = {}
         for alias in item_enum:
-            suitable_items = [item for item in items if item.name.startswith(alias.value)]
+            suitable_items = [item for item in items if item.name.startswith(load(alias.value))]
             if len(suitable_items) > 1:
                 raise ValueError(f'Enum {item_enum.__name__} name {alias.value} is ambiguous!')
             if len(suitable_items) > 0:

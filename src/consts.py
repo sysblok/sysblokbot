@@ -59,29 +59,29 @@ class TrelloCardColor(Enum):
 
 
 class TrelloListAlias(Enum):
-    TOPIC_SUGGESTION = 'Идея для статьи'
-    TOPIC_READY = 'Готовая тема'
-    IN_PROGRESS = 'Уже пишу'
-    TO_EDITOR = 'Редактору'
-    TO_SEO_EDITOR = 'SEO-редактору'
-    EDITED_NEXT_WEEK = 'На редактуре на след.неделю'
-    EDITED_SOMETIMES = 'Отредактировано впрок'
-    TO_CHIEF_EDITOR = 'Финальная проверка и отбор'
-    PROOFREADING = 'Отобрано для публикации на неделю'
-    DONE = 'Готово для верстки'
-    BACK_BURNER = 'Долгий Ящик'
+    TOPIC_SUGGESTION = 'trello_list_name__topic_suggestion'
+    TOPIC_READY = 'trello_list_name__topic_ready'
+    IN_PROGRESS = 'trello_list_name__in_progress'
+    TO_EDITOR = 'trello_list_name__to_editor'
+    TO_SEO_EDITOR = 'trello_list_name__to_seo_editor'
+    EDITED_NEXT_WEEK = 'trello_list_name__edited_next_week'
+    EDITED_SOMETIMES = 'trello_list_name__edited_sometimes'
+    TO_CHIEF_EDITOR = 'trello_list_name__to_chief_editor'
+    PROOFREADING = 'trello_list_name__proofreading'
+    DONE = 'trello_list_name__typesetting'
+    BACK_BURNER = 'trello_list_name__back_burner'
 
 
 class TrelloCustomFieldTypeAlias(Enum):
-    AUTHOR = 'Автор'
-    GOOGLE_DOC = 'Google Doc'
-    EDITOR = 'Редактор'
-    TITLE = 'Название поста'
-    ILLUSTRATOR = 'Иллюстратор'
-    COVER = 'Обложка'
-    WEBSITE = 'Сайт'
-    VKONTAKTE = 'ВКонтакте'
-    TELEGRAM = 'Telegram'
+    AUTHOR = 'trello_custom_field__author'
+    GOOGLE_DOC = 'trello_custom_field__google_doc'
+    EDITOR = 'trello_custom_field__editor'
+    TITLE = 'trello_custom_field__post_title'
+    ILLUSTRATOR = 'trello_custom_field__illustrator'
+    COVER = 'trello_custom_field__cover'
+    WEBSITE = 'trello_custom_field__website'
+    VKONTAKTE = 'trello_custom_field__vk'
+    TELEGRAM = 'trello_custom_field__telegram'
 
 
 class TrelloCustomFieldTypes(Enum):
