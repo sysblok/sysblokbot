@@ -131,7 +131,6 @@ class TrelloBoardStateJob(BaseJob):
             return False, {}
 
         list_aliases = (
-            TrelloListAlias.IN_PROGRESS,
             TrelloListAlias.TO_EDITOR,
             TrelloListAlias.EDITED_NEXT_WEEK,
             TrelloListAlias.TO_SEO_EDITOR,
@@ -146,12 +145,11 @@ class TrelloBoardStateJob(BaseJob):
     @staticmethod
     def _has_no_doc_access(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dict]:
         doc_url = app_context.trello_client.get_custom_fields(card.id).google_doc or ''
-        if doc_url is None:
+        if not doc_url:
             # should be checked in _is_doc_missing
             return False, {}
 
         list_aliases = (
-            TrelloListAlias.IN_PROGRESS,
             TrelloListAlias.TO_EDITOR,
             TrelloListAlias.EDITED_NEXT_WEEK,
             TrelloListAlias.TO_SEO_EDITOR,
