@@ -3,7 +3,7 @@ from logging import ERROR
 import html
 
 from .singleton import Singleton
-from ..consts import LOG_FORMAT
+from ..consts import LOG_FORMAT, USAGE_LOG_LEVEL
 from ..tg.sender import TelegramSender
 
 
@@ -23,7 +23,8 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
     def emit(self, record: LogRecord):
         self.format(record)
         super().emit(record)
-        if record.levelno >= ERROR and not self.is_muted:
+        if record.levelno == USAGE_LOG_LEVEL or \
+        record.levelno >= ERROR and not self.is_muted:
             try:
                 error_message = f'{record.levelname} - {record.module} - {record.message}'
                 if record.exc_text:
