@@ -14,10 +14,13 @@ from .tg import handlers, sender
 from .tg.handlers.utils import admin_only, direct_message_only, manager_only
 
 logging.addLevelName(USAGE_LOG_LEVEL, "USAGE")
-def usage(self, message, *args, **kws):
-    self._log(USAGE_LOG_LEVEL, message, args, **kws) 
-logging.Logger.usage = usage
 
+
+def usage(self, message, *args, **kws):
+    self._log(USAGE_LOG_LEVEL, message, args, **kws)
+
+
+logging.Logger.usage = usage
 logger = logging.getLogger(__name__)
 
 
@@ -254,7 +257,7 @@ class SysBlokBot:
                 results = func(*args, **kwargs)
                 return results
             return wrapper
-        
+
         self.dp.add_handler(CommandHandler(handler_cmd, add_usage_logging(handler_func)))
 
     def add_admin_handler(

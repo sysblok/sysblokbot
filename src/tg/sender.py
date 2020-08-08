@@ -75,7 +75,7 @@ class TelegramSender(Singleton):
 
     def send_error_log(self, error_log: str):
         self.send_to_chat_ids(error_log, self.error_logs_recipients)
-    
+
     def send_usage_log(self, usage_log: str):
         self.send_to_chat_ids(usage_log, self.usage_logs_recipients)
 

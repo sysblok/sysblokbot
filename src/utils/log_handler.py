@@ -23,8 +23,24 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
     def emit(self, record: LogRecord):
         self.format(record)
         super().emit(record)
-        if record.levelno == USAGE_LOG_LEVEL or \
-        record.levelno >= ERROR and not self.is_muted:
+        if record.levelno == USAGE_LOG_LEVEL:
+            try:
+                usage_message = f'{record.message}'
+                if record.exc_text:
+                    usage_message += f' - {record.exc_text}'
+                self.tg_sender.send_error_log(f'<code>{html.escape(usage_message)}</code>')
+            except Exception as e:
+                # if it can't send a message, still should log it to the stream
+                super().emit(LogRecord(
+                    name=__name__,
+                    level=ERROR,
+                    pathname=None,
+                    lineno=-1,
+                    msg=f'Could not send error to telegram: {e}',
+                    args=None,
+                    exc_info=None,
+                ))
+        if record.levelno >= ERROR and not self.is_muted:
             try:
                 error_message = f'{record.levelname} - {record.module} - {record.message}'
                 if record.exc_text:
