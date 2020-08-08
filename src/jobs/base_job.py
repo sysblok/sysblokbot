@@ -44,6 +44,6 @@ class BaseJob:
     def __str__(cls):
         return cls.__module__
 
-    @classmethod
-    def _usage_muted(cls):
+    @staticmethod
+    def _usage_muted():
         return False
