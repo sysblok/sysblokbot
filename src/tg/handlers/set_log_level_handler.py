@@ -1,6 +1,7 @@
 import logging
 
 from .utils import admin_only, reply
+from ...strings import load
 
 logger = logging.getLogger(__name__)
 
@@ -15,4 +16,4 @@ def set_log_level(update, tg_context):
             logging.getLogger().setLevel(logging.INFO)
     except Exception as e:
         logger.error(f'Failed to update log level to {level}: {e}')
-    reply(f'Log level set to {logging.getLogger().level}', update)
+    reply(load('set_log_level_handler__set_level', level=logging.getLogger().level), update)

@@ -6,6 +6,7 @@ from typing import List
 from src.app_context import AppContext
 from src.config_manager import ConfigManager
 from src import jobs
+from src.strings import load
 from src.tg.sender import TelegramSender
 from src.trello.trello_client import TrelloClient
 
@@ -14,9 +15,9 @@ from conftest import mock_sender
 
 @freeze_time("2020-05-01 11:59:00")
 @pytest.mark.parametrize(
-    'job, output_parts',
+    'job, expected_text_key',
     (
-        (jobs.sample_job.SampleJob, ['job', 'done']),
+        (jobs.sample_job.SampleJob, 'sample_job__expected_response'),
         # (
         #     jobs.trello_board_state_job.TrelloBoardStateJob,
         #     [
@@ -63,11 +64,10 @@ from conftest import mock_sender
     )
 )
 def test_job(monkeypatch, mock_trello, mock_sheets_client, mock_config_manager, mock_sender,
-             job, output_parts):
+             job, expected_text_key):
 
     def send_to_chat_id(message_text: str, chat_id: int, **kwargs):
-        for part in output_parts:
-            assert part in message_text
+        assert load(expected_text_key) == message_text
 
     monkeypatch.setattr(
         mock_sender,

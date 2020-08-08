@@ -7,9 +7,11 @@ from typing import Callable, List
 import telegram
 
 from ..app_context import AppContext
+from ..consts import TrelloCardColor
 from ..db.db_client import DBClient
 from ..db.db_objects import Curator, TrelloAnalytics
 from ..sheets.sheets_client import GoogleSheetsClient
+from ..drive.drive_client import GoogleDriveClient
 from ..strings import load
 from ..trello.trello_objects import TrelloMember
 from .. import jobs
@@ -203,7 +205,12 @@ def format_possibly_plural(name: str, values: List[str]) -> str:
     if len(values) == 0:
         return ''
     # yeah that's a bit sexist
-    return f'{name}{"ы" if len(values) > 1 else ""}: {", ".join(values)}. '
+    return load(
+        'common__named_list',
+        name=name,
+        plural="ы" if len(values) > 1 else "",
+        items=", ".join(values)
+    )
 
 
 def retrieve_statistc(db_client: DBClient):
@@ -240,3 +247,61 @@ def _make_statistic_string(statistic: TrelloAnalytics):
         }
     else:
         return None
+
+
+def get_no_access_marker(file_url: str, drive_client: GoogleDriveClient) -> str:
+    """
+    Returns either marker of Google Doc edit permissions
+    or empty string if not a Google Doc or not open for edit to everyone.
+    """
+    if not drive_client.is_open_for_edit(file_url):
+        return load('common__no_file_access') + ' '
+    return ''
+
+
+def check_trello_card(
+    card,
+    errors,
+    is_bad_title=False,
+    is_bad_google_doc=False,
+    is_bad_authors=False,
+    is_bad_editors=False,
+    is_bad_illustrators=False,
+    is_bad_cover=False,
+    is_bad_due_date=False,
+    is_bad_label_names=False,
+    strict_archive_rules=False,
+):
+    label_names = [
+        label.name for label in card.labels if label.color != TrelloCardColor.BLACK
+    ]
+
+    is_archive_card = load('common_trello_label__archive') in label_names
+    if is_archive_card and not strict_archive_rules:
+        return True
+
+    this_card_bad_fields = []
+    if is_bad_title:
+        this_card_bad_fields.append(load('trello_custom_field__post_title').lower())
+    if is_bad_google_doc:
+        this_card_bad_fields.append(load('trello_custom_field__google_doc').lower())
+    if is_bad_authors:
+        this_card_bad_fields.append(load('trello_custom_field__author').lower())
+    if is_bad_editors:
+        this_card_bad_fields.append(load('trello_custom_field__editor').lower())
+    if is_bad_cover:
+        this_card_bad_fields.append(load('trello_custom_field__cover').lower())
+    if is_bad_illustrators:
+        this_card_bad_fields.append(load('trello_custom_field__illustrator').lower())
+    if is_bad_due_date:
+        this_card_bad_fields.append(load('trello_custom_field__due_date').lower())
+    if is_bad_label_names:
+        this_card_bad_fields.append(load('trello_custom_field__rubric').lower())
+
+    if len(this_card_bad_fields) > 0:
+        logger.info(
+            f'Trello card is unsuitable for publication: {card.url} {this_card_bad_fields}'
+        )
+        errors[card] = this_card_bad_fields
+        return False
+    return True

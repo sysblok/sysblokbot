@@ -59,28 +59,29 @@ class TrelloCardColor(Enum):
 
 
 class TrelloListAlias(Enum):
-    TOPIC_SUGGESTION = 'Идея для статьи'
-    TOPIC_READY = 'Готовая тема'
-    IN_PROGRESS = 'Уже пишу'
-    TO_EDITOR = 'Редактору'
-    EDITED_NEXT_WEEK = 'На редактуре на след.неделю'
-    EDITED_SOMETIMES = 'Отредактировано впрок'
-    TO_CHIEF_EDITOR = 'Финальная проверка и отбор'
-    PROOFREADING = 'Отобрано для публикации на неделю'
-    DONE = 'Готово для верстки'
-    BACK_BURNER = 'Долгий Ящик'
+    TOPIC_SUGGESTION = 'trello_list_name__topic_suggestion'
+    TOPIC_READY = 'trello_list_name__topic_ready'
+    IN_PROGRESS = 'trello_list_name__in_progress'
+    TO_EDITOR = 'trello_list_name__to_editor'
+    TO_SEO_EDITOR = 'trello_list_name__to_seo_editor'
+    EDITED_NEXT_WEEK = 'trello_list_name__edited_next_week'
+    EDITED_SOMETIMES = 'trello_list_name__edited_sometimes'
+    TO_CHIEF_EDITOR = 'trello_list_name__to_chief_editor'
+    PROOFREADING = 'trello_list_name__proofreading'
+    DONE = 'trello_list_name__typesetting'
+    BACK_BURNER = 'trello_list_name__back_burner'
 
 
 class TrelloCustomFieldTypeAlias(Enum):
-    AUTHOR = 'Автор'
-    GOOGLE_DOC = 'Google Doc'
-    EDITOR = 'Редактор'
-    TITLE = 'Название поста'
-    ILLUSTRATOR = 'Иллюстратор'
-    COVER = 'Обложка'
-    WEBSITE = 'Сайт'
-    VKONTAKTE = 'ВКонтакте'
-    TELEGRAM = 'Telegram'
+    AUTHOR = 'trello_custom_field__author'
+    GOOGLE_DOC = 'trello_custom_field__google_doc'
+    EDITOR = 'trello_custom_field__editor'
+    TITLE = 'trello_custom_field__post_title'
+    ILLUSTRATOR = 'trello_custom_field__illustrator'
+    COVER = 'trello_custom_field__cover'
+    WEBSITE = 'trello_custom_field__website'
+    VKONTAKTE = 'trello_custom_field__vk'
+    TELEGRAM = 'trello_custom_field__telegram'
 
 
 class TrelloCustomFieldTypes(Enum):
@@ -165,6 +166,7 @@ class ButtonValues(Enum):
     MANAGE_REMINDERS__EDIT__DATETIME = 'manage_reminders__edit__datetime'
     MANAGE_REMINDERS__EDIT__CHAT = 'manage_reminders__edit__chat'
     MANAGE_REMINDERS__EDIT__SUSPEND = 'manage_reminders__edit__suspend'
+    MANAGE_REMINDERS__EDIT__RESUME = 'manage_reminders__edit__resume'
 
 
 WEEKDAYS_SHORT = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
@@ -199,3 +201,18 @@ WEEKDAY_BUTTONS = [[
         callback_data=ButtonValues.SUN.value
     )
 ]]
+
+
+class CommandCategories(Enum):
+    """
+    Enum for /help command sections string aliases.
+    """
+    MOST_USED = 'help__00_most_used'
+    DATA_SYNC = 'help__01_synchronize'
+    CONFIG = 'help__02_config'
+    BROADCAST = 'help__03_broadcast'
+    LOGGING = 'help__04_logging'
+    SUMMARY = 'help__05_summary'
+    STATS = 'help__06_stats'
+    REGISTRY = 'help__07_registry'
+    REMINDERS = 'help__08_reminders'

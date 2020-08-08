@@ -10,7 +10,8 @@ from ..strings import load
 from ..trello.trello_client import TrelloClient
 from ..trello.trello_objects import TrelloCustomField
 from .base_job import BaseJob
-from .utils import format_errors, format_possibly_plural, pretty_send
+from .utils import (check_trello_card, format_errors, format_possibly_plural,
+                    get_no_access_marker, pretty_send)
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +40,8 @@ class IllustrativeReportJob(BaseJob):
 
         paragraphs += IllustrativeReportJob._retrieve_cards_for_paragraph(
             app_context=app_context,
-            title=load('illustrative_report_job__title_editors'),
-            list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, ),
+            title=load('common_report__section_title_editorial_board'),
+            list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, TrelloListAlias.TO_SEO_EDITOR),
             errors=errors,
             strict_archive_rules=False,
         )
@@ -73,7 +74,7 @@ class IllustrativeReportJob(BaseJob):
         parse_failure_counter = 0
 
         paragraphs = [
-            load('illustrative_report_job__title_and_size', title=title, length=len(cards))
+            load('common_report__list_title_and_size', title=title, length=len(cards))
         ]
 
         for card in cards:
@@ -86,29 +87,23 @@ class IllustrativeReportJob(BaseJob):
             label_names = [
                 label.name for label in card.labels if label.color != TrelloCardColor.BLACK
             ]
-            is_archive_card = 'Архив' in label_names
+            is_archive_card = load('common_trello_label__archive') in label_names
 
-            this_card_bad_fields = []
-
-            if (
+            card_is_ok = check_trello_card(
+                card,
+                errors,
+                is_bad_title=(
                     card_fields.title is None and
-                    card.lst.id != app_context.trello_client.lists_config[
-                        TrelloListAlias.EDITED_NEXT_WEEK
-                    ]
-            ):
-                this_card_bad_fields.append('название поста')
-            if card_fields.google_doc is None:
-                this_card_bad_fields.append('google doc')
-                this_card_bad_fields.append('автор')
+                    card.lst.id not in (
+                        app_context.trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK],
+                        app_context.trello_client.lists_config[TrelloListAlias.TO_SEO_EDITOR]
+                    )
+                ),
+                is_bad_google_doc=card_fields.google_doc is None,
+                is_bad_authors=len(card_fields.authors) == 0,
+            )
 
-            if (
-                    len(this_card_bad_fields) > 0
-                    and not is_archive_card
-            ):
-                logger.info(
-                    f'Trello card is unsuitable for publication: {card.url} {this_card_bad_fields}'
-                )
-                errors[card] = this_card_bad_fields
+            if not card_is_ok:
                 continue
 
             if not card_fields.cover and not is_archive_card:
@@ -136,20 +131,22 @@ class IllustrativeReportJob(BaseJob):
                 else:
                     cover = load('illustrative_report_job__card_cover', name=card_fields.cover)
 
-            paragraphs.append(
-                load(
-                    'illustrative_report_job__card',
-                    url=(
-                        card_fields.google_doc
-                        if urlparse(card_fields.google_doc).scheme else card.url
-                    ),
-                    name=card_fields.title or card.name,
-                    authors=format_possibly_plural('Автор', card_fields.authors),
-                    editors=format_possibly_plural('Редактор', card_fields.editors),
-                    illustrators=format_possibly_plural('Иллюстратор', card_fields.illustrators),
-                    cover=cover,
-                )
+            file_url = (
+                card_fields.google_doc if urlparse(card_fields.google_doc).scheme else card.url
             )
+            no_access_marker = get_no_access_marker(file_url, app_context.drive_client)
+            card_text = load(
+                'illustrative_report_job__card',
+                url=file_url,
+                name=card_fields.title or card.name,
+                authors=format_possibly_plural(load('common_role__author'), card_fields.authors),
+                editors=format_possibly_plural(load('common_role__editor'), card_fields.editors),
+                illustrators=format_possibly_plural(
+                    load('common_role__illustrator'), card_fields.illustrators
+                ),
+                cover=cover,
+            )
+            paragraphs.append(no_access_marker + card_text)
 
         if parse_failure_counter > 0:
             logger.error(f'Unparsed cards encountered: {parse_failure_counter}')

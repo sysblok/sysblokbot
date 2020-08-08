@@ -88,14 +88,14 @@ class TrelloAnalyticsJob(BaseJob):
         Returns a list of paragraphs that should always go in a single message.
         '''
         logger.info(f'Started counting: "{title}"')
-        list_ids = [app_context.trello_client.lists_config[alias] for alias in list_aliases]
+        list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
         cards = list(filter(filter_func, app_context.trello_client.get_cards(list_ids)))
         statistics = TrelloAnalyticsJob._get_last_statistic(app_context)
         TrelloAnalyticsJob.new_statistic[column_name] = len(cards)
         if statistics:
             delta = len(cards) - int(statistics[column_name])
             paragraphs = [load(
-                'main_stats_job__title_and_size_and_diff',
+                'common_report__list_title_and_size',
                 title=title,
                 length=len(cards),
                 sign="+" if delta > 0 else "",
@@ -103,7 +103,7 @@ class TrelloAnalyticsJob(BaseJob):
             )]
             return paragraphs
         else:
-            return [load('main_stats_job__title_and_size', title=title, length=len(cards))]
+            return [load('common_report__list_title_and_size', title=title, length=len(cards))]
 
     @staticmethod
     def _get_last_statistic(app_context):

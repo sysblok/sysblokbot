@@ -6,9 +6,11 @@ from typing import Callable, List
 from ..app_context import AppContext
 from ..consts import TrelloListAlias, TrelloCardColor
 from ..strings import load
+from ..drive.drive_client import GoogleDriveClient
 from ..trello.trello_client import TrelloClient
 from .base_job import BaseJob
-from .utils import format_errors, format_possibly_plural, pretty_send
+from .utils import (check_trello_card, format_errors, format_possibly_plural,
+                    get_no_access_marker, pretty_send)
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +24,7 @@ class EditorialReportJob(BaseJob):
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
+            drive_client=app_context.drive_client,
             title=load('editorial_report_job__title_redacted'),
             list_aliases=(TrelloListAlias.EDITED_SOMETIMES, TrelloListAlias.TO_CHIEF_EDITOR),
             errors=errors,
@@ -31,23 +34,26 @@ class EditorialReportJob(BaseJob):
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
+            drive_client=app_context.drive_client,
             title=load('editorial_report_job__title_revision'),
             list_aliases=(TrelloListAlias.IN_PROGRESS, ),
             errors=errors,
-            moved_from_exclusive=(TrelloListAlias.EDITED_NEXT_WEEK, ),
+            moved_from_exclusive=(TrelloListAlias.EDITED_NEXT_WEEK, TrelloListAlias.TO_SEO_EDITOR),
             strict_archive_rules=False,
         )
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
-            title=load('editorial_report_job__title_editors'),
-            list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, ),
+            drive_client=app_context.drive_client,
+            title=load('common_report__section_title_editorial_board'),
+            list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, TrelloListAlias.TO_SEO_EDITOR),
             errors=errors,
             strict_archive_rules=False,
         )
 
         paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
+            drive_client=app_context.drive_client,
             title=load('editorial_report_job__title_editors_pending'),
             list_aliases=(TrelloListAlias.TO_EDITOR, ),
             errors=errors,
@@ -64,11 +70,12 @@ class EditorialReportJob(BaseJob):
 
     @staticmethod
     def _card_is_urgent(card):
-        return 'Срочно' in [label.name for label in card.labels]
+        return load('common_trello_label__urgent') in [label.name for label in card.labels]
 
     @staticmethod
     def _retrieve_cards_for_paragraph(
             trello_client: TrelloClient,
+            drive_client: GoogleDriveClient,
             title: str,
             list_aliases: List[TrelloListAlias],
             errors: dict,
@@ -127,7 +134,7 @@ class EditorialReportJob(BaseJob):
             cards_filtered.append(card)
 
         paragraphs = [
-            load('editorial_report_job__title_and_size', title=title, length=len(cards_filtered))
+            load('common_report__list_title_and_size', title=title, length=len(cards_filtered))
         ]
 
         for card in sorted(
@@ -142,40 +149,35 @@ class EditorialReportJob(BaseJob):
 
             card_fields = trello_client.get_custom_fields(card.id)
 
-            label_names = [
-                label.name for label in card.labels if label.color != TrelloCardColor.BLACK
-            ]
-            is_archive_card = 'Архив' in label_names
+            card_is_ok = check_trello_card(
+                card,
+                errors,
+                is_bad_title=(
+                    card_fields.title is None and need_title
+                ),
+                is_bad_google_doc=card_fields.google_doc is None,
+                is_bad_authors=len(card_fields.authors) == 0,
+                is_bad_editors=len(card_fields.editors) == 0 and need_editor,
+            )
 
-            this_card_bad_fields = []
-            if card_fields.title is None and need_title:
-                this_card_bad_fields.append('название поста')
-            if card_fields.google_doc is None:
-                this_card_bad_fields.append('google doc')
-            if len(card_fields.authors) == 0:
-                this_card_bad_fields.append('автор')
-            if len(card_fields.editors) == 0 and need_editor:
-                this_card_bad_fields.append('редактор')
-
-            if (
-                    len(this_card_bad_fields) > 0
-                    and not (is_archive_card and not strict_archive_rules)
-            ):
-                logger.info(
-                    f'Trello card is unsuitable for publication: {card.url} {this_card_bad_fields}'
-                )
-                errors[card] = this_card_bad_fields
+            if not card_is_ok:
                 continue
 
+            url = card_fields.google_doc or card.url
             paragraphs.append(
                 load(
-                    'editorial_report_job__card',
+                    'editorial_report_job__card_2',
                     date=card.due.strftime('%d.%m').lower() if card.due else '??.??',
                     urgent='(Срочно!)' if EditorialReportJob._card_is_urgent(card) else '',
-                    url=card_fields.google_doc or card.url,
+                    no_file_access=get_no_access_marker(url, drive_client),
+                    url=url,
                     name=card_fields.title or card.name,
-                    authors=format_possibly_plural('Автор', card_fields.authors),
-                    editors=format_possibly_plural('Редактор', card_fields.editors),
+                    authors=format_possibly_plural(
+                        load('common_role__author'), card_fields.authors
+                    ),
+                    editors=format_possibly_plural(
+                        load('common_role__editor'), card_fields.editors
+                    ),
                 )
             )
 
