@@ -22,5 +22,5 @@ class SendRemindersJob(BaseJob):
         send(load('send_reminders_job__success', length=len(reminders)))
 
     @staticmethod
-    def usage_muted(cls):
+    def _usage_muted(cls):
         return True
