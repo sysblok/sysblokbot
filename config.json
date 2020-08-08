@@ -6,7 +6,8 @@
         "admin_chat_ids": [],
         "manager_chat_ids": [],
         "important_events_recipients": [],
-        "error_logs_recipients": []
+        "error_logs_recipients": [],
+        "usage_logs_recipients": []
     },
     "trello": {
         "api_key": "do_not_set_here_please_go_to_config_override",

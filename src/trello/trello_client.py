@@ -1,6 +1,7 @@
 import json
 import logging
 import requests
+from typing import List
 from urllib.parse import quote, urljoin
 
 from . import trello_objects as objects
@@ -100,7 +101,7 @@ class TrelloClient(Singleton):
         logger.debug(f'get_board_custom_field_types: {custom_field_types}')
         return custom_field_types
 
-    def get_card_custom_fields(self, card_id):
+    def get_card_custom_fields(self, card_id: str) -> List[objects.TrelloCustomField]:
         _, data = self._make_request(f'cards/{card_id}/customFieldItems')
         custom_fields = [
             objects.TrelloCustomField.from_dict(custom_field, self.custom_fields_type_config)
@@ -118,7 +119,7 @@ class TrelloClient(Singleton):
                 custom_fields_dict[alias] = suitable_fields[0]
         return custom_fields_dict
 
-    def get_custom_fields(self, card_id):
+    def get_custom_fields(self, card_id: str) -> objects.CardCustomFields:
         # TODO: think about better naming
         card_fields_dict = self.get_card_custom_fields_dict(card_id)
         card_fields = objects.CardCustomFields(card_id)
@@ -225,7 +226,6 @@ class TrelloClient(Singleton):
         # TODO(alexeyqu): move to DB
         lists = self.get_lists()
         self.lists_config = self._fill_alias_id_map(lists, TrelloListAlias)
-        logger.error(self.lists_config)
         custom_field_types = self.get_board_custom_field_types()
         self.custom_fields_type_config = self._fill_id_type_map(
             custom_field_types, TrelloCustomFieldTypes
@@ -238,8 +238,6 @@ class TrelloClient(Singleton):
         list_ids = [
             self.lists_config[alias] for alias in list_aliases if alias in self.lists_config
         ]
-        print(self.lists_config)
-        print(list_ids)
         if len(list_ids) != len(list_aliases):
             logger.error(
                 f'list_ids not found for aliases: '
