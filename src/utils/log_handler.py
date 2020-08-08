@@ -23,7 +23,7 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
     def emit(self, record: LogRecord):
         self.format(record)
         super().emit(record)
-        if record.levelno == USAGE_LOG_LEVEL:
+        if record.levelno == USAGE_LOG_LEVEL and not self.is_muted:
             try:
                 usage_message = f'{record.message}'
                 if record.exc_text:
