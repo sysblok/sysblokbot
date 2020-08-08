@@ -28,7 +28,7 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
                 usage_message = f'{record.message}'
                 if record.exc_text:
                     usage_message += f' - {record.exc_text}'
-                self.tg_sender.send_error_log(f'<code>{html.escape(usage_message)}</code>')
+                self.tg_sender.send_usage_log(f'<code>{html.escape(usage_message)}</code>')
             except Exception as e:
                 # if it can't send a message, still should log it to the stream
                 super().emit(LogRecord(
