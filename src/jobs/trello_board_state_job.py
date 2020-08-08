@@ -207,18 +207,18 @@ class TrelloBoardStateJob(BaseJob):
 
     @staticmethod
     def _get_curators(card, db_client):
-        if not card.members:
-            # if no members in a card, should tag curators based on label
-            curators_by_label = utils.retrieve_curator_names_by_categories(
-                card.labels, db_client
-            )
-            if curators_by_label:
-                return curators_by_label
         curators = set()
         for member in card.members:
             curator_names = utils.retrieve_curator_names_by_author(member, db_client)
             curators.update(curator_names)
-        return curators
+        if curators:
+            return curators
+
+        # e.g. if no members in a card, should tag curators based on label
+        curators_by_label = utils.retrieve_curator_names_by_categories(
+            card.labels, db_client
+        )
+        return curators_by_label
 
 
 FILTER_TO_FAILURE_REASON = {
