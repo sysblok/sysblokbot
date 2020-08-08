@@ -139,9 +139,11 @@ class IllustrativeReportJob(BaseJob):
                 'illustrative_report_job__card',
                 url=file_url,
                 name=card_fields.title or card.name,
-                authors=format_possibly_plural('Автор', card_fields.authors),
-                editors=format_possibly_plural('Редактор', card_fields.editors),
-                illustrators=format_possibly_plural('Иллюстратор', card_fields.illustrators),
+                authors=format_possibly_plural(load('common_role__author'), card_fields.authors),
+                editors=format_possibly_plural(load('common_role__editor'), card_fields.editors),
+                illustrators=format_possibly_plural(
+                    load('common_role__illustrator'), card_fields.illustrators
+                ),
                 cover=cover,
             )
             paragraphs.append(no_access_marker + card_text)

@@ -112,9 +112,15 @@ class PublicationPlansJob(BaseJob):
                     date=date,
                     url=card_fields.google_doc or card.url,
                     name=card_fields.title or card.name,
-                    authors=format_possibly_plural('Автор', card_fields.authors),
-                    editors=format_possibly_plural('Редактор', card_fields.editors),
-                    illustrators=format_possibly_plural('Иллюстратор', card_fields.illustrators),
+                    authors=format_possibly_plural(
+                        load('common_role__author'), card_fields.authors
+                    ),
+                    editors=format_possibly_plural(
+                        load('common_role__editor'), card_fields.editors
+                    ),
+                    illustrators=format_possibly_plural(
+                        load('common_role__illustrator'), card_fields.illustrators
+                    ),
                 )
             )
 

@@ -161,7 +161,7 @@ class TrelloBoardStateJob(BaseJob):
         return load(
             'trello_board_state_job__card_members',
             members=members_text,
-            curators=utils.format_possibly_plural('Куратор', curators),
+            curators=utils.format_possibly_plural('common_role__curator', curators),
         )
 
     @staticmethod

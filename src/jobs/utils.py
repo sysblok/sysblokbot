@@ -205,7 +205,12 @@ def format_possibly_plural(name: str, values: List[str]) -> str:
     if len(values) == 0:
         return ''
     # yeah that's a bit sexist
-    return f'{name}{"ы" if len(values) > 1 else ""}: {", ".join(values)}. '
+    return load(
+        'common__named_list',
+        name=name,
+        plural="ы" if len(values) > 1 else "",
+        items=", ".join(values)
+    )
 
 
 def retrieve_statistc(db_client: DBClient):
@@ -277,21 +282,21 @@ def check_trello_card(
 
     this_card_bad_fields = []
     if is_bad_title:
-        this_card_bad_fields.append(load('common_custom_field__post_title').lower())
+        this_card_bad_fields.append(load('trello_custom_field__post_title').lower())
     if is_bad_google_doc:
-        this_card_bad_fields.append(load('common_custom_field__google_doc').lower())
+        this_card_bad_fields.append(load('trello_custom_field__google_doc').lower())
     if is_bad_authors:
-        this_card_bad_fields.append(load('common_custom_field__author').lower())
+        this_card_bad_fields.append(load('trello_custom_field__author').lower())
     if is_bad_editors:
-        this_card_bad_fields.append(load('common_custom_field__editor').lower())
+        this_card_bad_fields.append(load('trello_custom_field__editor').lower())
     if is_bad_cover:
-        this_card_bad_fields.append(load('common_custom_field__cover').lower())
+        this_card_bad_fields.append(load('trello_custom_field__cover').lower())
     if is_bad_illustrators:
-        this_card_bad_fields.append(load('common_custom_field__illustrator').lower())
+        this_card_bad_fields.append(load('trello_custom_field__illustrator').lower())
     if is_bad_due_date:
-        this_card_bad_fields.append(load('common_custom_field__due_date').lower())
+        this_card_bad_fields.append(load('trello_custom_field__due_date').lower())
     if is_bad_label_names:
-        this_card_bad_fields.append(load('common_custom_field__rubric').lower())
+        this_card_bad_fields.append(load('trello_custom_field__rubric').lower())
 
     if len(this_card_bad_fields) > 0:
         logger.info(

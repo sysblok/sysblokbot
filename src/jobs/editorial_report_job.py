@@ -172,8 +172,12 @@ class EditorialReportJob(BaseJob):
                     no_file_access=get_no_access_marker(url, drive_client),
                     url=url,
                     name=card_fields.title or card.name,
-                    authors=format_possibly_plural('Автор', card_fields.authors),
-                    editors=format_possibly_plural('Редактор', card_fields.editors),
+                    authors=format_possibly_plural(
+                        load('common_role__author'), card_fields.authors
+                    ),
+                    editors=format_possibly_plural(
+                        load('common_role__editor'), card_fields.editors
+                    ),
                 )
             )
 
