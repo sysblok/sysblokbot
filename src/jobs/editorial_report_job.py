@@ -50,7 +50,7 @@ class EditorialReportJob(BaseJob):
             errors=errors,
             strict_archive_rules=False,
         )
-        
+
         # Temporarily disabled
         # paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
         #     trello_client=app_context.trello_client,
