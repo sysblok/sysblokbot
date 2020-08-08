@@ -1,13 +1,13 @@
+from collections import defaultdict
 import datetime
 import logging
-from typing import Callable, List
+from typing import Callable, List, Tuple
 
 from ..app_context import AppContext
 from ..consts import TrelloCardColor, TrelloListAlias
-from ..db.db_client import DBClient
-from ..sheets.sheets_client import GoogleSheetsClient
 from ..strings import load
 from ..trello.trello_client import TrelloClient
+from ..trello.trello_objects import TrelloCard
 from .base_job import BaseJob
 from . import utils
 
@@ -16,162 +16,163 @@ logger = logging.getLogger(__name__)
 
 class TrelloBoardStateJob(BaseJob):
     @staticmethod
-    def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
-        paragraphs = [load('trello_board_state_job__intro')]  # list of paragraph strings
-
-        paragraphs += TrelloBoardStateJob._retrieve_cards_for_paragraph(
-            app_context=app_context,
-            title=load('trello_board_state_job__title_author_missing'),
-            list_aliases=(
-                TrelloListAlias.IN_PROGRESS,
-                TrelloListAlias.TO_EDITOR,
-                TrelloListAlias.EDITED_NEXT_WEEK,
-                TrelloListAlias.EDITED_SOMETIMES,
-                TrelloListAlias.TO_CHIEF_EDITOR,
-                TrelloListAlias.PROOFREADING,
-                TrelloListAlias.DONE,
-            ),
-            filter_func=lambda card: not card.members,
-            show_due=False,
-            show_members=False,
-        )
-
-        paragraphs += TrelloBoardStateJob._retrieve_cards_for_paragraph(
-            app_context=app_context,
-            title=load('trello_board_state_job__title_due_date_missing'),
-            list_aliases=(TrelloListAlias.IN_PROGRESS, ),
-            filter_func=lambda card: not card.due,
-            show_due=False
-        )
-
-        paragraphs += TrelloBoardStateJob._retrieve_cards_for_paragraph(
-            app_context=app_context,
-            title=load('trello_board_state_job__title_tag_missing'),
-            list_aliases=(
-                TrelloListAlias.IN_PROGRESS,
-                TrelloListAlias.TO_EDITOR,
-                TrelloListAlias.EDITED_NEXT_WEEK,
-                TrelloListAlias.EDITED_SOMETIMES,
-                TrelloListAlias.TO_CHIEF_EDITOR,
-                TrelloListAlias.PROOFREADING,
-                TrelloListAlias.DONE,
-            ),
-            filter_func=lambda card: not card.labels,
-            show_due=False
-        )
-
-        all_cards = app_context.trello_client.get_cards()
-        members_with_cards = set()
-        for card in all_cards:
-            members_with_cards = members_with_cards.union(set(card.members))
-
-        paragraphs += TrelloBoardStateJob._retrieve_cards_for_paragraph(
-            app_context=app_context,
-            title=load('trello_board_state_job__title_due_date_expired'),
-            list_aliases=(TrelloListAlias.IN_PROGRESS, ),
-            filter_func=TrelloBoardStateJob._is_deadline_missed,
-        )
-
+    def _execute(
+        app_context: AppContext, send: Callable[[str], None], called_from_handler=False
+    ):
+        paragraphs = [
+            load("trello_board_state_job__intro")
+        ]  # list of paragraph strings
+        curator_cards = TrelloBoardStateJob.get_cards_by_curator(app_context)
+        for curator, curator_cards in curator_cards.items():
+            card_paragraphs = []
+            for card in curator_cards:
+                card_paragraph = TrelloBoardStateJob._make_card_failure_text(card, app_context)
+                if card_paragraph:
+                    card_paragraphs.append(card_paragraph)
+            if card_paragraphs:
+                paragraphs.append(f"⭐️ <b>Куратор</b>: {curator}")
+                paragraphs += card_paragraphs
         utils.pretty_send(paragraphs, send)
 
     @staticmethod
-    def _is_deadline_missed(card) -> bool:
-        return card.due is not None and card.due.date() < datetime.datetime.now().date()
-
-    @staticmethod
-    def _retrieve_cards_for_paragraph(
-            app_context: AppContext,
-            title: str,
-            list_aliases: List[str],
-            filter_func: Callable,
-            show_due=True,
-            show_members=True,
-    ) -> List[str]:
-        '''
-        Returns a list of paragraphs that should always go in a single message.
-        '''
-        logger.info(f'Started counting: "{title}"')
-        list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
-        cards = list(filter(filter_func, app_context.trello_client.get_cards(list_ids)))
-        parse_failure_counter = 0
-
-        paragraphs = [
-            load('common_report__list_title_and_size', title=title, length=len(cards))
-        ]
-
+    def get_cards_by_curator(app_context):
+        cards = app_context.trello_client.get_cards()
+        curator_cards = defaultdict(list)
         for card in cards:
-            if not card:
-                parse_failure_counter += 1
-                continue
-            paragraphs.append(
-                TrelloBoardStateJob._format_card(
-                    card,
-                    app_context,
-                    show_due=show_due,
-                    show_members=show_members
-                )
-            )
+            curators = TrelloBoardStateJob._get_curators(card, app_context.db_client)
+            if not curators:
+                # TODO: get main curator from spreadsheet
+                curators = [('Илья Булгаков (@bulgak0v)', None)]
+            for curator_name, _ in curators:
+                curator_cards[curator_name].append(card)
 
-        if parse_failure_counter > 0:
-            logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
-        return paragraphs
+        return curator_cards
 
     @staticmethod
-    def _format_card(card, app_context, show_due=True, show_members=True) -> str:
-        labels = load(
-            'trello_board_state_job__card_labels',
-            names=", ".join(
-                # We filter BLACK cards as this is an auxiliary label
-                label.name for label in card.labels
-                if label.color != TrelloCardColor.BLACK
+    def _make_card_failure_text(card: TrelloCard, app_context):
+        """
+        Returns card description with failure reasons, if any.
+        If card does not match any of FILTER_TO_FAILURE_REASON, returns None.
+        """
+        failure_reasons = []
+        for filter_func, reason_alias in FILTER_TO_FAILURE_REASON.items():
+            is_failed, kwargs = filter_func(card, app_context)
+            if is_failed:
+                failure_reasons.append(load(reason_alias, **kwargs).lower())
+        if not failure_reasons:
+            return None
+
+        return TrelloBoardStateJob._format_card(card, failure_reasons, app_context)
+
+    @staticmethod
+    def _is_deadline_missed(card, app_context) -> Tuple[bool, dict]:
+        list_ids = app_context.trello_client.get_list_id_from_aliases(
+            [TrelloListAlias.IN_PROGRESS]
+        )
+        is_missed = (
+            card.lst.id in list_ids and card.due is not None
+            and card.due.date() < datetime.datetime.now().date()
+        )
+        return is_missed, {'date': card.due.strftime("%d.%m")} if is_missed else {}
+
+    @staticmethod
+    def _is_due_date_missing(card, app_context) -> Tuple[bool, dict]:
+        list_ids = app_context.trello_client.get_list_id_from_aliases(
+            [TrelloListAlias.IN_PROGRESS]
+        )
+        return card.due is None and card.lst.id in list_ids, {}
+
+    @staticmethod
+    def _is_author_missing(card, app_context) -> Tuple[bool, dict]:
+        list_aliases = (
+            TrelloListAlias.IN_PROGRESS,
+            TrelloListAlias.TO_EDITOR,
+            TrelloListAlias.EDITED_NEXT_WEEK,
+            TrelloListAlias.EDITED_SOMETIMES,
+            TrelloListAlias.TO_CHIEF_EDITOR,
+            TrelloListAlias.PROOFREADING,
+            TrelloListAlias.DONE,
+        )
+        list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
+
+        return not card.members and card.lst.id in list_ids, {}
+
+    @staticmethod
+    def _is_tag_missing(card, app_context) -> Tuple[bool, dict]:
+        list_aliases = (
+            TrelloListAlias.IN_PROGRESS,
+            TrelloListAlias.TO_EDITOR,
+            TrelloListAlias.EDITED_NEXT_WEEK,
+            TrelloListAlias.EDITED_SOMETIMES,
+            TrelloListAlias.TO_CHIEF_EDITOR,
+            TrelloListAlias.PROOFREADING,
+            TrelloListAlias.DONE
+        )
+        list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
+        return card.labels is None and card.lst.id in list_ids, {}
+
+    @staticmethod
+    def _format_card(card: TrelloCard, failure_reasons: List[str], app_context) -> str:
+        failure_reasons_formatted = ', '.join(failure_reasons).capitalize()
+        labels = (
+            load(
+                "trello_board_state_job__card_labels",
+                names=", ".join(
+                    # We filter BLACK cards as this is an auxiliary label
+                    label.name
+                    for label in card.labels
+                    if label.color != TrelloCardColor.BLACK
+                ),
             )
-        ) if card.labels else ''  # If no labels assigned, don't render them to text.
+            if card.labels
+            else ""
+        )
 
         # Avoiding message overflow, strip explanations in ()
-        list_name = card.lst.name + '('
-        list_name = list_name[:list_name.find('(')].strip()
+        list_name = card.lst.name + "("
+        list_name = list_name[: list_name.find("(")].strip()
 
-        date = load(
-            'common_report__card_date',
-            date=card.due.strftime("%d.%m"),
-        ) if show_due else ''
-
-        members = TrelloBoardStateJob._make_members_string(card, app_context)
+        members = (
+            load(
+                "trello_board_state_job__card_members",
+                members=", ".join(
+                    utils.retrieve_usernames(card.members, app_context.db_client)
+                ),
+                curators="",
+            )
+            if card.members
+            else ""
+        )
 
         return load(
-            'trello_board_state_job__card',
+            "trello_board_state_job__card_2",
+            failure_reasons=failure_reasons_formatted,
             url=card.url,
             name=card.name,
             labels=labels,
             list_name=list_name,
             members=members,
-            date=date,
-        )
-
-    @staticmethod
-    def _make_members_string(card, app_context: AppContext) -> str:
-        curators = TrelloBoardStateJob._get_curators(card, app_context.db_client)
-        members_text = ', '.join(utils.retrieve_usernames(card.members, app_context.db_client))
-        if curators:
-            curators = [
-                curator_name for curator_name, telegram in curators
-                if telegram and telegram not in members_text
-            ]
-
-        return load(
-            'trello_board_state_job__card_members',
-            members=members_text,
-            curators=utils.format_possibly_plural('common_role__curator', curators),
         )
 
     @staticmethod
     def _get_curators(card, db_client):
         if not card.members:
             # if no members in a card, should tag curators based on label
-            return utils.retrieve_curator_names_by_categories(card.labels, db_client)
-        # add curators to the list
+            curators_by_label = utils.retrieve_curator_names_by_categories(
+                card.labels, db_client
+            )
+            if curators_by_label:
+                return curators_by_label
         curators = set()
         for member in card.members:
             curator_names = utils.retrieve_curator_names_by_author(member, db_client)
             curators.update(curator_names)
         return curators
+
+
+FILTER_TO_FAILURE_REASON = {
+    TrelloBoardStateJob._is_author_missing: "trello_board_state_job__title_author_missing",
+    TrelloBoardStateJob._is_due_date_missing: "trello_board_state_job__title_due_date_missing",
+    TrelloBoardStateJob._is_deadline_missed: "trello_board_state_job__title_due_date_expired",
+    TrelloBoardStateJob._is_tag_missing: "trello_board_state_job__title_tag_missing",
+}

@@ -238,6 +238,8 @@ class TrelloClient(Singleton):
         list_ids = [
             self.lists_config[alias] for alias in list_aliases if alias in self.lists_config
         ]
+        print(self.lists_config)
+        print(list_ids)
         if len(list_ids) != len(list_aliases):
             logger.error(
                 f'list_ids not found for aliases: '
