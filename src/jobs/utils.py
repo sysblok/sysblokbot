@@ -10,7 +10,6 @@ from ..app_context import AppContext
 from ..consts import TrelloCardColor
 from ..db.db_client import DBClient
 from ..db.db_objects import Curator, TrelloAnalytics
-from ..sheets.sheets_client import GoogleSheetsClient
 from ..drive.drive_client import GoogleDriveClient
 from ..strings import load
 from ..trello.trello_objects import TrelloMember
@@ -28,7 +27,6 @@ def retrieve_username(
 ):
     """
     Where possible and defined, choose @tg_id over trello_id.
-    Note: currently requires a request to GSheets API.
     Returns: "John Smith (@jsmith_tg)" if telegram login found,
     "John Smith (jsmith_trello)" otherwise.
     """
@@ -65,13 +63,16 @@ def retrieve_curator_names_by_author(
         db_client: DBClient
 ) -> List[str]:
     """
-    Tries to find a curator for trello member.
+    Tries to find a curator for trello member. Returns nothing if user is curator.
     Returns: "John Smith (@jsmith_tg)" where possible, otherwise "John Smith".
     If trello member or curator could not be found in Authors sheet, returns None
-    Note: requires a request to GoogleSheets API.
     """
+    trello_id = '@' + trello_member.username
     try:
-        curators = db_client.find_curators_by_author_trello('@' + trello_member.username)
+        if db_client.is_curator(trello_id):
+            # maybe should return curator itself?
+            return []
+        curators = db_client.find_curators_by_author_trello(trello_id)
     except Exception as e:
         logger.error(f'Could not retrieve curators by author: {e}')
         return

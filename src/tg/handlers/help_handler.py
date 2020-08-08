@@ -25,7 +25,7 @@ def help(update, tg_context, handlers_info: dict):
     if not message.strip():
         message = load('help__no_commands')
     else:
-        message = f'{load("help__commands_list")}\n{message}'
+        message = f'{load("help__commands_list")}\n\n{message}'
     reply(message, update)
 
 
@@ -34,5 +34,7 @@ def _format_commands_block(category_alias: str, handlers: list):
     for command, description in handlers:
         lines.append(f'{command} - {description}' if description else command)
     lines.sort()
-    lines = [load(category_alias)] + lines
+    category = load(category_alias)
+    if category:
+        lines = [category, ''] + lines
     return '\n'.join(lines) + '\n\n'

@@ -51,15 +51,16 @@ class EditorialReportJob(BaseJob):
             strict_archive_rules=False,
         )
 
-        paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
-            trello_client=app_context.trello_client,
-            drive_client=app_context.drive_client,
-            title=load('editorial_report_job__title_editors_pending'),
-            list_aliases=(TrelloListAlias.TO_EDITOR, ),
-            errors=errors,
-            need_editor=False,
-            strict_archive_rules=False,
-        )
+        # Temporarily disabled
+        # paragraphs += EditorialReportJob._retrieve_cards_for_paragraph(
+        #     trello_client=app_context.trello_client,
+        #     drive_client=app_context.drive_client,
+        #     title=load('editorial_report_job__title_editors_pending'),
+        #     list_aliases=(TrelloListAlias.TO_EDITOR, ),
+        #     errors=errors,
+        #     need_editor=False,
+        #     strict_archive_rules=False,
+        # )
 
         if len(errors) > 0:
             paragraphs = format_errors(errors)
