@@ -100,15 +100,13 @@ class TrelloBoardStateJob(BaseJob):
     @staticmethod
     def _is_tag_missing(card, app_context) -> Tuple[bool, dict]:
         list_aliases = (
-            (
-                TrelloListAlias.IN_PROGRESS,
-                TrelloListAlias.TO_EDITOR,
-                TrelloListAlias.EDITED_NEXT_WEEK,
-                TrelloListAlias.EDITED_SOMETIMES,
-                TrelloListAlias.TO_CHIEF_EDITOR,
-                TrelloListAlias.PROOFREADING,
-                TrelloListAlias.DONE,
-            ),
+            TrelloListAlias.IN_PROGRESS,
+            TrelloListAlias.TO_EDITOR,
+            TrelloListAlias.EDITED_NEXT_WEEK,
+            TrelloListAlias.EDITED_SOMETIMES,
+            TrelloListAlias.TO_CHIEF_EDITOR,
+            TrelloListAlias.PROOFREADING,
+            TrelloListAlias.DONE
         )
         list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
         return card.labels is None and card.lst.id in list_ids, {}
