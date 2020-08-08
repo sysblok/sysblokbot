@@ -226,7 +226,6 @@ class TrelloClient(Singleton):
         # TODO(alexeyqu): move to DB
         lists = self.get_lists()
         self.lists_config = self._fill_alias_id_map(lists, TrelloListAlias)
-        logger.error(self.lists_config)
         custom_field_types = self.get_board_custom_field_types()
         self.custom_fields_type_config = self._fill_id_type_map(
             custom_field_types, TrelloCustomFieldTypes

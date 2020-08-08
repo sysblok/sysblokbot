@@ -8,11 +8,19 @@ from telegram.ext import (CallbackQueryHandler, CommandHandler, Filters,
 
 from .app_context import AppContext
 from .config_manager import ConfigManager
-from .consts import CommandCategories
+from .consts import CommandCategories, USAGE_LOG_LEVEL
 from .jobs.utils import get_job_runnable
 from .tg import handlers, sender
 from .tg.handlers.utils import admin_only, direct_message_only, manager_only
 
+logging.addLevelName(USAGE_LOG_LEVEL, "USAGE")
+
+
+def usage(self, message, *args, **kws):
+    self._log(USAGE_LOG_LEVEL, message, args, **kws)
+
+
+logging.Logger.usage = usage
 logger = logging.getLogger(__name__)
 
 
@@ -243,7 +251,15 @@ class SysBlokBot:
     # Methods, adding command handlers and setting them to /help cmd for proper audience
     def add_handler(self, handler_cmd: str, handler_func: Callable):
         """Adds handler silently. Noone will see it in /help output"""
-        self.dp.add_handler(CommandHandler(handler_cmd, handler_func))
+        def add_usage_logging(func):
+            def wrapper(*args, **kwargs):
+                logger.usage(f'Handler {handler_cmd} was called...')
+                results = func(*args, **kwargs)
+                logger.usage(f'Handler {handler_cmd} finished')
+                return results
+            return wrapper
+
+        self.dp.add_handler(CommandHandler(handler_cmd, add_usage_logging(handler_func)))
 
     def add_admin_handler(
             self,
