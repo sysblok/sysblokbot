@@ -59,3 +59,7 @@ class ConfigUpdaterJob(BaseJob):
         else:
             logger.info('No config changes detected')
             send(load('config_updater_job__config_not_changed'))
+
+    @staticmethod
+    def _usage_muted():
+        return True

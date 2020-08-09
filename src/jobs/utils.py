@@ -69,10 +69,11 @@ def retrieve_curator_names_by_author(
     """
     trello_id = '@' + trello_member.username
     try:
-        if db_client.is_curator(trello_id):
-            # maybe should return curator itself?
-            return []
-        curators = db_client.find_curators_by_author_trello(trello_id)
+        curator = db_client.get_curator_by_trello_id(trello_id)
+        if curator:
+            curators = [curator]
+        else:
+            curators = db_client.find_curators_by_author_trello(trello_id)
     except Exception as e:
         logger.error(f'Could not retrieve curators by author: {e}')
         return
