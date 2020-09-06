@@ -184,6 +184,14 @@ class SysBlokBot:
             'настроить все напоминания'
         )
 
+        # admin-only HR cmds
+        self.add_admin_handler(
+            'hr_copy_raw_data',
+            CommandCategories.HR,
+            self.admin_reply_handler('hr_copy_raw_data_job'),
+            'обработать недавние ответы на форму'
+        )
+
         # sample handler
         self.add_handler(
             'sample_handler',

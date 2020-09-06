@@ -38,6 +38,7 @@ class GoogleSheetsClient(Singleton):
         self.post_registry_sheet_key = self._sheets_config['post_registry_sheet_key']
         self.rubrics_registry_sheet_key = self._sheets_config['rubrics_registry_sheet_key']
         self.strings_sheet_key = self._sheets_config['strings_sheet_key']
+        self.team_sheet_key = self._sheets_config['team_sheet_key']
         self._authorize()
 
     def _authorize(self):
@@ -80,6 +81,18 @@ class GoogleSheetsClient(Singleton):
             "Сообщение": "value",
         }
         return self._parse_gs_res(title_key_map, self.strings_sheet_key)
+    
+    def fetch_team_raw(self) -> List[Dict]:
+        title_key_map = {
+            "Отметка времени": "timestamp",
+            "Как вас зовут? (лучше имя + фамилия)": "name",
+            "Чем бы вам было интересно заниматься в проекте?": "interests",
+            "Другие контактные данные (ссылка на соц.сети/почта)": "contacts",
+            "Расскажите о себе": "about",
+            "Ссылка на телеграм (со значком @)": "telegram",
+            "Статус": "status",
+        }
+        return self._parse_gs_res(title_key_map, self.team_sheet_key, 0)
 
     def update_posts_registry(self, entries: List[RegistryPost]):
         sheet = self._open_by_key(self.post_registry_sheet_key)
@@ -171,8 +184,8 @@ class GoogleSheetsClient(Singleton):
             return False
         return True
 
-    def _parse_gs_res(self, title_key_map: Dict, sheet_key: str) -> List[Dict]:
-        titles, *rows = self._get_sheet_values(sheet_key)
+    def _parse_gs_res(self, title_key_map: Dict, sheet_key: str, sheet_index: int=0) -> List[Dict]:
+        titles, *rows = self._get_sheet_values(sheet_key, sheet_index)
         title_idx_map = {
             idx: title_key_map[title]
             for idx, title in enumerate(titles)
@@ -188,9 +201,9 @@ class GoogleSheetsClient(Singleton):
             res.append(item)
         return res
 
-    def _get_sheet_values(self, sheet_key: str) -> List:
+    def _get_sheet_values(self, sheet_key: str, sheet_index: int=0) -> List:
         sheet = self._open_by_key(sheet_key)
-        worksheet = sheet.get_worksheet(0)
+        worksheet = sheet.get_worksheet(sheet_index)
         return worksheet.get_all_values()
 
     def _open_by_key(self, sheet_key: str):

@@ -12,6 +12,7 @@ from .db_fetch_curators_sheet_job import DBFetchCuratorsSheetJob
 from .db_fetch_strings_sheet_job import DBFetchStringsSheetJob
 from .editorial_report_job import EditorialReportJob
 from .illustrative_report_job import IllustrativeReportJob
+from .hr_copy_raw_data_job import HRCopyRawDataJob
 from .fill_posts_list_job import FillPostsListJob
 from .publication_plans_job import PublicationPlansJob
 from .sample_job import SampleJob
