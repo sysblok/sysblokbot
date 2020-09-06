@@ -166,7 +166,7 @@ class DBClient(Singleton):
         if chat is None:
             raise ValueError(f'No chat found with id {chat_id}')
         return chat.title
-    
+
     def get_chat_id_by_name(self, chat_name: str) -> int:
         """
         Can be used to get chat_id of private chat with the bot by username

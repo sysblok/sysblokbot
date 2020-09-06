@@ -51,7 +51,6 @@ class TrelloBoardStateNotificationsJob(BaseJob):
                 except ValueError as e:
                     logger.error(e)
 
-
     @staticmethod
     def _format_card(card: TrelloCard, failure_reasons: List[str], app_context: AppContext) -> str:
         if not failure_reasons:
