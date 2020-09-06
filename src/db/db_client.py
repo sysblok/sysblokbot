@@ -166,6 +166,16 @@ class DBClient(Singleton):
         if chat is None:
             raise ValueError(f'No chat found with id {chat_id}')
         return chat.title
+    
+    def get_chat_id_by_name(self, chat_name: str) -> int:
+        """
+        Can be used to get chat_id of private chat with the bot by username
+        """
+        session = self.Session()
+        chat = session.query(Chat).filter(Chat.title == chat_name).first()
+        if chat is None:
+            raise ValueError(f'No chat found with name {chat_name}')
+        return chat.id
 
     def get_reminders_by_user_id(self, user_chat_id: int) -> List[Tuple[Reminder, Chat]]:
         '''

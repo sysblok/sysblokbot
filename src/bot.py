@@ -178,6 +178,12 @@ class SysBlokBot:
             'отослать напоминания вне расписания'
         )
         self.add_admin_handler(
+            'send_trello_board_curator_notifications',
+            CommandCategories.BROADCAST,
+            self.admin_reply_handler('trello_board_state_notifications_job'),
+            'разослать кураторам состояние их карточек вне расписания'
+        )
+        self.add_admin_handler(
             'manage_all_reminders',
             CommandCategories.MOST_USED,
             handlers.manage_all_reminders,

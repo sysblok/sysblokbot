@@ -5,6 +5,7 @@ from typing import Callable, List
 from ..app_context import AppContext
 from ..consts import TrelloCardColor
 from ..strings import load
+from ..tg.sender import TelegramSender
 from ..trello.trello_client import TrelloClient
 from ..trello.trello_objects import TrelloCard
 from ..utils import card_checks
@@ -14,29 +15,42 @@ from . import utils
 logger = logging.getLogger(__name__)
 
 
-class TrelloBoardStateJob(BaseJob):
+class TrelloBoardStateNotificationsJob(BaseJob):
     @staticmethod
     def _execute(
         app_context: AppContext, send: Callable[[str], None], called_from_handler=False
     ):
-        paragraphs = [
-            load("trello_board_state_job__intro")
-        ]  # list of paragraph strings
+        sender = TelegramSender()
+
         curator_cards = utils.get_cards_by_curator(app_context)
         for curator, curator_cards in curator_cards.items():
-            curator_name, _ = curator
+            curator_name, curator_tg = curator
             card_paragraphs = []
             curator_cards.sort(key=lambda c: c.due if c.due else datetime.datetime.min)
             for card in curator_cards:
-                card_paragraph = TrelloBoardStateJob._format_card(
+                card_paragraph = TrelloBoardStateNotificationsJob._format_card(
                     card, card_checks.make_card_failure_reasons(card, app_context), app_context
                 )
                 if card_paragraph:
                     card_paragraphs.append(card_paragraph)
             if card_paragraphs:
-                paragraphs.append(f"⭐️ <b>Куратор</b>: {curator_name}")
-                paragraphs += card_paragraphs
-        utils.pretty_send(paragraphs, send)
+                if curator_tg is None:
+                    logger.error(
+                        f'Telegram for {curator_name} not found, could not send notification!'
+                    )
+                    continue
+
+                paragraphs = [
+                    load("trello_board_state_notifications_job__intro")
+                ] + card_paragraphs
+                if curator_tg.startswith('@'):
+                    curator_tg = curator_tg[1:]
+                try:
+                    chat_id = app_context.db_client.get_chat_id_by_name(curator_tg)
+                    utils.pretty_send(paragraphs, lambda msg: sender.send_to_chat_id(msg, chat_id))
+                except ValueError as e:
+                    logger.error(e)
+
 
     @staticmethod
     def _format_card(card: TrelloCard, failure_reasons: List[str], app_context: AppContext) -> str:

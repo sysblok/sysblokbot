@@ -80,10 +80,6 @@ def is_tag_missing(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dic
 
 
 def is_doc_missing(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dict]:
-    doc_url = app_context.trello_client.get_custom_fields(card.id).google_doc
-    if doc_url:
-        return False, {}
-
     list_aliases = (
         TrelloListAlias.TO_EDITOR,
         TrelloListAlias.EDITED_NEXT_WEEK,
@@ -94,15 +90,14 @@ def is_doc_missing(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dic
         TrelloListAlias.DONE
     )
     list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
-    return card.lst.id in list_ids, {}
+    if card.lst.id not in list_ids:
+        return False, {}
+
+    doc_url = app_context.trello_client.get_custom_fields(card.id).google_doc
+    return not doc_url, {}
 
 
 def has_no_doc_access(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dict]:
-    doc_url = app_context.trello_client.get_custom_fields(card.id).google_doc or ''
-    if not doc_url:
-        # should be checked in _is_doc_missing
-        return False, {}
-
     list_aliases = (
         TrelloListAlias.TO_EDITOR,
         TrelloListAlias.EDITED_NEXT_WEEK,
@@ -113,8 +108,16 @@ def has_no_doc_access(card: TrelloCard, app_context: AppContext) -> Tuple[bool, 
         TrelloListAlias.DONE
     )
     list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
+    if card.lst.id not in list_ids:
+        return False, {}
+
+    doc_url = app_context.trello_client.get_custom_fields(card.id).google_doc
+    if not doc_url:
+        # should be handled by is_doc_missing
+        return False, {}
+
     is_open_for_edit = app_context.drive_client.is_open_for_edit(doc_url)
-    return not is_open_for_edit and card.lst.id in list_ids, {}
+    return not is_open_for_edit, {}
 
 
 FILTER_TO_FAILURE_REASON = {
