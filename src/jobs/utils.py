@@ -1,11 +1,13 @@
+import datetime
 import inspect
 import logging
 import time
-import datetime
+from collections import defaultdict
 from typing import Callable, List
 
 import telegram
 
+from .. import jobs
 from ..app_context import AppContext
 from ..consts import TrelloCardColor
 from ..db.db_client import DBClient
@@ -13,7 +15,6 @@ from ..db.db_objects import Curator, TrelloAnalytics
 from ..drive.drive_client import GoogleDriveClient
 from ..strings import load
 from ..trello.trello_objects import TrelloMember
-from .. import jobs
 
 logger = logging.getLogger(__name__)
 
@@ -307,3 +308,32 @@ def check_trello_card(
         errors[card] = this_card_bad_fields
         return False
     return True
+
+
+def get_cards_by_curator(app_context: AppContext):
+    cards = app_context.trello_client.get_cards()
+    curator_cards = defaultdict(list)
+    for card in cards:
+        curators = get_curators_by_card(card, app_context.db_client)
+        if not curators:
+            # TODO: get main curator from spreadsheet
+            curators = [('Илья Булгаков (@bulgak0v)', '@bulgak0v')]
+        for curator in curators:
+            curator_cards[curator].append(card)
+
+    return curator_cards
+
+
+def get_curators_by_card(card, db_client):
+    curators = set()
+    for member in card.members:
+        curator_names = retrieve_curator_names_by_author(member, db_client)
+        curators.update(curator_names)
+    if curators:
+        return curators
+
+    # e.g. if no members in a card, should tag curators based on label
+    curators_by_label = retrieve_curator_names_by_categories(
+        card.labels, db_client
+    )
+    return curators_by_label

@@ -121,6 +121,14 @@ class DBClient(Singleton):
         ).first()
         return curator
 
+    def get_curator_by_telegram(self, telegram: str) -> Curator:
+        session = self.Session()
+        if not telegram.startswith('@'):
+            telegram = f'@{telegram}'
+        return session.query(Curator).filter(
+            Curator.telegram == telegram
+        ).first()
+
     def find_curators_by_author_trello(self, trello_id: str) -> List[Curator]:
         # TODO: make batch queries
         session = self.Session()
@@ -151,13 +159,17 @@ class DBClient(Singleton):
             logger.warning(f'Curators not found for label {trello_label}')
         return curators
 
-    def set_chat_name(self, chat_id: int, chat_name: str):
+    def set_chat_name(self, chat_id: int, chat_name: str, set_curator: bool = False):
+        # Update or set chat name. If chat is known to be curator's, set the flag.
         session = self.Session()
         chat = session.query(Chat).get(chat_id)
         if chat:
-            session.query(Chat).filter(Chat.id == chat_id).update({Chat.title: chat_name})
+            update = {Chat.title: chat_name}
+            if set_curator:
+                update[Chat.is_curator] = True
+            session.query(Chat).filter(Chat.id == chat_id).update(update)
         else:
-            session.add(Chat(id=chat_id, title=chat_name))
+            session.add(Chat(id=chat_id, title=chat_name, is_curator=set_curator))
         session.commit()
 
     def get_chat_name(self, chat_id: int) -> str:
@@ -166,6 +178,14 @@ class DBClient(Singleton):
         if chat is None:
             raise ValueError(f'No chat found with id {chat_id}')
         return chat.title
+
+    def get_chat_by_name(self, chat_name: str) -> Chat:
+        """
+        Can be used to get chat_id of private chat with the bot by username
+        """
+        session = self.Session()
+        chat = session.query(Chat).filter(Chat.title == chat_name).first()
+        return chat
 
     def get_reminders_by_user_id(self, user_chat_id: int) -> List[Tuple[Reminder, Chat]]:
         '''
