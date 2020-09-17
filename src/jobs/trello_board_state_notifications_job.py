@@ -46,8 +46,16 @@ class TrelloBoardStateNotificationsJob(BaseJob):
                 if curator_tg.startswith('@'):
                     curator_tg = curator_tg[1:]
                 try:
-                    chat_id = app_context.db_client.get_chat_id_by_name(curator_tg)
-                    utils.pretty_send(paragraphs, lambda msg: sender.send_to_chat_id(msg, chat_id))
+                    chat = app_context.db_client.get_chat_by_name(curator_tg)
+                    if chat and chat.is_curator:
+                        utils.pretty_send(
+                            paragraphs,
+                            lambda msg: sender.send_to_chat_id(msg, chat.id)
+                        )
+                    else:
+                        logger.error(
+                            f'Curator {curator_name} is not enrolled, could not send notifications'
+                        )
                 except ValueError as e:
                     logger.error(e)
 
