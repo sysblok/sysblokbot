@@ -62,6 +62,7 @@ class Chat(Base):
 
     id = Column(Integer, primary_key=True)
     title = Column(String)
+    is_curator = Column(Boolean, default=False)
 
 
 class Reminder(Base):

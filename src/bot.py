@@ -115,6 +115,11 @@ class SysBlokBot:
             handlers.manage_reminders,
             'настроить напоминания'
         )
+        # hidden from /help command for curator enrollment
+        self.add_handler(
+            'enroll_curator',
+            handlers.enroll_curator
+        )
 
         # admin-only technical cmds
         self.add_admin_handler(
@@ -176,6 +181,12 @@ class SysBlokBot:
             CommandCategories.BROADCAST,
             self.admin_reply_handler('send_reminders_job'),
             'отослать напоминания вне расписания'
+        )
+        self.add_admin_handler(
+            'send_trello_curator_notification',
+            CommandCategories.BROADCAST,
+            self.admin_reply_handler('trello_board_state_notifications_job'),
+            'разослать кураторам состояние их карточек вне расписания'
         )
         self.add_admin_handler(
             'manage_all_reminders',

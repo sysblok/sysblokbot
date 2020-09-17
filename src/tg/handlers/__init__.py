@@ -8,6 +8,7 @@ from .start_handler import start
 from .help_handler import help
 from .get_tasks_report_handler import get_tasks_report
 from .get_chat_id_handler import get_chat_id_handler as get_chat_id
+from .enroll_curator_handler import enroll_curator
 from .manage_reminders_handler import manage_reminders, manage_all_reminders
 
 # Plain text message handler
