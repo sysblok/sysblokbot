@@ -225,6 +225,7 @@ def retrieve_statistc(db_client: DBClient):
             )
     except Exception as e:
         logger.error(f'Failed to retrieve statistic')
+        logger.error(e)
 
 
 def add_statistic(db_client: DBClient, data):
@@ -232,6 +233,7 @@ def add_statistic(db_client: DBClient, data):
         db_client.add_item_to_statistics_table(data)
     except Exception as e:
         logger.error(f'Failed to add statistic item')
+        logger.error(e)
 
 
 def _make_statistic_string(statistic: TrelloAnalytics):
