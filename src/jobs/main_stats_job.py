@@ -52,7 +52,7 @@ class TrelloAnalyticsJob(BaseJob):
             list_aliases=(
                 TrelloListAlias.IN_PROGRESS,
             ),
-            filter_func=TrelloAnalyticsJob._is_card_deadline,
+            filter_func=TrelloAnalyticsJob._has_card_deadline,
             column_name='expect_this_week'
         )
 
@@ -73,7 +73,7 @@ class TrelloAnalyticsJob(BaseJob):
         utils.pretty_send(paragraphs, send)
 
     @staticmethod
-    def _is_card_deadline(card) -> bool:
+    def _has_card_deadline(card) -> bool:
         return card.due is not None
 
     @staticmethod
@@ -90,27 +90,25 @@ class TrelloAnalyticsJob(BaseJob):
         logger.info(f'Started counting: "{title}"')
         list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
         cards = list(filter(filter_func, app_context.trello_client.get_cards(list_ids)))
-        statistics = TrelloAnalyticsJob._get_last_statistic(app_context)
+        statistics = utils.retrieve_last_trello_analytics(app_context.db_client)
         TrelloAnalyticsJob.new_statistic[column_name] = len(cards)
+
+        paragraph = load(
+            'common_report__list_title_and_size',
+            title=title,
+            length=len(cards)
+        )
         if statistics:
             delta = len(cards) - int(statistics[column_name])
-            paragraphs = [load(
-                'common_report__list_title_and_size',
-                title=title,
-                length=len(cards),
-                sign="+" if delta > 0 else "",
-                delta=delta
-            )]
-            return paragraphs
-        else:
-            return [load('common_report__list_title_and_size', title=title, length=len(cards))]
+            if delta != 0:
+                delta_string = load(
+                    'main_stats_job__delta_week',
+                    sign='+' if delta > 0 else '-',
+                    delta=delta
+                )
+                paragraph = f'{paragraph} {delta_string}'
+        return [paragraph]
 
-    @staticmethod
-    def _get_last_statistic(app_context):
-        statistic_data = utils.retrieve_statistc(app_context.db_client)  # last week's statistics
-        if statistic_data:
-            last_weeks_statistics = statistic_data[-1]
-            return last_weeks_statistics
 
     @staticmethod
     def add_new_statistics(app_context, data):

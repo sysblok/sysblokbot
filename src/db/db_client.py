@@ -3,7 +3,7 @@ import logging
 import requests
 from typing import List, Tuple
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, desc
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -296,7 +296,8 @@ class DBClient(Singleton):
             logger.warning(f"Failed to add statistic: {e}")
             session.rollback()
 
-    def find_the_latest_statistics(self):
+    def get_latest_trello_analytics(self) -> TrelloAnalytics:
         session = self.Session()
-        statistic = session.query(TrelloAnalytics).all()
-        return statistic
+        return session.query(TrelloAnalytics).order_by(
+            desc(TrelloAnalytics.date)
+        ).first()
