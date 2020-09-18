@@ -109,7 +109,6 @@ class TrelloAnalyticsJob(BaseJob):
                 paragraph = f'{paragraph} {delta_string}'
         return [paragraph]
 
-
     @staticmethod
     def add_new_statistics(app_context, data):
         data['date'] = str(datetime.date.today())
