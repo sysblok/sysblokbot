@@ -92,6 +92,12 @@ class SysBlokBot:
             'получить сводку по результатам редакторского созвона'
         )
         self.add_manager_handler(
+            'create_folders_for_illustrators',
+            CommandCategories.REGISTRY,
+            self.manager_reply_handler('create_folders_for_illustrators_job'),
+            'создать папки для иллюстраторов'
+        )
+        self.add_manager_handler(
             'get_illustrative_report',
             CommandCategories.SUMMARY,
             self.manager_reply_handler('illustrative_report_job'),
