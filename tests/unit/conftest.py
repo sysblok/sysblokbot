@@ -75,13 +75,13 @@ def mock_sheets_client(monkeypatch, mock_config_manager):
         load_json = JsonLoader(SHEETS_TEST_DIR).load_json
 
         if sheet_key == 'authors_sheet_key':
-            return load_json('authors_sheet.json')
+            return load_json('authors.json')
         elif sheet_key == 'curators_sheet_key':
-            return load_json('curators_sheet.json')
+            return load_json('curators.json')
         elif sheet_key == 'rubrics_registry_sheet_key':
-            return load_json('rubrics_registry_sheet.json')
+            return load_json('rubrics.json')
         elif sheet_key == 'strings_sheet_key':
-            return load_json('strings_sheet.json')
+            return load_json('strings.json')
 
     monkeypatch.setattr(GoogleSheetsClient, '_authorize', _authorize)
     monkeypatch.setattr(GoogleSheetsClient, '_parse_gs_res', _parse_gs_res)
