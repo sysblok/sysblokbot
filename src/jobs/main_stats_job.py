@@ -52,7 +52,7 @@ class TrelloAnalyticsJob(BaseJob):
             list_aliases=(
                 TrelloListAlias.IN_PROGRESS,
             ),
-            filter_func=TrelloAnalyticsJob._has_card_deadline,
+            filter_func=TrelloAnalyticsJob._card_deadline_is_next_week,
             column_name='expect_this_week'
         )
 
@@ -73,8 +73,12 @@ class TrelloAnalyticsJob(BaseJob):
         utils.pretty_send(paragraphs, send)
 
     @staticmethod
-    def _has_card_deadline(card) -> bool:
-        return card.due is not None
+    def _card_deadline_is_next_week(card) -> bool:
+        # should count from last called date, currently correct only for scheduled calls
+        if card.due is None:
+            return False
+        timedelta = card.due - datetime.datetime.now()
+        return 0 <= timedelta.days <= 7
 
     @staticmethod
     def _retrieve_cards_for_paragraph(
