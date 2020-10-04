@@ -108,12 +108,15 @@ class IllustrativeReportJob(BaseJob):
 
             if not card_fields.cover and not is_archive_card:
                 card_fields.cover = app_context.drive_client.create_folder_for_card(card)
-                logger.info(f'Trying to put {card_fields.cover} as cover field for {card.url}')
-                app_context.trello_client.set_card_custom_field(
-                    card.id,
-                    TrelloCustomFieldTypeAlias.COVER,
-                    card_fields.cover,
-                )
+                if card_fields.cover is None:
+                    logger.error(f'The folder for {card.url} was not created')
+                else:
+                    logger.info(f'Trying to put {card_fields.cover} as cover field for {card.url}')
+                    app_context.trello_client.set_card_custom_field(
+                        card.id,
+                        TrelloCustomFieldTypeAlias.COVER,
+                        card_fields.cover,
+                    )
 
             cover = ''
             if card_fields.cover and not is_archive_card:

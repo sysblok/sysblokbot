@@ -216,30 +216,26 @@ def format_possibly_plural(name: str, values: List[str]) -> str:
     )
 
 
-def retrieve_statistc(db_client: DBClient):
+def retrieve_last_trello_analytics(db_client: DBClient) -> dict:
     try:
-        statistics = db_client.find_the_latest_statistics()
-        return sorted(
-            [_make_statistic_string(statistic) for statistic in statistics],
-            key=lambda k: k['date']
-            )
+        last_analytics = db_client.get_latest_trello_analytics()
+        return _make_statistic_object(last_analytics)
     except Exception as e:
-        logger.error(f'Failed to retrieve statistic')
+        logger.error(f'Failed to retrieve statistic: {e}')
 
 
 def add_statistic(db_client: DBClient, data):
     try:
         db_client.add_item_to_statistics_table(data)
     except Exception as e:
-        logger.error(f'Failed to add statistic item')
+        logger.error(f'Failed to add statistic item: {e}')
 
 
-def _make_statistic_string(statistic: TrelloAnalytics):
+def _make_statistic_object(statistic: TrelloAnalytics) -> dict:
     """
     Returns the dictionary with statistics data
     """
-    if statistic.date and statistic.topic_suggestion and statistic.topic_ready \
-            and statistic.in_progress and statistic.expect_this_week and statistic.editors_check:
+    if statistic:
         return {
             'date': datetime.datetime.strptime(statistic.date, '%Y-%m-%d'),
             'topic_suggestion': statistic.topic_suggestion,

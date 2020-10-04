@@ -47,11 +47,14 @@ class GoogleDriveClient(Singleton):
         existing = self._lookup_file_by_name(trello_card.name)
         if existing:
             return urljoin(BASE_URL, existing)
-        return urljoin(BASE_URL, self._create_file(
+        file_name = self._create_file(
             name=trello_card.name,
             description=trello_card.url,
             parents=[self.illustrations_folder_key],
-        ))
+        )
+        if file_name is None:
+            return None
+        return urljoin(BASE_URL, file_name)
 
     def is_folder_empty(self, folder_url: str) -> bool:
         existing = self._lookup_file_by_parent_url(folder_url)
