@@ -104,7 +104,7 @@ class TrelloAnalyticsJob(BaseJob):
                 delta_string = load(
                     'main_stats_job__delta_week',
                     sign='+' if delta > 0 else '-',
-                    delta=delta
+                    delta=abs(delta)
                 )
                 paragraph = f'{paragraph} {delta_string}'
         return [paragraph]
