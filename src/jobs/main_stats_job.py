@@ -78,7 +78,7 @@ class TrelloAnalyticsJob(BaseJob):
         if card.due is None:
             return False
         timedelta = card.due - datetime.datetime.now()
-        return 0 <= timedelta.days <= 7
+        return 0 <= timedelta.days < 7
 
     @staticmethod
     def _retrieve_cards_for_paragraph(
