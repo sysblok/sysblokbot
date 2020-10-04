@@ -15,17 +15,17 @@ def test_init(mock_sheets_client):
 
 def test_fetch_authors(mock_sheets_client):
     authors = mock_sheets_client.fetch_authors()
-    json_loader.assert_equal(authors, 'sheets_authors.json')
+    json_loader.assert_equal(authors, 'authors.json')
 
 
 def test_fetch_curators(mock_sheets_client):
     curators = mock_sheets_client.fetch_curators()
-    json_loader.assert_equal(curators, 'sheets_curators.json')
+    json_loader.assert_equal(curators, 'curators.json')
 
 
-def test_fetch_rubrics_registry(mock_sheets_client):
-    rubrics = mock_sheets_client.fetch_rubrics_registry()
-    json_loader.assert_equal(rubrics, 'sheets_rubrics_registry.json')
+def test_fetch_rubrics(mock_sheets_client):
+    rubrics = mock_sheets_client.fetch_rubrics()
+    json_loader.assert_equal(rubrics, 'rubrics.json')
 
 
 @pytest.mark.skip(reason="TODO")

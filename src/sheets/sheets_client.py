@@ -2,19 +2,14 @@ import logging
 from pprint import pprint
 from typing import List, Dict, Optional
 
-from ..utils.singleton import Singleton
-import gspread
-from google.oauth2.service_account import Credentials
+from sheetfu import SpreadsheetApp, Table
 
 from .sheets_objects import RegistryPost
+from ..utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
 
 UNDEFINED_STATES = ('', '-', '#N/A')
-scope = (
-    "https://spreadsheets.google.com/feeds",
-    "https://www.googleapis.com/auth/drive",
-)
 
 
 class GoogleSheetsClient(Singleton):
@@ -41,9 +36,7 @@ class GoogleSheetsClient(Singleton):
         self._authorize()
 
     def _authorize(self):
-        self._credentials = Credentials.from_service_account_file(
-            self._sheets_config['api_key_path'], scopes=scope)
-        self.client = gspread.authorize(self._credentials)
+        self.client = SpreadsheetApp(self._sheets_config['api_key_path'])
 
     def fetch_authors(self) -> List[Dict]:
         title_key_map = {
@@ -66,7 +59,7 @@ class GoogleSheetsClient(Singleton):
         }
         return self._parse_gs_res(title_key_map, self.curators_sheet_key)
 
-    def fetch_rubrics_registry(self) -> List[Dict]:
+    def fetch_rubrics(self) -> List[Dict]:
         title_key_map = {
             "Название рубрики ": "name",  # space is important!
             "Тег вк": "vk_tag",
@@ -83,93 +76,23 @@ class GoogleSheetsClient(Singleton):
 
     def update_posts_registry(self, entries: List[RegistryPost]):
         sheet = self._open_by_key(self.post_registry_sheet_key)
-        worksheet = sheet.get_worksheet(0)
-        num_of_posts = len(worksheet.get_all_values()) - 2  # table formatting
-        logger.info(f'Posts registry currently has {num_of_posts} posts')
-        # TODO(alexeyqu): move this to DB and sync it
-        rubrics_registry = self.fetch_rubrics_registry()
-        new_data = []
-        count_updated = 0
-        for entry in entries:
-            if self._has_string(worksheet, entry.trello_url):
-                logger.info(f'Card {entry.trello_url} already present in registry')
-                continue
-            this_line = num_of_posts + count_updated + 3  # table formatting
-            rubric_1 = next((
-                rubric['vk_tag'] for rubric in rubrics_registry
-                if rubric['name'] == entry.rubrics[0]
-            ), 'нет')
-            rubric_2 = 'нет'
-            if len(entry.rubrics) > 1:
-                rubric_2 = next((
-                    rubric['vk_tag'] for rubric in rubrics_registry
-                    if rubric['name'] == entry.rubrics[1]
-                ), 'нет')
-            if entry.is_archive_post:
-                new_data.append([
-                    this_line - 2,
-                    entry.title,
-                    entry.authors,
-                    rubric_1,
-                    rubric_2,
-                    entry.google_doc,
-                    entry.trello_url,
-                    entry.editors,
-                    None,  # Оценка редактора
-                    None,  # План по контенту
-                    'нет',  # Тип обложки
-                    'нет',  # Обложка
-                    'нет',  # Иллюстратор
-                    'нет',  # Дата (сайт)
-                    'архив',  # Статус публикации (сайт)
-                    'нет',  # Pin post
-                ])
-            else:
-                new_data.append([
-                    this_line - 2,
-                    entry.title,
-                    entry.authors,
-                    rubric_1,
-                    rubric_2,
-                    entry.google_doc,
-                    entry.trello_url,
-                    entry.editors,
-                    None,  # Оценка редактора
-                    None,  # План по контенту
-                    None,  # Тип обложки
-                    entry.cover,  # Обложка
-                    entry.illustrators,
-                    None,  # Дата (сайт)
-                    None,  # Статус публикации (сайт)
-                    'да' if entry.is_main_post else 'нет',
-                ])
-            count_updated += 1
+        data = sheet.get_sheet_by_id(0).get_data_range()
+        table = Table(data)
+        new_posts = []
         try:
-            worksheet.update(
-                f'A{num_of_posts + 3}:P{num_of_posts + count_updated + 3}',
-                new_data
-            )
-            worksheet.format(
-                f'A{num_of_posts + 3}:AG{num_of_posts + count_updated + 2}',  # mind the const
-                {
-                    'borders': {
-                        'top': {'style': 'SOLID'},
-                        'bottom': {'style': 'SOLID'},
-                        'left': {'style': 'SOLID'},
-                        'right': {'style': 'SOLID'},
-                    }
-                }
-            )
+            for entry in entries:
+                if self._has_string(data, entry.trello_url):
+                    logger.info(f'Card {entry.trello_url} already present in registry')
+                    continue
+                table.add_one(entry.to_dict())
+                new_posts.append(entry.title)
+            table.commit()
         except Exception as e:
             logger.error(f'Failed to update post registry: {e}')
-        return [row[1] for row in new_data]
+        return new_posts
 
-    def _has_string(self, worksheet, string: str):
-        try:
-            worksheet.find(string)
-        except gspread.exceptions.CellNotFound:
-            return False
-        return True
+    def _has_string(self, data, string: str):
+        return string in str(data.get_values())
 
     def _parse_gs_res(self, title_key_map: Dict, sheet_key: str) -> List[Dict]:
         titles, *rows = self._get_sheet_values(sheet_key)
@@ -190,12 +113,12 @@ class GoogleSheetsClient(Singleton):
 
     def _get_sheet_values(self, sheet_key: str) -> List:
         sheet = self._open_by_key(sheet_key)
-        worksheet = sheet.get_worksheet(0)
-        return worksheet.get_all_values()
+        worksheet = sheet.get_sheet_by_id(0)
+        return worksheet.get_data_range().get_values()
 
     def _open_by_key(self, sheet_key: str):
         try:
-            return self.client.open_by_key(sheet_key)
+            return self.client.open_by_id(sheet_key)
         except Exception as e:
             logger.error(f'Failed to access sheet {sheet_key}: {e}')
 
@@ -203,4 +126,4 @@ class GoogleSheetsClient(Singleton):
     def _parse_cell_value(cls, value: str) -> Optional[str]:
         if value in UNDEFINED_STATES:
             return None
-        return value
+        return str(value)
