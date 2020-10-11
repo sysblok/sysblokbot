@@ -153,7 +153,7 @@ class DBClient(Singleton):
         curators = session.query(Curator).join(Author).filter(
             Author.trello == trello_id
         ).filter(
-            Curator.role == 'Авторы'
+            Curator.team == 'Авторы'
         ).all()
         if not curators:
             logger.warning(f'Curators not found for author {trello_id}')
