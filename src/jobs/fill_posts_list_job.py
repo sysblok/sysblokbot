@@ -67,6 +67,10 @@ class FillPostsListJob(BaseJob):
         registry_posts = []
 
         for card in cards:
+            label_names = [label.name for label in card.labels]
+            is_main_post = load('common_trello_label__main_post') in label_names
+            is_archive_post = load('common_trello_label__archive') in label_names
+
             if not card:
                 parse_failure_counter += 1
                 continue
@@ -99,10 +103,6 @@ class FillPostsListJob(BaseJob):
 
             if not card_is_ok:
                 continue
-
-            label_names = [label.name for label in card.labels]
-            is_main_post = load('common_trello_label__main_post') in label_names
-            is_archive_post = load('common_trello_label__archive') in label_names
 
             registry_posts.append(
                 RegistryPost(
