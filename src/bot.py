@@ -5,6 +5,7 @@ from typing import Callable
 
 from telegram.ext import (CallbackQueryHandler, CommandHandler, Filters,
                           MessageHandler, PicklePersistence, Updater)
+from telegram.ext.dispatcher import run_async
 
 from .app_context import AppContext
 from .config_manager import ConfigManager
@@ -276,7 +277,9 @@ class SysBlokBot:
                 return results
             return wrapper
 
-        self.dp.add_handler(CommandHandler(handler_cmd, add_usage_logging(handler_func)))
+        self.dp.add_handler(
+            CommandHandler(handler_cmd, run_async(add_usage_logging(handler_func)))
+        )
 
     def add_admin_handler(
             self,

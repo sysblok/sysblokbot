@@ -19,10 +19,12 @@ class FillPostsListJob(BaseJob):
     def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
         errors = {}
         registry_posts = []
+        all_rubrics = app_context.db_client.get_rubrics()
 
         registry_posts += FillPostsListJob._retrieve_cards_for_registry(
             trello_client=app_context.trello_client,
             list_aliases=(TrelloListAlias.PROOFREADING, TrelloListAlias.DONE),
+            all_rubrics=all_rubrics,
             errors=errors,
             show_due=True,
             strict_archive_rules=True,
@@ -48,6 +50,7 @@ class FillPostsListJob(BaseJob):
             trello_client: TrelloClient,
             list_aliases: List[str],
             errors: dict,
+            all_rubrics: List,
             show_due=True,
             need_illustrators=True,
             strict_archive_rules=True,
@@ -64,6 +67,10 @@ class FillPostsListJob(BaseJob):
         registry_posts = []
 
         for card in cards:
+            label_names = [label.name for label in card.labels]
+            is_main_post = load('common_trello_label__main_post') in label_names
+            is_archive_post = load('common_trello_label__archive') in label_names
+
             if not card:
                 parse_failure_counter += 1
                 continue
@@ -97,16 +104,13 @@ class FillPostsListJob(BaseJob):
             if not card_is_ok:
                 continue
 
-            label_names = [label.name for label in card.labels]
-            is_main_post = load('common_trello_label__main_post') in label_names
-            is_archive_post = load('common_trello_label__archive') in label_names
-
             registry_posts.append(
                 RegistryPost(
                     card,
                     card_fields,
                     is_main_post,
                     is_archive_post,
+                    all_rubrics,
                 )
             )
 

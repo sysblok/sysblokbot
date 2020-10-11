@@ -53,10 +53,11 @@ class TrelloBoardStateNotificationsJob(BaseJob):
                             lambda msg: sender.send_to_chat_id(msg, chat.id)
                         )
                     else:
-                        logger.error(
+                        logger.warning(
                             f'Curator {curator_name} is not enrolled, could not send notifications'
                         )
                 except ValueError as e:
+                    logger.error(f'Could not send to {curator_name}:')
                     logger.error(e)
 
     @staticmethod
