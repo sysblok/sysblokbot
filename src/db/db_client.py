@@ -7,7 +7,7 @@ from sqlalchemy import create_engine, desc
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from .db_objects import Author, Base, Chat, Curator, Reminder, TrelloAnalytics, DBString
+from .db_objects import Author, Base, Chat, Curator, Reminder, Rubric, TrelloAnalytics, DBString
 from .. import consts
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..utils.singleton import Singleton
@@ -43,6 +43,7 @@ class DBClient(Singleton):
         self.fetch_authors_sheet(sheets_client)
         self.fetch_curators_sheet(sheets_client)
         self.fetch_strings_sheet(sheets_client)
+        self.fetch_rubrics_sheet(sheets_client)
 
     def fetch_authors_sheet(self, sheets_client: GoogleSheetsClient):
         session = self.Session()
@@ -77,6 +78,23 @@ class DBClient(Singleton):
             session.rollback()
             return 0
         return len(curators)
+
+    def fetch_rubrics_sheet(self, sheets_client: GoogleSheetsClient):
+        session = self.Session()
+        try:
+            # clean this table
+            session.query(Rubric).delete()
+            # re-download it
+            rubrics = sheets_client.fetch_rubrics()
+            for rubric_dict in rubrics:
+                rubric = Rubric.from_dict(rubric_dict)
+                session.add(rubric)
+            session.commit()
+        except Exception as e:
+            logger.warning(f"Failed to update rubric table from sheet: {e}")
+            session.rollback()
+            return 0
+        return len(rubrics)
 
     def fetch_strings_sheet(self, sheets_client: GoogleSheetsClient):
         session = self.Session()
@@ -148,6 +166,9 @@ class DBClient(Singleton):
             logger.error(f'Message not found for id {string_id}')
             return f'<{string_id}>'
         return message.value
+
+    def get_rubrics(self) -> List:
+        return self.Session().query(Rubric).all()
 
     def find_curators_by_trello_label(self, trello_label: str) -> List[Curator]:
         # TODO: make batch queries

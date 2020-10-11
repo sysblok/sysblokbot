@@ -115,3 +115,18 @@ class DBString(Base):
         message.id = data['id']
         message.value = data['value']
         return message
+
+
+class Rubric(Base):
+    __tablename__ = 'rubrics'
+    name = Column(String, primary_key=True)
+    vk_tag = Column(String)
+    tg_tag = Column(String)
+
+    @classmethod
+    def from_dict(cls, data):
+        rubric = cls()
+        rubric.name = data['name']
+        rubric.vk_tag = data['vk_tag']
+        rubric.tg_tag = data['tg_tag']
+        return rubric

@@ -19,10 +19,12 @@ class FillPostsListJob(BaseJob):
     def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
         errors = {}
         registry_posts = []
+        all_rubrics = app_context.db_client.get_rubrics()
 
         registry_posts += FillPostsListJob._retrieve_cards_for_registry(
             trello_client=app_context.trello_client,
             list_aliases=(TrelloListAlias.PROOFREADING, TrelloListAlias.DONE),
+            all_rubrics=all_rubrics,
             errors=errors,
             show_due=True,
             strict_archive_rules=True,
@@ -48,6 +50,7 @@ class FillPostsListJob(BaseJob):
             trello_client: TrelloClient,
             list_aliases: List[str],
             errors: dict,
+            all_rubrics: List,
             show_due=True,
             need_illustrators=True,
             strict_archive_rules=True,
@@ -107,6 +110,7 @@ class FillPostsListJob(BaseJob):
                     card_fields,
                     is_main_post,
                     is_archive_post,
+                    all_rubrics,
                 )
             )
 
