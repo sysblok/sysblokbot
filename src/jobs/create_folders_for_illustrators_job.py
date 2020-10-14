@@ -9,12 +9,14 @@ from .base_job import BaseJob
 from .utils import (check_trello_card, format_errors, pretty_send)
 from enum import IntEnum
 
+logger = logging.getLogger(__name__)
+
+
 class IllustratorFolderState(IntEnum):
     EXISTING = 0
     CREATED = 1
     INCORRECT_URL = 2
 
-logger = logging.getLogger(__name__)
 
 class CreateFoldersForIllustratorsJob(BaseJob):
     @staticmethod
@@ -42,7 +44,8 @@ class CreateFoldersForIllustratorsJob(BaseJob):
             ):
                 if card[0] != current_state:
                     # new section start
-                    paragraphs.append(CreateFoldersForIllustratorsJob._get_folder_state_description(card[0]))
+                    paragraphs.append(
+                        CreateFoldersForIllustratorsJob._get_folder_state_description(card[0]))
                     current_state = card[0]
                 paragraphs.append(card[1])
 
@@ -98,16 +101,19 @@ class CreateFoldersForIllustratorsJob(BaseJob):
                 # filled cover field
                 if urlparse(card_fields.cover).scheme:
                     # existing folder path is correct
-                    cover = load('create_folders_for_illustrators_job__cover', url=card_fields.cover)
+                    cover = load('create_folders_for_illustrators_job__cover',
+                                 url=card_fields.cover)
                     folder_state = IllustratorFolderState.EXISTING
                 else:
-                    cover = load('create_folders_for_illustrators_job__bad_cover_url', url=card_fields.cover)
+                    cover = load('create_folders_for_illustrators_job__bad_cover_url',
+                                 url=card_fields.cover)
                     folder_state = IllustratorFolderState.INCORRECT_URL
             else:
                 # create folder for cover
                 card_fields.cover = app_context.drive_client.create_folder_for_card(card)
                 if card_fields.cover is None:
-                    cover = load('create_folders_for_illustrators_job__bad_cover_url', url=card_fields.cover)
+                    cover = load('create_folders_for_illustrators_job__bad_cover_url',
+                                 url=card_fields.cover)
                     folder_state = IllustratorFolderState.INCORRECT_URL
                     logger.error(f'The folder for card {card.url} was not created')
                 else:
@@ -118,7 +124,8 @@ class CreateFoldersForIllustratorsJob(BaseJob):
                         TrelloCustomFieldTypeAlias.COVER,
                         card_fields.cover,
                     )
-                    cover = load('create_folders_for_illustrators_job__cover', url=card_fields.cover)
+                    cover = load('create_folders_for_illustrators_job__cover',
+                                 url=card_fields.cover)
                     folder_state = IllustratorFolderState.CREATED
 
             card_text = load(
