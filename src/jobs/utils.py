@@ -218,34 +218,19 @@ def format_possibly_plural(name: str, values: List[str]) -> str:
 
 def retrieve_last_trello_analytics(db_client: DBClient) -> dict:
     try:
-        last_analytics = db_client.get_latest_trello_analytics()
-        return _make_statistic_object(last_analytics)
+        return db_client.get_latest_trello_analytics()
     except Exception as e:
         logger.error(f'Failed to retrieve statistic: {e}')
 
 
-def add_statistic(db_client: DBClient, data):
+def retrieve_last_trello_analytics_date(db_client: DBClient) -> datetime.datetime:
     try:
-        db_client.add_item_to_statistics_table(data)
+        return datetime.datetime.strptime(
+            db_client.get_latest_trello_analytics().date,
+            '%Y-%m-%d'
+        )
     except Exception as e:
-        logger.error(f'Failed to add statistic item: {e}')
-
-
-def _make_statistic_object(statistic: TrelloAnalytics) -> dict:
-    """
-    Returns the dictionary with statistics data
-    """
-    if statistic:
-        return {
-            'date': datetime.datetime.strptime(statistic.date, '%Y-%m-%d'),
-            'topic_suggestion': statistic.topic_suggestion,
-            'topic_ready': statistic.topic_ready,
-            'in_progress': statistic.in_progress,
-            'expect_this_week': statistic.expect_this_week,
-            'editors_check': statistic.editors_check
-        }
-    else:
-        return None
+        logger.error(f'Failed to retrieve latest statistic date: {e}')
 
 
 def get_no_access_marker(file_url: str, drive_client: GoogleDriveClient) -> str:
