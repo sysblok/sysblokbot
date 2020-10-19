@@ -85,23 +85,16 @@ class Reminder(Base):
 
 class TrelloAnalytics(Base):
     __tablename__ = 'trello_analytics'
+    # SQLite does not have datetime objects. Date format: '%Y-%m-%d'
     date = Column(String, primary_key=True)
     topic_suggestion = Column(Integer)
     topic_ready = Column(Integer)
     in_progress = Column(Integer)
     expect_this_week = Column(Integer)
     editors_check = Column(Integer)
-
-    @classmethod
-    def from_dict(cls, data):
-        statistic = cls()
-        statistic.date = data['date']
-        statistic.topic_suggestion = data['topic_suggestion']
-        statistic.topic_ready = data['topic_ready']
-        statistic.in_progress = data['in_progress']
-        statistic.expect_this_week = data['expect_this_week']
-        statistic.editors_check = data['editors_check']
-        return statistic
+    deadline_missed = Column(Integer)
+    waiting_for_editors = Column(Integer)
+    ready_to_issue = Column(Integer)
 
 
 class DBString(Base):
