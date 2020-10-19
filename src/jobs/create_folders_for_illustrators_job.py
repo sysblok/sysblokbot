@@ -1,13 +1,21 @@
 import logging
-from typing import Callable, List
+from typing import Callable, List, Tuple
+from urllib.parse import urlparse
 
 from ..app_context import AppContext
 from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias, TrelloCardColor
 from ..strings import load
 from .base_job import BaseJob
 from .utils import (check_trello_card, format_errors, pretty_send)
+from enum import IntEnum
 
 logger = logging.getLogger(__name__)
+
+
+class IllustratorFolderState(IntEnum):
+    EXISTING = 0
+    CREATED = 1
+    INCORRECT_URL = 2
 
 
 class CreateFoldersForIllustratorsJob(BaseJob):
@@ -16,16 +24,31 @@ class CreateFoldersForIllustratorsJob(BaseJob):
         errors = {}
         paragraphs = []  # list of paragraph strings
 
-        CreateFoldersForIllustratorsJob._create_folders(
+        result = CreateFoldersForIllustratorsJob._create_folders(
             app_context=app_context,
             list_aliases=(TrelloListAlias.TO_CHIEF_EDITOR, TrelloListAlias.EDITED_SOMETIMES,
                           TrelloListAlias.EDITED_NEXT_WEEK, TrelloListAlias.TO_SEO_EDITOR),
             errors=errors
         )
+
         if len(errors) > 0:
-            paragraphs = format_errors(errors)
+            paragraphs += format_errors(errors)
+
+        if len(result) == 0:
+            paragraphs += [load('create_folders_for_illustrators_job__no_cards')]
         else:
-            paragraphs = ['Successfully created']
+            current_state = None
+            for card in sorted(
+                result,
+                key=lambda card: card[0]
+            ):
+                if card[0] != current_state:
+                    # new section start
+                    paragraphs.append(
+                        CreateFoldersForIllustratorsJob._get_folder_state_description(card[0]))
+                    current_state = card[0]
+                paragraphs.append(card[1])
+
         pretty_send(paragraphs, send)
 
     @staticmethod
@@ -33,12 +56,13 @@ class CreateFoldersForIllustratorsJob(BaseJob):
         app_context: AppContext,
         list_aliases: List[TrelloListAlias],
         errors: dict
-    ):
+    ) -> List[Tuple[IllustratorFolderState, str]]:
         logger.info(f'Started counting:')
         list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
         cards = app_context.trello_client.get_cards(list_ids)
 
         parse_failure_counter = 0
+        result = []
         for card in cards:
             if not card:
                 parse_failure_counter += 1
@@ -68,16 +92,61 @@ class CreateFoldersForIllustratorsJob(BaseJob):
             if not card_is_ok:
                 continue
 
-            if not card_fields.cover and not is_archive_card:
+            if is_archive_card:
+                continue
+
+            folder_state = IllustratorFolderState.INCORRECT_URL
+
+            if card_fields.cover:
+                # filled cover field
+                if urlparse(card_fields.cover).scheme:
+                    # existing folder path is correct
+                    cover = load('create_folders_for_illustrators_job__cover',
+                                 url=card_fields.cover)
+                    folder_state = IllustratorFolderState.EXISTING
+                else:
+                    cover = load('create_folders_for_illustrators_job__bad_cover_url',
+                                 url=card_fields.cover)
+                    folder_state = IllustratorFolderState.INCORRECT_URL
+            else:
+                # create folder for cover
                 card_fields.cover = app_context.drive_client.create_folder_for_card(card)
                 if card_fields.cover is None:
+                    cover = load('create_folders_for_illustrators_job__bad_cover_url',
+                                 url=card_fields.cover)
+                    folder_state = IllustratorFolderState.INCORRECT_URL
                     logger.error(f'The folder for card {card.url} was not created')
-                    continue
-                logger.info(f'Trying to put {card_fields.cover} as cover field for {card.url}')
-                app_context.trello_client.set_card_custom_field(
-                    card.id,
-                    TrelloCustomFieldTypeAlias.COVER,
-                    card_fields.cover,
-                )
+                else:
+                    # save path to folder into trello card
+                    logger.info(f'Trying to put {card_fields.cover} as cover field for {card.url}')
+                    app_context.trello_client.set_card_custom_field(
+                        card.id,
+                        TrelloCustomFieldTypeAlias.COVER,
+                        card_fields.cover,
+                    )
+                    cover = load('create_folders_for_illustrators_job__cover',
+                                 url=card_fields.cover)
+                    folder_state = IllustratorFolderState.CREATED
+
+            card_text = load(
+                'create_folders_for_illustrators_job__card',
+                url=card.url,
+                name=card_fields.title or card.name,
+                cover=cover
+            )
+            result.append((folder_state, card_text))
+
         if parse_failure_counter > 0:
             logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
+        return result
+
+    @staticmethod
+    def _get_folder_state_description(
+            state: IllustratorFolderState
+    ) -> str:
+        if state == IllustratorFolderState.EXISTING:
+            return load('create_folders_for_illustrators_job__section_existing')
+        elif state == IllustratorFolderState.CREATED:
+            return load('create_folders_for_illustrators_job__section_created')
+        elif state == IllustratorFolderState.INCORRECT_URL:
+            return load('create_folders_for_illustrators_job__section_incorrect_url')
