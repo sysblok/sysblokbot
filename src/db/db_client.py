@@ -309,10 +309,9 @@ class DBClient(Singleton):
             next_reminder = next_reminder + timedelta(days=7)
         return next_reminder
 
-    def add_item_to_statistics_table(self, data) -> None:
+    def add_item_to_statistics_table(self, statistic: TrelloAnalytics):
         session = self.Session()
         try:
-            statistic = TrelloAnalytics.from_dict(data)
             session.add(statistic)
             session.commit()
         except Exception as e:
