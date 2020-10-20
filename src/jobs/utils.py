@@ -216,6 +216,12 @@ def format_possibly_plural(name: str, values: List[str]) -> str:
     )
 
 
+def format_labels(values: List[str]) -> str:
+    if len(values) == 0:
+        return ''
+    return '[' + ']['.join(values) + ']'
+
+
 def retrieve_last_trello_analytics(db_client: DBClient) -> dict:
     try:
         return db_client.get_latest_trello_analytics()
