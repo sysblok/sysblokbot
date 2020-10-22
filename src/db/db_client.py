@@ -88,6 +88,8 @@ class DBClient(Singleton):
             rubrics = sheets_client.fetch_rubrics()
             for rubric_dict in rubrics:
                 rubric = Rubric.from_dict(rubric_dict)
+                if rubric is None:
+                    continue
                 session.add(rubric)
             session.commit()
         except Exception as e:
@@ -108,6 +110,8 @@ class DBClient(Singleton):
                     # we use that to separate different strings
                     continue
                 string = DBString.from_dict(string_dict)
+                if string is None:
+                    continue
                 session.add(string)
             session.commit()
         except Exception as e:

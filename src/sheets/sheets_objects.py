@@ -53,12 +53,12 @@ class RegistryPost:
             if label.color != TrelloCardColor.BLACK
         ]
         self.rubric_1 = next((
-            rubric['vk_tag'] for rubric in all_rubrics
-            if rubric['name'] == card_rubrics[0]
+            rubric.vk_tag for rubric in all_rubrics
+            if rubric.name == card_rubrics[0]
         ), 'нет')
         self.rubric_2 = 'нет' if len(card_rubrics) == 1 else next((
-            rubric['vk_tag'] for rubric in all_rubrics
-            if rubric['name'] == card_rubrics[1]
+            rubric.vk_tag for rubric in all_rubrics
+            if rubric.name == card_rubrics[1]
         ), 'нет')
 
     def to_dict(self):
