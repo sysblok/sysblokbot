@@ -106,8 +106,8 @@ class DBString(Base):
     def from_dict(cls, data):
         message = cls()
         try:
-            message.id  = _get_field_or_throw(data['id'])
-            message.value  = _get_field_or_throw(data['value'])
+            message.id = _get_field_or_throw(data['id'])
+            message.value = _get_field_or_throw(data['value'])
         except ValueError:
             return None
         return message
@@ -123,12 +123,13 @@ class Rubric(Base):
     def from_dict(cls, data):
         rubric = cls()
         try:
-            rubric.name  = _get_field_or_throw(data['name'])
-            rubric.vk_tag  = _get_field_or_throw(data['vk_tag'])
-            rubric.tg_tag  = _get_field_or_throw(data['tg_tag'])
+            rubric.name = _get_field_or_throw(data['name'])
+            rubric.vk_tag = _get_field_or_throw(data['vk_tag'])
+            rubric.tg_tag = _get_field_or_throw(data['tg_tag'])
         except ValueError:
             return None
         return rubric
+
 
 def _get_field_or_throw(field):
     if field is None:
