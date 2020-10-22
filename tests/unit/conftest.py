@@ -70,7 +70,7 @@ def mock_sheets_client(monkeypatch, mock_config_manager):
     def _authorize(self):
         pass
 
-    def _parse_gs_res(_, title_key_map: Dict, sheet_key: str) -> List[Dict]:
+    def _parse_gs_res(_, title_key_map: Dict, sheet_key: str, sheet_name: str = '') -> List[Dict]:
 
         load_json = JsonLoader(SHEETS_TEST_DIR).load_json
 
