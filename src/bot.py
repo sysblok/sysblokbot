@@ -105,6 +105,12 @@ class SysBlokBot:
             'получить сводку с папками для иллюстраторов'
         )
         self.add_manager_handler(
+            'get_illustrative_report_old',
+            CommandCategories.SUMMARY,
+            self.manager_reply_handler('illustrative_report_old_job'),
+            'получить сводку с папками для иллюстраторов(версия 1.0)'
+        )
+        self.add_manager_handler(
             'get_tasks_report',
             CommandCategories.SUMMARY,
             direct_message_only(handlers.get_tasks_report),
