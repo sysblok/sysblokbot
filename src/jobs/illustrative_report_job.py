@@ -1,17 +1,15 @@
-import datetime
 import logging
-import time
-from typing import Callable, List
+from operator import itemgetter
+from typing import Callable, List, Tuple, Dict
+from collections import defaultdict
 from urllib.parse import urlparse
 
 from ..app_context import AppContext
-from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias, TrelloCardColor
+from ..consts import TrelloListAlias
 from ..strings import load
-from ..trello.trello_client import TrelloClient
-from ..trello.trello_objects import TrelloCustomField
 from .base_job import BaseJob
-from .utils import (check_trello_card, format_errors, format_possibly_plural,
-                    get_no_access_marker, pretty_send)
+from .utils import (format_errors, format_labels,
+                    get_no_access_marker, pretty_send, check_trello_card)
 
 logger = logging.getLogger(__name__)
 
@@ -22,61 +20,55 @@ class IllustrativeReportJob(BaseJob):
         paragraphs = []  # list of paragraph strings
         errors = {}
 
-        paragraphs += IllustrativeReportJob._retrieve_cards_for_paragraph(
+        result = IllustrativeReportJob._retrieve_cards(
             app_context=app_context,
-            title=load('illustrative_report_job__title_to_chief_editor'),
-            list_aliases=(TrelloListAlias.TO_CHIEF_EDITOR, ),
+            list_aliases=(
+                TrelloListAlias.EDITED_SOMETIMES,
+                TrelloListAlias.EDITED_NEXT_WEEK,
+                TrelloListAlias.TO_SEO_EDITOR
+            ),
             errors=errors,
-            strict_archive_rules=False,
-        )
-
-        paragraphs += IllustrativeReportJob._retrieve_cards_for_paragraph(
-            app_context=app_context,
-            title=load('illustrative_report_job__title_edited_sometimes'),
-            list_aliases=(TrelloListAlias.EDITED_SOMETIMES, ),
-            errors=errors,
-            strict_archive_rules=False,
-        )
-
-        paragraphs += IllustrativeReportJob._retrieve_cards_for_paragraph(
-            app_context=app_context,
-            title=load('common_report__section_title_editorial_board'),
-            list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, TrelloListAlias.TO_SEO_EDITOR),
-            errors=errors,
-            strict_archive_rules=False,
         )
 
         if len(errors) > 0:
             paragraphs = format_errors(errors)
-
+        else:
+            # go first
+            no_illustrators_cards = result.get('')
+            if no_illustrators_cards and len(no_illustrators_cards) > 0:
+                paragraphs += IllustrativeReportJob._get_cards_group_paragraphs(
+                    load('illustrative_report_job__no_illustrators'),
+                    no_illustrators_cards
+                )
+            for illustrators, cards in result.items():
+                if illustrators == '':
+                    # already processed
+                    continue
+                paragraphs += IllustrativeReportJob._get_cards_group_paragraphs(
+                    illustrators,
+                    cards
+                )
         logger.warning(paragraphs)
 
         pretty_send(paragraphs, send)
 
     @staticmethod
-    def _retrieve_cards_for_paragraph(
+    def _retrieve_cards(
             app_context: AppContext,
-            title: str,
             list_aliases: List[TrelloListAlias],
             errors: dict,
-            moved_from_exclusive: List[TrelloListAlias] = (),
-            show_post_title=False,
-            need_editor=True,
-            need_title=False,
-            strict_archive_rules=True,
-    ) -> List[str]:
-        '''
-        Returns a list of paragraphs that should always go in a single message.
-        '''
-        logger.info(f'Started counting: "{title}"')
+    ) -> Dict[str, List[Tuple[bool, str]]]:
+        """
+        Returns card reports texts grouped by illustrators
+        """
+        logger.info(f'Started retrieving cards')
         list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
         cards = app_context.trello_client.get_cards(list_ids)
         parse_failure_counter = 0
 
-        paragraphs = [
-            load('common_report__list_title_and_size', title=title, length=len(cards))
-        ]
-
+        result = defaultdict(list)
+        # additional labels to card title in report
+        labels_to_display = [load('common_trello_label__main_post')]
         for card in cards:
             if not card:
                 parse_failure_counter += 1
@@ -84,10 +76,16 @@ class IllustrativeReportJob(BaseJob):
 
             card_fields = app_context.trello_client.get_custom_fields(card.id)
 
-            label_names = [
-                label.name for label in card.labels if label.color != TrelloCardColor.BLACK
-            ]
-            is_archive_card = load('common_trello_label__archive') in label_names
+            label_names = [label.name for label in card.labels]
+            is_skipped_card = (
+                load('common_trello_label__archive') in label_names or
+                load('common_trello_label__mems') in label_names or
+                load('common_trello_label__digest') in label_names or
+                load('common_trello_label__video') in label_names
+            )
+
+            if is_skipped_card:
+                continue
 
             card_is_ok = check_trello_card(
                 card,
@@ -100,57 +98,81 @@ class IllustrativeReportJob(BaseJob):
                     )
                 ),
                 is_bad_google_doc=card_fields.google_doc is None,
-                is_bad_authors=len(card_fields.authors) == 0,
+                is_bad_cover=card_fields.cover is None
             )
 
             if not card_is_ok:
                 continue
 
-            if not card_fields.cover and not is_archive_card:
-                card_fields.cover = app_context.drive_client.create_folder_for_card(card)
-                if card_fields.cover is None:
-                    logger.error(f'The folder for {card.url} was not created')
-                else:
-                    logger.info(f'Trying to put {card_fields.cover} as cover field for {card.url}')
-                    app_context.trello_client.set_card_custom_field(
-                        card.id,
-                        TrelloCustomFieldTypeAlias.COVER,
-                        card_fields.cover,
-                    )
-
-            cover = ''
-            if card_fields.cover and not is_archive_card:
-                if urlparse(card_fields.cover).scheme:
-                    if app_context.drive_client.is_folder_empty(card_fields.cover):
-                        cover = load(
-                            'illustrative_report_job__card_cover_url_empty',
-                            url=card_fields.cover
-                        )
-                    else:
-                        cover = load(
-                            'illustrative_report_job__card_cover_url',
-                            url=card_fields.cover
-                        )
-                else:
-                    cover = load('illustrative_report_job__card_cover', name=card_fields.cover)
-
-            file_url = (
-                card_fields.google_doc if urlparse(card_fields.google_doc).scheme else card.url
+            cover = IllustrativeReportJob._get_cover_report_field(
+                app_context,
+                card_fields.cover if card_fields.cover else ''
             )
-            no_access_marker = get_no_access_marker(file_url, app_context.drive_client)
+            doc_url = (
+                card_fields.google_doc if urlparse(card_fields.google_doc).scheme else ''
+            )
+            no_access_marker = get_no_access_marker(doc_url, app_context.drive_client)
+            is_edited_sometimes = (
+                card.lst.id == app_context.trello_client.lists_config[
+                    TrelloListAlias.EDITED_SOMETIMES
+                ]
+            )
+            card_labels = []
+            if is_edited_sometimes:
+                card_labels += [load('illustrative_report_job__edited_label')]
+            card_labels += [label for label in label_names if label in labels_to_display]
             card_text = load(
-                'illustrative_report_job__card',
-                url=file_url,
+                'illustrative_report_job__card_new',
+                url=doc_url,
                 name=card_fields.title or card.name,
-                authors=format_possibly_plural(load('common_role__author'), card_fields.authors),
-                editors=format_possibly_plural(load('common_role__editor'), card_fields.editors),
-                illustrators=format_possibly_plural(
-                    load('common_role__illustrator'), card_fields.illustrators
-                ),
+                labels=format_labels(card_labels),
                 cover=cover,
+                card=load('illustrative_report_job__card_url', url=card.url)
             )
-            paragraphs.append(no_access_marker + card_text)
+            card_illustrators = ''
+            if card_fields.illustrators:
+                card_illustrators = ", ".join(sorted(card_fields.illustrators))
+            result[card_illustrators].append(
+                (is_edited_sometimes, no_access_marker + card_text)
+            )
 
         if parse_failure_counter > 0:
             logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
+        logger.info(f'Finished retrieving cards')
+        return result
+
+    @staticmethod
+    def _get_cover_report_field(app_context: AppContext, cover_folder_path: str) -> str:
+        """
+        Returns cover field text for card in report
+        """
+        if urlparse(cover_folder_path).scheme:
+            if app_context.drive_client.is_folder_empty(cover_folder_path):
+                return load(
+                    'illustrative_report_job__card_cover_url_empty',
+                    url=cover_folder_path
+                )
+            return load(
+                    'illustrative_report_job__card_cover_url',
+                    url=cover_folder_path
+                )
+        return load('illustrative_report_job__card_cover', name=cover_folder_path)
+
+    @staticmethod
+    def _get_cards_group_paragraphs(
+            illustrators: str, cards: List[Tuple[bool, str]]
+    ) -> List[str]:
+        """
+        Returns a list of paragraphs for illustrators group
+        """
+        if len(cards) == 0:
+            return []
+        paragraphs = [load(
+            'illustrative_report_job__author_title', name=illustrators
+        )]
+        paragraphs += [
+            card_text for _, card_text in sorted(
+                cards, key=itemgetter(0), reverse=True
+            )
+        ]
         return paragraphs

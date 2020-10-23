@@ -46,7 +46,7 @@ class GoogleSheetsClient(Singleton):
             "Телеграм": "telegram",
             "Трелло": "trello",
         }
-        return self._parse_gs_res(title_key_map, self.authors_sheet_key)
+        return self._parse_gs_res(title_key_map, self.authors_sheet_key, 'Кураторы и контакты')
 
     def fetch_curators(self) -> List[Dict]:
         title_key_map = {
@@ -94,8 +94,10 @@ class GoogleSheetsClient(Singleton):
     def _has_string(self, data, string: str):
         return string in str(data.get_values())
 
-    def _parse_gs_res(self, title_key_map: Dict, sheet_key: str) -> List[Dict]:
-        titles, *rows = self._get_sheet_values(sheet_key)
+    def _parse_gs_res(
+            self, title_key_map: Dict, sheet_key: str, sheet_name: str = ''
+    ) -> List[Dict]:
+        titles, *rows = self._get_sheet_values(sheet_key, sheet_name)
         title_idx_map = {
             idx: title_key_map[title]
             for idx, title in enumerate(titles)
@@ -111,9 +113,11 @@ class GoogleSheetsClient(Singleton):
             res.append(item)
         return res
 
-    def _get_sheet_values(self, sheet_key: str) -> List:
+    def _get_sheet_values(self, sheet_key: str, sheet_name: str = '') -> List:
         sheet = self._open_by_key(sheet_key)
-        worksheet = sheet.get_sheet_by_id(0)
+        worksheet = (
+            sheet.get_sheet_by_name(sheet_name) if sheet_name != '' else sheet.get_sheet_by_id(0)
+        )
         return worksheet.get_data_range().get_values()
 
     def _open_by_key(self, sheet_key: str):
