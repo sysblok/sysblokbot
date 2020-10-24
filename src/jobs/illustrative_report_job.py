@@ -5,11 +5,12 @@ from collections import defaultdict
 from urllib.parse import urlparse
 
 from ..app_context import AppContext
-from ..consts import TrelloListAlias
+from ..consts import TrelloListAlias, TrelloCardFieldErrorAlias
 from ..strings import load
 from .base_job import BaseJob
-from .utils import (format_errors, format_labels,
-                    get_no_access_marker, pretty_send, check_trello_card)
+from .utils import (format_labels,
+                    get_no_access_marker, pretty_send, format_errors_with_tips)
+from ..trello.trello_objects import TrelloCard, CardCustomFields
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ class IllustrativeReportJob(BaseJob):
         )
 
         if len(errors) > 0:
-            paragraphs = format_errors(errors)
+            paragraphs = format_errors_with_tips(errors)
         else:
             # go first
             no_illustrators_cards = result.get('')
@@ -87,18 +88,11 @@ class IllustrativeReportJob(BaseJob):
             if is_skipped_card:
                 continue
 
-            card_is_ok = check_trello_card(
+            card_is_ok = IllustrativeReportJob._check_trello_card(
+                app_context,
                 card,
+                card_fields,
                 errors,
-                is_bad_title=(
-                    card_fields.title is None and
-                    card.lst.id not in (
-                        app_context.trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK],
-                        app_context.trello_client.lists_config[TrelloListAlias.TO_SEO_EDITOR]
-                    )
-                ),
-                is_bad_google_doc=card_fields.google_doc is None,
-                is_bad_cover=card_fields.cover is None
             )
 
             if not card_is_ok:
@@ -176,3 +170,33 @@ class IllustrativeReportJob(BaseJob):
             )
         ]
         return paragraphs
+
+    @staticmethod
+    def _check_trello_card(
+            app_context: AppContext,
+            card: TrelloCard,
+            card_fields: CardCustomFields,
+            errors: dict,
+    ) -> bool:
+        """
+        Check card and add bad card fields aliases in errors dict.
+        Return true if there are no errors
+        """
+        this_card_bad_fields_aliases = []
+        if (
+            card_fields.title is None and
+            card.lst.id not in (
+                app_context.trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK],
+                app_context.trello_client.lists_config[TrelloListAlias.TO_SEO_EDITOR]
+            )
+        ):
+            this_card_bad_fields_aliases.append(TrelloCardFieldErrorAlias.BAD_TITLE)
+        if card_fields.google_doc is None:
+            this_card_bad_fields_aliases.append(TrelloCardFieldErrorAlias.BAD_GOOGLE_DOC)
+        if card_fields.cover is None:
+            this_card_bad_fields_aliases.append(TrelloCardFieldErrorAlias.BAD_COVER)
+
+        if len(this_card_bad_fields_aliases) > 0:
+            errors[card] = this_card_bad_fields_aliases
+            return False
+        return True

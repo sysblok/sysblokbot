@@ -9,7 +9,7 @@ import telegram
 
 from .. import jobs
 from ..app_context import AppContext
-from ..consts import TrelloCardColor
+from ..consts import TrelloCardColor, TrelloCardFieldErrorAlias
 from ..db.db_client import DBClient
 from ..db.db_objects import Curator, TrelloAnalytics
 from ..drive.drive_client import GoogleDriveClient
@@ -202,6 +202,46 @@ def format_errors(errors: dict):
         load('jobs__utils__format_errors_outro'),
     ]
     return paragraphs
+
+
+def format_errors_with_tips(errors: dict) -> List[str]:
+    """
+    Format errors and add tips section for bad fields
+    """
+    error_messages = []
+    unique_bad_fields_types = set()
+    for bad_card, bad_fields in errors.items():
+        unique_bad_fields_types.update(bad_fields)
+        card_error_message = load(
+            'jobs__utils__format_errors_error',
+            url=bad_card.url,
+            name=bad_card.name,
+            fields=', '.join(
+                map(lambda alias: load(alias.value).lower(), bad_fields)
+            ),
+        )
+        error_messages.append(card_error_message)
+    tips = get_tips_for_bad_fields(unique_bad_fields_types)
+    paragraphs = [load('jobs__utils__format_errors_intro')]
+    if len(tips) > 0:
+        paragraphs.append('\n'.join(tips))
+    paragraphs += [
+        load('jobs__utils__format_errors__section_errors'),
+        '\n'.join(error_messages),
+        load('jobs__utils__format_errors_outro'),
+    ]
+    return paragraphs
+
+
+def get_tips_for_bad_fields(bad_fields) -> List[str]:
+    """
+    Return tips for fix errors in fields
+    """
+    result = []
+    for field in bad_fields:
+        if field == TrelloCardFieldErrorAlias.BAD_COVER:
+            result.append(load('jobs__utils__format_errors__bad_cover_tip'))
+    return result
 
 
 def format_possibly_plural(name: str, values: List[str]) -> str:
