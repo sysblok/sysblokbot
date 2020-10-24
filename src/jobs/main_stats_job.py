@@ -14,15 +14,15 @@ logger = logging.getLogger(__name__)
 
 
 class TrelloAnalyticsJob(BaseJob):
-    latest_analytics = TrelloAnalytics()
-
     @staticmethod
     def _execute(app_context: AppContext,
                  send: Callable[[str], None],
                  called_from_handler: bool = False):
+        new_analytics = TrelloAnalytics()
         stats = [
             TrelloAnalyticsJob._make_text_for_category(
                 app_context=app_context,
+                new_analytics=new_analytics,
                 title=load('main_stats_job__title_pending_approval'),
                 list_aliases=(
                     TrelloListAlias.TOPIC_SUGGESTION,
@@ -31,6 +31,7 @@ class TrelloAnalyticsJob(BaseJob):
             ),
             TrelloAnalyticsJob._make_text_for_category(
                 app_context=app_context,
+                new_analytics=new_analytics,
                 title=load('main_stats_job__title_author_search'),
                 list_aliases=(
                     TrelloListAlias.TOPIC_READY,
@@ -39,6 +40,7 @@ class TrelloAnalyticsJob(BaseJob):
             ),
             TrelloAnalyticsJob._make_text_for_category(
                 app_context=app_context,
+                new_analytics=new_analytics,
                 title=load('main_stats_job__title_in_work'),
                 list_aliases=(
                     TrelloListAlias.IN_PROGRESS,
@@ -47,6 +49,7 @@ class TrelloAnalyticsJob(BaseJob):
             ),
             TrelloAnalyticsJob._make_text_for_category(
                 app_context=app_context,
+                new_analytics=new_analytics,
                 title=load('main_stats_job__title_deadline_missed'),
                 list_aliases=(
                     TrelloListAlias.IN_PROGRESS,
@@ -56,6 +59,7 @@ class TrelloAnalyticsJob(BaseJob):
             ),
             TrelloAnalyticsJob._make_text_for_category(
                 app_context=app_context,
+                new_analytics=new_analytics,
                 title=load('main_stats_job__title_expect_this_week'),
                 list_aliases=(
                     TrelloListAlias.IN_PROGRESS,
@@ -67,6 +71,7 @@ class TrelloAnalyticsJob(BaseJob):
             ),
             TrelloAnalyticsJob._make_text_for_category(
                 app_context=app_context,
+                new_analytics=new_analytics,
                 title=load('main_stats_job__title_waiting_for_editors'),
                 list_aliases=(
                     TrelloListAlias.TO_EDITOR,
@@ -75,6 +80,7 @@ class TrelloAnalyticsJob(BaseJob):
             ),
             TrelloAnalyticsJob._make_text_for_category(
                 app_context=app_context,
+                new_analytics=new_analytics,
                 title=load('main_stats_job__title_editors_check'),
                 list_aliases=(
                     TrelloListAlias.TO_SEO_EDITOR,
@@ -84,6 +90,7 @@ class TrelloAnalyticsJob(BaseJob):
             ),
             TrelloAnalyticsJob._make_text_for_category(
                 app_context=app_context,
+                new_analytics=new_analytics,
                 title=load('main_stats_job__title_ready_to_issue'),
                 list_aliases=(
                     TrelloListAlias.EDITED_SOMETIMES,
@@ -106,8 +113,8 @@ class TrelloAnalyticsJob(BaseJob):
         if not called_from_handler:
             # scheduled runs should write results to db, otherwise not
             today_db_str = datetime.datetime.today().strftime('%Y-%m-%d')
-            TrelloAnalyticsJob.latest_analytics.date = today_db_str
-            app_context.db_client.add_item_to_statistics_table(TrelloAnalyticsJob.latest_analytics)
+            new_analytics.date = today_db_str
+            app_context.db_client.add_item_to_statistics_table(new_analytics)
 
         send(load('main_stats_job__text', stats='\n\n'.join(stats), date_interval=date_interval))
 
@@ -122,6 +129,7 @@ class TrelloAnalyticsJob(BaseJob):
     @staticmethod
     def _make_text_for_category(
             app_context: AppContext,
+            new_analytics: TrelloAnalytics,
             title: str,
             list_aliases: Tuple[str],
             column_name: str,
@@ -134,7 +142,7 @@ class TrelloAnalyticsJob(BaseJob):
         list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
         cards = list(filter(filter_func, app_context.trello_client.get_cards(list_ids)))
         statistics = utils.retrieve_last_trello_analytics(app_context.db_client)
-        setattr(TrelloAnalyticsJob.latest_analytics, column_name, len(cards))
+        setattr(new_analytics, column_name, len(cards))
 
         size_and_delta = len(cards)
         if statistics:  # otherwise it's a first command run
