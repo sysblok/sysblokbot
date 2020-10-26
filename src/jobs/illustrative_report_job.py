@@ -184,16 +184,16 @@ class IllustrativeReportJob(BaseJob):
         """
         this_card_bad_fields_aliases = []
         if (
-            card_fields.title is None and
+            not card_fields.title and
             card.lst.id not in (
                 app_context.trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK],
                 app_context.trello_client.lists_config[TrelloListAlias.TO_SEO_EDITOR]
             )
         ):
             this_card_bad_fields_aliases.append(TrelloCardFieldErrorAlias.BAD_TITLE)
-        if card_fields.google_doc is None:
+        if not card_fields.google_doc:
             this_card_bad_fields_aliases.append(TrelloCardFieldErrorAlias.BAD_GOOGLE_DOC)
-        if card_fields.cover is None:
+        if not card_fields.cover:
             this_card_bad_fields_aliases.append(TrelloCardFieldErrorAlias.BAD_COVER)
 
         if len(this_card_bad_fields_aliases) > 0:

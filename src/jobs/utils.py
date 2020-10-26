@@ -223,7 +223,7 @@ def format_errors_with_tips(errors: dict) -> List[str]:
         error_messages.append(card_error_message)
     tips = get_tips_for_bad_fields(unique_bad_fields_types)
     paragraphs = [load('jobs__utils__format_errors_intro')]
-    if len(tips) > 0:
+    if tips:
         paragraphs.append('\n'.join(tips))
     paragraphs += [
         load('jobs__utils__format_errors__section_errors'),
