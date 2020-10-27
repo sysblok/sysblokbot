@@ -21,18 +21,13 @@ class IllustratorFolderState(IntEnum):
 class CreateFoldersForIllustratorsJob(BaseJob):
     @staticmethod
     def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
-        errors = {}
         paragraphs = []  # list of paragraph strings
 
         result = CreateFoldersForIllustratorsJob._create_folders(
             app_context=app_context,
             list_aliases=(TrelloListAlias.TO_CHIEF_EDITOR, TrelloListAlias.EDITED_SOMETIMES,
                           TrelloListAlias.EDITED_NEXT_WEEK, TrelloListAlias.TO_SEO_EDITOR),
-            errors=errors
         )
-
-        if len(errors) > 0:
-            paragraphs += format_errors(errors)
 
         if len(result) == 0:
             paragraphs += [load('create_folders_for_illustrators_job__no_cards')]
@@ -55,7 +50,6 @@ class CreateFoldersForIllustratorsJob(BaseJob):
     def _create_folders(
         app_context: AppContext,
         list_aliases: List[TrelloListAlias],
-        errors: dict
     ) -> List[Tuple[IllustratorFolderState, str]]:
         logger.info(f'Started counting:')
         list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
@@ -75,28 +69,10 @@ class CreateFoldersForIllustratorsJob(BaseJob):
             ]
             is_archive_card = load('common_trello_label__archive') in label_names
 
-            card_is_ok = check_trello_card(
-                card,
-                errors,
-                is_bad_title=(
-                    card_fields.title is None and
-                    card.lst.id not in (
-                        app_context.trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK],
-                        app_context.trello_client.lists_config[TrelloListAlias.TO_SEO_EDITOR]
-                    )
-                ),
-                is_bad_google_doc=card_fields.google_doc is None,
-                is_bad_authors=len(card_fields.authors) == 0,
-            )
-
-            if not card_is_ok:
-                continue
-
             if is_archive_card:
                 continue
 
             folder_state = IllustratorFolderState.INCORRECT_URL
-
             if card_fields.cover:
                 # filled cover field
                 if urlparse(card_fields.cover).scheme:
