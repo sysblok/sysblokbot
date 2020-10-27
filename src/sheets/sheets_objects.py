@@ -1,6 +1,8 @@
 import logging
 
-from typing import List
+from typing import List, Dict
+
+from sheetfu import Table
 
 from ..consts import TrelloCardColor
 from ..trello.trello_objects import CardCustomFields, TrelloCard
@@ -9,7 +11,26 @@ from ..trello.trello_objects import CardCustomFields, TrelloCard
 logger = logging.getLogger(__name__)
 
 
-class RegistryPost:
+class Serializable:
+    def to_dict(self):
+        raise NotImplementedError
+
+    @staticmethod
+    def from_dict(self, data: Dict):
+        raise NotImplementedError
+
+
+class TableProxy:
+    def __init__(self, table: Table, title_key_map: Dict[str, str]):
+        self.table = table
+        self.title_key_map = title_key_map
+        self.key_title_map = {v: k for k, v in title_key_map.items()}
+
+    def add_one(self, obj: Serializable):
+        self.table.add_one({self.key_title_map[k]: v for k, v in obj.to_dict()})
+        
+
+class RegistryPost(Serializable):
     key_title_map = {
         'name': 'Название поста',
         'author': 'Автор',

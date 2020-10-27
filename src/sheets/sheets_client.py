@@ -4,7 +4,7 @@ from typing import List, Dict, Optional
 
 from sheetfu import SpreadsheetApp, Table
 
-from .sheets_objects import RegistryPost
+from .sheets_objects import RegistryPost, TableProxy
 from ..utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
@@ -85,12 +85,26 @@ class GoogleSheetsClient(Singleton):
             "Ссылка на телеграм (со значком @)": "telegram",
             "Статус": "status",
         }
-        return self._parse_gs_res(title_key_map, self.team_sheet_key, 0)
+        return self._parse_gs_res(title_key_map, self.team_sheet_key, 'Анкеты')
 
     def update_posts_registry(self, entries: List[RegistryPost]):
         sheet = self._open_by_key(self.post_registry_sheet_key)
         data = sheet.get_sheet_by_id(0).get_data_range()
-        table = Table(data)
+        table = TableProxy(data, {
+        'name': 'Название поста',
+        'author': 'Автор',
+        'rubric_1': 'Рубрика',
+        'rubric_2': 'Доп.Рубрика',
+        'google_doc': 'Гугл.док',
+        'trello': 'Trello',
+        'editor': 'Редактор',
+        'cover_type': 'Тип обложки',
+        'cover': 'Обложка',
+        'illustrator': 'Иллюстратор',
+        'date_site': 'Дата (сайт)',
+        'status_site': 'Статус публикации (сайт)',
+        'pin_site': '📌',
+    })
         new_posts = []
         try:
             for entry in entries:
