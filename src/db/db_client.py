@@ -3,11 +3,11 @@ import logging
 import requests
 from typing import List, Tuple
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, desc
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from .db_objects import Author, Base, Chat, Curator, Reminder, TrelloAnalytics, DBString
+from .db_objects import Author, Base, Chat, Curator, Reminder, Rubric, TrelloAnalytics, DBString
 from .. import consts
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..utils.singleton import Singleton
@@ -43,6 +43,7 @@ class DBClient(Singleton):
         self.fetch_authors_sheet(sheets_client)
         self.fetch_curators_sheet(sheets_client)
         self.fetch_strings_sheet(sheets_client)
+        self.fetch_rubrics_sheet(sheets_client)
 
     def fetch_authors_sheet(self, sheets_client: GoogleSheetsClient):
         session = self.Session()
@@ -78,6 +79,25 @@ class DBClient(Singleton):
             return 0
         return len(curators)
 
+    def fetch_rubrics_sheet(self, sheets_client: GoogleSheetsClient):
+        session = self.Session()
+        try:
+            # clean this table
+            session.query(Rubric).delete()
+            # re-download it
+            rubrics = sheets_client.fetch_rubrics()
+            for rubric_dict in rubrics:
+                rubric = Rubric.from_dict(rubric_dict)
+                if rubric is None:
+                    continue
+                session.add(rubric)
+            session.commit()
+        except Exception as e:
+            logger.warning(f"Failed to update rubric table from sheet: {e}")
+            session.rollback()
+            return 0
+        return len(rubrics)
+
     def fetch_strings_sheet(self, sheets_client: GoogleSheetsClient):
         session = self.Session()
         try:
@@ -90,6 +110,8 @@ class DBClient(Singleton):
                     # we use that to separate different strings
                     continue
                 string = DBString.from_dict(string_dict)
+                if string is None:
+                    continue
                 session.add(string)
             session.commit()
         except Exception as e:
@@ -121,11 +143,21 @@ class DBClient(Singleton):
         ).first()
         return curator
 
+    def get_curator_by_telegram(self, telegram: str) -> Curator:
+        session = self.Session()
+        if not telegram.startswith('@'):
+            telegram = f'@{telegram}'
+        return session.query(Curator).filter(
+            Curator.telegram == telegram
+        ).first()
+
     def find_curators_by_author_trello(self, trello_id: str) -> List[Curator]:
         # TODO: make batch queries
         session = self.Session()
         curators = session.query(Curator).join(Author).filter(
             Author.trello == trello_id
+        ).filter(
+            Curator.team == 'Авторы'
         ).all()
         if not curators:
             logger.warning(f'Curators not found for author {trello_id}')
@@ -141,6 +173,9 @@ class DBClient(Singleton):
             return f'<{string_id}>'
         return message.value
 
+    def get_rubrics(self) -> List:
+        return self.Session().query(Rubric).all()
+
     def find_curators_by_trello_label(self, trello_label: str) -> List[Curator]:
         # TODO: make batch queries
         session = self.Session()
@@ -151,13 +186,17 @@ class DBClient(Singleton):
             logger.warning(f'Curators not found for label {trello_label}')
         return curators
 
-    def set_chat_name(self, chat_id: int, chat_name: str):
+    def set_chat_name(self, chat_id: int, chat_name: str, set_curator: bool = False):
+        # Update or set chat name. If chat is known to be curator's, set the flag.
         session = self.Session()
         chat = session.query(Chat).get(chat_id)
         if chat:
-            session.query(Chat).filter(Chat.id == chat_id).update({Chat.title: chat_name})
+            update = {Chat.title: chat_name}
+            if set_curator:
+                update[Chat.is_curator] = True
+            session.query(Chat).filter(Chat.id == chat_id).update(update)
         else:
-            session.add(Chat(id=chat_id, title=chat_name))
+            session.add(Chat(id=chat_id, title=chat_name, is_curator=set_curator))
         session.commit()
 
     def get_chat_name(self, chat_id: int) -> str:
@@ -166,6 +205,14 @@ class DBClient(Singleton):
         if chat is None:
             raise ValueError(f'No chat found with id {chat_id}')
         return chat.title
+
+    def get_chat_by_name(self, chat_name: str) -> Chat:
+        """
+        Can be used to get chat_id of private chat with the bot by username
+        """
+        session = self.Session()
+        chat = session.query(Chat).filter(Chat.title == chat_name).first()
+        return chat
 
     def get_reminders_by_user_id(self, user_chat_id: int) -> List[Tuple[Reminder, Chat]]:
         '''
@@ -266,17 +313,17 @@ class DBClient(Singleton):
             next_reminder = next_reminder + timedelta(days=7)
         return next_reminder
 
-    def add_item_to_statistics_table(self, data) -> None:
+    def add_item_to_statistics_table(self, statistic: TrelloAnalytics):
         session = self.Session()
         try:
-            statistic = TrelloAnalytics.from_dict(data)
             session.add(statistic)
             session.commit()
         except Exception as e:
             logger.warning(f"Failed to add statistic: {e}")
             session.rollback()
 
-    def find_the_latest_statistics(self):
+    def get_latest_trello_analytics(self) -> TrelloAnalytics:
         session = self.Session()
-        statistic = session.query(TrelloAnalytics).all()
-        return statistic
+        return session.query(TrelloAnalytics).order_by(
+            desc(TrelloAnalytics.date)
+        ).first()

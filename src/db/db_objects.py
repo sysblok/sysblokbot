@@ -62,6 +62,7 @@ class Chat(Base):
 
     id = Column(Integer, primary_key=True)
     title = Column(String)
+    is_curator = Column(Boolean, default=False)
 
 
 class Reminder(Base):
@@ -84,23 +85,16 @@ class Reminder(Base):
 
 class TrelloAnalytics(Base):
     __tablename__ = 'trello_analytics'
+    # SQLite does not have datetime objects. Date format: '%Y-%m-%d'
     date = Column(String, primary_key=True)
     topic_suggestion = Column(Integer)
     topic_ready = Column(Integer)
     in_progress = Column(Integer)
     expect_this_week = Column(Integer)
     editors_check = Column(Integer)
-
-    @classmethod
-    def from_dict(cls, data):
-        statistic = cls()
-        statistic.date = data['date']
-        statistic.topic_suggestion = data['topic_suggestion']
-        statistic.topic_ready = data['topic_ready']
-        statistic.in_progress = data['in_progress']
-        statistic.expect_this_week = data['expect_this_week']
-        statistic.editors_check = data['editors_check']
-        return statistic
+    deadline_missed = Column(Integer)
+    waiting_for_editors = Column(Integer)
+    ready_to_issue = Column(Integer)
 
 
 class DBString(Base):
@@ -111,6 +105,33 @@ class DBString(Base):
     @classmethod
     def from_dict(cls, data):
         message = cls()
-        message.id = data['id']
-        message.value = data['value']
+        try:
+            message.id = _get_field_or_throw(data['id'])
+            message.value = _get_field_or_throw(data['value'])
+        except ValueError:
+            return None
         return message
+
+
+class Rubric(Base):
+    __tablename__ = 'rubrics'
+    name = Column(String, primary_key=True)
+    vk_tag = Column(String)
+    tg_tag = Column(String)
+
+    @classmethod
+    def from_dict(cls, data):
+        rubric = cls()
+        try:
+            rubric.name = _get_field_or_throw(data['name'])
+            rubric.vk_tag = _get_field_or_throw(data['vk_tag'])
+            rubric.tg_tag = _get_field_or_throw(data['tg_tag'])
+        except ValueError:
+            return None
+        return rubric
+
+
+def _get_field_or_throw(field):
+    if field is None:
+        raise ValueError
+    return field

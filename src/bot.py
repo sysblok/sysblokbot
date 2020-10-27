@@ -5,6 +5,7 @@ from typing import Callable
 
 from telegram.ext import (CallbackQueryHandler, CommandHandler, Filters,
                           MessageHandler, PicklePersistence, Updater)
+from telegram.ext.dispatcher import run_async
 
 from .app_context import AppContext
 from .config_manager import ConfigManager
@@ -92,10 +93,22 @@ class SysBlokBot:
             'получить сводку по результатам редакторского созвона'
         )
         self.add_manager_handler(
+            'create_folders_for_illustrators',
+            CommandCategories.REGISTRY,
+            self.manager_reply_handler('create_folders_for_illustrators_job'),
+            'создать папки для иллюстраторов'
+        )
+        self.add_manager_handler(
             'get_illustrative_report',
             CommandCategories.SUMMARY,
             self.manager_reply_handler('illustrative_report_job'),
             'получить сводку с папками для иллюстраторов'
+        )
+        self.add_manager_handler(
+            'get_illustrative_report_old',
+            CommandCategories.SUMMARY,
+            self.manager_reply_handler('illustrative_report_old_job'),
+            'получить сводку с папками для иллюстраторов(версия 1.0)'
         )
         self.add_manager_handler(
             'get_tasks_report',
@@ -114,6 +127,11 @@ class SysBlokBot:
             CommandCategories.REMINDERS,
             handlers.manage_reminders,
             'настроить напоминания'
+        )
+        # hidden from /help command for curator enrollment
+        self.add_handler(
+            'enroll_curator',
+            handlers.enroll_curator
         )
 
         # admin-only technical cmds
@@ -176,6 +194,12 @@ class SysBlokBot:
             CommandCategories.BROADCAST,
             self.admin_reply_handler('send_reminders_job'),
             'отослать напоминания вне расписания'
+        )
+        self.add_admin_handler(
+            'send_trello_curator_notification',
+            CommandCategories.BROADCAST,
+            self.admin_reply_handler('trello_board_state_notifications_job'),
+            'разослать кураторам состояние их карточек вне расписания'
         )
         self.add_admin_handler(
             'manage_all_reminders',
@@ -267,7 +291,9 @@ class SysBlokBot:
                 return results
             return wrapper
 
-        self.dp.add_handler(CommandHandler(handler_cmd, add_usage_logging(handler_func)))
+        self.dp.add_handler(
+            CommandHandler(handler_cmd, run_async(add_usage_logging(handler_func)))
+        )
 
     def add_admin_handler(
             self,

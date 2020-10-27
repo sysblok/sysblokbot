@@ -1,11 +1,13 @@
+import datetime
 import inspect
 import logging
 import time
-import datetime
+from collections import defaultdict
 from typing import Callable, List
 
 import telegram
 
+from .. import jobs
 from ..app_context import AppContext
 from ..consts import TrelloCardColor
 from ..db.db_client import DBClient
@@ -13,7 +15,6 @@ from ..db.db_objects import Curator, TrelloAnalytics
 from ..drive.drive_client import GoogleDriveClient
 from ..strings import load
 from ..trello.trello_objects import TrelloMember
-from .. import jobs
 
 logger = logging.getLogger(__name__)
 
@@ -215,40 +216,27 @@ def format_possibly_plural(name: str, values: List[str]) -> str:
     )
 
 
-def retrieve_statistc(db_client: DBClient):
+def format_labels(values: List[str]) -> str:
+    if len(values) == 0:
+        return ''
+    return '[' + ']['.join(values) + ']'
+
+
+def retrieve_last_trello_analytics(db_client: DBClient) -> dict:
     try:
-        statistics = db_client.find_the_latest_statistics()
-        return sorted(
-            [_make_statistic_string(statistic) for statistic in statistics],
-            key=lambda k: k['date']
-            )
+        return db_client.get_latest_trello_analytics()
     except Exception as e:
-        logger.error(f'Failed to retrieve statistic')
+        logger.error(f'Failed to retrieve statistic: {e}')
 
 
-def add_statistic(db_client: DBClient, data):
+def retrieve_last_trello_analytics_date(db_client: DBClient) -> datetime.datetime:
     try:
-        db_client.add_item_to_statistics_table(data)
+        return datetime.datetime.strptime(
+            db_client.get_latest_trello_analytics().date,
+            '%Y-%m-%d'
+        )
     except Exception as e:
-        logger.error(f'Failed to add statistic item')
-
-
-def _make_statistic_string(statistic: TrelloAnalytics):
-    """
-    Returns the dictionary with statistics data
-    """
-    if statistic.date and statistic.topic_suggestion and statistic.topic_ready \
-            and statistic.in_progress and statistic.expect_this_week and statistic.editors_check:
-        return {
-            'date': datetime.datetime.strptime(statistic.date, '%Y-%m-%d'),
-            'topic_suggestion': statistic.topic_suggestion,
-            'topic_ready': statistic.topic_ready,
-            'in_progress': statistic.in_progress,
-            'expect_this_week': statistic.expect_this_week,
-            'editors_check': statistic.editors_check
-        }
-    else:
-        return None
+        logger.error(f'Failed to retrieve latest statistic date: {e}')
 
 
 def get_no_access_marker(file_url: str, drive_client: GoogleDriveClient) -> str:
@@ -307,3 +295,32 @@ def check_trello_card(
         errors[card] = this_card_bad_fields
         return False
     return True
+
+
+def get_cards_by_curator(app_context: AppContext):
+    cards = app_context.trello_client.get_cards()
+    curator_cards = defaultdict(list)
+    for card in cards:
+        curators = get_curators_by_card(card, app_context.db_client)
+        if not curators:
+            # TODO: get main curator from spreadsheet
+            curators = [('Илья Булгаков (@bulgak0v)', '@bulgak0v')]
+        for curator in curators:
+            curator_cards[curator].append(card)
+
+    return curator_cards
+
+
+def get_curators_by_card(card, db_client):
+    curators = set()
+    for member in card.members:
+        curator_names = retrieve_curator_names_by_author(member, db_client)
+        curators.update(curator_names)
+    if curators:
+        return curators
+
+    # e.g. if no members in a card, should tag curators based on label
+    curators_by_label = retrieve_curator_names_by_categories(
+        card.labels, db_client
+    )
+    return curators_by_label

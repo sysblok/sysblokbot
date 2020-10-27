@@ -70,18 +70,18 @@ def mock_sheets_client(monkeypatch, mock_config_manager):
     def _authorize(self):
         pass
 
-    def _parse_gs_res(_, title_key_map: Dict, sheet_key: str) -> List[Dict]:
+    def _parse_gs_res(_, title_key_map: Dict, sheet_key: str, sheet_name: str = '') -> List[Dict]:
 
         load_json = JsonLoader(SHEETS_TEST_DIR).load_json
 
         if sheet_key == 'authors_sheet_key':
-            return load_json('authors_sheet.json')
+            return load_json('authors.json')
         elif sheet_key == 'curators_sheet_key':
-            return load_json('curators_sheet.json')
+            return load_json('curators.json')
         elif sheet_key == 'rubrics_registry_sheet_key':
-            return load_json('rubrics_registry_sheet.json')
+            return load_json('rubrics.json')
         elif sheet_key == 'strings_sheet_key':
-            return load_json('strings_sheet.json')
+            return load_json('strings.json')
 
     monkeypatch.setattr(GoogleSheetsClient, '_authorize', _authorize)
     monkeypatch.setattr(GoogleSheetsClient, '_parse_gs_res', _parse_gs_res)
