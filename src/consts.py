@@ -92,6 +92,17 @@ class TrelloCustomFieldTypes(Enum):
     LIST = 'list'
 
 
+class TrelloCardFieldErrorAlias(Enum):
+    BAD_TITLE = 'trello_custom_field__post_title'
+    BAD_GOOGLE_DOC = 'trello_custom_field__google_doc'
+    BAD_AUTHORS = 'trello_custom_field__author'
+    BAD_EDITORS = 'trello_custom_field__editor'
+    BAD_ILLUSTRATORS = 'trello_custom_field__illustrator'
+    BAD_COVER = 'trello_custom_field__cover'
+    BAD_DUE_DATE = 'trello_custom_field__due_date'
+    BAD_LABEL_NAMES = 'trello_custom_field__rubric'
+
+
 # constants for interactive commands (data stored in update.chat_data)
 LAST_ACTIONABLE_COMMAND = 'last_actionable_command'
 NEXT_ACTION = 'next_action'

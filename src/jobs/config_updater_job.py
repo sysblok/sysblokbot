@@ -4,6 +4,7 @@ import logging
 from typing import Callable, List
 
 from deepdiff import DeepDiff
+import html
 
 from ..app_context import AppContext
 from ..scheduler import JobScheduler
@@ -30,8 +31,12 @@ class ConfigUpdaterJob(BaseJob):
         )
         if diff:
             logger.info(f'Config was changed, diff: {diff}')
+            try:
+                diff = json.dumps(dict(diff), indent=2)
+            except TypeError:
+                pass
             TelegramSender().send_important_event(
-                load('config_updater_job__config_diff', diff=json.dumps(dict(diff), indent=2))
+                load('config_updater_job__config_diff', diff=html.escape(str(diff)))
             )
             try:
                 # update config['jobs']

@@ -140,6 +140,8 @@ class DBClient(Singleton):
             return None
         curator = session.query(Curator).filter(
             Curator.telegram == author.telegram
+        ).filter(
+            Curator.team == 'Авторы'
         ).first()
         return curator
 
