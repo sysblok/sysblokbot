@@ -1,5 +1,6 @@
 """Sends messages"""
 
+import html
 import logging
 from typing import Callable, List
 
@@ -83,7 +84,7 @@ class TelegramSender(Singleton):
 
     def send_important_event(self, event_text: str):
         logger.info(f'Sending important event: "{event_text}"')
-        self.send_to_chat_ids(event_text, self.important_events_recipients)
+        self.send_to_chat_ids(html.escape(event_text), self.important_events_recipients)
 
     def update_config(self, new_tg_config):
         """
