@@ -31,7 +31,7 @@ class ConfigUpdaterJob(BaseJob):
         if diff:
             logger.info(f'Config was changed, diff: {diff}')
             try:
-                diff=json.dumps(dict(diff), indent=2)
+                diff = json.dumps(dict(diff), indent=2)
             except TypeError:
                 pass
             TelegramSender().send_important_event(
