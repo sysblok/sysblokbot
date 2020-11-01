@@ -125,8 +125,8 @@ jobs:
             docker rmi $IMAGE_ID
             docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
             touch ${{ env.ROOT_DIR }}/sysblokbot.sqlite
-            docker run -dit --name sysblokbot-testing \
-              --env APP_SOURCE="github CI" \
+            docker-compose run -d --name sysblokbot-testing \
+              -e APP_SOURCE="github CI" \
               -v ${{ env.ROOT_DIR }}/config_override.json:/app/config_override.json \
               -v ${{ env.ROOT_DIR }}/config_gs.json:/app/config_gs.json \
               -v ${{ env.ROOT_DIR }}/sysblokbot.sqlite:/app/sysblokbot.sqlite \

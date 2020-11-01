@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  sysblokbot:
+    build: .
+    volumes:
+    - ./config_override.json:/app/config_override.json
+    - ./config_gs.json:/app/config_gs.json
+    - ./sysblokbot.sqlite:/app/sysblokbot.sqlite
