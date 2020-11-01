@@ -69,20 +69,25 @@ class JobScheduler(Singleton):
         """
         logger.info('Starting setting job schedules...')
         jobs_config = self.config_manager.get_jobs_config()
-        for job_id, schedule_dict in jobs_config.items():
+        for job_id, schedules in jobs_config.items():
             logger.info(f'Found job "{job_id}"')
-            try:
-                scheduled = getattr(schedule.every(), schedule_dict[EVERY])
-                if 'at' in schedule_dict:
-                    scheduled = scheduled.at(schedule_dict[AT])
-                scheduled.do(
-                    get_job_runnable(job_id),
-                    app_context=self.app_context,
-                    send=self.telegram_sender.create_chat_ids_send(
-                        schedule_dict.get(SEND_TO, []))
-                ).tag(CUSTOM_JOB_TAG)
-            except Exception as e:
-                logger.error(f'Failed to schedule job {job_id} with params {schedule_dict}: {e}')
+            if isinstance(schedules, dict):
+                schedules = [schedules]
+            for schedule_dict in schedules:
+                try:
+                    scheduled = getattr(schedule.every(), schedule_dict[EVERY])
+                    if 'at' in schedule_dict:
+                        scheduled = scheduled.at(schedule_dict[AT])
+                    scheduled.do(
+                        get_job_runnable(job_id),
+                        app_context=self.app_context,
+                        send=self.telegram_sender.create_chat_ids_send(
+                            schedule_dict.get(SEND_TO, []))
+                    ).tag(CUSTOM_JOB_TAG)
+                except Exception as e:
+                    logger.error(
+                        f'Failed to schedule job {job_id} with params {schedule_dict}: {e}'
+                    )
         logger.info('Finished setting jobs')
 
     @staticmethod
