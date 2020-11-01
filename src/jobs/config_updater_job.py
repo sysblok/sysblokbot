@@ -3,7 +3,7 @@ import json
 import logging
 from typing import Callable, List
 
-from deepdiff import 
+from deepdiff import DeepDiff
 import html
 
 from ..app_context import AppContext
