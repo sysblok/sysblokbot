@@ -134,4 +134,4 @@ def mock_db_client(mock_config_manager):
 
 @pytest.fixture
 def mock_strings_db_client(mock_config_manager):
-    return StringsDBClient(db_config=mock_config_manager.get_strings_db_config())
+    return StringsDBClient(strings_db_config=mock_config_manager.get_strings_db_config())
