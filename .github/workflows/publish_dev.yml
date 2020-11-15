@@ -130,6 +130,7 @@ jobs:
               -v ${{ env.ROOT_DIR }}/config_override.json:/app/config_override.json \
               -v ${{ env.ROOT_DIR }}/config_gs.json:/app/config_gs.json \
               -v ${{ env.ROOT_DIR }}/sysblokbot.sqlite:/app/sysblokbot.sqlite \
+              -v ${{ env.ROOT_DIR }}/strings.sqlite:/app/strings.sqlite \
               -v ${{ env.ROOT_DIR }}/persistent_storage.pickle:/app/persistent_storage.pickle \
               docker.pkg.github.com/sysblok/sysblokbot/${{ env.IMAGE_NAME }}:testing
 
