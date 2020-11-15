@@ -67,12 +67,8 @@ class GoogleSheetsClient(Singleton):
         }
         return self._parse_gs_res(title_key_map, self.rubrics_registry_sheet_key)
 
-    def fetch_strings(self) -> List[Dict]:
-        title_key_map = {
-            "Идентификатор строки": "id",
-            "Сообщение": "value",
-        }
-        return self._parse_gs_res(title_key_map, self.strings_sheet_key)
+    def fetch_strings(self) -> Table:
+        return self._fetch_table(self.strings_sheet_key)
 
     def update_posts_registry(self, entries: List[RegistryPost]):
         sheet = self._open_by_key(self.post_registry_sheet_key)
@@ -93,6 +89,13 @@ class GoogleSheetsClient(Singleton):
 
     def _has_string(self, data, string: str):
         return string in str(data.get_values())
+
+    def _fetch_table(self, sheet_key: str, sheet_name: Optional[str] = None) -> Table:
+        sheet = self._open_by_key(sheet_key)
+        worksheet = (
+            sheet.get_sheet_by_name(sheet_name) if sheet_name else sheet.get_sheet_by_id(0)
+        )
+        return Table(worksheet.get_data_range())
 
     def _parse_gs_res(
             self, title_key_map: Dict, sheet_key: str, sheet_name: str = ''
@@ -125,6 +128,7 @@ class GoogleSheetsClient(Singleton):
             return self.client.open_by_id(sheet_key)
         except Exception as e:
             logger.error(f'Failed to access sheet {sheet_key}: {e}')
+            raise
 
     @classmethod
     def _parse_cell_value(cls, value: str) -> Optional[str]:

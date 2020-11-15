@@ -7,7 +7,7 @@ from sqlalchemy import create_engine, desc
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from .db_objects import Author, Base, Chat, Curator, Reminder, Rubric, TrelloAnalytics, DBString
+from .db_objects import Author, Base, Chat, Curator, Reminder, Rubric, TrelloAnalytics
 from .. import consts
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..utils.singleton import Singleton
@@ -42,7 +42,6 @@ class DBClient(Singleton):
     def fetch_all(self, sheets_client: GoogleSheetsClient):
         self.fetch_authors_sheet(sheets_client)
         self.fetch_curators_sheet(sheets_client)
-        self.fetch_strings_sheet(sheets_client)
         self.fetch_rubrics_sheet(sheets_client)
 
     def fetch_authors_sheet(self, sheets_client: GoogleSheetsClient):
@@ -98,28 +97,6 @@ class DBClient(Singleton):
             return 0
         return len(rubrics)
 
-    def fetch_strings_sheet(self, sheets_client: GoogleSheetsClient):
-        session = self.Session()
-        try:
-            # clean this table
-            session.query(DBString).delete()
-            # re-download it
-            strings = sheets_client.fetch_strings()
-            for string_dict in strings:
-                if string_dict['id'] is None:
-                    # we use that to separate different strings
-                    continue
-                string = DBString.from_dict(string_dict)
-                if string is None:
-                    continue
-                session.add(string)
-            session.commit()
-        except Exception as e:
-            logger.warning(f"Failed to update string table from sheet: {e}")
-            session.rollback()
-            return 0
-        return len(strings)
-
     def find_author_telegram_by_trello(self, trello_id: str):
         # TODO: make batch queries
         session = self.Session()
@@ -164,16 +141,6 @@ class DBClient(Singleton):
         if not curators:
             logger.warning(f'Curators not found for author {trello_id}')
         return curators
-
-    def get_string(self, string_id: str) -> str:
-        session = self.Session()
-        message = session.query(DBString).filter(
-            DBString.id == string_id
-        ).first()
-        if not message:
-            logger.error(f'Message not found for id {string_id}')
-            return f'<{string_id}>'
-        return message.value
 
     def get_rubrics(self) -> List:
         return self.Session().query(Rubric).all()
