@@ -97,22 +97,6 @@ class TrelloAnalytics(Base):
     ready_to_issue = Column(Integer)
 
 
-class DBString(Base):
-    __tablename__ = 'strings'
-    id = Column(String, primary_key=True)
-    value = Column(String)
-
-    @classmethod
-    def from_dict(cls, data):
-        message = cls()
-        try:
-            message.id = _get_field_or_throw(data['id'])
-            message.value = _get_field_or_throw(data['value'])
-        except ValueError:
-            return None
-        return message
-
-
 class Rubric(Base):
     __tablename__ = 'rubrics'
     name = Column(String, primary_key=True)

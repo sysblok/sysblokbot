@@ -6,6 +6,7 @@ from .config_manager import ConfigManager
 from .db.db_client import DBClient
 from .drive.drive_client import GoogleDriveClient
 from .sheets.sheets_client import GoogleSheetsClient
+from .strings import StringsDBClient
 from .tg.sender import TelegramSender
 from .trello.trello_client import TrelloClient
 from .utils.singleton import Singleton
@@ -24,30 +25,19 @@ class AppContext(Singleton):
             return
 
         self.config_manager = config_manager
-        try:
-            self.sheets_client = GoogleSheetsClient(
-                sheets_config=config_manager.get_sheets_config()
-            )
-        except Exception as e:
-            self.sheets_client = None
-            logger.critical(f'Could not initialize GoogleSheetsClient: {e}')
+        self.sheets_client = GoogleSheetsClient(
+            sheets_config=config_manager.get_sheets_config()
+        )
+        self.strings_db_client = StringsDBClient(
+            strings_db_config=config_manager.get_strings_db_config()
+        )
+        self.drive_client = GoogleDriveClient(
+            drive_config=config_manager.get_drive_config()
+        )
+        self.db_client = DBClient(db_config=config_manager.get_db_config())
 
-        try:
-            self.drive_client = GoogleDriveClient(
-                drive_config=config_manager.get_drive_config()
-            )
-        except Exception as e:
-            self.drive_client = None
-            logger.critical(f'Could not initialize GoogleDriveClient: {e}')
-
-        try:
-            self.db_client = DBClient(db_config=config_manager.get_db_config())
-        except Exception as e:
-            self.db_client = None
-            logger.critical(f'Could not initialize DBClient: {e}')
-
-        if self.sheets_client and self.db_client:
-            self.db_client.fetch_all(self.sheets_client)
+        self.strings_db_client.fetch_strings_sheet(self.sheets_client)
+        self.db_client.fetch_all(self.sheets_client)
 
         self.trello_client = TrelloClient(
             trello_config=config_manager.get_trello_config()

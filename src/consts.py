@@ -34,6 +34,7 @@ SHEETS_CONFIG = 'sheets'
 DRIVE_CONFIG = 'drive'
 JOBS_CONFIG = 'jobs'
 DB_CONFIG = 'db'
+STRINGS_DB_CONFIG = 'strings'
 
 # Jobs-related keys
 EVERY = 'every'
