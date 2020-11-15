@@ -12,6 +12,7 @@ from src.config_manager import ConfigManager
 from src.db.db_client import DBClient
 from src.drive.drive_client import GoogleDriveClient
 from src.sheets.sheets_client import GoogleSheetsClient
+from src.strings import StringsDBClient
 from src.tg.sender import TelegramSender
 from src.trello.trello_client import TrelloClient
 
@@ -129,3 +130,8 @@ def mock_sender(monkeypatch, mock_config_manager, mock_telegram_bot):
 @pytest.fixture
 def mock_db_client(mock_config_manager):
     return DBClient(db_config=mock_config_manager.get_db_config())
+
+
+@pytest.fixture
+def mock_strings_db_client(mock_config_manager):
+    return StringsDBClient(strings_db_config=mock_config_manager.get_strings_db_config())

@@ -39,5 +39,8 @@
     },
     "db": {
         "uri": "sqlite:///sysblokbot.sqlite"
+    },
+    "strings": {
+        "uri": "sqlite:///strings.sqlite"
     }
 }
