@@ -128,11 +128,13 @@ jobs:
             docker rmi $IMAGE_ID
             docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
             touch ${{ env.ROOT_DIR }}/sysblokbot.sqlite
+            touch ${{ env.ROOT_DIR }}/strings.sqlite
             docker run -dit --name sysblokbot-prod \
               --env APP_SOURCE="github CI" \
               -v ${{ env.ROOT_DIR }}/config_override.json:/app/config_override.json \
               -v ${{ env.ROOT_DIR }}/config_gs.json:/app/config_gs.json \
               -v ${{ env.ROOT_DIR }}/sysblokbot.sqlite:/app/sysblokbot.sqlite \
+              -v ${{ env.ROOT_DIR }}/strings.sqlite:/app/strings.sqlite \
               -v ${{ env.ROOT_DIR }}/persistent_storage.pickle:/app/persistent_storage.pickle \
               docker.pkg.github.com/sysblok/sysblokbot/${{ env.IMAGE_NAME }}:prod
 

@@ -48,6 +48,9 @@ class ConfigManager(Singleton):
     def get_sheets_config(self):
         return self.get_latest_config().get(consts.SHEETS_CONFIG, {})
 
+    def get_strings_db_config(self):
+        return self.get_latest_config().get(consts.STRINGS_DB_CONFIG, {})
+
     def get_drive_config(self):
         return self.get_latest_config().get(consts.DRIVE_CONFIG, {})
 

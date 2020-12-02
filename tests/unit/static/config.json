@@ -10,5 +10,8 @@
     },
     "db": {
         "uri": "sqlite:///:memory:"
+    },
+    "strings": {
+        "uri": "sqlite:///:memory:"
     }
 }
