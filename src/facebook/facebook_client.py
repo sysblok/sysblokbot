@@ -1,3 +1,4 @@
+import logging
 from enum import Enum
 from typing import List, Tuple
 from urllib.parse import parse_qs, urlparse
@@ -11,6 +12,8 @@ import pytz
 
 from ..utils.singleton import Singleton
 
+logger = logging.getLogger(__name__)
+
 
 class ReportPeriod(Enum):
     DAY = 'day'
@@ -20,7 +23,16 @@ class ReportPeriod(Enum):
 
 class FacebookClient(Singleton):
     def __init__(self, facebook_config=None):
+        if self.was_initialized():
+            return
+
         self._facebook_config = facebook_config
+        self._update_from_config()
+        logger.info('FacebookClient successfully initialized')
+
+    def update_config(self, new_facebook_config: dict):
+        """To be called after config automatic update"""
+        self._facebook_config = new_facebook_config
         self._update_from_config()
 
     def _update_from_config(self):
