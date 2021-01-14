@@ -120,6 +120,7 @@ class CreateFoldersForIllustratorsJob(BaseJob):
     def _get_folder_state_description(
             state: IllustratorFolderState
     ) -> str:
+        """Returns string representing the status of folder creation"""
         if state == IllustratorFolderState.EXISTING:
             return load('create_folders_for_illustrators_job__section_existing')
         elif state == IllustratorFolderState.CREATED:
