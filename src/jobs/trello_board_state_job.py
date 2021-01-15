@@ -5,7 +5,6 @@ from typing import Callable, List
 from ..app_context import AppContext
 from ..consts import TrelloCardColor
 from ..strings import load
-from ..trello.trello_client import TrelloClient
 from ..trello.trello_objects import TrelloCard
 from ..utils import card_checks
 from .base_job import BaseJob
