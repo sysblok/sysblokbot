@@ -18,21 +18,38 @@ class FBAnalyticsReportJob(BaseJob):
         # use statistics for previous day
         today = datetime.now(timezone.utc) - timedelta(days=1)
         week_ago = today - timedelta(days=7)
+        page = app_context.facebook_client.get_page()
         paragraphs = [
             load(
                 'fb_analytics_report_job__title',
+                link=page.link,
+                name=page.name,
                 since=week_ago.strftime('%d.%m'),
                 until=today.strftime('%d.%m')
             ),
-            load('fb_analytics_report_job__new_post_count') +
-            str(
-                app_context.facebook_analytics.get_new_posts_count(since=week_ago, until=today)
+            "{0}: {1}".format(
+                load('fb_analytics_report_job__new_post_count'),
+                str(
+                    app_context.facebook_analytics.get_new_posts_count(
+                        since=week_ago, until=today
+                    )
+                )
             ),
-            load('fb_analytics_report_job__total_reach') +
-            str(app_context.facebook_analytics.get_weekly_total_reach_of_new_posts(
-                today)),
-            load('fb_analytics_report_job__organic_reach') +
-            str(app_context.facebook_analytics.get_weekly_organic_reach_of_new_posts(
-                today)),
+            "{0}: {1}".format(
+                load('fb_analytics_report_job__total_reach'),
+                str(
+                    app_context.facebook_analytics.get_weekly_total_reach_of_new_posts(
+                        today
+                    )
+                )
+            ),
+            "{0}: {1}".format(
+                load('fb_analytics_report_job__organic_reach'),
+                str(
+                    app_context.facebook_analytics.get_weekly_organic_reach_of_new_posts(
+                        today
+                    )
+                )
+            ),
         ]
         pretty_send(paragraphs, send)

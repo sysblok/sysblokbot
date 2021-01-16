@@ -10,6 +10,7 @@ from datetime import datetime
 
 import pytz
 
+from .facebook_objects import FacebookPage
 from ..utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
@@ -36,8 +37,15 @@ class FacebookClient(Singleton):
         self._update_from_config()
 
     def _update_from_config(self):
-        self._api_client = facebook.GraphAPI(self._facebook_config['token'])
+        self._api_client = facebook.GraphAPI(self._facebook_config['token'], 7.0)
         self._page_id = self._facebook_config['page_id']
+
+    def get_page(self) -> FacebookPage:
+        """
+        Get facebook page
+        """
+        page_dict = self._api_client.get_object(self._page_id, fields='link,name')
+        return FacebookPage.from_dict(page_dict)
 
     def get_new_posts_count(self, since: datetime, until: datetime) -> int:
         """
