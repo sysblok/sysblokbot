@@ -1,5 +1,6 @@
 import logging
 
+from .analytics.api_facebook_analytics import ApiFacebookAnalytics
 from .consts import TRELLO_CONFIG
 
 from .config_manager import ConfigManager
@@ -9,6 +10,7 @@ from .sheets.sheets_client import GoogleSheetsClient
 from .strings import StringsDBClient
 from .tg.sender import TelegramSender
 from .trello.trello_client import TrelloClient
+from .facebook.facebook_client import FacebookClient
 from .utils.singleton import Singleton
 
 
@@ -42,6 +44,10 @@ class AppContext(Singleton):
         self.trello_client = TrelloClient(
             trello_config=config_manager.get_trello_config()
         )
+        self.facebook_client = FacebookClient(
+            facebook_config=config_manager.get_facebook_config()
+        )
+        self.facebook_analytics = ApiFacebookAnalytics(self.facebook_client)
 
         # TODO: move that to db
         tg_config = config_manager.get_telegram_config()
