@@ -43,7 +43,7 @@ jobs:
       - name: Python Pytest Github Action
         uses: fylein/python-pytest-github-action@v2
         with:
-          args: pip3 install -e . && pip3 install -r requirements.txt && pytest tests/unit
+          args: sudo apt-get install git && pip3 install -e . && pip3 install -r requirements.txt && pytest tests/unit
 
       - name: Notify us about failure
         if: ${{ failure() }}
