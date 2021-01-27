@@ -69,7 +69,17 @@ class IllustrativeReportJob(BaseJob):
 
         result = defaultdict(list)
         # additional labels to card title in report
-        labels_to_display = [load('common_trello_label__main_post')]
+        labels_to_display = [
+            load('common_trello_label__main_post'),
+            load('common_trello_label__glossary'),
+            load('common_trello_label__interview'),
+            load('common_trello_label__neuropoems'),
+            load('common_trello_label__news'),
+            load('common_trello_label__reviews'),
+            load('common_trello_label__survey'),
+            load('common_trello_label__test'),
+            load('common_trello_label__visual_legacy')
+        ]
         for card in cards:
             if not card:
                 parse_failure_counter += 1
