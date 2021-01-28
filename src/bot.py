@@ -128,6 +128,12 @@ class SysBlokBot:
             handlers.manage_reminders,
             'настроить напоминания'
         )
+        self.add_manager_handler(
+            'get_fb_analytics_report',
+            CommandCategories.STATS,
+            self.manager_reply_handler('fb_analytics_report_job'),
+            'получить статистику facebook страницы за неделю'
+        )
         # hidden from /help command for curator enrollment
         self.add_handler(
             'enroll_curator',

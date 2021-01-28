@@ -54,6 +54,9 @@ class ConfigManager(Singleton):
     def get_drive_config(self):
         return self.get_latest_config().get(consts.DRIVE_CONFIG, {})
 
+    def get_facebook_config(self):
+        return self.get_latest_config().get(consts.FACEBOOK_CONFIG, {})
+
     def get_jobs_config(self):
         return self.get_latest_config().get(consts.JOBS_CONFIG, {})
 
