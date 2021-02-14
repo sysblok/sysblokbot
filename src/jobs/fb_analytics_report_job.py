@@ -55,5 +55,21 @@ class FBAnalyticsReportJob(BaseJob):
                     )
                 )
             ),
+            "{0}: {1}".format(
+                load('fb_analytics_report_job__new_follower_count'),
+                str(
+                    app_context.facebook_analytics.get_weekly_new_follower_count(
+                        end_week_day
+                    )
+                )
+            ),
+            "{0}: {1}".format(
+                load('fb_analytics_report_job__new_fan_count'),
+                str(
+                    app_context.facebook_analytics.get_weekly_new_fan_count(
+                        end_week_day
+                    )
+                )
+            ),
         ]
         pretty_send(paragraphs, send)

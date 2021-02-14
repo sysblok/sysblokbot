@@ -20,3 +20,15 @@ class BaseFacebookAnalytics:
         Get weekly statistics on the organic reach of new posts
         """
         raise NotImplementedError('')
+
+    def get_weekly_new_follower_count(self, end_week: datetime):
+        """
+        Get the number of new followers for the week
+        """
+        raise NotImplementedError('')
+
+    def get_weekly_new_fan_count(self, end_week: datetime):
+        """
+        Get the number of new people who liked the page for the week
+        """
+        raise NotImplementedError('')
