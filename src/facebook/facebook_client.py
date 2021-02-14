@@ -8,8 +8,6 @@ import facebook
 
 from datetime import datetime
 
-import pytz
-
 from .facebook_objects import FacebookPage
 from ..utils.singleton import Singleton
 
@@ -131,12 +129,12 @@ class FacebookClient(Singleton):
             if go_next:
                 page_since = args.get('since')
                 if not page_since or \
-                        pytz.utc.localize(datetime.fromtimestamp(int(page_since[0]))) > until:
+                        datetime.fromtimestamp(int(page_since[0]), tz=until.tzinfo) > until:
                     break
             else:
                 page_until = args.get('until')
                 if not page_until or \
-                        pytz.utc.localize(datetime.fromtimestamp(int(page_until[0]))) < since:
+                        datetime.fromtimestamp(int(page_until[0]), tz=since.tzinfo) < since:
                     break
             args.pop('access_token', None)
             current_page = self._api_client.get_connections(self._page_id, connection_name, **args)

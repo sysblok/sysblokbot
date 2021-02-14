@@ -13,10 +13,8 @@ class ApiFacebookAnalytics(BaseFacebookAnalytics):
         return self._fb_client.get_new_posts_count(since, until)
 
     def get_weekly_total_reach_of_new_posts(self, end_week: datetime):
-        end_week_day_start = datetime(
-            end_week.year, end_week.month, end_week.day, tzinfo=end_week.tzinfo
-        )
-        end_week_day_end = end_week_day_start + timedelta(days=1) - timedelta(microseconds=1)
+        end_week_day_start = end_week - timedelta(days=1) + timedelta(microseconds=1)
+        end_week_day_end = end_week
         result = self._fb_client.get_total_reach(
             end_week_day_start, end_week_day_end, period=ReportPeriod.WEEK
         )
@@ -25,13 +23,8 @@ class ApiFacebookAnalytics(BaseFacebookAnalytics):
         return result[0][1]
 
     def get_weekly_organic_reach_of_new_posts(self, end_week: datetime):
-        end_week_day_start = datetime(
-            end_week.year,
-            end_week.month,
-            end_week.day,
-            tzinfo=end_week.tzinfo
-        )
-        end_week_day_end = end_week_day_start + timedelta(days=1) - timedelta(microseconds=1)
+        end_week_day_start = end_week - timedelta(days=1) + timedelta(microseconds=1)
+        end_week_day_end = end_week
         result = self._fb_client.get_organic_reach(
             end_week_day_start,
             end_week_day_end,
