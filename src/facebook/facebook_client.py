@@ -8,8 +8,6 @@ import facebook
 
 from datetime import datetime
 
-import pytz
-
 from .facebook_objects import FacebookPage
 from ..utils.singleton import Singleton
 
@@ -73,7 +71,7 @@ class FacebookClient(Singleton):
             since=since,
             until=until
         )
-        total_reach = self._get_reach_from_batches(
+        total_reach = self._get_values_from_batches(
             batches=batches,
             since=since,
             until=until
@@ -93,12 +91,52 @@ class FacebookClient(Singleton):
             since=since,
             until=until
         )
-        organic_reach = self._get_reach_from_batches(
+        organic_reach = self._get_values_from_batches(
             batches=batches,
             since=since,
             until=until
         )
         return organic_reach
+
+    def get_new_follower_count(
+            self, since: datetime, until: datetime, period: ReportPeriod
+    ) -> List[Tuple[datetime, int]]:
+        """
+        Get the number of new followers for the period.
+        """
+        batches = self._get_all_batches(
+            connection_name='insights',
+            metric='page_daily_follows_unique',
+            period=period.value,
+            since=since,
+            until=until
+        )
+        result = self._get_values_from_batches(
+            batches=batches,
+            since=since,
+            until=until
+        )
+        return result
+
+    def get_new_fan_count(
+            self, since: datetime, until: datetime, period: ReportPeriod
+    ) -> List[Tuple[datetime, int]]:
+        """
+        Get the number of new people who liked the page for the period.
+        """
+        batches = self._get_all_batches(
+            connection_name='insights',
+            metric='page_fan_adds_unique',
+            period=period.value,
+            since=since,
+            until=until
+        )
+        result = self._get_values_from_batches(
+            batches=batches,
+            since=since,
+            until=until
+        )
+        return result
 
     def _get_all_batches(
             self, connection_name: str, since: datetime, until: datetime, **args
@@ -131,12 +169,12 @@ class FacebookClient(Singleton):
             if go_next:
                 page_since = args.get('since')
                 if not page_since or \
-                        pytz.utc.localize(datetime.fromtimestamp(int(page_since[0]))) > until:
+                        datetime.fromtimestamp(int(page_since[0]), tz=until.tzinfo) > until:
                     break
             else:
                 page_until = args.get('until')
                 if not page_until or \
-                        pytz.utc.localize(datetime.fromtimestamp(int(page_until[0]))) < since:
+                        datetime.fromtimestamp(int(page_until[0]), tz=since.tzinfo) < since:
                     break
             args.pop('access_token', None)
             current_page = self._api_client.get_connections(self._page_id, connection_name, **args)
@@ -144,14 +182,14 @@ class FacebookClient(Singleton):
         return result
 
     @staticmethod
-    def _get_reach_from_batches(
+    def _get_values_from_batches(
         batches: List[dict], since: datetime, until: datetime
     ) -> List[Tuple[datetime, int]]:
-        reach_by_date = []
+        value_by_date = []
         for batch in batches:
             for value_info in batch['values']:
                 end_time = dateparser.isoparse(value_info['end_time'])
                 if end_time < since or end_time > until:
                     continue
-                reach_by_date.append((end_time, value_info['value']))
-        return reach_by_date
+                value_by_date.append((end_time, value_info['value']))
+        return value_by_date
