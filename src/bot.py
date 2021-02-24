@@ -154,10 +154,10 @@ class SysBlokBot:
             'показать статус асинхронных задач'
         )
         self.add_admin_handler(
-            'list_chats',
+            'get_usage_list',
             CommandCategories.CONFIG,
             handlers.list_chats,
-            'показать чаты бота'
+            'показать использование бота: пользователи и чаты'
         )
         self.add_admin_handler(
             'set_log_level',
