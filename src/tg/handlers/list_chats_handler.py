@@ -6,6 +6,7 @@ from ...app_context import AppContext
 from ...strings import load
 from .utils import admin_only, direct_message_only, reply
 
+
 @admin_only
 @direct_message_only
 def list_chats(update, tg_context):
