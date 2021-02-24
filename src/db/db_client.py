@@ -155,6 +155,10 @@ class DBClient(Singleton):
             logger.warning(f'Curators not found for label {trello_label}')
         return curators
 
+    def get_all_chats(self) -> List[Chat]:
+        session = self.Session()
+        return session.query(Chat).all()
+
     def set_chat_name(self, chat_id: int, chat_name: str, set_curator: bool = False):
         # Update or set chat name. If chat is known to be curator's, set the flag.
         session = self.Session()
