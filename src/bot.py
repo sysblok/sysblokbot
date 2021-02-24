@@ -157,7 +157,7 @@ class SysBlokBot:
             'get_usage_list',
             CommandCategories.CONFIG,
             handlers.list_chats,
-            'показать использование бота: пользователи и чаты'
+            'показать места использование бота: пользователи и чаты'
         )
         self.add_admin_handler(
             'set_log_level',
