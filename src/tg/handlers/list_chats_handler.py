@@ -4,9 +4,10 @@ from ...db.db_client import DBClient
 from ...app_context import AppContext
 
 from ...strings import load
-from .utils import reply
+from .utils import admin_only, direct_message_only, reply
 
-
+@admin_only
+@direct_message_only
 def list_chats(update, tg_context):
     chats = DBClient().get_all_chats()
     app_context = AppContext()
@@ -20,11 +21,13 @@ def list_chats(update, tg_context):
         if chat.id < 0:
             groups.append(chat.title)
     text = load(
-        'list_chats__message',
+        'get_usage_list__message',
         admins=_format_tg_usernames(admins),
         managers=_format_tg_usernames(managers),
         curators=_format_tg_usernames(curators),
-        groups=', '.join(sorted(groups))
+        groups='\n'.join(
+            [load('get_usage_list__username_format', username=group) for group in sorted(groups)]
+        )
     )
     reply(text, update)
 
@@ -44,5 +47,5 @@ def _format_tg_usernames(usernames: Iterable[str]) -> str:
         except ValueError:
             if not username.startswith('@'):
                 username = f'@{username}'
-        formatted_usernames.append(load('list_chats__username_format', username=username))
+        formatted_usernames.append(load('get_usage_list__username_format', username=username))
     return '\n'.join(sorted(formatted_usernames))
