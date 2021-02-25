@@ -156,6 +156,13 @@ class Rubric(Base):
             return None
         return rubric
 
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'vk_tag': self.vk_tag,
+            'tg_tag': self.tg_tag,
+        }
+
     @classmethod
     def from_sheetfu_item(cls, item):
         rubric = cls()
