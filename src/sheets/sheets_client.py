@@ -9,8 +9,6 @@ from ..utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
 
-UNDEFINED_STATES = ('', '-', '#N/A')
-
 
 class GoogleSheetsClient(Singleton):
     def __init__(self, sheets_config: dict):
@@ -38,34 +36,14 @@ class GoogleSheetsClient(Singleton):
     def _authorize(self):
         self.client = SpreadsheetApp(self._sheets_config['api_key_path'])
 
-    def fetch_authors(self) -> List[Dict]:
-        title_key_map = {
-            "Как вас зовут?": "name",
-            "Куратор (как автора)": "curator",
-            "Статус": "status",
-            "Телеграм": "telegram",
-            "Трелло": "trello",
-        }
-        return self._parse_gs_res(title_key_map, self.authors_sheet_key, 'Кураторы и контакты')
+    def fetch_authors(self) -> Table:
+        return self._fetch_table(self.authors_sheet_key, 'Кураторы и контакты')
 
-    def fetch_curators(self) -> List[Dict]:
-        title_key_map = {
-            "Имя": "name",
-            "Роль": "role",
-            "Команда": "team",
-            "Рубрика/Рубрики": "section",
-            "Название рубрики в трелло": "trello_labels",
-            "Телеграм": "telegram",
-        }
-        return self._parse_gs_res(title_key_map, self.curators_sheet_key)
+    def fetch_curators(self) -> Table:
+        return self._fetch_table(self.curators_sheet_key)
 
-    def fetch_rubrics(self) -> List[Dict]:
-        title_key_map = {
-            "Название рубрики ": "name",  # space is important!
-            "Тег вк": "vk_tag",
-            "Тег в тг": "tg_tag",
-        }
-        return self._parse_gs_res(title_key_map, self.rubrics_registry_sheet_key)
+    def fetch_rubrics(self) -> Table:
+        return self._fetch_table(self.rubrics_registry_sheet_key)
 
     def fetch_strings(self) -> Table:
         return self._fetch_table(self.strings_sheet_key)
@@ -97,41 +75,9 @@ class GoogleSheetsClient(Singleton):
         )
         return Table(worksheet.get_data_range())
 
-    def _parse_gs_res(
-            self, title_key_map: Dict, sheet_key: str, sheet_name: str = ''
-    ) -> List[Dict]:
-        titles, *rows = self._get_sheet_values(sheet_key, sheet_name)
-        title_idx_map = {
-            idx: title_key_map[title]
-            for idx, title in enumerate(titles)
-            if title in title_key_map
-        }
-        res = []
-        for row in rows:
-            item = {
-                title_idx_map[key]: self._parse_cell_value(val)
-                for key, val in enumerate(row)
-                if key in title_idx_map
-            }
-            res.append(item)
-        return res
-
-    def _get_sheet_values(self, sheet_key: str, sheet_name: str = '') -> List:
-        sheet = self._open_by_key(sheet_key)
-        worksheet = (
-            sheet.get_sheet_by_name(sheet_name) if sheet_name != '' else sheet.get_sheet_by_id(0)
-        )
-        return worksheet.get_data_range().get_values()
-
     def _open_by_key(self, sheet_key: str):
         try:
             return self.client.open_by_id(sheet_key)
         except Exception as e:
             logger.error(f'Failed to access sheet {sheet_key}: {e}')
             raise
-
-    @classmethod
-    def _parse_cell_value(cls, value: str) -> Optional[str]:
-        if value in UNDEFINED_STATES:
-            return None
-        return str(value)

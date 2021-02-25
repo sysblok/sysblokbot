@@ -51,8 +51,8 @@ class DBClient(Singleton):
             session.query(Author).delete()
             # re-download it
             authors = sheets_client.fetch_authors()
-            for author_dict in authors:
-                author = Author.from_dict(author_dict)
+            for item in authors:
+                author = Author.from_sheetfu_item(item)
                 session.add(author)
             session.commit()
         except Exception as e:
@@ -68,8 +68,8 @@ class DBClient(Singleton):
             session.query(Curator).delete()
             # re-download it
             curators = sheets_client.fetch_curators()
-            for curator_dict in curators:
-                curator = Curator.from_dict(curator_dict)
+            for item in curators:
+                curator = Curator.from_sheetfu_item(item)
                 session.add(curator)
             session.commit()
         except Exception as e:
