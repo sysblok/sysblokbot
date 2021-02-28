@@ -4,7 +4,6 @@ from typing import List, Dict, Optional
 
 from sheetfu import SpreadsheetApp, Table
 
-from .sheets_objects import RegistryPost
 from ..utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
@@ -28,6 +27,7 @@ class GoogleSheetsClient(Singleton):
         """Update attributes according to current self._sheets_config"""
         self.authors_sheet_key = self._sheets_config['authors_sheet_key']
         self.curators_sheet_key = self._sheets_config['curators_sheet_key']
+        self.hr_sheet_key = self._sheets_config['hr_sheet_key']
         self.post_registry_sheet_key = self._sheets_config['post_registry_sheet_key']
         self.rubrics_registry_sheet_key = self._sheets_config['rubrics_registry_sheet_key']
         self.strings_sheet_key = self._sheets_config['strings_sheet_key']
@@ -48,7 +48,13 @@ class GoogleSheetsClient(Singleton):
     def fetch_strings(self) -> Table:
         return self._fetch_table(self.strings_sheet_key)
 
-    def update_posts_registry(self, entries: List[RegistryPost]):
+    def fetch_hr_forms_raw(self) -> Table:
+        return self._fetch_table(self.hr_sheet_key, 'Ответы на форму')
+    
+    def fetch_hr_forms_processed(self) -> Table:
+        return self._fetch_table(self.hr_sheet_key, 'Анкеты')
+
+    def update_posts_registry(self, entries):
         sheet = self._open_by_key(self.post_registry_sheet_key)
         data = sheet.get_sheet_by_id(0).get_data_range()
         table = Table(data)

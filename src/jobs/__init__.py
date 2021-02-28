@@ -16,6 +16,7 @@ from .fb_analytics_report_job import FBAnalyticsReportJob
 from .illustrative_report_job import IllustrativeReportJob
 from .illustrative_report_old_job import IllustrativeReportOldJob
 from .fill_posts_list_job import FillPostsListJob
+from .hr_acquisition_job import HRAcquisitionJob
 from .publication_plans_job import PublicationPlansJob
 from .sample_job import SampleJob
 from .send_reminders_job import SendRemindersJob

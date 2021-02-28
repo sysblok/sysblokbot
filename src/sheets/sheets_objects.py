@@ -1,8 +1,10 @@
 import logging
 
+from sheetfu.modules.table import Item
 from typing import List
 
 from ..consts import TrelloCardColor
+from ..strings import load
 from ..trello.trello_objects import CardCustomFields, TrelloCard
 
 
@@ -81,3 +83,16 @@ class RegistryPost:
                 'да' if not self.is_archive_post and self.is_main_post else 'нет'
             ),
         }
+
+
+class HRPersonRaw:
+    def __init__(self, item: Item):
+        self.item = item # we need this for changing fields, TODO think about a generic approach
+        self.ts = item.get_field_value(load('sheets__hr__timestamp'))
+        self.name = item.get_field_value(load('sheets__hr__name'))
+        self.interests = item.get_field_value(load('sheets__hr__interests'))
+        self.other_contacts = item.get_field_value(load('sheets__hr__other_contacts'))
+        self.about = item.get_field_value(load('sheets__hr__about'))
+        self.email = item.get_field_value(load('sheets__hr__email'))
+        self.telegram = item.get_field_value(load('sheets__hr__telegram'))
+        self.status = item.get_field_value(load('sheets__hr__status'))
