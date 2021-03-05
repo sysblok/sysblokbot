@@ -30,6 +30,10 @@
         "token": "do_not_set_here_please_go_to_config_override",
         "page_id": "do_not_set_here_please_go_to_config_override"
     },
+    "vk": {
+        "group_admin_token": "do_not_set_here_please_go_to_config_override",
+        "group_alias": "sysblok"
+    },
     "jobs": {
         "sample_job": {
             "every": "wednesday",
