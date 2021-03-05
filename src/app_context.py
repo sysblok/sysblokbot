@@ -1,6 +1,7 @@
 import logging
 
 from .analytics.api_facebook_analytics import ApiFacebookAnalytics
+from .analytics.api_vk_analytics import ApiVkAnalytics
 from .consts import TRELLO_CONFIG
 
 from .config_manager import ConfigManager
@@ -12,6 +13,7 @@ from .tg.sender import TelegramSender
 from .trello.trello_client import TrelloClient
 from .facebook.facebook_client import FacebookClient
 from .utils.singleton import Singleton
+from .vk.vk_client import VkClient
 
 
 logger = logging.getLogger(__name__)
@@ -47,7 +49,9 @@ class AppContext(Singleton):
         self.facebook_client = FacebookClient(
             facebook_config=config_manager.get_facebook_config()
         )
+        self.vk_client = VkClient(vk_config=config_manager.get_vk_config())
         self.facebook_analytics = ApiFacebookAnalytics(self.facebook_client)
+        self.vk_analytics = ApiVkAnalytics(self.vk_client)
 
         # TODO: move that to db
         tg_config = config_manager.get_telegram_config()
