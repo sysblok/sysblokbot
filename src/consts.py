@@ -33,6 +33,7 @@ TRELLO_CONFIG = 'trello'
 SHEETS_CONFIG = 'sheets'
 DRIVE_CONFIG = 'drive'
 FACEBOOK_CONFIG = 'facebook'
+VK_CONFIG = 'vk'
 JOBS_CONFIG = 'jobs'
 DB_CONFIG = 'db'
 STRINGS_DB_CONFIG = 'strings'
@@ -47,6 +48,13 @@ TELEGRAM_MANAGER_IDS = 'manager_chat_ids'
 
 # Trello keys
 TRELLO_BOARD_ID = 'board_id'
+
+
+# Report enum
+class ReportPeriod(Enum):
+    DAY = 'day'
+    WEEK = 'week'
+    DAYS_28 = 'days_28'
 
 
 class TrelloCardColor(Enum):

@@ -134,6 +134,12 @@ class SysBlokBot:
             self.manager_reply_handler('fb_analytics_report_job'),
             'получить статистику facebook страницы за неделю'
         )
+        self.add_manager_handler(
+            'get_vk_analytics_report',
+            CommandCategories.STATS,
+            self.manager_reply_handler('vk_analytics_report_job'),
+            'получить статистику паблика VK за неделю'
+        )
         # hidden from /help command for curator enrollment
         self.add_handler(
             'enroll_curator',
