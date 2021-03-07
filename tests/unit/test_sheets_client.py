@@ -24,7 +24,7 @@ def test_fetch_curators(mock_sheets_client):
 
 
 def test_fetch_rubrics(mock_sheets_client):
-    rubrics = [rubric.to_dict for rubric in mock_sheets_client.fetch_rubrics()]
+    rubrics = [rubric.to_dict() for rubric in mock_sheets_client.fetch_rubrics()]
     json_loader.assert_equal(rubrics, 'rubrics.json')
 
 

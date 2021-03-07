@@ -85,14 +85,39 @@ class RegistryPost:
         }
 
 
-class HRPersonRaw:
+class SheetsItem:
+    field_alias = {}
+
     def __init__(self, item: Item):
-        self.item = item # we need this for changing fields, TODO think about a generic approach
-        self.ts = item.get_field_value(load('sheets__hr__timestamp'))
-        self.name = item.get_field_value(load('sheets__hr__name'))
-        self.interests = item.get_field_value(load('sheets__hr__interests'))
-        self.other_contacts = item.get_field_value(load('sheets__hr__other_contacts'))
-        self.about = item.get_field_value(load('sheets__hr__about'))
-        self.email = item.get_field_value(load('sheets__hr__email'))
-        self.telegram = item.get_field_value(load('sheets__hr__telegram'))
-        self.status = item.get_field_value(load('sheets__hr__status'))
+        self.item = item
+
+    def __getattribute__(self, name):
+        if name in super().__getattribute__('field_alias'):
+            return super().__getattribute__('item').get_field_value(load(super().__getattribute__('field_alias')[name]))
+        else:
+            # Default behaviour
+            return super().__getattribute__(name)
+
+    def __setattr__(self, name, value):
+        if name in super().__getattribute__('field_alias'):
+            return super().__getattribute__('item').set_field_value(load(super().__getattribute__('field_alias')[name]), value)
+        else:
+            # Default behaviour
+            return super().__setattr__(name, value)
+
+
+
+class HRPersonRaw(SheetsItem):
+    field_alias = {
+        'ts': 'sheets__hr__timestamp',
+        'name': 'sheets__hr__name',
+        'interests': 'sheets__hr__interests',
+        'other_contacts': 'sheets__hr__other_contacts',
+        'about': 'sheets__hr__about',
+        'email': 'sheets__hr__email',
+        'telegram': 'sheets__hr__telegram',
+        'status': 'sheets__hr__status',
+    }
+
+    def __init__(self, item: SheetsItem):
+        super().__init__(item)

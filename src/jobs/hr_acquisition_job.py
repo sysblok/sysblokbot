@@ -39,15 +39,19 @@ class HRAcquisitionJob(BaseJob):
     @staticmethod
     def _process_raw_forms(forms_raw: Table, forms_processed: Table) -> List[Item]:
         people = [HRPersonRaw(item) for item in forms_raw]
-        old_people = [person for person in people if person.status != '']
-        new_people = [person for person in people if person.status == '']
+        existing_people = [person for person in people if person.status]
+        new_people = [person for person in people if not person.status]
+
         for person in new_people:
-            if person.telegram == '' and person.other_contacts == '':
-                person.item.set_field_value(load('sheets__hr__status'), 'Отказ')
+            # filter out incomplete responses
+            if not person.telegram and not person.other_contacts:
+                person.status = 'Отказ'
                 continue
-            if person.telegram != '' and person.telegram in {
-                person.telegram for person in old_people
+            if person.telegram and person.telegram in {
+                person.telegram for person in existing_people
             }:
-                person.item.set_field_value(load('sheets__hr__status'), 'Дубль')
+                person.status = 'Дубль'
                 continue
+        
+            # move good ones to another sheet
 
