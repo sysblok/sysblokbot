@@ -12,6 +12,7 @@ from .utils import pretty_send
 
 logger = logging.getLogger(__name__)
 
+
 class HRAcquisitionJob(BaseJob):
     @staticmethod
     def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
@@ -55,16 +56,22 @@ class HRAcquisitionJob(BaseJob):
         new_items = []
 
         for person in new_people:
+            logger.error(person.ts)
+            logger.error({
+                person.telegram for person in new_items
+            })
             # filter out incomplete responses
             if not person.telegram and not person.other_contacts:
                 person.status = load('sheets__hr__raw__status_rejection')
                 continue
-            if person.telegram and person.telegram in {
+            if person.telegram and (person.telegram in {
                 person.telegram for person in existing_people
-            }:
+            } or person.telegram in {
+                person.telegram for person in new_items
+            }):
                 person.status = load('sheets__hr__raw__status_double')
                 continue
-        
+
             # move good ones to another sheet
             person.status = load('sheets__hr__raw__status_processed')
             # TODO: PR to sheetfu which will allow better API here

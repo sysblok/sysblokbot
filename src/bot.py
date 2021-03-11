@@ -134,7 +134,7 @@ class SysBlokBot:
             self.manager_reply_handler('fb_analytics_report_job'),
             'получить статистику facebook страницы за неделю'
         )
-        self.add_manager_handler( # asked if that should be a manager handler
+        self.add_manager_handler(  # asked if that should be a manager handler
             'hr_acquisition',
             CommandCategories.HR,
             self.manager_reply_handler('hr_acquisition_job'),
