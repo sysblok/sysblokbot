@@ -61,6 +61,9 @@ class ConfigUpdaterJob(BaseJob):
                 # update config['facebook']
                 app_context.facebook_client.update_config(
                     job_scheduler.config_manager.get_facebook_config())
+                # update config['vk']
+                app_context.vk_client.update_config(
+                    job_scheduler.config_manager.get_vk_config())
                 send(load('config_updater_job__config_changed'))
             except Exception as e:
                 send(f'Failed to update config: {e}')

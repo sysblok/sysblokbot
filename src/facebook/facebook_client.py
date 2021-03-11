@@ -9,15 +9,10 @@ import facebook
 from datetime import datetime
 
 from .facebook_objects import FacebookPage
+from ..consts import ReportPeriod
 from ..utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
-
-
-class ReportPeriod(Enum):
-    DAY = 'day'
-    WEEK = 'week'
-    DAYS_28 = 'days_28'
 
 
 class FacebookClient(Singleton):

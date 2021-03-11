@@ -106,6 +106,9 @@ class Chat(Base):
     title = Column(String)
     is_curator = Column(Boolean, default=False)
 
+    def __repr__(self):
+        return f'Chat {self.id} name={self.title}, curator={self.is_curator}'
+
 
 class Reminder(Base):
     __tablename__ = 'reminders'

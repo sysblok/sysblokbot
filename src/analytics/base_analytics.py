@@ -1,7 +1,7 @@
 from datetime import datetime
 
 
-class BaseFacebookAnalytics:
+class BaseAnalytics:
 
     def get_new_posts_count(self, since: datetime, until: datetime):
         """

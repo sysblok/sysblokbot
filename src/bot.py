@@ -86,6 +86,12 @@ class SysBlokBot:
             self.admin_broadcast_handler('editorial_report_job'),
             'рассылка сводки по результатам редакторского созвона'
         )
+        self.add_admin_handler(
+            'hr_acquisition',
+            CommandCategories.HR,
+            self.manager_reply_handler('hr_acquisition_job'),
+            'обработать новые анкеты'
+        )
         self.add_manager_handler(
             'get_editorial_report',
             CommandCategories.SUMMARY,
@@ -134,11 +140,11 @@ class SysBlokBot:
             self.manager_reply_handler('fb_analytics_report_job'),
             'получить статистику facebook страницы за неделю'
         )
-        self.add_manager_handler(  # asked if that should be a manager handler
-            'hr_acquisition',
-            CommandCategories.HR,
-            self.manager_reply_handler('hr_acquisition_job'),
-            'обработать новые анкеты'
+        self.add_manager_handler(
+            'get_vk_analytics_report',
+            CommandCategories.STATS,
+            self.manager_reply_handler('vk_analytics_report_job'),
+            'получить статистику паблика VK за неделю'
         )
         # hidden from /help command for curator enrollment
         self.add_handler(
@@ -158,6 +164,12 @@ class SysBlokBot:
             CommandCategories.CONFIG,
             handlers.list_jobs,
             'показать статус асинхронных задач'
+        )
+        self.add_admin_handler(
+            'get_usage_list',
+            CommandCategories.CONFIG,
+            handlers.list_chats,
+            'показать места использование бота: пользователи и чаты'
         )
         self.add_admin_handler(
             'set_log_level',

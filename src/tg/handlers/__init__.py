@@ -17,6 +17,7 @@ from .user_message_handler import handle_callback_query, handle_user_message, ha
 from .error_handler import error
 
 # Admin (developer) handlers
+from .list_chats_handler import list_chats
 from .list_job_handler import list_jobs
 from .set_log_level_handler import set_log_level
 from .mute_errors_handler import mute_errors, unmute_errors
