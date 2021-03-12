@@ -89,8 +89,8 @@ class SheetsItem:
     field_alias = {}
 
     def __init__(self, item: Item):
-        # if not self.field_alias:
-        #     raise RuntimeError(f'empty field_alias for {self.__class__}')
+        if not self.field_alias:
+            raise RuntimeError(f'empty field_alias for {self.__class__}')
         self.item = item
 
     def __getattr__(self, name):
