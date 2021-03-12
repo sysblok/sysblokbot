@@ -89,25 +89,25 @@ class SheetsItem:
     field_alias = {}
 
     def __init__(self, item: Item):
+        # if not self.field_alias:
+        #     raise RuntimeError(f'empty field_alias for {self.__class__}')
         self.item = item
 
-    def __getattribute__(self, name):
-        if name in super().__getattribute__('field_alias'):
-            return super().__getattribute__('item').get_field_value(
-                load(super().__getattribute__('field_alias')[name])
+    def __getattr__(self, name):
+        if name in self.field_alias:
+            return self.item.get_field_value(
+                load(self.field_alias[name])
             )
         else:
-            # Default behaviour
             return super().__getattribute__(name)
 
     def __setattr__(self, name, value):
-        if name in super().__getattribute__('field_alias'):
-            return super().__getattribute__('item').set_field_value(
-                load(super().__getattribute__('field_alias')[name]),
+        if name in self.field_alias:
+            return self.item.set_field_value(
+                load(self.field_alias[name]),
                 value,
             )
         else:
-            # Default behaviour
             return super().__setattr__(name, value)
 
     @classmethod
@@ -135,9 +135,6 @@ class HRPersonRaw(SheetsItem):
         'status': 'sheets__hr__raw__status',
     }
 
-    def __init__(self, item: SheetsItem):
-        super().__init__(item)
-
 
 class HRPersonProcessed(SheetsItem):
     field_alias = {
@@ -148,6 +145,3 @@ class HRPersonProcessed(SheetsItem):
         'date_submitted': 'sheets__hr__processed__date_submitted',
         'telegram': 'sheets__hr__processed__telegram',
     }
-
-    def __init__(self, item: SheetsItem):
-        super().__init__(item)

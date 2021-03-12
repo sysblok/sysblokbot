@@ -17,18 +17,14 @@ class HRAcquisitionJob(BaseJob):
     @staticmethod
     def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
         paragraphs = [load('hr_acquisition_job__hello')]  # list of paragraph strings
-        errors = {}
 
-        logger.warning(paragraphs)
-
-        paragraphs += HRAcquisitionJob._get_new_people_paragraphs(app_context, errors)
+        paragraphs += HRAcquisitionJob._get_new_people_paragraphs(app_context)
 
         pretty_send(paragraphs, send)
 
     @staticmethod
     def _get_new_people_paragraphs(
             app_context: AppContext,
-            errors: dict,
     ) -> List[str]:
         forms_raw = app_context.sheets_client.fetch_hr_forms_raw()
         forms_processed = app_context.sheets_client.fetch_hr_forms_processed()
@@ -56,10 +52,6 @@ class HRAcquisitionJob(BaseJob):
         new_items = []
 
         for person in new_people:
-            logger.error(person.ts)
-            logger.error({
-                person.telegram for person in new_items
-            })
             # filter out incomplete responses
             if not person.telegram and not person.other_contacts:
                 person.status = load('sheets__hr__raw__status_rejection')
