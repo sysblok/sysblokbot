@@ -1,8 +1,10 @@
 import logging
 
+from sheetfu.modules.table import Item, Table
 from typing import List
 
 from ..consts import TrelloCardColor
+from ..strings import load
 from ..trello.trello_objects import CardCustomFields, TrelloCard
 
 
@@ -81,3 +83,65 @@ class RegistryPost:
                 'да' if not self.is_archive_post and self.is_main_post else 'нет'
             ),
         }
+
+
+class SheetsItem:
+    field_alias = {}
+
+    def __init__(self, item: Item):
+        if not self.field_alias:
+            raise RuntimeError(f'empty field_alias for {self.__class__}')
+        self.item = item
+
+    def __getattr__(self, name):
+        if name in self.field_alias:
+            return self.item.get_field_value(
+                load(self.field_alias[name])
+            )
+        else:
+            return super().__getattribute__(name)
+
+    def __setattr__(self, name, value):
+        if name in self.field_alias:
+            return self.item.set_field_value(
+                load(self.field_alias[name]),
+                value,
+            )
+        else:
+            return super().__setattr__(name, value)
+
+    @classmethod
+    def add_one_to_table(cls, table: Table, item_dict_alias: dict) -> Item:
+        """
+        This is ugly, but sheetfu doesn't have a better API
+        I will fix that at some point
+        """
+        item_dict = {
+            load(cls.field_alias[k]): v
+            for k, v in item_dict_alias.items()
+        }
+        return cls(table.add_one(item_dict))
+
+
+class HRPersonRaw(SheetsItem):
+    field_alias = {
+        'ts': 'sheets__hr__raw__timestamp',
+        'name': 'sheets__hr__raw__name',
+        'interests': 'sheets__hr__raw__interests',
+        'other_contacts': 'sheets__hr__raw__other_contacts',
+        'about': 'sheets__hr__raw__about',
+        'email': 'sheets__hr__raw__email',
+        'telegram': 'sheets__hr__raw__telegram',
+        'status': 'sheets__hr__raw__status',
+    }
+
+
+class HRPersonProcessed(SheetsItem):
+    field_alias = {
+        'name': 'sheets__hr__processed__name',
+        'interests': 'sheets__hr__processed__interests',
+        'other_contacts': 'sheets__hr__processed__other_contacts',
+        'about': 'sheets__hr__processed__about',
+        'date_submitted': 'sheets__hr__processed__date_submitted',
+        'telegram': 'sheets__hr__processed__telegram',
+    }

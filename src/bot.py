@@ -86,6 +86,12 @@ class SysBlokBot:
             self.admin_broadcast_handler('editorial_report_job'),
             'рассылка сводки по результатам редакторского созвона'
         )
+        self.add_admin_handler(
+            'hr_acquisition',
+            CommandCategories.HR,
+            self.manager_reply_handler('hr_acquisition_job'),
+            'обработать новые анкеты'
+        )
         self.add_manager_handler(
             'get_editorial_report',
             CommandCategories.SUMMARY,

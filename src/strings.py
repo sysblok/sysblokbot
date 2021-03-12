@@ -58,11 +58,16 @@ class StringsDBClient(Singleton):
             session.query(DBString).delete()
             # re-download it
             strings = sheets_client.fetch_strings()
+            string_ids = set()
             for item in strings:
                 string_id = item.get_field_value('Id')
                 if string_id is None:
                     # we use that to separate different strings
                     continue
+                if string_id in string_ids:
+                    logger.error(f'found duplicate string id: {string_id}')
+                    continue
+                string_ids.add(string_id)
                 string_value = item.get_field_value('Message')
                 string = DBString(string_id, string_value)
                 if string is None:
