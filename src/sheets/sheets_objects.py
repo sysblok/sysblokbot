@@ -145,3 +145,11 @@ class HRPersonProcessed(SheetsItem):
         'date_submitted': 'sheets__hr__processed__date_submitted',
         'telegram': 'sheets__hr__processed__telegram',
     }
+
+
+class PostRegistryItem(SheetsItem):
+    field_alias = {
+        'name': 'sheets__post_registry__column_name',
+        'vk_link': 'sheets__post_registry__column_vk_link',
+        'trello': 'sheets__post_registry__column_trello'
+    }

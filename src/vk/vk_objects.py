@@ -1,5 +1,9 @@
 from datetime import datetime
 import logging
+from typing import Iterable, List, Set
+
+from ..consts import VK_STATS_POST_LINK, VK_POST_LINK
+from ..sheets.sheets_objects import PostRegistryItem
 
 logger = logging.getLogger(__name__)
 
@@ -45,10 +49,26 @@ class VkGroupStats:
 class VkPost:
     # Docs: https://vk.com/dev/objects/post
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data, group_id: int, group_alias: str):
         post = cls()
         try:
             post.id = data['id']
+            # if post was postponed, that's the original post id
+            post.postponed_id = data.get('postponed_id')
+            post.group_id = group_id
+            post.stats_url = VK_STATS_POST_LINK.format(group_id=group_id, post_id=post.id)
+            post.url = VK_POST_LINK.format(
+                group_id=group_id,
+                post_id=post.id,
+                group_alias=group_alias
+            )
+            post.postponed_url = None if post.postponed_id is None else VK_POST_LINK.format(
+                group_id=group_id,
+                post_id=post.postponed_id,
+                group_alias=group_alias
+            )
+            # if post is a native article, we use its url for registry instead of post_url
+            post.links = post._get_post_links(data.get('attachments', []))
             post.text = data['text']
             post.date = datetime.fromtimestamp(data['date'])
             post.comments = data['comments']['count']
@@ -59,13 +79,42 @@ class VkPost:
         finally:
             return post
 
+    def get_registry_name(self, post_registry_items: Iterable[PostRegistryItem]) -> str:
+        post_urls = self._get_possible_urls()
+        for post_registry_item in post_registry_items:
+            if post_registry_item.vk_link in post_urls:
+                return post_registry_item.name
+        return 'unknown'
+
+    def _get_post_links(self, attachments: List[dict]) -> List[str]:
+        urls = []
+        for attachment in attachments:
+            if attachment['type'] == 'link':
+                url = attachment['link']['url']
+                urls.append(url[:-1] if url.endswith('/') else url)
+        return urls
+
+    def _get_possible_urls(self) -> Set[str]:
+        '''
+        Gather possible links to match with post registry vk urls. That might be:
+        * actual post url
+        * post url at the moment it was set to postponed
+        * one of the attachment links (when it's a longread article)
+        '''
+        links = set()
+        links.add(self.url)
+        links.add(self.postponed_url)
+        links.update(self.links)
+        return links
+
 
 class VkPostStats:
     # Docs: https://vk.com/dev/stats.getPostReach
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data, post: VkPost):
         stats = cls()
         try:
+            stats.post = post
             stats.reach_total = data['reach_total']
             stats.reach_subscribers = data['reach_subscribers']
             stats.reach_ads = data['reach_ads']
