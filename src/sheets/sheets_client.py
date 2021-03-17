@@ -54,6 +54,9 @@ class GoogleSheetsClient(Singleton):
     def fetch_hr_forms_processed(self) -> Table:
         return self._fetch_table(self.hr_sheet_key, 'Анкеты')
 
+    def fetch_posts_registry(self) -> Table:
+        return self._fetch_table(self.post_registry_sheet_key)
+
     def update_posts_registry(self, entries):
         sheet = self._open_by_key(self.post_registry_sheet_key)
         data = sheet.get_sheet_by_id(0).get_data_range()

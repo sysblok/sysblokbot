@@ -147,3 +147,11 @@ class HRPersonProcessed(SheetsItem):
         'status': 'sheets__hr__processed__status',
         'source': 'sheets__hr__processed__source',
     }
+
+
+class PostRegistryItem(SheetsItem):
+    field_alias = {
+        'name': 'sheets__post_registry__column_name',
+        'vk_link': 'sheets__post_registry__column_vk_link',
+        'trello': 'sheets__post_registry__column_trello'
+    }
