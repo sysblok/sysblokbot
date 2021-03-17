@@ -86,7 +86,12 @@ class HRAcquisitionJob(BaseJob):
 
     @staticmethod
     def _get_new_person_paragraph(item: HRPersonProcessed) -> str:
-        name = load('hr_acquisition_job__name', name=item.name, telegram=item.telegram)
+        name = load(
+            'hr_acquisition_job__name',
+            name=item.name,
+            telegram=item.telegram,
+            date=item.date_submitted.split(' ')[0]
+        )
         interests = load('hr_acquisition_job__interests', interests=item.interests)
         about = load('hr_acquisition_job__about', description=item.about)
         other_contacts = load('hr_acquisition_job__other_contacts', contacts=item.other_contacts)
