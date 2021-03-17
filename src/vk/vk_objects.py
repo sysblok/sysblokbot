@@ -2,7 +2,7 @@ from datetime import datetime
 import logging
 from typing import Iterable, List, Set
 
-from ..consts import VK_STATS_POST_LINK, VK_POST_LINK
+from ..consts import VK_POST_LINK
 from ..sheets.sheets_objects import PostRegistryItem
 
 logger = logging.getLogger(__name__)
@@ -56,7 +56,6 @@ class VkPost:
             # if post was postponed, that's the original post id
             post.postponed_id = data.get('postponed_id')
             post.group_id = group_id
-            post.stats_url = VK_STATS_POST_LINK.format(group_id=group_id, post_id=post.id)
             post.url = VK_POST_LINK.format(
                 group_id=group_id,
                 post_id=post.id,

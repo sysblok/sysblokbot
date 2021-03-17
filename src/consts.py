@@ -50,7 +50,6 @@ TELEGRAM_MANAGER_IDS = 'manager_chat_ids'
 TRELLO_BOARD_ID = 'board_id'
 
 # Vk consts
-VK_STATS_POST_LINK = 'https://vk.com/stats?act=posts&gid={group_id}&w=wall-{group_id}_{post_id}'
 VK_POST_LINK = 'https://vk.com/{group_alias}?w=wall-{group_id}_{post_id}'
 
 
