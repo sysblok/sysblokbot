@@ -90,6 +90,7 @@ class VkPost:
         for attachment in attachments:
             if attachment['type'] == 'link':
                 url = attachment['link']['url']
+                url = url.replace('//m.vk.com', '//vk.com')
                 urls.append(url[:-1] if url.endswith('/') else url)
         return urls
 
