@@ -49,6 +49,9 @@ TELEGRAM_MANAGER_IDS = 'manager_chat_ids'
 # Trello keys
 TRELLO_BOARD_ID = 'board_id'
 
+# Vk consts
+VK_POST_LINK = 'https://vk.com/{group_alias}?w=wall-{group_id}_{post_id}'
+
 
 # Report enum
 class ReportPeriod(Enum):
@@ -239,3 +242,4 @@ class CommandCategories(Enum):
     STATS = 'help__06_stats'
     REGISTRY = 'help__07_registry'
     REMINDERS = 'help__08_reminders'
+    HR = 'help__09_hr'

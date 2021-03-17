@@ -50,21 +50,25 @@ class VkClient(Singleton):
         )
 
     def get_post_stats(
-        self, group_id: int, post_ids: Iterable[int], period: ReportPeriod
+        self, group_id: int, posts: Iterable[VkPost], period: ReportPeriod
     ) -> List[VkPostStats]:
-        return list(map(
-            VkPostStats.from_dict,
-            self._api_client.stats.getPostReach(
-                owner_id=-group_id,
-                post_ids=post_ids
+        return [
+            VkPostStats.from_dict(data, post)
+            for post, data in zip(
+                posts,
+                self._api_client.stats.getPostReach(
+                    owner_id=-group_id,
+                    post_ids=[post.id for post in posts]
+                )
             )
-        ))
+        ]
 
-    def get_posts(self, count=100) -> List[VkPost]:
-        return list(map(
-            VkPost.from_dict,
+    def get_posts(self, group_id, count=100) -> List[VkPost]:
+        return [
+            VkPost.from_dict(post_data, group_id, self._group_alias)
+            for post_data in
             self._api_client.wall.get(domain=self._group_alias, count=count)['items']
-        ))
+        ]
 
     def get_posts_per_period(
         self,

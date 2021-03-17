@@ -1,6 +1,8 @@
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
+from ..strings import load
+
 Base = declarative_base()
 
 
@@ -26,6 +28,25 @@ class Author(Base):
         author.trello = _get_str_data_item(data, 'trello')
         return author
 
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'curator': self.curator,
+            'status': self.status,
+            'telegram': self.telegram,
+            'trello': self.trello,
+        }
+
+    @classmethod
+    def from_sheetfu_item(cls, item):
+        author = cls()
+        author.name = item.get_field_value(load('sheets__what_is_your_name'))
+        author.curator = item.get_field_value(load('sheets__curator_as_author'))
+        author.status = item.get_field_value(load('sheets__status'))
+        author.telegram = item.get_field_value(load('sheets__telegram'))
+        author.trello = item.get_field_value(load('sheets__trello'))
+        return author
+
 
 class Curator(Base):
     __tablename__ = 'curators'
@@ -49,6 +70,27 @@ class Curator(Base):
         curator.role = _get_str_data_item(data, 'role')
         curator.section = _get_str_data_item(data, 'section')
         curator.trello_labels = _get_str_data_item(data, 'trello_labels')
+        return curator
+
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'telegram': self.telegram,
+            'team': self.team,
+            'role': self.role,
+            'section': self.section,
+            'trello_labels': self.trello_labels,
+        }
+
+    @classmethod
+    def from_sheetfu_item(cls, item):
+        curator = cls()
+        curator.name = item.get_field_value(load('sheets__name'))
+        curator.telegram = item.get_field_value(load('sheets__telegram'))
+        curator.team = item.get_field_value(load('sheets__team'))
+        curator.role = item.get_field_value(load('sheets__role'))
+        curator.section = item.get_field_value(load('sheets__rubric'))
+        curator.trello_labels = item.get_field_value(load('sheets__rubric_trello_name'))
         return curator
 
 
@@ -113,6 +155,24 @@ class Rubric(Base):
             rubric.name = _get_field_or_throw(data['name'])
             rubric.vk_tag = _get_field_or_throw(data['vk_tag'])
             rubric.tg_tag = _get_field_or_throw(data['tg_tag'])
+        except ValueError:
+            return None
+        return rubric
+
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'vk_tag': self.vk_tag,
+            'tg_tag': self.tg_tag,
+        }
+
+    @classmethod
+    def from_sheetfu_item(cls, item):
+        rubric = cls()
+        try:
+            rubric.name = item.get_field_value(load('sheets__rubric_name'))
+            rubric.vk_tag = item.get_field_value(load('sheets__vk_tag'))
+            rubric.tg_tag = item.get_field_value(load('sheets__tg_tag'))
         except ValueError:
             return None
         return rubric
