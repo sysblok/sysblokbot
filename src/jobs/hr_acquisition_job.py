@@ -18,14 +18,22 @@ class HRAcquisitionJob(BaseJob):
     def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
         paragraphs = [load('hr_acquisition_job__hello')]  # list of paragraph strings
 
-        paragraphs += HRAcquisitionJob._get_new_people_paragraphs(app_context)
+        new_people = HRAcquisitionJob._process_new_people(app_context)
+
+        if not new_people:
+            return
+
+        paragraphs += [
+            HRAcquisitionJob._get_new_person_paragraph(item)
+            for item in new_people
+        ]
 
         pretty_send(paragraphs, send)
 
     @staticmethod
-    def _get_new_people_paragraphs(
-            app_context: AppContext,
-    ) -> List[str]:
+    def _process_new_people(
+        app_context: AppContext,
+    ) -> List[HRPersonProcessed]:
         forms_raw = app_context.sheets_client.fetch_hr_forms_raw()
         forms_processed = app_context.sheets_client.fetch_hr_forms_processed()
 
@@ -37,12 +45,7 @@ class HRAcquisitionJob(BaseJob):
         except Exception as e:
             logger.error(f'failed to export data: {e}')
 
-        paragraphs = [
-            HRAcquisitionJob._get_new_person_paragraph(item)
-            for item in new_items
-        ]
-
-        return paragraphs
+        return new_items
 
     @staticmethod
     def _process_raw_forms(forms_raw: Table, forms_processed: Table) -> List[HRPersonProcessed]:
@@ -74,6 +77,8 @@ class HRAcquisitionJob(BaseJob):
                 'about': person.about,
                 'date_submitted': person.ts,
                 'telegram': person.telegram,
+                'status': load('sheets__hr__processed__status__new_form'),
+                'source': load('sheets__hr__processed__source__form'),
             }
             new_items.append(HRPersonProcessed.add_one_to_table(forms_processed, person_dict))
 

@@ -144,4 +144,6 @@ class HRPersonProcessed(SheetsItem):
         'about': 'sheets__hr__processed__about',
         'date_submitted': 'sheets__hr__processed__date_submitted',
         'telegram': 'sheets__hr__processed__telegram',
+        'status': 'sheets__hr__processed__status',
+        'source': 'sheets__hr__processed__source',
     }
