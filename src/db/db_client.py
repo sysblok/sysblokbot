@@ -130,6 +130,12 @@ class DBClient(Singleton):
             Curator.telegram == telegram
         ).first()
 
+    def get_curator_by_role(self, role: str) -> Curator:
+        session = self.Session()
+        return session.query(Curator).filter(
+            Curator.role == role
+        ).first()
+
     def find_curators_by_author_trello(self, trello_id: str) -> List[Curator]:
         # TODO: make batch queries
         session = self.Session()
