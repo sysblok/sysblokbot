@@ -93,6 +93,18 @@ class SysBlokBot:
             'обработать новые анкеты'
         )
         self.add_manager_handler(
+            'get_hr_status',
+            CommandCategories.HR,
+            self.manager_reply_handler('hr_status_job'),
+            'получить статус по работе hr (по новичкам и участинкам на испытательном)'
+        )
+        self.add_admin_handler(
+            'send_hr_status',
+            CommandCategories.BROADCAST,
+            self.admin_broadcast_handler('hr_status_job'),
+            'разослать статус по работе hr (по новичкам и участинкам на испытательном)'
+        )
+        self.add_manager_handler(
             'get_editorial_report',
             CommandCategories.SUMMARY,
             self.manager_reply_handler('editorial_report_job'),
