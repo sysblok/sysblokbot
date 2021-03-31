@@ -1,6 +1,5 @@
 from datetime import datetime
 import logging
-from sheetfu.modules.table import Item
 from typing import Callable, List
 
 from ..app_context import AppContext
