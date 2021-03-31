@@ -96,7 +96,7 @@ class SysBlokBot:
             'get_hr_status',
             CommandCategories.HR,
             self.manager_reply_handler('hr_status_job'),
-            'получить статус по работе hr (по новичкам и участинкам на испытательном)'
+            'получить статус по работе hr (по новичкам и участникам на испытательном)'
         )
         self.add_admin_handler(
             'send_hr_status',
