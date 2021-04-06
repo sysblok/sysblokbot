@@ -11,7 +11,7 @@ class ApiFacebookAnalytics(BaseAnalytics):
         self._fb_client = fb_client
 
     def get_new_posts_count(self, since: datetime, until: datetime):
-        return self._fb_client.get_new_posts_count(since, until)
+        return self._fb_client.get_ig_new_posts_count(since, until)
 
     def get_weekly_total_reach_of_new_posts(self, end_week: datetime):
         result = self._fb_client.get_total_reach(

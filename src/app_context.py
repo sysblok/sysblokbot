@@ -1,12 +1,14 @@
 import logging
 
 from .analytics.api_facebook_analytics import ApiFacebookAnalytics
+from .analytics.api_instagram_analytics import ApiInstagramAnalytics
 from .analytics.api_vk_analytics import ApiVkAnalytics
 from .consts import TRELLO_CONFIG
 
 from .config_manager import ConfigManager
 from .db.db_client import DBClient
 from .drive.drive_client import GoogleDriveClient
+from .instagram.instagram_client import InstagramClient
 from .sheets.sheets_client import GoogleSheetsClient
 from .strings import StringsDBClient
 from .tg.sender import TelegramSender
@@ -49,8 +51,12 @@ class AppContext(Singleton):
         self.facebook_client = FacebookClient(
             facebook_config=config_manager.get_facebook_config()
         )
+        self.instagram_client = InstagramClient(
+            facebook_config=config_manager.get_facebook_config()
+        )
         self.vk_client = VkClient(vk_config=config_manager.get_vk_config())
         self.facebook_analytics = ApiFacebookAnalytics(self.facebook_client)
+        self.instagram_analytics = ApiInstagramAnalytics(self.instagram_client)
         self.vk_analytics = ApiVkAnalytics(self.vk_client)
 
         # TODO: move that to db

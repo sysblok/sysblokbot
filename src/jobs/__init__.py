@@ -13,6 +13,7 @@ from .db_fetch_curators_sheet_job import DBFetchCuratorsSheetJob
 from .db_fetch_strings_sheet_job import DBFetchStringsSheetJob
 from .editorial_report_job import EditorialReportJob
 from .fb_analytics_report_job import FBAnalyticsReportJob
+from .ig_analytics_report_job import IGAnalyticsReportJob
 from .illustrative_report_job import IllustrativeReportJob
 from .illustrative_report_old_job import IllustrativeReportOldJob
 from .fill_posts_list_job import FillPostsListJob
