@@ -20,6 +20,7 @@ from .hr_acquisition_job import HRAcquisitionJob
 from .publication_plans_job import PublicationPlansJob
 from .sample_job import SampleJob
 from .send_reminders_job import SendRemindersJob
+from .tg_analytics_report_job import TgAnalyticsReportJob
 from .trello_board_state_job import TrelloBoardStateJob
 from .trello_board_state_notifications_job import TrelloBoardStateNotificationsJob
 from .vk_analytics_report_job import VkAnalyticsReportJob
