@@ -44,6 +44,7 @@ class ConfigUpdaterJob(BaseJob):
                 # update config['telegram']
                 tg_config = job_scheduler.config_manager.get_telegram_config()
                 job_scheduler.telegram_sender.update_config(tg_config)
+                app_context.tg_client.update_config(tg_config)
                 # update admins and managers
                 app_context.set_access_rights(tg_config)
                 # update config['trello']

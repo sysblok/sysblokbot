@@ -158,6 +158,12 @@ class SysBlokBot:
             self.manager_reply_handler('vk_analytics_report_job'),
             'получить статистику паблика VK за неделю'
         )
+        self.add_manager_handler(
+            'get_tg_analytics_report',
+            CommandCategories.STATS,
+            self.manager_reply_handler('tg_analytics_report_job'),
+            'получить статистику telegram канала за неделю'
+        )
         # hidden from /help command for curator enrollment
         self.add_handler(
             'enroll_curator',

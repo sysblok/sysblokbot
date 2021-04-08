@@ -29,7 +29,7 @@ class HRStatusJob(BaseJob):
                     'hr_status_job__new_member',
                     member_name=item.name,
                     member_tg=item.telegram or '',
-                    date_submitted=item.date_submitted,
+                    date_submitted=item.date_submitted.split()[0],
                     status=item.status_novice,
                     hr_name=item.hr_name,
                     interests=item.interests,
@@ -50,7 +50,7 @@ class HRStatusJob(BaseJob):
                 'hr_status_job__trial_member',
                 member_name=item.name,
                 member_tg=item.telegram if item.telegram and item.telegram != "#N/A" else '',
-                date_submitted=item.date_submitted,
+                date_submitted=item.date_submitted.split()[0],
                 curator_name=curator.name if curator else item.curator,
                 curator_tg=curator.telegram if curator else '',
             )

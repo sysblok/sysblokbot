@@ -10,6 +10,7 @@ from .drive.drive_client import GoogleDriveClient
 from .sheets.sheets_client import GoogleSheetsClient
 from .strings import StringsDBClient
 from .tg.sender import TelegramSender
+from .tg.tg_client import TgClient
 from .trello.trello_client import TrelloClient
 from .facebook.facebook_client import FacebookClient
 from .utils.singleton import Singleton
@@ -52,6 +53,8 @@ class AppContext(Singleton):
         self.vk_client = VkClient(vk_config=config_manager.get_vk_config())
         self.facebook_analytics = ApiFacebookAnalytics(self.facebook_client)
         self.vk_analytics = ApiVkAnalytics(self.vk_client)
+
+        self.tg_client = TgClient(tg_config=config_manager.get_telegram_config())
 
         # TODO: move that to db
         tg_config = config_manager.get_telegram_config()
