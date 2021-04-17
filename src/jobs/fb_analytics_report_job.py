@@ -25,51 +25,28 @@ class FBAnalyticsReportJob(BaseJob):
         page = app_context.facebook_client.get_page()
         paragraphs = [
             load(
-                'fb_analytics_report_job__title',
+                'fb_analytics_report_job__text',
                 link=page.link,
                 name=page.name,
                 since=week_ago.strftime('%d.%m'),
-                until=end_week_day.strftime('%d.%m')
-            ),
-            "{0}: {1}".format(
-                load('fb_analytics_report_job__new_post_count'),
-                str(
-                    app_context.facebook_analytics.get_new_posts_count(
-                        since=week_ago, until=end_week_day
-                    )
+                until=end_week_day.strftime('%d.%m'),
+                new_posts_count=app_context.facebook_analytics.get_new_posts_count(
+                    since=week_ago, until=end_week_day
+                ),
+                followers_count=page.followers_count,
+                joined_followers=app_context.facebook_analytics.get_weekly_new_follower_count(
+                    end_week_day
+                ),
+                fan_count=page.fan_count,
+                new_fan_count=app_context.facebook_analytics.get_weekly_new_fan_count(
+                    end_week_day
+                ),
+                total_reach=app_context.facebook_analytics.get_weekly_total_reach_of_new_posts(
+                    end_week_day
+                ),
+                organic_reach=app_context.facebook_analytics.get_weekly_organic_reach_of_new_posts(
+                    end_week_day
                 )
-            ),
-            "{0}: {1}".format(
-                load('fb_analytics_report_job__total_reach'),
-                str(
-                    app_context.facebook_analytics.get_weekly_total_reach_of_new_posts(
-                        end_week_day
-                    )
-                )
-            ),
-            "{0}: {1}".format(
-                load('fb_analytics_report_job__organic_reach'),
-                str(
-                    app_context.facebook_analytics.get_weekly_organic_reach_of_new_posts(
-                        end_week_day
-                    )
-                )
-            ),
-            "{0}: {1}".format(
-                load('fb_analytics_report_job__new_follower_count'),
-                str(
-                    app_context.facebook_analytics.get_weekly_new_follower_count(
-                        end_week_day
-                    )
-                )
-            ),
-            "{0}: {1}".format(
-                load('fb_analytics_report_job__new_fan_count'),
-                str(
-                    app_context.facebook_analytics.get_weekly_new_fan_count(
-                        end_week_day
-                    )
-                )
-            ),
+            )
         ]
         pretty_send(paragraphs, send)
