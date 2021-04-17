@@ -8,6 +8,7 @@ class FacebookPage:
         self.id = None
         self.name = None
         self.link = None
+        self.followers_count = None
 
         self._ok = True
 
@@ -18,6 +19,7 @@ class FacebookPage:
             page.id = data['id']
             page.name = data['name']
             page.link = data['link']
+            page.followers_count = data['followers_count']
         except Exception as e:
             page._ok = False
             logger.error(f"Bad Facebook page json {data}: {e}")
@@ -28,4 +30,5 @@ class FacebookPage:
             'id': self.id,
             'name': self.name,
             'link': self.link,
+            'followers_count': self.followers_count,
         }

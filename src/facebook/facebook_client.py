@@ -37,7 +37,9 @@ class FacebookClient(Singleton):
         """
         Get facebook page
         """
-        page_dict = self._api_client.get_object(self._page_id, fields='link,name')
+        page_dict = self._api_client.get_object(
+            self._page_id, fields='link,name,followers_count'
+        )
         return FacebookPage.from_dict(page_dict)
 
     def get_new_posts_count(self, since: datetime, until: datetime) -> int:
