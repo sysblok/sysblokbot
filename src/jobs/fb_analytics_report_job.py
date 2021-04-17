@@ -37,13 +37,14 @@ class FBAnalyticsReportJob(BaseJob):
                 joined_followers=app_context.facebook_analytics.get_weekly_new_follower_count(
                     end_week_day
                 ),
+                fan_count=page.fan_count,
+                new_fan_count=app_context.facebook_analytics.get_weekly_new_fan_count(
+                    end_week_day
+                ),
                 total_reach=app_context.facebook_analytics.get_weekly_total_reach_of_new_posts(
                     end_week_day
                 ),
                 organic_reach=app_context.facebook_analytics.get_weekly_organic_reach_of_new_posts(
-                    end_week_day
-                ),
-                new_fan_count=app_context.facebook_analytics.get_weekly_new_fan_count(
                     end_week_day
                 )
             )

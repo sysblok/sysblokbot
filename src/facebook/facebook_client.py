@@ -38,7 +38,7 @@ class FacebookClient(Singleton):
         Get facebook page
         """
         page_dict = self._api_client.get_object(
-            self._page_id, fields='link,name,followers_count'
+            self._page_id, fields='link,name,followers_count,fan_count'
         )
         return FacebookPage.from_dict(page_dict)
 
