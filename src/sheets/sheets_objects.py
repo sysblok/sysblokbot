@@ -138,6 +138,7 @@ class HRPersonRaw(SheetsItem):
 
 class HRPersonProcessed(SheetsItem):
     field_alias = {
+        'id': 'sheets__hr__processed__id',
         'name': 'sheets__hr__processed__name',
         'interests': 'sheets__hr__processed__interests',
         'other_contacts': 'sheets__hr__processed__other_contacts',
