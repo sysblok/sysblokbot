@@ -3,6 +3,7 @@ import logging
 from sheetfu.modules.table import Item, Table
 from typing import List
 
+from .utils import convert_excel_datetime_to_string
 from ..consts import TrelloCardColor
 from ..strings import load
 from ..trello.trello_objects import CardCustomFields, TrelloCard
@@ -95,9 +96,16 @@ class SheetsItem:
 
     def __getattr__(self, name):
         if name in self.field_alias:
-            return self.item.get_field_value(
+            value = self.item.get_field_value(
                 load(self.field_alias[name])
             )
+            # Excel time format, http://www.cpearson.com/excel/datetime.htm
+            # 40000 is around 2009
+            # 50000 is around 2040, ph I hope Sysblok will thrive in 2040
+            if type(value) == float and 40000 <= value <= 50000:
+                return convert_excel_datetime_to_string(value)
+            else:
+                return value
         else:
             return super().__getattribute__(name)
 
