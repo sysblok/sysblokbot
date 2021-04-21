@@ -51,18 +51,24 @@ class InstagramClient(Singleton):
             )
         )
         return [InstagramMedia.from_dict(media_dict) for media_dict in media_dicts]
-    
+
+    def _get_new_posts(self, since: datetime, until: datetime) -> List[InstagramMedia]:
+        """
+        Get all media (posts, stories, IGTV etc) for the period.
+        """
+        all_media = self._get_all_posts()
+        return [
+            media for media in all_media
+            if media.timestamp > since and media.timestamp < until
+        ]
+
     def get_new_posts_count(self, since: datetime, until: datetime) -> int:
         """
         Get the number of new posts for the period.
         """
-        all_media = self._get_all_posts()
-        return len([
-            media for media in all_media
-            if media.timestamp > since and media.timestamp < until
-        ])
+        return len(self._get_new_posts(since, until))
 
-    def get_new_subscribers_count(self, since: datetime, until: datetime) -> int:
+    def get_new_subscribers(self, since: datetime, until: datetime) -> dict:
         """
         Get the number of new subscribers for the period.
         """
@@ -73,8 +79,65 @@ class InstagramClient(Singleton):
             metric='follower_count',
             period='day'
         )
-        logger.error(new_followers)
         return new_followers
+
+    def get_reach(self, since: datetime, until: datetime) -> dict:
+        """
+        Get the total reach for the period.
+        """
+        return self._api_client.get_connections(
+            self._page_id, 'insights',
+            since=since,
+            until=until,
+            metric='reach',
+            period='day'
+        )
+
+    def get_likes_count(self, since: datetime, until: datetime) -> int:
+        """
+        Get the total number of likes on a profile over a period.
+        """
+        posts = self._get_new_posts(since, until)
+        return sum(map(lambda post: post.like_count, posts))
+
+    def get_likes_avg(self, since: datetime, until: datetime) -> int:
+        """
+        Get the average number of likes on recent posts.
+        """
+        posts = self._get_new_posts(since, until)
+        return int(sum(map(lambda post: post.like_count, posts)) / len(posts))
+
+    def get_comments_count(self, since: datetime, until: datetime) -> int:
+        """
+        Get the total number of comments on a profile over a period.
+        """
+        posts = self._get_new_posts(since, until)
+        return sum(map(lambda post: post.comments_count, posts))
+
+    def get_saves_count(self, since: datetime, until: datetime) -> int:
+        """
+        Get the total number of saves on a profile over a period.
+        """
+        saves = 0
+        posts = self._get_new_posts(since, until)
+        for post in posts:
+            insights = self._get_post_insights(post.id)
+            saves_insights = [
+                insight for insight in insights['data']
+                if insight.get('name', None) == 'saved'
+            ][0]
+            saves += saves_insights['values'][0]['value']
+        return saves
+
+    def _get_post_insights(self, post_id: str) -> dict:
+        """
+        Get all insights for the post.
+        https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights
+        """
+        return self._api_client.get_connections(
+            post_id, "insights",
+            metric="engagement,impressions,reach,saved"
+        )
 
     def _get_all_batches(
             self, connection_name: str, since: datetime, until: datetime, **args

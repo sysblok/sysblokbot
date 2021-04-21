@@ -30,17 +30,25 @@ class IGAnalyticsReportJob(BaseJob):
             since=week_ago.strftime('%d.%m'),
             until=end_week_day.strftime('%d.%m'),
             new_posts=app_context.instagram_analytics.get_new_posts_count(week_ago, end_week_day),
-            new_stories=0,
-            subscribers_num=app_context.instagram_analytics.get_new_subscribers_count(week_ago, end_week_day),
-            subscribed=0,
-            unsubscribed=0,
-            total_reach=0,
-            total_reach_delta=0,
-            content_interactions_num=0,
-            content_interactions_delta=0,
-            likes_num=0,
-            comments_num=0,
-            likes_avg=0,
+            # new_stories=-1,
+            subscribers_num=app_context.instagram_analytics.get_new_subscribers_count(
+                week_ago, end_week_day
+            ),
+            # subscribed=-1,
+            # unsubscribed=-1,
+            total_reach=app_context.instagram_analytics.get_reach(week_ago, end_week_day),
+            # total_reach_delta=-1,
+            content_interactions_num=app_context.instagram_analytics.get_interactions_count(
+                week_ago, end_week_day
+            ),
+            # content_interactions_delta=-1,
+            likes_num=app_context.instagram_analytics.get_likes_count(week_ago, end_week_day),
+            comments_num=app_context.instagram_analytics.get_comments_count(
+                week_ago, end_week_day
+            ),
+            likes_avg=app_context.instagram_analytics.get_likes_avg(
+                week_ago, end_week_day
+            ),
         )
         # paragraphs = [
         #     "{0}: {1}".format(

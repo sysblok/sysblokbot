@@ -43,9 +43,9 @@ class InstagramMedia:
         self.ig_id = None
         self.media_url = None
         self.timestamp = None
-        self.media_type = None # Can be CAROUSEL_ALBUM, IMAGE, or VIDEO.
+        self.media_type = None  # Can be CAROUSEL_ALBUM, IMAGE, or VIDEO.
         # media_product_type doesn't work, strange. Wants API > v10.0..
-        self.media_product_type = None # Can be AD, FEED, IGTV, or STORY.
+        self.media_product_type = None  # Can be AD, FEED, IGTV, or STORY.
         self.like_count = None
         self.comments_count = None
 
