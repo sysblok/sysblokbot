@@ -18,7 +18,7 @@ class RegistryPost:
         'rubric_1': 'Рубрика',
         'rubric_2': 'Доп.Рубрика',
         'google_doc': 'Гугл.док',
-        'trello': 'Trello',
+        'trello': 'Трелло',
         'editor': 'Редактор',
         'cover_type': 'Тип обложки',
         'cover': 'Обложка',
