@@ -18,7 +18,7 @@ class RegistryPost:
         'rubric_1': 'Рубрика',
         'rubric_2': 'Доп.Рубрика',
         'google_doc': 'Гугл.док',
-        'trello': 'Trello',
+        'trello': 'Трелло',
         'editor': 'Редактор',
         'cover_type': 'Тип обложки',
         'cover': 'Обложка',
@@ -138,6 +138,7 @@ class HRPersonRaw(SheetsItem):
 
 class HRPersonProcessed(SheetsItem):
     field_alias = {
+        'id': 'sheets__hr__processed__id',
         'name': 'sheets__hr__processed__name',
         'interests': 'sheets__hr__processed__interests',
         'other_contacts': 'sheets__hr__processed__other_contacts',

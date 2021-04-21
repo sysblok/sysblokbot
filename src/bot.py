@@ -153,6 +153,12 @@ class SysBlokBot:
             'получить статистику facebook страницы за неделю'
         )
         self.add_manager_handler(
+            'get_ig_analytics_report',
+            CommandCategories.STATS,
+            self.manager_reply_handler('ig_analytics_report_job'),
+            'получить статистику instagram страницы за неделю'
+        )
+        self.add_manager_handler(
             'get_vk_analytics_report',
             CommandCategories.STATS,
             self.manager_reply_handler('vk_analytics_report_job'),

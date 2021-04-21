@@ -71,6 +71,7 @@ class HRAcquisitionJob(BaseJob):
             person.status = load('sheets__hr__raw__status_processed')
             # TODO: PR to sheetfu which will allow better API here
             person_dict = {
+                'id': len(forms_processed) + 2,  # 1 for starting with 1 and 1 for the header
                 'name': person.name,
                 'interests': person.interests,
                 'other_contacts': person.other_contacts,
