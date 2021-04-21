@@ -50,46 +50,4 @@ class IGAnalyticsReportJob(BaseJob):
                 week_ago, end_week_day
             ),
         )
-        # paragraphs = [
-        #     "{0}: {1}".format(
-        #         load('fb_analytics_report_job__new_post_count'),
-        #         str(
-        #             app_context.facebook_analytics.get_new_posts_count(
-        #                 since=week_ago, until=end_week_day
-        #             )
-        #         )
-        #     ),
-        #     "{0}: {1}".format(
-        #         load('fb_analytics_report_job__total_reach'),
-        #         str(
-        #             app_context.facebook_analytics.get_weekly_total_reach_of_new_posts(
-        #                 end_week_day
-        #             )
-        #         )
-        #     ),
-        #     "{0}: {1}".format(
-        #         load('fb_analytics_report_job__organic_reach'),
-        #         str(
-        #             app_context.facebook_analytics.get_weekly_organic_reach_of_new_posts(
-        #                 end_week_day
-        #             )
-        #         )
-        #     ),
-        #     "{0}: {1}".format(
-        #         load('fb_analytics_report_job__new_follower_count'),
-        #         str(
-        #             app_context.facebook_analytics.get_weekly_new_follower_count(
-        #                 end_week_day
-        #             )
-        #         )
-        #     ),
-        #     "{0}: {1}".format(
-        #         load('fb_analytics_report_job__new_fan_count'),
-        #         str(
-        #             app_context.facebook_analytics.get_weekly_new_fan_count(
-        #                 end_week_day
-        #             )
-        #         )
-        #     ),
-        # ]
         pretty_send([message], send)
