@@ -120,6 +120,7 @@ jobs:
           script: |
             export CONTAINER_ID=$(docker ps -aq --filter name=lobanov)
             export IS_RUNNING=$(docker container inspect -f '{{.State.Running}}' $CONTAINER_ID)
+            export DOCKER_LOGS
             if [ $IS_RUNNING == "false" ]; then
               export DOCKER_LOGS=$(docker logs $CONTAINER_ID)
               curl -X POST \
