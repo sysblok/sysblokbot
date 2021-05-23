@@ -124,6 +124,6 @@ jobs:
               export DOCKER_LOGS=$(docker logs $CONTAINER_ID)
               curl -X POST \
                 -H 'Content-Type: application/json' \
-                -d '{"parse_mode": "markdown", "chat_id": ${{ env.TELEGRAM_LOBANOV_LOG_CHAT_ID }}, "text": "[github CI] deploy was ok but the bot [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}}).\n ${{env.DOCKER_LOGS}}"}' \
+                -d '{"parse_mode": "markdown", "chat_id": ${{ env.TELEGRAM_LOBANOV_LOG_CHAT_ID }}, "text": "[github CI] deploy was ok but the bot [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}}).\n ${{DOCKER_LOGS}}"}' \
                 https://api.telegram.org/bot${{env.TELEGRAM_PROD_TOKEN}}/sendMessage
             fi
