@@ -49,15 +49,14 @@ jobs:
       - name: Notify us about failure
         if: ${{ failure() }}
         env:
-          TELEGRAM_TEST_TOKEN: ${{ secrets.TELEGRAM_TEST_TOKEN }}
-          TELEGRAM_ERROR_CHAT_ID: ${{ secrets.TELEGRAM_ERROR_CHAT_ID }}
+          TELEGRAM_PROD_TOKEN: ${{ secrets.TELEGRAM_LOBANOV_TOKEN }}
+          TELEGRAM_LOBANOV_LOG_CHAT_ID: ${{ secrets.TELEGRAM_LOBANOV_LOG_CHAT_ID }}
         run: |
           curl -X POST \
             -H 'Content-Type: application/json' \
-            -d '{"parse_mode": "markdown", "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", "text": "[github CI] lobanov build [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
-            }' \
-            https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
-    
+            -d '{"parse_mode": "markdown", "chat_id": ${{ env.TELEGRAM_LOBANOV_LOG_CHAT_ID }}, "text": "[github CI] build [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})"}' \
+            https://api.telegram.org/bot${{env.TELEGRAM_LOBANOV_TOKEN}}/sendMessage
+
       - name: Deploy package to digitalocean
         uses: appleboy/ssh-action@master
         env:
@@ -93,10 +92,38 @@ jobs:
       - name: Notify us about failure
         if: ${{ failure() }}
         env:
-          TELEGRAM_PROD_TOKEN: ${{ secrets.TELEGRAM_PROD_TOKEN }}
-          TELEGRAM_ERROR_CHAT_ID: ${{ secrets.TELEGRAM_ERROR_CHAT_ID }}
+          TELEGRAM_PROD_TOKEN: ${{ secrets.TELEGRAM_LOBANOV_TOKEN }}
+          TELEGRAM_LOBANOV_LOG_CHAT_ID: ${{ secrets.TELEGRAM_LOBANOV_LOG_CHAT_ID }}
         run: |
           curl -X POST \
             -H 'Content-Type: application/json' \
-            -d '{"parse_mode": "markdown", "chat_id": ${{ env.TELEGRAM_ERROR_CHAT_ID }}, "text": "[github CI] deploy [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})"}' \
-            https://api.telegram.org/bot${{env.TELEGRAM_PROD_TOKEN}}/sendMessage
+            -d '{"parse_mode": "markdown", "chat_id": ${{ env.TELEGRAM_LOBANOV_LOG_CHAT_ID }}, "text": "[github CI] deploy [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})"}' \
+            https://api.telegram.org/bot${{env.TELEGRAM_LOBANOV_TOKEN}}/sendMessage
+
+      - name: Sleep for 30 seconds
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '30s'
+
+      - name: Check it has started properly
+        uses: appleboy/ssh-action@master
+        env:
+          TELEGRAM_PROD_TOKEN: ${{ secrets.TELEGRAM_LOBANOV_TOKEN }}
+          TELEGRAM_LOBANOV_LOG_CHAT_ID: ${{ secrets.TELEGRAM_LOBANOV_LOG_CHAT_ID }}
+        with:
+          host: ${{ secrets.MASTER_HOST }}
+          username: ${{ secrets.MASTER_DO_USER }}
+          passphrase: ${{ secrets.MASTER_DO_SSH_KEY_PASSWORD }}
+          key: ${{ secrets.MASTER_DO_SSH_KEY }}
+          port: ${{ secrets.MASTER_PORT }}
+          envs: TELEGRAM_PROD_TOKEN, TELEGRAM_LOBANOV_LOG_CHAT_ID
+          script: |
+            export CONTAINER_ID=$(docker ps -aq --filter name=lobanov)
+            export IS_RUNNING=$(docker container inspect -f '{{.State.Running}}' $CONTAINER_ID)
+            if [ $IS_RUNNING == "false" ]; then
+              export DOCKER_LOGS=$(docker logs $CONTAINER_ID)
+              curl -X POST \
+                -H 'Content-Type: application/json' \
+                -d '{"parse_mode": "markdown", "chat_id": ${{ env.TELEGRAM_LOBANOV_LOG_CHAT_ID }}, "text": "[github CI] deploy was ok but the bot [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}}).\n ${{DOCKER_LOGS}}"}' \
+                https://api.telegram.org/bot${{env.TELEGRAM_LOBANOV_TOKEN}}/sendMessage
+            fi
