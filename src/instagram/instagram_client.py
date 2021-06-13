@@ -68,6 +68,14 @@ class InstagramClient(Singleton):
         """
         return len(self._get_new_posts(since, until))
 
+    def get_total_subscribers(self) -> int:
+        """
+        Get the total number of subscribers.
+        """
+        return self._api_client.get_object(
+            self._page_id, fields='followers_count'
+        )['followers_count']
+
     def get_new_subscribers(self, since: datetime, until: datetime) -> dict:
         """
         Get the number of new subscribers for the period.
