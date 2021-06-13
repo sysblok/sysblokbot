@@ -31,9 +31,10 @@ class IGAnalyticsReportJob(BaseJob):
             until=end_week_day.strftime('%d.%m'),
             new_posts=app_context.instagram_analytics.get_new_posts_count(week_ago, end_week_day),
             # new_stories=-1,
-            subscribers_num=app_context.instagram_analytics.get_new_subscribers_count(
+            subscribers_new_num=app_context.instagram_analytics.get_new_subscribers_count(
                 week_ago, end_week_day
             ),
+            subscribers_total_num=app_context.instagram_analytics.get_total_subscribers_count(),
             # subscribed=-1,
             # unsubscribed=-1,
             total_reach=app_context.instagram_analytics.get_reach(week_ago, end_week_day),

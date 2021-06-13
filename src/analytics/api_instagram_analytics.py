@@ -13,6 +13,9 @@ class ApiInstagramAnalytics(BaseAnalytics):
     def get_new_posts_count(self, since: datetime, until: datetime) -> int:
         return self._ig_client.get_new_posts_count(since, until)
 
+    def get_total_subscribers_count(self) -> int:
+        return self._ig_client.get_total_subscribers()
+
     def get_new_subscribers_count(self, since: datetime, until: datetime) -> int:
         new_subscribers = self._ig_client.get_new_subscribers(since, until)
         return sum(map(lambda day: day['value'], new_subscribers['data'][0]['values']))
