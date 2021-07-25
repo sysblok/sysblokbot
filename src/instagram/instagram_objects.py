@@ -57,7 +57,8 @@ class InstagramMedia:
         try:
             page.id = data['id']
             page.ig_id = data['ig_id']
-            page.media_url = data['media_url']
+            # Might be omitted in response, e.g. for copyrighted items
+            page.media_url = data.get('media_url', '')
             page.timestamp = datetime.strptime(data['timestamp'], TIMESTAMP_FORMAT)
             page.media_type = data['media_type']
             # page.media_product_type = data['media_product_type']
