@@ -16,7 +16,7 @@ from . import utils
 logger = logging.getLogger(__name__)
 
 
-class TrelloGetArticlesArts(BaseJob):
+class TrelloGetArticlesArtsJob(BaseJob):
     @staticmethod
     def _execute(
         app_context: AppContext, send: Callable[[str], None], called_from_handler=False
@@ -30,7 +30,7 @@ class TrelloGetArticlesArts(BaseJob):
         paragraphs.append(load ('rubric_report_job__intro', rubric=rubric_name))
 
         for alias in TrelloListAlias:
-            paragraphs += TrelloGetArticlesArts._retrieve_cards_for_paragraph(
+            paragraphs += TrelloGetArticlesArtsJob._retrieve_cards_for_paragraph(
             app_context = app_context,
             trello_client=app_context.trello_client,
             drive_client=app_context.drive_client,
@@ -108,6 +108,6 @@ class TrelloGetArticlesArts(BaseJob):
             load('common_report__list_title_and_size', title=title, length=len(cards_filtered))
         ]
         for card in cards_filtered:
-            formatted_card = TrelloGetArticlesArts._format_card (card, app_context)
+            formatted_card = TrelloGetArticlesArtsJob._format_card (card, app_context)
             paragraphs.append(formatted_card)
         return paragraphs

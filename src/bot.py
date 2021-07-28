@@ -137,7 +137,7 @@ class SysBlokBot:
         self.add_manager_handler(
             'get_articles_arts',
             CommandCategories.SUMMARY,
-            self.manager_reply_handler('trello_get_articles_arts'),
+            self.manager_reply_handler('trello_get_articles_arts_job'),
             'получить карточки по тегу искусство'
         )
         self.add_manager_handler(
