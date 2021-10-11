@@ -276,6 +276,12 @@ class SysBlokBot:
             'обновить таблицу с кураторами из Google Sheets'
         )
         self.add_admin_handler(
+            'db_fetch_team_sheet',
+            CommandCategories.DATA_SYNC,
+            self.admin_reply_handler('db_fetch_team_sheet_job'),
+            'обновить таблицу с командой из Google Sheets'
+        )
+        self.add_admin_handler(
             'db_fetch_strings_sheet',
             CommandCategories.DATA_SYNC,
             self.admin_reply_handler('db_fetch_strings_sheet_job'),

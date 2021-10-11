@@ -78,7 +78,7 @@ class DBClient(Singleton):
             session.rollback()
             return 0
         return len(curators)
-    
+
     def fetch_team_sheet(self, sheets_client: GoogleSheetsClient):
         session = self.Session()
         try:
