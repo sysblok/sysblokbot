@@ -5,6 +5,7 @@
         "disable_web_page_preview": true,
         "admin_chat_ids": [],
         "manager_chat_ids": [],
+        "sysblok_chats": {},
         "important_events_recipients": [],
         "error_logs_recipients": [],
         "usage_logs_recipients": []

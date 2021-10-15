@@ -49,7 +49,7 @@ class TgAnalyticsReportJob(BaseJob):
             shares_per_post_delta=TgAnalyticsReportJob._format_delta(
                 stats.shares_per_post.current - stats.shares_per_post.previous
             )
-        )
+        ) + app_context.tg_client.get_chat_users()
         pretty_send([message], send)
 
     @staticmethod

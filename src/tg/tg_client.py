@@ -1,6 +1,7 @@
 import logging
 from typing import List, Iterable
 
+from asgiref.sync import async_to_sync
 from datetime import datetime
 
 from telethon.sessions import StringSession
@@ -32,4 +33,12 @@ class TgClient(Singleton):
             self._tg_config['api_id'],
             self._tg_config['api_hash']
         )
+        self.sysblok_chats = self._tg_config['sysblok_chats']
         self.channel = self._tg_config['channel']
+
+    async def _get_chat_users(self):
+        await self.api_client.connect()
+        return [user.first_name for user in self.api_client.iter_participants(self.sysblok_chats['main_chat'])]
+
+    def get_chat_users(self):
+        return async_to_sync(self._get_chat_users)()
