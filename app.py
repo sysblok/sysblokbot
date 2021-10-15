@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import locale
 import logging
 import os
@@ -15,6 +16,9 @@ from src.utils.log_handler import ErrorBroadcastHandler
 locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
 logging.basicConfig(format=consts.LOG_FORMAT, level=logging.INFO)
 
+parser = argparse.ArgumentParser()
+parser.add_argument("-dbg", "--no-db-update", help="Don't update databases")
+
 
 def get_bot():
     """
@@ -27,8 +31,9 @@ def get_bot():
         raise ValueError(f"Could not load config, can't go on")
 
     scheduler = JobScheduler(config)
+    args = parser.parse_args()
 
-    bot = SysBlokBot(config_manager, signal_handler=lambda signum,
+    bot = SysBlokBot(config_manager, signal_handler=lambda signum, no_db_update=args.no_db_update,
                      frame: scheduler.stop_running())
     bot.init_handlers()
 
