@@ -17,7 +17,7 @@ locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
 logging.basicConfig(format=consts.LOG_FORMAT, level=logging.INFO)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--skip-db-update", help="Dkip db update on startup", action='store_true')
+parser.add_argument("--skip-db-update", help="Skip db update on startup", action='store_true')
 
 
 def get_bot():
