@@ -17,7 +17,7 @@ locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
 logging.basicConfig(format=consts.LOG_FORMAT, level=logging.INFO)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--no-db-update", help="Don't update db on startup", action='store_true')
+parser.add_argument("--skip-db-update", help="Dkip db update on startup", action='store_true')
 
 
 def get_bot():
@@ -35,7 +35,7 @@ def get_bot():
 
     bot = SysBlokBot(config_manager, signal_handler=lambda signum,
                      frame: scheduler.stop_running(), 
-                     no_db_update=args.no_db_update)
+                     skip_db_update=args.skip_db_update)
     bot.init_handlers()
 
     # Scheduler must be run after clients initialized

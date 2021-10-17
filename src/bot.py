@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 class SysBlokBot:
-    def __init__(self, config_manager: ConfigManager, signal_handler, no_db_update: bool = False):
+    def __init__(self, config_manager: ConfigManager, signal_handler, skip_db_update: bool = False):
         self.config_manager = config_manager
         tg_config = config_manager.get_telegram_config()
         self.updater = Updater(
@@ -36,7 +36,7 @@ class SysBlokBot:
             persistence=PicklePersistence(filename='persistent_storage.pickle')
         )
         self.dp = self.updater.dispatcher
-        self.app_context = AppContext(config_manager, no_db_update)
+        self.app_context = AppContext(config_manager, skip_db_update)
         self.telegram_sender = sender.TelegramSender(bot=self.dp.bot, tg_config=tg_config)
         self.handlers_info = defaultdict(lambda: defaultdict(dict))
         logger.info('SysBlokBot successfully initialized')
