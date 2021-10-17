@@ -35,7 +35,7 @@ def get_bot():
     args = parser.parse_args()
 
     bot = SysBlokBot(config_manager, signal_handler=lambda signum,
-                     frame: scheduler.stop_running(), 
+                     frame: scheduler.stop_running(),
                      skip_db_update=args.skip_db_update)
     bot.init_handlers()
 
