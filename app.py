@@ -17,6 +17,7 @@ locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
 logging.basicConfig(format=consts.LOG_FORMAT, level=logging.INFO)
 
 parser = argparse.ArgumentParser()
+# maybe we'll move those to config.json later...
 parser.add_argument("--skip-db-update", help="Skip db update on startup", action='store_true')
 
 
