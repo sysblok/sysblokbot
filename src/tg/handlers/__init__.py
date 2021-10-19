@@ -18,6 +18,7 @@ from .error_handler import error
 
 # Admin (developer) handlers
 from .get_roles_for_member_handler import get_roles_for_member
+from .get_members_for_role_handler import get_members_for_role
 from .list_chats_handler import list_chats
 from .list_job_handler import list_jobs
 from .set_log_level_handler import set_log_level

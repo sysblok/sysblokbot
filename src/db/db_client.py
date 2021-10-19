@@ -195,8 +195,15 @@ class DBClient(Singleton):
         session = self.Session()
         return session.query(TeamMember).all()
 
-    def get_member(self, member_name: str) -> Optional[TeamMember]:
+    def get_members_for_role(self, role_name: str) -> List[TeamMember]:
         session = self.Session()
+        # yes this is not very safe
+        members = session.query(TeamMember).filter(TeamMember.role.like(f'%{role_name}%')).all()
+        return members
+
+    def get_member_by_name(self, member_name: str) -> Optional[TeamMember]:
+        session = self.Session()
+        # yes this is not very safe
         members = session.query(TeamMember).filter(TeamMember.name.like(f'%{member_name}%')).all()
         if len(members) > 1:
             logger.warning(f'get_member: Name {member_name} fits {len(members)} members')

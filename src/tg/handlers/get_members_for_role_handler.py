@@ -8,8 +8,8 @@ logger = logging.getLogger(__name__)
 
 
 @admin_only
-def get_roles_for_member(update, tg_context):
+def get_members_for_role(update, tg_context):
     app_context = AppContext()
     # a hacky way of stripping the cmd from text
-    member_name = ' '.join(update.message.text.strip().split(' ')[1:])
-    reply(RolesManager(app_context.db_client).get_roles_for_member(member_name), update)
+    role_name = ' '.join(update.message.text.strip().split(' ')[1:])
+    reply(RolesManager(app_context.db_client).get_members_for_role(role_name), update)

@@ -26,7 +26,11 @@ class RolesManager(Singleton):
         self.db_client.fill_team_roles(member_roles)
 
     def get_roles_for_member(self, member_name: str) -> str:
-        member = self.db_client.get_member(member_name)
+        member = self.db_client.get_member_by_name(member_name)
         if not member:
             return 'Member not found'
-        return member.role.join(', ')
+        return ','.join(member.role)
+
+    def get_members_for_role(self, role_name: str) -> str:
+        members = self.db_client.get_members_for_role(role_name)
+        return '\n'.join([member.name for member in members])
