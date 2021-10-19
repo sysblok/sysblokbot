@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import logging
 import requests
-from typing import List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy import create_engine, desc
 from sqlalchemy.ext.declarative import declarative_base
@@ -115,6 +115,14 @@ class DBClient(Singleton):
             return 0
         return len(rubrics)
 
+    def fill_team_roles(self, member_roles: Dict[str, List[str]]):
+        # Set roles for users
+        session = self.Session()
+        for member_id, roles in member_roles.items():
+            update = {TeamMember.role: repr(roles)}
+            session.query(TeamMember).filter(TeamMember.id == member_id).update(update)
+        session.commit()
+
     def find_author_telegram_by_trello(self, trello_id: str):
         # TODO: make batch queries
         session = self.Session()
@@ -182,6 +190,17 @@ class DBClient(Singleton):
     def get_all_chats(self) -> List[Chat]:
         session = self.Session()
         return session.query(Chat).all()
+
+    def get_all_members(self) -> List[TeamMember]:
+        session = self.Session()
+        return session.query(TeamMember).all()
+
+    def get_member(self, member_name: str) -> Optional[TeamMember]:
+        session = self.Session()
+        members = session.query(TeamMember).filter(TeamMember.name.like(f'%{member_name}%')).all()
+        if len(members) > 1:
+            logger.warning(f'get_member: Name {member_name} fits {len(members)} members')
+        return members[0] if members else None
 
     def set_chat_name(self, chat_id: int, chat_name: str, set_curator: bool = False):
         # Update or set chat name. If chat is known to be curator's, set the flag.

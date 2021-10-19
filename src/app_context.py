@@ -9,6 +9,7 @@ from .config_manager import ConfigManager
 from .db.db_client import DBClient
 from .drive.drive_client import GoogleDriveClient
 from .instagram.instagram_client import InstagramClient
+from .roles.roles_manager import RolesManager
 from .sheets.sheets_client import GoogleSheetsClient
 from .strings import StringsDBClient
 from .tg.sender import TelegramSender
@@ -42,10 +43,12 @@ class AppContext(Singleton):
             drive_config=config_manager.get_drive_config()
         )
         self.db_client = DBClient(db_config=config_manager.get_db_config())
+        self.roles_manager = RolesManager(self.db_client)
 
         if not skip_db_update:
             self.strings_db_client.fetch_strings_sheet(self.sheets_client)
             self.db_client.fetch_all(self.sheets_client)
+            self.roles_manager.fill_db_roles()
 
         self.trello_client = TrelloClient(
             trello_config=config_manager.get_trello_config()
