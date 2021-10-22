@@ -25,6 +25,7 @@ from .sample_job import SampleJob
 from .send_reminders_job import SendRemindersJob
 from .tg_analytics_report_job import TgAnalyticsReportJob
 from .trello_board_state_job import TrelloBoardStateJob
+from .trello_get_articles_arts_job import TrelloGetArticlesArtsJob
 from .trello_board_state_notifications_job import TrelloBoardStateNotificationsJob
 from .vk_analytics_report_job import VkAnalyticsReportJob
 from .main_stats_job import TrelloAnalyticsJob
