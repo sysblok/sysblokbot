@@ -11,13 +11,13 @@ from src.utils.singleton import Singleton
 logger = logging.getLogger(__name__)
 
 
-class RolesManager(Singleton):
+class RoleManager(Singleton):
     def __init__(self, db_client: DBClient):
         if self.was_initialized():
             return
         self.db_client = db_client
 
-    def fill_db_roles(self):
+    def calculate_db_roles(self):
         members = self.db_client.get_all_members()
         member_roles = {}
         for member in members:
@@ -30,8 +30,10 @@ class RolesManager(Singleton):
         if not member:
             return 'Member not found'
         # i have doubts about eval here
-        return ', '.join(eval(member.role))
+        return ', '.join(eval(member.roles))
 
     def get_members_for_role(self, role_name: str) -> str:
         members = self.db_client.get_members_for_role(role_name)
+        if not members:
+            return 'Role not found'
         return '\n'.join([member.name for member in members])

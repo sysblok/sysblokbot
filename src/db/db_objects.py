@@ -104,7 +104,7 @@ class TeamMember(Base):
     manager = Column(String)
     telegram = Column(String)
     trello = Column(String)
-    role = Column(String)
+    roles = Column(String)
 
     def __repr__(self):
         return f'Team member {self.name} tg={self.telegram}'
@@ -130,7 +130,7 @@ class TeamMember(Base):
             'manager': self.manager,
             'telegram': self.telegram,
             'trello': self.trello,
-            'role': self.role,
+            'roles': self.roles,
         }
 
     @classmethod
