@@ -1,6 +1,7 @@
 import logging
 
 from src.db.db_objects import TeamMember
+from src.strings import load
 
 
 logger = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ class RoleNewbie(Role):
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
-        return member.status == 'испытательный'
+        return member.status.lower() == load('sheets__team__status__newbie').lower()
 
 
 class RoleActiveMember(Role):
@@ -31,7 +32,7 @@ class RoleActiveMember(Role):
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
-        return member.status == 'в команде'
+        return member.status.lower() == load('sheets__team__status__active').lower()
 
 
 class RoleFrozenMember(Role):
@@ -39,7 +40,7 @@ class RoleFrozenMember(Role):
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
-        return member.status == 'заморозка'
+        return member.status.lower() == load('sheets__team__status__frozen').lower()
 
 
 class RoleAuthor(Role):
@@ -55,7 +56,10 @@ class RoleRedactor(Role):
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
-        return RoleActiveMember.fits(member) and member.manager == 'Менеджер редакции'
+        return (
+            RoleActiveMember.fits(member) 
+            and member.manager.lower() == load('sheets__team__manager__redactor').lower()
+        )
 
 
 class RoleIllustrator(Role):
@@ -63,7 +67,10 @@ class RoleIllustrator(Role):
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
-        return RoleActiveMember.fits(member) and member.manager == 'Бильд-менеджер'
+        return (
+            RoleActiveMember.fits(member) 
+            and member.manager.lower() == load('sheets__team__manager__illustrator').lower()
+        )
 
 
 class RoleCommissioningEditor(Role):
@@ -71,7 +78,10 @@ class RoleCommissioningEditor(Role):
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
-        return RoleActiveMember.fits(member) and member.manager == 'Менеджер выпуска'
+        return (
+            RoleActiveMember.fits(member) 
+            and member.manager.lower() == load('sheets__team__manager__editor').lower()
+        )
 
 
 class RoleDirector(Role):
@@ -79,7 +89,10 @@ class RoleDirector(Role):
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
-        return RoleActiveMember.fits(member) and member.manager == 'Менеджер проекта'
+        return (
+            RoleActiveMember.fits(member) 
+            and member.manager.lower() == load('sheets__team__manager__director').lower()
+        )
 
 
 class RoleSoftwareEngineer(Role):
@@ -87,7 +100,10 @@ class RoleSoftwareEngineer(Role):
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
-        return RoleActiveMember.fits(member) and member.manager == 'Tech-менеджер'
+        return (
+            RoleActiveMember.fits(member) 
+            and member.manager.lower() == load('sheets__team__manager__swe').lower()
+        )
 
 
 all_roles = [
