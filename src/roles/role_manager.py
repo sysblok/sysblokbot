@@ -30,7 +30,7 @@ class RoleManager(Singleton):
         if not member:
             return 'Member not found'
         # i have doubts about eval here
-        return ', '.join(eval(member.roles))
+        return ', '.join(json.loads(member.roles))
 
     def get_members_for_role(self, role_name: str) -> str:
         members = self.db_client.get_members_for_role(role_name)
