@@ -73,6 +73,36 @@ def handle_user_message(
         )
         set_next_action(command_data, PlainTextUserAction.GET_TASKS_REPORT__ENTER_LIST_NUMBER)
         return
+    elif next_action == PlainTextUserAction.GET_TASKS_REPORT__ENTER_BOARD_NUMBER:
+        trello_client = TrelloClient()
+        try:
+            #dublicate request - пока я не поняла, как сохранять контекст
+            # command_data[consts.GetTasksReportData.LISTS] = [lst.to_dict() for lst in trello_lists]
+            # board_list = command_data.get(consts.GetTasksReportData.LISTS, [])
+            board_list = trello_client.get_boards_for_user()
+            board_list_prep = [lst.to_dict() for lst in board_list]
+
+            list_idx = int(user_input) - 1
+            assert 0 <= list_idx < len(board_list)
+            board_id = board_list_prep[list_idx]['id']
+            trello_lists = trello_client.get_lists(board_id)
+        except Exception as e:
+            logger.warning(e)
+            reply(load('get_tasks_report_handler__try_again'), update)
+            return
+
+        command_data[consts.GetTasksReportData.BOARD_ID] = board_id
+        command_data[consts.GetTasksReportData.LISTS] = [lst.to_dict() for lst in trello_lists]
+
+        trello_lists_formatted = '\n'.join(
+            [f'{i + 1}) {lst.name}' for i, lst in enumerate(trello_lists)]
+        )
+        reply(
+            load('get_tasks_report_handler__choose_trello_list', lists=trello_lists_formatted),
+            update
+        )
+        set_next_action(command_data, PlainTextUserAction.GET_TASKS_REPORT__ENTER_LIST_NUMBER)
+        return
     elif next_action == PlainTextUserAction.GET_TASKS_REPORT__ENTER_LIST_NUMBER:
         try:
             trello_lists = command_data.get(consts.GetTasksReportData.LISTS, [])

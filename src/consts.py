@@ -127,6 +127,7 @@ class PlainTextUserAction(Enum):
     """
     # /get_tasks_report items
     GET_TASKS_REPORT__ENTER_BOARD_URL = 'get_tasks_report__board_url'
+    GET_TASKS_REPORT__ENTER_BOARD_NUMBER = 'get_tasks_report__board_number'
     GET_TASKS_REPORT__ENTER_LIST_NUMBER = 'get_tasks_report__list_number'
     GET_TASKS_REPORT__ENTER_INTRO = 'get_tasks_report__introduction'
     GET_TASKS_REPORT__CHOOSE_IF_FILL_LABELS = 'get_tasks_report__fill_labels'
