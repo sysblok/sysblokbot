@@ -27,7 +27,7 @@ class AppContext(Singleton):
     Stores client references in one place,
     so that they can be easily used in jobs.
     """
-    def __init__(self, config_manager: ConfigManager = None):
+    def __init__(self, config_manager: ConfigManager = None, skip_db_update: bool = False):
         if self.was_initialized():
             return
 
@@ -43,8 +43,9 @@ class AppContext(Singleton):
         )
         self.db_client = DBClient(db_config=config_manager.get_db_config())
 
-        self.strings_db_client.fetch_strings_sheet(self.sheets_client)
-        self.db_client.fetch_all(self.sheets_client)
+        if not skip_db_update:
+            self.strings_db_client.fetch_strings_sheet(self.sheets_client)
+            self.db_client.fetch_all(self.sheets_client)
 
         self.trello_client = TrelloClient(
             trello_config=config_manager.get_trello_config()
