@@ -77,14 +77,13 @@ def handle_user_message(
         trello_client = TrelloClient()
         try:
             #dublicate request - пока я не поняла, как сохранять контекст
-            # command_data[consts.GetTasksReportData.LISTS] = [lst.to_dict() for lst in trello_lists]
-            # board_list = command_data.get(consts.GetTasksReportData.LISTS, [])
-            board_list = trello_client.get_boards_for_user()
-            board_list_prep = [lst.to_dict() for lst in board_list]
+            #board_list = trello_client.get_boards_for_user()
+            #board_list_prep = [lst.to_dict() for lst in board_list]
 
+            board_list = tg_context.chat_data[consts.GetTasksReportData.LISTS]
             list_idx = int(user_input) - 1
             assert 0 <= list_idx < len(board_list)
-            board_id = board_list_prep[list_idx]['id']
+            board_id = board_list[list_idx]['id']
             trello_lists = trello_client.get_lists(board_id)
         except Exception as e:
             logger.warning(e)

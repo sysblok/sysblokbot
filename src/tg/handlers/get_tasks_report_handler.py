@@ -27,12 +27,11 @@ def get_tasks_report(update: telegram.Update, tg_context: telegram.ext.CallbackC
     )
 
     tg_context.chat_data[consts.LAST_ACTIONABLE_COMMAND] = TASK_NAME
-    #tg_context.chat_data[consts.GetTasksReportData.LISTS] = [lst.to_dict() for lst in boards_list]
+    tg_context.chat_data[consts.GetTasksReportData.LISTS] = [lst.to_dict() for lst in boards_list]
     tg_context.chat_data[TASK_NAME] = {
         consts.NEXT_ACTION: consts.PlainTextUserAction.GET_TASKS_REPORT__ENTER_BOARD_NUMBER.value
     }
     reply(
-        #2do - fix the title
         load('get_tasks_report_handler__choose_trello_board', lists=boards_list_formatted),
         update
     )
