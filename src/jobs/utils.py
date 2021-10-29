@@ -139,7 +139,7 @@ def paragraphs_to_messages(
     '''
     if not paragraphs:
         logger.warning('No paragraphs to process, exiting')
-        return
+        return []
 
     delimiter_len = len(delimiter)
     messages = []
