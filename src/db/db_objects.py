@@ -94,6 +94,48 @@ class Curator(Base):
         return curator
 
 
+class TeamMember(Base):
+    __tablename__ = 'team'
+
+    id = Column(String, primary_key=True)
+    name = Column(String)
+    status = Column(String)
+    telegram = Column(String)
+    trello = Column(String)
+
+    def __repr__(self):
+        return f'Team member {self.name} tg={self.telegram}'
+
+    @classmethod
+    def from_dict(cls, data):
+        curator = cls()
+        curator.id = _get_str_data_item(data, 'id')
+        curator.name = _get_str_data_item(data, 'name')
+        curator.status = _get_str_data_item(data, 'status')
+        curator.telegram = _get_str_data_item(data, 'telegram')
+        curator.trello = _get_str_data_item(data, 'trello')
+        return curator
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'status': self.status,
+            'telegram': self.telegram,
+            'trello': self.trello,
+        }
+
+    @classmethod
+    def from_sheetfu_item(cls, item):
+        curator = cls()
+        curator.id = item.get_field_value(load('sheets__team__id'))
+        curator.name = item.get_field_value(load('sheets__team__name'))
+        curator.status = item.get_field_value(load('sheets__team__status'))
+        curator.telegram = item.get_field_value(load('sheets__team__telegram'))
+        curator.trello = item.get_field_value(load('sheets__team__trello'))
+        return curator
+
+
 def _get_str_data_item(data: dict, item_name: str) -> str:
     """Preprocess string data item from sheets"""
     return data[item_name].strip() if data.get(item_name) else ''

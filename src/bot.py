@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 class SysBlokBot:
-    def __init__(self, config_manager: ConfigManager, signal_handler):
+    def __init__(self, config_manager: ConfigManager, signal_handler, skip_db_update: bool = False):
         self.config_manager = config_manager
         tg_config = config_manager.get_telegram_config()
         self.updater = Updater(
@@ -36,7 +36,7 @@ class SysBlokBot:
             persistence=PicklePersistence(filename='persistent_storage.pickle')
         )
         self.dp = self.updater.dispatcher
-        self.app_context = AppContext(config_manager)
+        self.app_context = AppContext(config_manager, skip_db_update)
         self.telegram_sender = sender.TelegramSender(bot=self.dp.bot, tg_config=tg_config)
         self.handlers_info = defaultdict(lambda: defaultdict(dict))
         logger.info('SysBlokBot successfully initialized')
@@ -133,6 +133,12 @@ class SysBlokBot:
             CommandCategories.SUMMARY,
             direct_message_only(handlers.get_tasks_report),
             'получить список задач из Trello'
+        )
+        self.add_manager_handler(
+            'get_articles_arts',
+            CommandCategories.SUMMARY,
+            self.manager_reply_handler('trello_get_articles_arts_job'),
+            'получить карточки по тегу искусство'
         )
         self.add_manager_handler(
             'get_chat_id',
@@ -274,6 +280,12 @@ class SysBlokBot:
             CommandCategories.DATA_SYNC,
             self.admin_reply_handler('db_fetch_curators_sheet_job'),
             'обновить таблицу с кураторами из Google Sheets'
+        )
+        self.add_admin_handler(
+            'db_fetch_team_sheet',
+            CommandCategories.DATA_SYNC,
+            self.admin_reply_handler('db_fetch_team_sheet_job'),
+            'обновить таблицу с командой из Google Sheets'
         )
         self.add_admin_handler(
             'db_fetch_strings_sheet',

@@ -7,7 +7,7 @@ from sqlalchemy import create_engine, desc
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from .db_objects import Author, Base, Chat, Curator, Reminder, Rubric, TrelloAnalytics
+from .db_objects import Author, Base, Chat, Curator, Reminder, Rubric, TeamMember, TrelloAnalytics
 from .. import consts
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..utils.singleton import Singleton
@@ -42,6 +42,7 @@ class DBClient(Singleton):
     def fetch_all(self, sheets_client: GoogleSheetsClient):
         self.fetch_authors_sheet(sheets_client)
         self.fetch_curators_sheet(sheets_client)
+        self.fetch_team_sheet(sheets_client)
         self.fetch_rubrics_sheet(sheets_client)
 
     def fetch_authors_sheet(self, sheets_client: GoogleSheetsClient):
@@ -77,6 +78,23 @@ class DBClient(Singleton):
             session.rollback()
             return 0
         return len(curators)
+
+    def fetch_team_sheet(self, sheets_client: GoogleSheetsClient):
+        session = self.Session()
+        try:
+            # clean this table
+            session.query(TeamMember).delete()
+            # re-download it
+            team = sheets_client.fetch_hr_team()
+            for item in team:
+                member = TeamMember.from_sheetfu_item(item)
+                session.add(member)
+            session.commit()
+        except Exception as e:
+            logger.warning(f"Failed to update team table from sheet: {e}")
+            session.rollback()
+            return 0
+        return len(team)
 
     def fetch_rubrics_sheet(self, sheets_client: GoogleSheetsClient):
         session = self.Session()
