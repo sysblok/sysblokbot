@@ -23,4 +23,3 @@ class PostcardsReportJob(BaseJob):
             value = str(cell_range.get_values()[0][0])
             message_template_substituted = message_template_substituted.replace(element, value)
         pretty_send([message_template_substituted], send)
-        
