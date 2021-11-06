@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import logging
+import re
 import requests
 from typing import Dict, List, Optional, Tuple
 
@@ -196,14 +197,14 @@ class DBClient(Singleton):
         return session.query(TeamMember).all()
 
     def get_members_for_role(self, role_name: str) -> List[TeamMember]:
+        assert re.match(r'[a-z_]+', role_name)
         session = self.Session()
-        # yes this is not very safe
         members = session.query(TeamMember).filter(TeamMember.role.like(f'%{role_name}%')).all()
         return members
 
     def get_member_by_name(self, member_name: str) -> Optional[TeamMember]:
+        assert re.match(r'[А-Яа-я ]+', member_name)
         session = self.Session()
-        # yes this is not very safe
         members = session.query(TeamMember).filter(TeamMember.name.like(f'%{member_name}%')).all()
         if len(members) > 1:
             logger.warning(f'get_member: Name {member_name} fits {len(members)} members')
