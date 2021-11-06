@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import json
 import logging
 import re
 import requests
@@ -120,7 +121,7 @@ class DBClient(Singleton):
         # Set roles for users
         session = self.Session()
         for member_id, roles in member_roles.items():
-            update = {TeamMember.role: repr(roles)}
+            update = {TeamMember.roles: json.dumps(roles)}
             session.query(TeamMember).filter(TeamMember.id == member_id).update(update)
         session.commit()
 
@@ -197,13 +198,17 @@ class DBClient(Singleton):
         return session.query(TeamMember).all()
 
     def get_members_for_role(self, role_name: str) -> List[TeamMember]:
-        assert re.match(r'[a-z_]+', role_name)
+        if not re.match(r"[a-z_]+", role_name):
+            logger.warning(f'get_members_for_role: weird role_name: {role_name}')
+            return []
         session = self.Session()
-        members = session.query(TeamMember).filter(TeamMember.role.like(f'%{role_name}%')).all()
+        members = session.query(TeamMember).filter(TeamMember.roles.like(f'%{role_name}%')).all()
         return members
 
     def get_member_by_name(self, member_name: str) -> Optional[TeamMember]:
-        assert re.match(r'[А-Яа-я ]+', member_name)
+        if not re.match(r"[А-Яа-я ]+", member_name):
+            logger.warning(f'get_member_by_name: weird member_name: {role_name}')
+            return None
         session = self.Session()
         members = session.query(TeamMember).filter(TeamMember.name.like(f'%{member_name}%')).all()
         if len(members) > 1:
