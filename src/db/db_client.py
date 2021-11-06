@@ -207,7 +207,7 @@ class DBClient(Singleton):
 
     def get_member_by_name(self, member_name: str) -> Optional[TeamMember]:
         if not re.match(r"[А-Яа-я ]+", member_name):
-            logger.warning(f'get_member_by_name: weird member_name: {role_name}')
+            logger.warning(f'get_member_by_name: weird member_name: {member_name}')
             return None
         session = self.Session()
         members = session.query(TeamMember).filter(TeamMember.name.like(f'%{member_name}%')).all()
