@@ -57,7 +57,7 @@ class RoleRedactor(Role):
     @staticmethod
     def fits(member: TeamMember) -> bool:
         return (
-            RoleActiveMember.fits(member) 
+            RoleActiveMember.fits(member)
             and member.manager.lower() == load('sheets__team__manager__redactor').lower()
         )
 
@@ -68,7 +68,7 @@ class RoleIllustrator(Role):
     @staticmethod
     def fits(member: TeamMember) -> bool:
         return (
-            RoleActiveMember.fits(member) 
+            RoleActiveMember.fits(member)
             and member.manager.lower() == load('sheets__team__manager__illustrator').lower()
         )
 
@@ -79,7 +79,7 @@ class RoleCommissioningEditor(Role):
     @staticmethod
     def fits(member: TeamMember) -> bool:
         return (
-            RoleActiveMember.fits(member) 
+            RoleActiveMember.fits(member)
             and member.manager.lower() == load('sheets__team__manager__editor').lower()
         )
 
@@ -90,7 +90,7 @@ class RoleDirector(Role):
     @staticmethod
     def fits(member: TeamMember) -> bool:
         return (
-            RoleActiveMember.fits(member) 
+            RoleActiveMember.fits(member)
             and member.manager.lower() == load('sheets__team__manager__director').lower()
         )
 
@@ -101,7 +101,7 @@ class RoleSoftwareEngineer(Role):
     @staticmethod
     def fits(member: TeamMember) -> bool:
         return (
-            RoleActiveMember.fits(member) 
+            RoleActiveMember.fits(member)
             and member.manager.lower() == load('sheets__team__manager__swe').lower()
         )
 
