@@ -100,40 +100,50 @@ class TeamMember(Base):
     id = Column(String, primary_key=True)
     name = Column(String)
     status = Column(String)
+    curator = Column(String)
+    manager = Column(String)
     telegram = Column(String)
     trello = Column(String)
+    roles = Column(String)
 
     def __repr__(self):
         return f'Team member {self.name} tg={self.telegram}'
 
     @classmethod
     def from_dict(cls, data):
-        curator = cls()
-        curator.id = _get_str_data_item(data, 'id')
-        curator.name = _get_str_data_item(data, 'name')
-        curator.status = _get_str_data_item(data, 'status')
-        curator.telegram = _get_str_data_item(data, 'telegram')
-        curator.trello = _get_str_data_item(data, 'trello')
-        return curator
+        member = cls()
+        member.id = _get_str_data_item(data, 'id')
+        member.name = _get_str_data_item(data, 'name')
+        member.status = _get_str_data_item(data, 'status')
+        member.curator = _get_str_data_item(data, 'curator')
+        member.manager = _get_str_data_item(data, 'manager')
+        member.telegram = _get_str_data_item(data, 'telegram')
+        member.trello = _get_str_data_item(data, 'trello')
+        return member
 
     def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
             'status': self.status,
+            'curator': self.curator,
+            'manager': self.manager,
             'telegram': self.telegram,
             'trello': self.trello,
+            'roles': self.roles,
         }
 
     @classmethod
     def from_sheetfu_item(cls, item):
-        curator = cls()
-        curator.id = item.get_field_value(load('sheets__team__id'))
-        curator.name = item.get_field_value(load('sheets__team__name'))
-        curator.status = item.get_field_value(load('sheets__team__status'))
-        curator.telegram = item.get_field_value(load('sheets__team__telegram'))
-        curator.trello = item.get_field_value(load('sheets__team__trello'))
-        return curator
+        member = cls()
+        member.id = item.get_field_value(load('sheets__team__id'))
+        member.name = item.get_field_value(load('sheets__team__name'))
+        member.status = item.get_field_value(load('sheets__team__status'))
+        member.curator = item.get_field_value(load('sheets__team__curator'))
+        member.manager = item.get_field_value(load('sheets__team__manager'))
+        member.telegram = item.get_field_value(load('sheets__team__telegram'))
+        member.trello = item.get_field_value(load('sheets__team__trello'))
+        return member
 
 
 def _get_str_data_item(data: dict, item_name: str) -> str:
