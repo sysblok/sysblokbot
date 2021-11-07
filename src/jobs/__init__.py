@@ -20,6 +20,7 @@ from .illustrative_report_old_job import IllustrativeReportOldJob
 from .postcards_report_job import PostcardsReportJob
 from .fill_posts_list_job import FillPostsListJob
 from .hr_acquisition_job import HRAcquisitionJob
+from .hr_check_chat_consistency_job import HRCheckChatConsistencyJob
 from .hr_status_job import HRStatusJob
 from .publication_plans_job import PublicationPlansJob
 from .sample_job import SampleJob

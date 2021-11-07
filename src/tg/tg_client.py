@@ -1,13 +1,13 @@
 import logging
-from typing import List, Iterable
 
 from datetime import datetime
+from typing import List
 
+from telethon import TelegramClient
+from telethon.tl.types import User
 from telethon.sessions import StringSession
 
-from ..consts import ReportPeriod
 from ..utils.singleton import Singleton
-from telethon import TelegramClient
 
 logger = logging.getLogger(__name__)
 
@@ -32,4 +32,12 @@ class TgClient(Singleton):
             self._tg_config['api_id'],
             self._tg_config['api_hash']
         )
+        self.sysblok_chats = self._tg_config['sysblok_chats']
         self.channel = self._tg_config['channel']
+
+    def get_chat_users(self, chat_id: str) -> List[User]:
+        with self.api_client:
+            users = self.api_client.loop.run_until_complete(
+                self.api_client.get_participants(chat_id)
+            )
+        return users

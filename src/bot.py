@@ -279,6 +279,12 @@ class SysBlokBot:
             handlers.get_members_for_role,
             'показать участников для роли'
         )
+        self.add_admin_handler(
+            'check_chat_consistency',
+            CommandCategories.HR,
+            self.admin_reply_handler('hr_check_chat_consistency_job'),
+            'консистентность чата редакции'
+        )
 
         # sample handler
         self.add_handler(

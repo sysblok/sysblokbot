@@ -1,3 +1,4 @@
+from enum import Enum
 import logging
 
 from src.db.db_objects import TeamMember
@@ -5,6 +6,18 @@ from src.strings import load
 
 
 logger = logging.getLogger(__name__)
+
+
+class Roles(Enum):
+    NEWBIE = 'newbie'
+    ACTIVE_MEMBER = 'active_member'
+    FROZEN_MEMBER = 'frozen_member'
+    AUTHOR = 'author'
+    REDACTOR = 'redactor'
+    ILLUSTRATOR = 'illustrator'
+    COMMISSIONING_EDITOR = 'commissioning_editor'
+    DIRECTOR = 'director'
+    SOFTWARE_ENGINEER = 'software_engineer'
 
 
 class Role:
@@ -20,7 +33,7 @@ class Role:
 
 
 class RoleNewbie(Role):
-    _name = 'newbie'
+    _name = Roles.NEWBIE
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
@@ -28,7 +41,7 @@ class RoleNewbie(Role):
 
 
 class RoleActiveMember(Role):
-    _name = 'active_member'
+    _name = Roles.ACTIVE_MEMBER
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
@@ -36,7 +49,7 @@ class RoleActiveMember(Role):
 
 
 class RoleFrozenMember(Role):
-    _name = 'frozen_member'
+    _name = Roles.FROZEN_MEMBER
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
@@ -44,7 +57,7 @@ class RoleFrozenMember(Role):
 
 
 class RoleAuthor(Role):
-    _name = 'author'
+    _name = Roles.AUTHOR
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
@@ -52,7 +65,7 @@ class RoleAuthor(Role):
 
 
 class RoleRedactor(Role):
-    _name = 'redactor'
+    _name = Roles.REDACTOR
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
@@ -63,7 +76,7 @@ class RoleRedactor(Role):
 
 
 class RoleIllustrator(Role):
-    _name = 'illustrator'
+    _name = Roles.ILLUSTRATOR
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
@@ -74,7 +87,7 @@ class RoleIllustrator(Role):
 
 
 class RoleCommissioningEditor(Role):
-    _name = 'commissioning_editor'
+    _name = Roles.COMMISSIONING_EDITOR
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
@@ -85,7 +98,7 @@ class RoleCommissioningEditor(Role):
 
 
 class RoleDirector(Role):
-    _name = 'director'
+    _name = Roles.DIRECTOR
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
@@ -96,7 +109,7 @@ class RoleDirector(Role):
 
 
 class RoleSoftwareEngineer(Role):
-    _name = 'software_engineer'
+    _name = Roles.SOFTWARE_ENGINEER
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
