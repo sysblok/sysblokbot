@@ -176,6 +176,12 @@ class SysBlokBot:
             self.manager_reply_handler('tg_analytics_report_job'),
             'получить статистику telegram канала за неделю'
         )
+        self.add_manager_handler(
+            'get_postcards_report',
+            CommandCategories.SUMMARY,
+            self.manager_reply_handler('postcards_report_job'),
+            'получить статистику по оцифровке открыток'
+        )
         # hidden from /help command for curator enrollment
         self.add_handler(
             'enroll_curator',
@@ -260,6 +266,18 @@ class SysBlokBot:
             CommandCategories.MOST_USED,
             handlers.manage_all_reminders,
             'настроить все напоминания'
+        )
+        self.add_admin_handler(
+            'get_roles_for_member',
+            CommandCategories.HR,
+            handlers.get_roles_for_member,
+            'показать роли для участника'
+        )
+        self.add_admin_handler(
+            'get_members_for_role',
+            CommandCategories.HR,
+            handlers.get_members_for_role,
+            'показать участников для роли'
         )
 
         # sample handler
