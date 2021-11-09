@@ -18,8 +18,7 @@ class HRCheckChatConsistencyJob(BaseJob):
     @staticmethod
     def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
         # get users that are in the main chat
-        chat_id = app_context.tg_client.sysblok_chats['main_chat']
-        chat_users = app_context.tg_client.get_chat_users(chat_id)
+        chat_users = app_context.tg_client.get_main_chat_users()
         # get users that _should_ be in the main chat <==> roles include Active or Frozen
         active_members = app_context.role_manager.get_members_for_role(Roles.ACTIVE_MEMBER.value)
         frozen_members = app_context.role_manager.get_members_for_role(Roles.FROZEN_MEMBER.value)

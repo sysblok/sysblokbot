@@ -35,9 +35,12 @@ class TgClient(Singleton):
         self.sysblok_chats = self._tg_config['sysblok_chats']
         self.channel = self._tg_config['channel']
 
-    def get_chat_users(self, chat_id: str) -> List[User]:
+    def _get_chat_users(self, chat_id: str) -> List[User]:
         with self.api_client:
             users = self.api_client.loop.run_until_complete(
                 self.api_client.get_participants(chat_id)
             )
         return users
+
+    def get_main_chat_users(self) -> List[User]:
+        return _get_chat_users(self.sysblok_chats['main_chat'])
