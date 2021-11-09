@@ -8,7 +8,7 @@ from src.strings import load
 logger = logging.getLogger(__name__)
 
 
-class Roles(Enum):
+class Roles(str, Enum):
     NEWBIE = 'newbie'
     ACTIVE_MEMBER = 'active_member'
     FROZEN_MEMBER = 'frozen_member'

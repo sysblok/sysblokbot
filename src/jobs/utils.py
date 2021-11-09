@@ -154,6 +154,7 @@ def paragraphs_to_messages(
             # Overflow, starting a new message
             messages.append(delimiter.join(message_paragraphs))
 
+            logger.error(f'{len(paragraph)}, {char_limit}')
             assert len(paragraph) < char_limit  # should not fire
             message_paragraphs = [paragraph]
             char_counter = len(paragraph)

@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 class HRCheckChatConsistencyJob(BaseJob):
     @staticmethod
     def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
+        # app_context.db_client.fetch_team_sheet(app_context.sheets_client)
         # get users that are in the main chat
         chat_id = app_context.tg_client.sysblok_chats['main_chat']
         chat_users = app_context.tg_client.get_chat_users(chat_id)
@@ -26,18 +27,22 @@ class HRCheckChatConsistencyJob(BaseJob):
         chat_users_allowed = active_members + frozen_members
 
         unwanted_team_members = [
-            f'{user.first_name} {user.last_name}' for user in chat_users
-            if f'@{user.username}' not in [user.telegram for user in chat_users_allowed]
+            f'{user.first_name} {user.last_name} @{user.username}' for user in chat_users
+            if not user.username or f'@{user.username.strip().lower()}' not in [user.telegram.strip().lower() for user in chat_users_allowed if user.telegram]
         ]
         missing_team_members = [
-            user.name for user in chat_users_allowed
-            if user.telegram not in [f'@{user.username}' for user in chat_users]
+            f'{user.name} {user.telegram}' for user in active_members
+            if not user.telegram or user.telegram.strip().lower() not in [f'@{user.username.strip().lower()}' for user in chat_users if user.username]
         ]
         paragraphs = [
+            load('hr_check_chat_consistency__message'),
             load(
-                'hr_check_chat_consistency__message',
-                missing_team_members=missing_team_members,
-                unwanted_team_members=unwanted_team_members
+                'hr_check_chat_consistency__missing',
+                missing_team_members='\n'.join(missing_team_members),
+            ),
+            load(
+                'hr_check_chat_consistency__unwanted', 
+                unwanted_team_members='\n'.join(unwanted_team_members)
             )
         ]
         pretty_send(paragraphs, send)
