@@ -27,7 +27,7 @@ class HRCheckChatConsistencyJob(BaseJob):
 
         unwanted_team_members = [
             f'{user.first_name} {user.last_name} @{user.username}' for user in chat_users
-            if not user.username or f'@{user.username.strip().lower()}' not in 
+            if not user.username or f'@{user.username.strip().lower()}' not in [
                 user.telegram.strip().lower() for user in chat_users_allowed if user.telegram
             ]
         ]
@@ -44,7 +44,7 @@ class HRCheckChatConsistencyJob(BaseJob):
                 missing_team_members='\n'.join(missing_team_members),
             ),
             load(
-                'hr_check_chat_consistency__unwanted', 
+                'hr_check_chat_consistency__unwanted',
                 unwanted_team_members='\n'.join(unwanted_team_members)
             )
         ]
