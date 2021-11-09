@@ -76,10 +76,6 @@ def handle_user_message(
     elif next_action == PlainTextUserAction.GET_TASKS_REPORT__ENTER_BOARD_NUMBER:
         trello_client = TrelloClient()
         try:
-            #dublicate request - пока я не поняла, как сохранять контекст
-            #board_list = trello_client.get_boards_for_user()
-            #board_list_prep = [lst.to_dict() for lst in board_list]
-
             board_list = tg_context.chat_data[consts.GetTasksReportData.LISTS]
             list_idx = int(user_input) - 1
             assert 0 <= list_idx < len(board_list)
@@ -87,7 +83,7 @@ def handle_user_message(
             trello_lists = trello_client.get_lists(board_id)
         except Exception as e:
             logger.warning(e)
-            reply(load('get_tasks_report_handler__try_again'), update)
+            reply(load('get_tasks_report_handler__enter_the_number', max_val=len(board_list)), update)
             return
 
         command_data[consts.GetTasksReportData.BOARD_ID] = board_id
@@ -110,7 +106,7 @@ def handle_user_message(
             list_id = trello_lists[list_idx]['id']
         except Exception as e:
             logger.warning(e)
-            reply(load('get_tasks_report_handler__try_again'), update)
+            reply(load('get_tasks_report_handler__enter_the_number', max_val=len(trello_lists)), update)
             return
         command_data[consts.GetTasksReportData.LIST_ID] = list_id
 

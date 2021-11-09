@@ -36,11 +36,6 @@ def get_tasks_report(update: telegram.Update, tg_context: telegram.ext.CallbackC
         update
     )
 
-    # tg_context.chat_data[consts.LAST_ACTIONABLE_COMMAND] = TASK_NAME
-    # tg_context.chat_data[TASK_NAME] = {
-    #    consts.NEXT_ACTION: consts.PlainTextUserAction.GET_TASKS_REPORT__ENTER_BOARD_URL.value
-    # }
-    # reply(load('get_tasks_report_handler__intro'), update)
     return
 
 

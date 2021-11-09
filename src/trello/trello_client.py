@@ -47,10 +47,11 @@ class TrelloClient(Singleton):
 
     def get_boards_for_user(self, user_id=None):
         _, data = self._make_request(f'members/me/boards')
-        lists = [
+        boards = [
             objects.TrelloBoard.from_dict(label) for label in data
         ]
-        return lists
+        logger.debug(f'get_boards_for_user: {boards}')
+        return boards
 
     def get_lists(self, board_id=None):
         _, data = self._make_request(f'boards/{board_id or self.board_id}/lists')
