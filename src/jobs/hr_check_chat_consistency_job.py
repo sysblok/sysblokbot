@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 class HRCheckChatConsistencyJob(BaseJob):
     @staticmethod
     def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
-        # app_context.db_client.fetch_team_sheet(app_context.sheets_client)
         # get users that are in the main chat
         chat_id = app_context.tg_client.sysblok_chats['main_chat']
         chat_users = app_context.tg_client.get_chat_users(chat_id)
@@ -28,11 +27,15 @@ class HRCheckChatConsistencyJob(BaseJob):
 
         unwanted_team_members = [
             f'{user.first_name} {user.last_name} @{user.username}' for user in chat_users
-            if not user.username or f'@{user.username.strip().lower()}' not in [user.telegram.strip().lower() for user in chat_users_allowed if user.telegram]
+            if not user.username or f'@{user.username.strip().lower()}' not in 
+                user.telegram.strip().lower() for user in chat_users_allowed if user.telegram
+            ]
         ]
         missing_team_members = [
             f'{user.name} {user.telegram}' for user in active_members
-            if not user.telegram or user.telegram.strip().lower() not in [f'@{user.username.strip().lower()}' for user in chat_users if user.username]
+            if not user.telegram or user.telegram.strip().lower() not in [
+                f'@{user.username.strip().lower()}' for user in chat_users if user.username
+            ]
         ]
         paragraphs = [
             load('hr_check_chat_consistency__message'),
