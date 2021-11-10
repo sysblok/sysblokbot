@@ -43,4 +43,4 @@ class TgClient(Singleton):
         return users
 
     def get_main_chat_users(self) -> List[User]:
-        return _get_chat_users(self.sysblok_chats['main_chat'])
+        return self._get_chat_users(self.sysblok_chats['main_chat'])
