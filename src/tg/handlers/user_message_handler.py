@@ -83,7 +83,10 @@ def handle_user_message(
             trello_lists = trello_client.get_lists(board_id)
         except Exception as e:
             logger.warning(e)
-            reply(load('get_tasks_report_handler__enter_the_number', max_val=len(board_list)), update)
+            reply(
+                load('get_tasks_report_handler__enter_the_number', max_val=len(board_list)),
+                update
+            )
             return
 
         command_data[consts.GetTasksReportData.BOARD_ID] = board_id
@@ -106,7 +109,10 @@ def handle_user_message(
             list_id = trello_lists[list_idx]['id']
         except Exception as e:
             logger.warning(e)
-            reply(load('get_tasks_report_handler__enter_the_number', max_val=len(trello_lists)), update)
+            reply(
+                load('get_tasks_report_handler__enter_the_number', max_val=len(trello_lists)),
+                update
+            )
             return
         command_data[consts.GetTasksReportData.LIST_ID] = list_id
 
