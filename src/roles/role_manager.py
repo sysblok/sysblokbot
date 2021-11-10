@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+from typing import List
 
 from .roles import all_roles, Role
 
@@ -25,15 +26,12 @@ class RoleManager(Singleton):
             member_roles[member.id] = roles
         self.db_client.fill_team_roles(member_roles)
 
-    def get_roles_for_member(self, member_name: str) -> str:
+    def get_roles_for_member(self, member_name: str) -> List[str]:
         member = self.db_client.get_member_by_name(member_name)
         if not member:
             return 'Member not found'
         # i have doubts about eval here
-        return ', '.join(json.loads(member.roles))
+        return json.loads(member.roles)
 
-    def get_members_for_role(self, role_name: str) -> str:
-        members = self.db_client.get_members_for_role(role_name)
-        if not members:
-            return 'Role not found'
-        return '\n'.join([member.name for member in members])
+    def get_members_for_role(self, role_name: str) -> List[TeamMember]:
+        return self.db_client.get_members_for_role(role_name)

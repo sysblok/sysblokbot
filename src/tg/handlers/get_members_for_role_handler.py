@@ -12,4 +12,8 @@ def get_members_for_role(update, tg_context):
     app_context = AppContext()
     # a hacky way of stripping the cmd from text
     role_name = ' '.join(update.message.text.strip().split(' ')[1:])
-    reply(RoleManager(app_context.db_client).get_members_for_role(role_name), update)
+    members = RoleManager(app_context.db_client).get_members_for_role(role_name)
+    if not members:
+        reply('Role not found', update)
+    else:
+        reply('\n'.join([member.name for member in members]), update)
