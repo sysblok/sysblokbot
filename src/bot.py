@@ -335,7 +335,7 @@ class SysBlokBot:
             'shrug',
             CommandCategories.MOST_USED,
             self.admin_reply_handler('shrug_job'),
-            '¯\_(ツ)_/¯'
+            '¯\\_(ツ)_/¯'
         )
 
         # on non-command user message
