@@ -331,6 +331,12 @@ class SysBlokBot:
             lambda update, context: handlers.help(update, context, self.handlers_info),
             'получить список доступных команд'
         )
+        self.add_admin_handler(
+            'shrug',
+            CommandCategories.MOST_USED,
+            self.admin_reply_handler('shrug_job'),
+            '¯\_(ツ)_/¯'
+        )
 
         # on non-command user message
         self.dp.add_handler(MessageHandler(
