@@ -73,6 +73,34 @@ def handle_user_message(
         )
         set_next_action(command_data, PlainTextUserAction.GET_TASKS_REPORT__ENTER_LIST_NUMBER)
         return
+    elif next_action == PlainTextUserAction.GET_TASKS_REPORT__ENTER_BOARD_NUMBER:
+        trello_client = TrelloClient()
+        try:
+            board_list = tg_context.chat_data[consts.GetTasksReportData.LISTS]
+            list_idx = int(user_input) - 1
+            assert 0 <= list_idx < len(board_list)
+            board_id = board_list[list_idx]['id']
+            trello_lists = trello_client.get_lists(board_id)
+        except Exception as e:
+            logger.warning(e)
+            reply(
+                load('get_tasks_report_handler__enter_the_number', max_val=len(board_list)),
+                update
+            )
+            return
+
+        command_data[consts.GetTasksReportData.BOARD_ID] = board_id
+        command_data[consts.GetTasksReportData.LISTS] = [lst.to_dict() for lst in trello_lists]
+
+        trello_lists_formatted = '\n'.join(
+            [f'{i + 1}) {lst.name}' for i, lst in enumerate(trello_lists)]
+        )
+        reply(
+            load('get_tasks_report_handler__choose_trello_list', lists=trello_lists_formatted),
+            update
+        )
+        set_next_action(command_data, PlainTextUserAction.GET_TASKS_REPORT__ENTER_LIST_NUMBER)
+        return
     elif next_action == PlainTextUserAction.GET_TASKS_REPORT__ENTER_LIST_NUMBER:
         try:
             trello_lists = command_data.get(consts.GetTasksReportData.LISTS, [])
@@ -81,7 +109,10 @@ def handle_user_message(
             list_id = trello_lists[list_idx]['id']
         except Exception as e:
             logger.warning(e)
-            reply(load('get_tasks_report_handler__try_again'), update)
+            reply(
+                load('get_tasks_report_handler__enter_the_number', max_val=len(trello_lists)),
+                update
+            )
             return
         command_data[consts.GetTasksReportData.LIST_ID] = list_id
 
