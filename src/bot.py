@@ -285,6 +285,12 @@ class SysBlokBot:
             self.admin_reply_handler('hr_check_chat_consistency_job'),
             'консистентность чата редакции'
         )
+        self.add_admin_handler(
+            'check_trello_consistency',
+            CommandCategories.HR,
+            self.admin_reply_handler('hr_check_trello_consistency_job'),
+            'консистентность Трелло редакции'
+        )
 
         # sample handler
         self.add_handler(
