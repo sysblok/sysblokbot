@@ -42,6 +42,7 @@ STRINGS_DB_CONFIG = 'strings'
 EVERY = 'every'
 AT = 'at'
 SEND_TO = 'send_to'
+KWARGS = 'kwargs'
 
 # Telegram keys
 TELEGRAM_MANAGER_IDS = 'manager_chat_ids'

@@ -177,10 +177,10 @@ class SysBlokBot:
             'получить статистику telegram канала за неделю'
         )
         self.add_manager_handler(
-            'get_postcards_report',
+            'get_sheet_report',
             CommandCategories.SUMMARY,
-            self.manager_reply_handler('postcards_report_job'),
-            'получить статистику по оцифровке открыток'
+            self.manager_reply_handler('sheet_report_job'),
+            'получить статистику по табличкам (например, оцифровка открыток)'
         )
         # hidden from /help command for curator enrollment
         self.add_handler(
