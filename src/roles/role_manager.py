@@ -31,4 +31,4 @@ class RoleManager(Singleton):
         return self.db_client.get_member_by_name(member_name)
 
     def get_members_for_role(self, role_name: Roles) -> List[TeamMember]:
-        return self.db_client.get_members_for_role(role_name.value)
+        return self.db_client.get_members_for_role(role_name)
