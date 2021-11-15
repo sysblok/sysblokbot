@@ -279,6 +279,18 @@ class SysBlokBot:
             handlers.get_members_for_role,
             'показать участников для роли'
         )
+        self.add_admin_handler(
+            'check_chat_consistency',
+            CommandCategories.HR,
+            self.admin_reply_handler('hr_check_chat_consistency_job'),
+            'консистентность чата редакции'
+        )
+        self.add_admin_handler(
+            'check_trello_consistency',
+            CommandCategories.HR,
+            self.admin_reply_handler('hr_check_trello_consistency_job'),
+            'консистентность Трелло редакции'
+        )
 
         # sample handler
         self.add_handler(
@@ -324,6 +336,12 @@ class SysBlokBot:
             CommandCategories.MOST_USED,
             lambda update, context: handlers.help(update, context, self.handlers_info),
             'получить список доступных команд'
+        )
+        self.add_admin_handler(
+            'shrug',
+            CommandCategories.MOST_USED,
+            self.admin_reply_handler('shrug_job'),
+            '¯\\_(ツ)_/¯'
         )
 
         # on non-command user message

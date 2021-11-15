@@ -56,7 +56,7 @@ class GoogleSheetsClient(Singleton):
         return self._fetch_table(self.hr_sheet_key, 'Анкеты')
 
     def fetch_hr_team(self) -> Table:
-        return self._fetch_table(self.hr_sheet_key, 'Команда')
+        return self._fetch_table(self.hr_sheet_key, 'Команда (с заморозкой)')
 
     def fetch_posts_registry(self) -> Table:
         return self._fetch_table(self.post_registry_sheet_key)
