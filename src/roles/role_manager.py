@@ -3,7 +3,7 @@ import json
 import logging
 from typing import List, Optional
 
-from .roles import all_roles, Role
+from .roles import all_roles, Role, Roles
 
 from src.db.db_client import DBClient
 from src.db.db_objects import TeamMember
@@ -30,5 +30,5 @@ class RoleManager(Singleton):
     def get_member(self, member_name: str) -> Optional[TeamMember]:
         return self.db_client.get_member_by_name(member_name)
 
-    def get_members_for_role(self, role_name: str) -> List[TeamMember]:
-        return self.db_client.get_members_for_role(role_name)
+    def get_members_for_role(self, role_name: Roles) -> List[TeamMember]:
+        return self.db_client.get_members_for_role(role_name.value)
