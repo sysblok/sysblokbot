@@ -12,14 +12,14 @@ from .utils import pretty_send
 logger = logging.getLogger(__name__)
 
 
-"""
-kwargs has to be set in job config.
-kwargs required: spreadsheet_key, template_string
-kwargs optional:
-  - sheet_name (required if it's not the first tab)
-  - name (for readability and logs)
-"""
 class SheetReportJob(BaseJob):
+    """
+    kwargs has to be set in job config.
+    kwargs required: spreadsheet_key, template_string
+    kwargs optional:
+      - sheet_name (required if it's not the first tab)
+      - name (for readability and logs)
+    """
     @staticmethod
     def _execute(
             app_context: AppContext,

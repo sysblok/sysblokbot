@@ -40,7 +40,7 @@ class BaseJob:
             send: Callable[[str], None],
             called_from_handler=False,
             **kwargs
-        ):
+    ):
         """
         Must be overridden.
         """
