@@ -1,0 +1,132 @@
+name: Lobanov production
+
+on:
+  push:
+    # Publish `master` as Docker `prod` image.
+    branches:
+      - master
+
+    # Publish `v1.2.3` tags as releases.
+    tags:
+      - v*
+
+env:
+  IMAGE_NAME: lobanovbot
+
+jobs:
+  # Push image to GitHub Packages.
+  # See also https://docs.docker.com/docker-hub/builds/
+  push:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: master
+
+      - name: Generate build args
+        id: args
+        run: |
+          echo "::set-output name=commit_hash::$(git rev-parse HEAD)"
+          echo "::set-output name=commit_hash_short::$(git rev-parse --short HEAD)"
+
+      - name: Publish to Github Packages Registry with cache
+        uses: whoan/docker-build-with-cache-action@v5
+        env:
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          COMMIT_HASH: "${{ steps.args.outputs.commit_hash }}"
+          COMMIT_HASH_SHORT: "${{ steps.args.outputs.commit_hash_short }}"
+        with:
+          image_name: ${{ github.repository }}/${{ env.IMAGE_NAME }}
+          registry: docker.pkg.github.com
+          username: sysblok
+          password: ${{ secrets.GITHUB_TOKEN }}
+          dockerfile: Dockerfile
+          image_tag: "prod,latest"
+          build_extra_args: "--build-arg=COMMIT_HASH --build-arg=COMMIT_HASH_SHORT"
+
+      - name: Notify us about failure
+        if: ${{ failure() }}
+        env:
+          TELEGRAM_PROD_TOKEN: ${{ secrets.TELEGRAM_LOBANOV_TOKEN }}
+          TELEGRAM_LOBANOV_LOG_CHAT_ID: ${{ secrets.TELEGRAM_LOBANOV_LOG_CHAT_ID }}
+        run: |
+          curl -X POST \
+            -H 'Content-Type: application/json' \
+            -d '{"parse_mode": "markdown", "chat_id": ${{ env.TELEGRAM_LOBANOV_LOG_CHAT_ID }}, "text": "[github CI] build [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})"}' \
+            https://api.telegram.org/bot${{env.TELEGRAM_LOBANOV_TOKEN}}/sendMessage
+
+      - name: Deploy package to digitalocean
+        uses: appleboy/ssh-action@master
+        env:
+          GITHUB_USERNAME: sysblok
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          ROOT_DIR: /home/${{ secrets.MASTER_DO_USER }}/lobanov
+        with:
+          host: ${{ secrets.MASTER_HOST }}
+          username: ${{ secrets.MASTER_DO_USER }}
+          passphrase: ${{ secrets.MASTER_DO_SSH_KEY_PASSWORD }}
+          key: ${{ secrets.MASTER_DO_SSH_KEY }}
+          port: ${{ secrets.MASTER_PORT }}
+          envs: GITHUB_USERNAME, GITHUB_TOKEN, IMAGE_NAME, ROOT_DIR
+          script: |
+            export CONTAINER_ID=$(docker ps -aq --filter name=lobanov)
+            export IMAGE_ID=$(docker images -aq --filter reference='docker.pkg.github.com/sysblok/sysblokbot/lobanov:prod')
+            docker stop --time=30 $CONTAINER_ID
+            docker rm $CONTAINER_ID
+            docker rmi $IMAGE_ID
+            docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
+            touch ${{ env.ROOT_DIR }}/sysblokbot.sqlite
+            touch ${{ env.ROOT_DIR }}/strings.sqlite
+            docker run -dit --name lobanov \
+              --env APP_SOURCE="github CI" \
+              -v ${{ env.ROOT_DIR }}/config_override.json:/app/config_override.json \
+              -v ${{ env.ROOT_DIR }}/config_gs.json:/app/config_gs.json \
+              -v ${{ env.ROOT_DIR }}/sysblokbot.sqlite:/app/sysblokbot.sqlite \
+              -v ${{ env.ROOT_DIR }}/strings.sqlite:/app/strings.sqlite \
+              -v ${{ env.ROOT_DIR }}/persistent_storage.pickle:/app/persistent_storage.pickle \
+              docker.pkg.github.com/sysblok/sysblokbot/${{ env.IMAGE_NAME }}:prod
+
+      - name: Notify us about failure
+        if: ${{ failure() }}
+        env:
+          TELEGRAM_PROD_TOKEN: ${{ secrets.TELEGRAM_LOBANOV_TOKEN }}
+          TELEGRAM_LOBANOV_LOG_CHAT_ID: ${{ secrets.TELEGRAM_LOBANOV_LOG_CHAT_ID }}
+        run: |
+          curl -X POST \
+            -H 'Content-Type: application/json' \
+            -d '{"parse_mode": "markdown", "chat_id": ${{ env.TELEGRAM_LOBANOV_LOG_CHAT_ID }}, "text": "[github CI] deploy [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})"}' \
+            https://api.telegram.org/bot${{env.TELEGRAM_LOBANOV_TOKEN}}/sendMessage
+
+      - name: Sleep for 30 seconds
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '30s'
+
+      - name: Check it has started properly
+        uses: appleboy/ssh-action@master
+        env:
+          TELEGRAM_PROD_TOKEN: ${{ secrets.TELEGRAM_LOBANOV_TOKEN }}
+          TELEGRAM_LOBANOV_LOG_CHAT_ID: ${{ secrets.TELEGRAM_LOBANOV_LOG_CHAT_ID }}
+        with:
+          host: ${{ secrets.MASTER_HOST }}
+          username: ${{ secrets.MASTER_DO_USER }}
+          passphrase: ${{ secrets.MASTER_DO_SSH_KEY_PASSWORD }}
+          key: ${{ secrets.MASTER_DO_SSH_KEY }}
+          port: ${{ secrets.MASTER_PORT }}
+          envs: TELEGRAM_PROD_TOKEN, TELEGRAM_LOBANOV_LOG_CHAT_ID
+          script: |
+            export CONTAINER_ID=$(docker ps -aq --filter name=lobanov)
+            export IS_RUNNING=$(docker container inspect -f '{{.State.Running}}' $CONTAINER_ID)
+            if [ $IS_RUNNING == "false" ]; then
+              export DOCKER_LOGS=$(docker logs $CONTAINER_ID)
+              curl -X POST \
+                -H 'Content-Type: application/json' \
+                -d '{"parse_mode": "markdown", "chat_id": ${{ env.TELEGRAM_LOBANOV_LOG_CHAT_ID }}, "text": "[github CI] deploy was ok but the bot [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})."}' \
+                https://api.telegram.org/bot${{env.TELEGRAM_PROD_TOKEN}}/sendMessage
+              curl -X POST -H 'Content-Type: application/json' \
+                -d '{"parse_mode": "markdown", "chat_id": ${{ env.TELEGRAM_LOBANOV_LOG_CHAT_ID }},  "text": "'"$(printf \'%q\n\' $DOCKER_LOGS)"'"}' \
+                https://api.telegram.org/bot${{env.TELEGRAM_PROD_TOKEN}}/sendMessage
+            fi

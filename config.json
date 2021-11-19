@@ -2,29 +2,58 @@
     "telegram": {
         "token": "do_not_set_here_please_go_to_config_override",
         "is_silent": false,
-        "disable_web_page_preview": false,
+        "disable_web_page_preview": true,
         "admin_chat_ids": [],
         "manager_chat_ids": [],
+        "sysblok_chats": {
+            "main_chat": -1
+        },
         "important_events_recipients": [],
-        "error_logs_recipients": []
+        "error_logs_recipients": [],
+        "usage_logs_recipients": []
     },
     "trello": {
         "api_key": "do_not_set_here_please_go_to_config_override",
         "token": "do_not_set_here_please_go_to_config_override",
-        "board_id": "5e91d48a9e9d947b95fb0df7"
+        "board_id": "do_not_set_here_please_go_to_config_override"
     },
     "sheets": {
         "api_key_path": "do_not_set_here_please_go_to_config_override",
         "authors_sheet_key": "do_not_set_here_please_go_to_config_override",
         "curators_sheet_key": "do_not_set_here_please_go_to_config_override",
+        "hr_sheet_key": "do_not_set_here_please_go_to_config_override",
         "post_registry_sheet_key": "do_not_set_here_please_go_to_config_override",
-        "rubrics_registry_sheet_key": "do_not_set_here_please_go_to_config_override"
+        "postcards_sheet_key": "do_not_set_here_please_go_to_config_override",
+        "rubrics_registry_sheet_key": "do_not_set_here_please_go_to_config_override",
+        "strings_sheet_key": "do_not_set_here_please_go_to_config_override"
+    },
+    "drive": {
+        "api_key_path": "do_not_set_here_please_go_to_config_override",
+        "illustrations_folder_key": "do_not_set_here_please_go_to_config_override"
+    },
+    "facebook": {
+        "token": "do_not_set_here_please_go_to_config_override",
+        "page_id": "do_not_set_here_please_go_to_config_override"
+    },
+    "vk": {
+        "group_admin_token": "do_not_set_here_please_go_to_config_override",
+        "group_alias": "sysblok"
     },
     "jobs": {
         "sample_job": {
             "every": "wednesday",
             "at": "10:00",
             "send_to": []
+        },
+        "send_reminders_job": {
+            "every": "minute",
+            "send_to": []
         }
+    },
+    "db": {
+        "uri": "sqlite:///sysblokbot.sqlite"
+    },
+    "strings": {
+        "uri": "sqlite:///strings.sqlite"
     }
 }

@@ -57,7 +57,7 @@ class TelegramSender(Singleton):
         for chat_id in chat_ids:
             self.send_to_chat_id(message_text, chat_id)
 
-    def send_to_chat_id(self, message_text: str, chat_id: int):
+    def send_to_chat_id(self, message_text: str, chat_id: int, **kwargs) -> bool:
         """
         Sends a message to a single chat_id.
         """
@@ -67,13 +67,19 @@ class TelegramSender(Singleton):
                 chat_id=chat_id,
                 disable_notification=self.is_silent,
                 disable_web_page_preview=self.disable_web_page_preview,
-                parse_mode=telegram.ParseMode.HTML
+                parse_mode=telegram.ParseMode.HTML,
+                **kwargs
             )
+            return True
         except telegram.TelegramError as e:
-            logger.error(f'Could not send a message: {e}')
+            logger.error(f'Could not send a message to {chat_id}: {e}')
+        return False
 
     def send_error_log(self, error_log: str):
         self.send_to_chat_ids(error_log, self.error_logs_recipients)
+
+    def send_usage_log(self, usage_log: str):
+        self.send_to_chat_ids(usage_log, self.usage_logs_recipients)
 
     def send_important_event(self, event_text: str):
         logger.info(f'Sending important event: "{event_text}"')
@@ -94,6 +100,9 @@ class TelegramSender(Singleton):
         )
         self.error_logs_recipients = self._tg_config.get(
             'error_logs_recipients'
+        )
+        self.usage_logs_recipients = self._tg_config.get(
+            'usage_logs_recipients'
         )
         self.is_silent = self._tg_config.get('is_silent', True)
         self.disable_web_page_preview = self._tg_config.get('disable_web_page_preview', True)

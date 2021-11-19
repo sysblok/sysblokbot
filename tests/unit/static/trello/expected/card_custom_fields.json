@@ -1,0 +1,17 @@
+[
+    {
+      "id": "field_0",
+      "value": {"text": "Илья Булгаков"},
+      "idCustomField": "type_0"
+    },
+    {
+      "id": "field_1",
+      "value": {"text": "https://docs.google.com/document/d/DOC1"},
+      "idCustomField": "type_1"
+    },
+    {
+      "id": "field_2",
+      "value": {"text": "Полина Матавина"},
+      "idCustomField": "type_2"
+    }
+]

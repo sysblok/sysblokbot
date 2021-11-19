@@ -1,0 +1,10 @@
+[
+    {
+        "id": "sample_job__string",
+        "value": "I am a job and I'm {status}"
+    },
+    {
+        "id": "sample_job__expected_response",
+        "value": "I am a job and I'm done"
+    }
+]

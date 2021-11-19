@@ -1,0 +1,16 @@
+[
+    {
+        "name": "Флоран Мот",
+        "curator": "Сальери",
+        "status": "в команде",
+        "telegram": "@flo",
+        "trello": "@florentMothe"
+    },
+    {
+        "name": "Мерван Рим",
+        "curator": "Сальери",
+        "status": "испытательный",
+        "telegram": "@rim",
+        "trello": "@merwanrim"
+    }
+]
