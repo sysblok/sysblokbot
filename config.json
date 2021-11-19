@@ -43,7 +43,8 @@
         "sample_job": {
             "every": "wednesday",
             "at": "10:00",
-            "send_to": []
+            "send_to": [],
+            "kwargs": {}
         },
         "send_reminders_job": {
             "every": "minute",

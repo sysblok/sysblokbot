@@ -9,7 +9,7 @@ import telegram
 
 from .app_context import AppContext
 from .config_manager import ConfigManager
-from .consts import CONFIG_RELOAD_MINUTES, EVERY, AT, SEND_TO
+from .consts import CONFIG_RELOAD_MINUTES, EVERY, AT, SEND_TO, KWARGS
 from .jobs.utils import get_job_runnable
 from .tg.sender import TelegramSender
 from .utils.singleton import Singleton
@@ -82,7 +82,8 @@ class JobScheduler(Singleton):
                         get_job_runnable(job_id),
                         app_context=self.app_context,
                         send=self.telegram_sender.create_chat_ids_send(
-                            schedule_dict.get(SEND_TO, []))
+                            schedule_dict.get(SEND_TO, [])),
+                        kwargs=schedule_dict.get(KWARGS)
                     ).tag(CUSTOM_JOB_TAG)
                 except Exception as e:
                     logger.error(
