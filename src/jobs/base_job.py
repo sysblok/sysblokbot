@@ -13,7 +13,8 @@ class BaseJob:
             cls,
             app_context: AppContext,
             send: Callable[[str], None] = lambda msg: None,
-            called_from_handler=False
+            called_from_handler=False,
+            kwargs=None
     ):
         """
         Not intended to be overridden.
@@ -27,14 +28,19 @@ class BaseJob:
 
         try:
             logging_func(f'Job {module} started...')
-            cls._execute(app_context, send, called_from_handler)
+            cls._execute(app_context, send, called_from_handler, **kwargs if kwargs else {})
             logging_func(f'Job {module} finished')
         except Exception as e:
             # should not raise exception, so that schedule module won't go mad retrying
             logging.exception(f'Could not run job {module}', exc_info=e)
 
     @staticmethod
-    def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
+    def _execute(
+            app_context: AppContext,
+            send: Callable[[str], None],
+            called_from_handler=False,
+            **kwargs
+    ):
         """
         Must be overridden.
         """

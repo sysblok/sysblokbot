@@ -115,7 +115,7 @@ class ConfigManager(Singleton):
 
     def _load_config(self, config_path: str) -> dict:
         try:
-            with open(config_path) as fin:
+            with open(config_path, encoding="utf-8") as fin:
                 try:
                     return json.loads(fin.read())
                 except json.JSONDecodeError as e:
