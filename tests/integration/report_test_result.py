@@ -20,7 +20,7 @@ async def report_test_result(passed: bool, failed_tests: str = ''):
     await client.get_me()
 
     async with client.conversation(telegram_chat_id, timeout=30) as conv:
-        if False and passed:
+        if passed:
             message = 'Протестировано, ок на выкладку.'
         else:
             failed_cmds = '\n'.join(
