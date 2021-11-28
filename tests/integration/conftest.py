@@ -4,15 +4,18 @@ import os
 from telethon import TelegramClient
 from telethon.sessions import StringSession
 
-# Your API ID, hash and session string here
-with open('config_override.json') as config_override:
-    print(json.load(config_override))
-    config = json.load(config_override)['telegram']
-    api_id = int(config['api_id'])
-    api_hash = config['api_hash']
-    api_session = config["api_session"]
-    telegram_chat_id = int(config["error_logs_recipients"][0])
-    telegram_bot_name = config.get("handle", '')
+if os.path.exists('config_override.json'):
+    with open('config_override.json') as config_override:
+        config = json.load(config_override)['telegram']
+else:
+    config = json.loads(os.environ['CONFIG_OVERRIDE'])['telegram']
+
+print(config)
+api_id = int(config['api_id'])
+api_hash = config['api_hash']
+api_session = config["api_session"]
+telegram_chat_id = int(config["error_logs_recipients"][0])
+telegram_bot_name = config.get("handle", '')
 
 
 @pytest.fixture

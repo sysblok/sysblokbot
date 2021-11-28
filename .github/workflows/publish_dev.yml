@@ -160,11 +160,10 @@ jobs:
       - name: Integration tests
         uses: fylein/python-pytest-github-action@v2
         env:
-          CONFIG_OVERRIDE_TESTING: ${{ secrets.CONFIG_OVERRIDE_TESTING }}
+          CONFIG_OVERRIDE: ${{ secrets.CONFIG_OVERRIDE_TESTING }}
         with:
           args: |
             apt-get update && apt-get install -y git && \
             pip3 install -e . && pip3 install -r requirements.txt && \
-            echo ${{ env.CONFIG_OVERRIDE_TESTING }} >> config_override.json \
             pytest tests/integration -q | grep 'FAILED' | sed -e 's/.*\[\(.*\)-.*/\1/' | tee errors.txt && \
             python tests/integration/report_test_result.py errors.txt
