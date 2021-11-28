@@ -1,25 +1,19 @@
 import datetime
 import inspect
 import logging
-import time
 from collections import defaultdict
-from typing import Callable, List
-
-import telegram
+from typing import List
 
 from .. import jobs
 from ..app_context import AppContext
 from ..consts import TrelloCardColor, TrelloCardFieldErrorAlias
 from ..db.db_client import DBClient
-from ..db.db_objects import Curator, TrelloAnalytics
+from ..db.db_objects import Curator
 from ..drive.drive_client import GoogleDriveClient
 from ..strings import load
 from ..trello.trello_objects import TrelloMember
 
 logger = logging.getLogger(__name__)
-
-# Delay to ensure messages come in right order.
-MESSAGE_DELAY_SEC = 0.1
 
 
 def retrieve_username(
@@ -111,57 +105,6 @@ def _make_curator_string(curator: Curator):
             return f'{curator.name} ({curator.telegram})', curator.telegram
         return curator.name, None
     return curator.telegram, curator.telegram
-
-
-def pretty_send(
-        paragraphs: List[str],
-        send: Callable[[str], None]
-) -> str:
-    '''
-    Send a bunch of paragraphs grouped into messages with adequate delays.
-    Return the whole message for testing purposes.
-    '''
-    messages = paragraphs_to_messages(paragraphs)
-    for i, message in enumerate(messages):
-        if i > 0:
-            time.sleep(MESSAGE_DELAY_SEC)
-        send(message)
-    return '\n'.join(messages)
-
-
-def paragraphs_to_messages(
-        paragraphs: List[str],
-        char_limit=telegram.constants.MAX_MESSAGE_LENGTH,
-        delimiter='\n\n',
-) -> List[str]:
-    '''
-    Makes as few message texts as possible from given paragraph list.
-    '''
-    if not paragraphs:
-        logger.warning('No paragraphs to process, exiting')
-        return []
-
-    delimiter_len = len(delimiter)
-    messages = []
-    message_paragraphs = []
-    char_counter = char_limit  # so that we start a new message immediately
-
-    for paragraph in paragraphs:
-        if len(paragraph) + char_counter + delimiter_len < char_limit:
-            message_paragraphs.append(paragraph)
-            char_counter += len(paragraph) + delimiter_len
-        else:
-            # Overflow, starting a new message
-            messages.append(delimiter.join(message_paragraphs))
-
-            assert len(paragraph) < char_limit  # should not fire
-            message_paragraphs = [paragraph]
-            char_counter = len(paragraph)
-    messages.append(delimiter.join(message_paragraphs))
-
-    # first message is empty by design.
-    assert messages[0] == ''
-    return messages[1:]
 
 
 def get_job_runnable(job_id: str):

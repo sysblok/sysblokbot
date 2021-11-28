@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import Callable, List, Tuple
+from typing import Callable, Tuple
 
 from .base_job import BaseJob
 from . import utils

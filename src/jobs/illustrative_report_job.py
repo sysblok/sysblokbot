@@ -7,9 +7,9 @@ from urllib.parse import urlparse
 from ..app_context import AppContext
 from ..consts import TrelloListAlias, TrelloCardFieldErrorAlias
 from ..strings import load
+from ..tg.sender import pretty_send
 from .base_job import BaseJob
-from .utils import (format_labels,
-                    get_no_access_marker, pretty_send, format_errors_with_tips)
+from .utils import format_labels, get_no_access_marker, format_errors_with_tips
 from ..trello.trello_objects import TrelloCard, CardCustomFields
 
 logger = logging.getLogger(__name__)

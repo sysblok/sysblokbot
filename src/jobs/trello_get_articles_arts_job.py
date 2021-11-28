@@ -4,9 +4,10 @@ from ..app_context import AppContext
 from ..strings import load
 from ..trello.trello_objects import TrelloCard
 from ..consts import TrelloListAlias
+from ..tg.sender import pretty_send
 from ..trello.trello_client import TrelloClient
 from .base_job import BaseJob
-from . import utils
+from .utils import format_possibly_plural
 
 
 class TrelloGetArticlesArtsJob(BaseJob):
@@ -28,7 +29,7 @@ class TrelloGetArticlesArtsJob(BaseJob):
                 rubric_name=rubric_name,
             )
 
-        utils.pretty_send(paragraphs, send)
+        pretty_send(paragraphs, send)
 
     @staticmethod
     def _format_card(card: TrelloCard, app_context: AppContext) -> str:
@@ -38,7 +39,7 @@ class TrelloGetArticlesArtsJob(BaseJob):
             date=card.due.strftime('%d.%m').lower() if card.due else '',
             url=card.url,
             name=card.name,
-            authors=utils.format_possibly_plural(
+            authors=format_possibly_plural(
                 load('common_role__author'), card_fields.authors
             ),
         )

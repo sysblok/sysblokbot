@@ -1,13 +1,12 @@
 import logging
 from datetime import datetime
-from typing import Callable, List
+from typing import Callable
 import re
 
 from ..app_context import AppContext
 from ..strings import load
+from ..tg.sender import pretty_send
 from .base_job import BaseJob
-
-from .utils import pretty_send
 
 logger = logging.getLogger(__name__)
 

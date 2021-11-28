@@ -9,6 +9,9 @@ import telegram
 LOG_FORMAT = '%(asctime)s - %(name)s\t- %(levelname)s\t- %(message)s'
 USAGE_LOG_LEVEL = (WARNING + INFO) / 2
 
+# Delay to ensure telegram messages come in right order.
+MESSAGE_DELAY_SEC = 0.1
+
 COMMIT_URL = f'https://github.com/sysblok/sysblokbot/commit/{os.environ.get("COMMIT_HASH")}'
 COMMIT_HASH = os.environ.get('COMMIT_HASH_SHORT')
 

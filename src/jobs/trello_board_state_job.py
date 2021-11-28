@@ -5,10 +5,11 @@ from typing import Callable, List
 from ..app_context import AppContext
 from ..consts import TrelloCardColor
 from ..strings import load
+from ..tg.sender import pretty_send
 from ..trello.trello_objects import TrelloCard
 from ..utils import card_checks
 from .base_job import BaseJob
-from . import utils
+from .utils import get_cards_by_curator, retrieve_usernames
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ class TrelloBoardStateJob(BaseJob):
         paragraphs = [
             load("trello_board_state_job__intro")
         ]  # list of paragraph strings
-        curator_cards = utils.get_cards_by_curator(app_context)
+        curator_cards = get_cards_by_curator(app_context)
         for curator, curator_cards in curator_cards.items():
             curator_name, _ = curator
             card_paragraphs = []
@@ -35,7 +36,7 @@ class TrelloBoardStateJob(BaseJob):
             if card_paragraphs:
                 paragraphs.append(f"⭐️ <b>Куратор</b>: {curator_name}")
                 paragraphs += card_paragraphs
-        utils.pretty_send(paragraphs, send)
+        pretty_send(paragraphs, send)
 
     @staticmethod
     def _format_card(card: TrelloCard, failure_reasons: List[str], app_context: AppContext) -> str:
@@ -65,7 +66,7 @@ class TrelloBoardStateJob(BaseJob):
             load(
                 "trello_board_state_job__card_members",
                 members=", ".join(
-                    utils.retrieve_usernames(card.members, app_context.db_client)
+                    retrieve_usernames(card.members, app_context.db_client)
                 ),
                 curators="",
             )

@@ -2,7 +2,6 @@ import logging
 from typing import Callable
 
 from ..app_context import AppContext
-from ..consts import USAGE_LOG_LEVEL
 
 logger = logging.getLogger(__name__)
 
