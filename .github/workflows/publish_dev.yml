@@ -165,5 +165,4 @@ jobs:
           args: |
             apt-get update && apt-get install -y git && \
             pip3 install -e . && pip3 install -r requirements.txt && \
-            pytest tests/integration -q | grep 'FAILED' | sed -e 's/.*\[\(.*\)-.*/\1/' | tee errors.txt && \
-            python tests/integration/report_test_result.py errors.txt
+            pytest tests/integration -vs
