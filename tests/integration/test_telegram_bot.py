@@ -18,7 +18,6 @@ from conftest import telegram_bot_name
         '/get_trello_board_state',
         '/get_publication_plans',
         '/get_editorial_report',
-        '/bad_cmd',
     )
 )
 async def test_not_failing(telegram_client: TelegramClient, command: str):
