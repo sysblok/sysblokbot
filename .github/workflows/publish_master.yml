@@ -148,3 +148,14 @@ jobs:
             -H 'Content-Type: application/json' \
             -d '{"parse_mode": "markdown", "chat_id": ${{ env.TELEGRAM_ERROR_CHAT_ID }}, "text": "[github CI] deploy [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})"}' \
             https://api.telegram.org/bot${{env.TELEGRAM_PROD_TOKEN}}/sendMessage
+
+      - name: Integration tests
+        uses: fylein/python-pytest-github-action@v2
+        env:
+          CONFIG_OVERRIDE: ${{ secrets.CONFIG_OVERRIDE_PROD }}
+        with:
+          args: |
+            apt-get update && apt-get install -y git && \
+            pip3 install -e . && pip3 install -r requirements.txt && \
+            pytest tests/integration -q | grep 'FAILED' | sed -e 's/.*\[\(.*\)-.*/\1/' | tee errors.txt && \
+            python tests/integration/report_test_result.py errors.txt

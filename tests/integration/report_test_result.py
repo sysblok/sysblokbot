@@ -21,13 +21,13 @@ async def report_test_result(passed: bool, failed_tests: str = ''):
 
     async with client.conversation(telegram_chat_id, timeout=30) as conv:
         if passed:
-            message = 'Протестировано, ок на выкладку.'
+            message = f'@{telegram_bot_name} протестирован.'
         else:
             failed_cmds = '\n'.join(
-                f'{cmd.strip()}{f"@{telegram_bot_name}" if telegram_bot_name else ""}'
+                f'{cmd.strip()}@{telegram_bot_name}'
                 for cmd in failed_tests
             )
-            message = f'Тестинг разломан, не катимся.\nСломались команды:\n{failed_cmds}'
+            message = f'@{telegram_bot_name} разломан.\nСломались команды:\n{failed_cmds}'
         await conv.send_message(message)
 
     await client.disconnect()
