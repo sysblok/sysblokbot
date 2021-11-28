@@ -6,12 +6,12 @@ from telethon import TelegramClient
 from telethon.sessions import StringSession
 from telethon.tl.custom.message import Message
 
-from conftest import api_id, api_hash, session_str, telegram_bot_name, telegram_chat_id
+from conftest import api_id, api_hash, api_session, telegram_bot_name, telegram_chat_id
 
 
 async def report_test_result(passed: bool, failed_tests: str = ''):
     client = TelegramClient(
-        StringSession(session_str), api_id, api_hash,
+        StringSession(api_session), api_id, api_hash,
         sequential_updates=True
     )
     # Connect to the server
@@ -24,7 +24,7 @@ async def report_test_result(passed: bool, failed_tests: str = ''):
             message = 'Протестировано, ок на выкладку.'
         else:
             failed_cmds = '\n'.join(
-                f'{cmd.strip()}{f"@{telegram_bot_name}" if telegram_bot_name}'
+                f'{cmd.strip()}{f"@{telegram_bot_name}" if telegram_bot_name else ""}'
                 for cmd in failed_tests
             )
             message = f'Тестинг разломан, не катимся.\nСломались команды:\n{failed_cmds}'
