@@ -6,13 +6,7 @@ from telethon import TelegramClient
 from telethon.sessions import StringSession
 from telethon.tl.custom.message import Message
 
-
-# Your API ID, hash and session string here
-api_id = int(os.environ["TELEGRAM_APP_ID"])
-api_hash = os.environ["TELEGRAM_APP_HASH"]
-session_str = os.environ["TELETHON_SESSION"]
-telegram_chat_id = int(os.environ["TELEGRAM_ERROR_CHAT_ID"])
-telegram_bot_name = os.environ["TELEGRAM_BOT_NAME"]
+from conftest import api_id, api_hash, session_str, telegram_bot_name, telegram_chat_id
 
 
 async def report_test_result(passed: bool, failed_tests: str = ''):
@@ -26,10 +20,13 @@ async def report_test_result(passed: bool, failed_tests: str = ''):
     await client.get_me()
 
     async with client.conversation(telegram_chat_id, timeout=30) as conv:
-        if passed:
+        if False and passed:
             message = 'Протестировано, ок на выкладку.'
         else:
-            failed_cmds = '\n'.join(f'{cmd.strip()}{telegram_bot_name}' for cmd in failed_tests)
+            failed_cmds = '\n'.join(
+                f'{cmd.strip()}{f"@{telegram_bot_name}" if telegram_bot_name}'
+                for cmd in failed_tests
+            )
             message = f'Тестинг разломан, не катимся.\nСломались команды:\n{failed_cmds}'
         await conv.send_message(message)
 
