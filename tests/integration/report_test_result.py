@@ -40,5 +40,4 @@ if __name__ == '__main__':
             failed_tests = failed_tests_file.readlines()
     else:
         failed_tests = []
-    print(failed_tests)
     asyncio.run(report_test_result(len(failed_tests) == 0, failed_tests=failed_tests))

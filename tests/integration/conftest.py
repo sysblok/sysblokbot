@@ -10,7 +10,6 @@ if os.path.exists('config_override.json'):
 else:
     config = json.loads(os.environ['CONFIG_OVERRIDE'])['telegram']
 
-print(config)
 api_id = int(config['api_id'])
 api_hash = config['api_hash']
 api_session = config["api_session"]
