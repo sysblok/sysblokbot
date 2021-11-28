@@ -6,6 +6,7 @@ from telethon.sessions import StringSession
 
 # Your API ID, hash and session string here
 with open('config_override.json') as config_override:
+    print(json.load(config_override))
     config = json.load(config_override)['telegram']
     api_id = int(config['api_id'])
     api_hash = config['api_hash']
