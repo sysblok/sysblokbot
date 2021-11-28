@@ -12,21 +12,6 @@ from ..utils.singleton import Singleton
 logger = logging.getLogger(__name__)
 
 
-def pretty_send(
-        paragraphs: List[str],
-        send: Callable[[str], None]
-) -> str:
-    '''
-    Send a bunch of paragraphs grouped into messages with adequate delays.
-    Return the whole message for testing purposes.
-    '''
-    messages = paragraphs_to_messages(paragraphs)
-    for i, message in enumerate(messages):
-        if i > 0:
-            time.sleep(MESSAGE_DELAY_SEC)
-        send(message)
-    return '\n'.join(messages)
-
 class TelegramSender(Singleton):
     def __init__(
             self,
@@ -127,6 +112,22 @@ class TelegramSender(Singleton):
         )
         self.is_silent = self._tg_config.get('is_silent', True)
         self.disable_web_page_preview = self._tg_config.get('disable_web_page_preview', True)
+
+
+def pretty_send(
+        paragraphs: List[str],
+        send: Callable[[str], None]
+) -> str:
+    '''
+    Send a bunch of paragraphs grouped into messages with adequate delays.
+    Return the whole message for testing purposes.
+    '''
+    messages = paragraphs_to_messages(paragraphs)
+    for i, message in enumerate(messages):
+        if i > 0:
+            time.sleep(MESSAGE_DELAY_SEC)
+        send(message)
+    return '\n'.join(messages)
 
 
 def paragraphs_to_messages(
