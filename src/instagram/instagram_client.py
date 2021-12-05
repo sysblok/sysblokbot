@@ -31,7 +31,7 @@ class InstagramClient(Singleton):
 
     def _update_from_config(self):
         self._api_client = facebook.GraphAPI(self._facebook_config['token'], 10.0)
-        self._page_id = self._facebook_config['ig_page_id']
+        self._page_id = self._facebook_config.get('ig_page_id')
 
     def get_page(self) -> InstagramPage:
         """
