@@ -141,6 +141,12 @@ class SysBlokBot:
             'получить карточки по тегу искусство'
         )
         self.add_manager_handler(
+            'get_articles_rubric',
+            CommandCategories.SUMMARY,
+            self.manager_reply_handler('trello_get_articles_rubric_job'),
+            'получить карточки по названию рубрики в трелло'
+        )
+        self.add_manager_handler(
             'get_chat_id',
             CommandCategories.REMINDERS,
             handlers.get_chat_id,
