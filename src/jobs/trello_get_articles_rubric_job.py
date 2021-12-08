@@ -36,12 +36,13 @@ class TrelloGetArticlesRubricJob(BaseJob):
         paragraphs.append(load('rubric_report_job__intro', rubric=rubric_name))
 
         for alias in TrelloListAlias:
-            paragraphs += TrelloGetArticlesRubricJob._get_rubric_paragraphs(
-                app_context=app_context,
-                trello_client=app_context.trello_client,
-                rubric_title=load(alias.value),
-                rubric_alias=alias,
-                rubric_name=rubric_name,
+            if alias is not TrelloListAlias.BACK_BURNER:
+                paragraphs += TrelloGetArticlesRubricJob._get_rubric_paragraphs(
+                    app_context=app_context,
+                    trello_client=app_context.trello_client,
+                    rubric_title=load(alias.value),
+                    rubric_alias=alias,
+                    rubric_name=rubric_name,
             )
 
         utils.pretty_send(paragraphs, send)
@@ -63,13 +64,14 @@ class TrelloGetArticlesRubricJob(BaseJob):
             app_context: AppContext,
             trello_client: TrelloClient,
             rubric_title: str,
-            rubric_alias: TrelloListAlias,
+            rubric_alias: str,
             rubric_name: str,
     ) -> List[str]:
         list_ids = trello_client.get_list_id_from_aliases([rubric_alias])
         cards = trello_client.get_cards(list_ids)
         cards_filtered = []
         for card in cards:
+            card_column = str(card.lst)
             if rubric_name in [label.name for label in card.labels]:
                 cards_filtered.append(card)
 
