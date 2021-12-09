@@ -1,6 +1,7 @@
 appdirs==1.4.3
 astroid==2.3.3
 attrs==19.3.0
+BeautifulSoup4==4.10.0
 CacheControl==0.12.6
 cachetools==4.1.0
 certifi==2020.4.5.1

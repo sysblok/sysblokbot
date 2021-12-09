@@ -25,6 +25,7 @@ from .hr_check_trello_consistency_job import HRCheckTrelloConsistencyJob
 from .hr_status_job import HRStatusJob
 from .publication_plans_job import PublicationPlansJob
 from .sample_job import SampleJob
+from .site_health_check_job import SiteHealthCheckJob
 from .shrug_job import ShrugJob
 from .send_reminders_job import SendRemindersJob
 from .tg_analytics_report_job import TgAnalyticsReportJob

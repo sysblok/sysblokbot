@@ -291,6 +291,12 @@ class SysBlokBot:
             self.admin_reply_handler('hr_check_trello_consistency_job'),
             'консистентность Трелло редакции'
         )
+        self.add_admin_handler(
+            'check_site_health',
+            CommandCategories.DATA_SYNC,
+            self.admin_reply_handler('site_health_check_job'),
+            'проверка статуса сайта'
+        )
 
         # sample handler
         self.add_handler(
