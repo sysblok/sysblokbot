@@ -42,6 +42,7 @@ STRINGS_DB_CONFIG = 'strings'
 # Jobs-related keys
 EVERY = 'every'
 AT = 'at'
+MULT = 'mult'
 SEND_TO = 'send_to'
 KWARGS = 'kwargs'
 
