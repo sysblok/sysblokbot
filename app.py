@@ -39,16 +39,16 @@ def get_bot():
                      skip_db_update=args.skip_db_update)
     bot.init_handlers()
 
-    # Scheduler must be run after clients initialized
-    scheduler.run()
-    scheduler.init_jobs()
-
     # Setting final logger and sending a message bot is up
     tg_sender = TelegramSender()
 
     for handler in logging.getLogger().handlers:
         logging.getLogger().removeHandler(handler)
     logging.getLogger().addHandler(ErrorBroadcastHandler(tg_sender))
+
+    # Scheduler must be run after clients initialized
+    scheduler.run()
+    scheduler.init_jobs()
 
     start_msg = f'[{consts.APP_SOURCE}] Bot successfully started'
     if consts.COMMIT_HASH:
