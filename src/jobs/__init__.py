@@ -17,7 +17,7 @@ from .fb_analytics_report_job import FBAnalyticsReportJob
 from .ig_analytics_report_job import IGAnalyticsReportJob
 from .illustrative_report_job import IllustrativeReportJob
 from .illustrative_report_old_job import IllustrativeReportOldJob
-from .postcards_report_job import PostcardsReportJob
+from .sheet_report_job import SheetReportJob
 from .fill_posts_list_job import FillPostsListJob
 from .hr_acquisition_job import HRAcquisitionJob
 from .hr_check_chat_consistency_job import HRCheckChatConsistencyJob
@@ -25,6 +25,7 @@ from .hr_check_trello_consistency_job import HRCheckTrelloConsistencyJob
 from .hr_status_job import HRStatusJob
 from .publication_plans_job import PublicationPlansJob
 from .sample_job import SampleJob
+from .site_health_check_job import SiteHealthCheckJob
 from .shrug_job import ShrugJob
 from .send_reminders_job import SendRemindersJob
 from .tg_analytics_report_job import TgAnalyticsReportJob

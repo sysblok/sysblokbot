@@ -36,12 +36,15 @@ FACEBOOK_CONFIG = 'facebook'
 VK_CONFIG = 'vk'
 JOBS_CONFIG = 'jobs'
 DB_CONFIG = 'db'
+SITE_CONFIG = 'site'
 STRINGS_DB_CONFIG = 'strings'
 
 # Jobs-related keys
 EVERY = 'every'
 AT = 'at'
+MULT = 'mult'
 SEND_TO = 'send_to'
+KWARGS = 'kwargs'
 
 # Telegram keys
 TELEGRAM_MANAGER_IDS = 'manager_chat_ids'

@@ -60,11 +60,19 @@ class ConfigManager(Singleton):
     def get_vk_config(self):
         return self.get_latest_config().get(consts.VK_CONFIG, {})
 
-    def get_jobs_config(self):
-        return self.get_latest_config().get(consts.JOBS_CONFIG, {})
+    def get_jobs_config(self, job_key=None):
+        config = self.get_latest_config().get(consts.JOBS_CONFIG, {})
+        if job_key is None:
+            return config
+        if job_key not in config:
+            raise ValueError(f'Trying to get job config for {job_key}, config does not exist')
+        return config[job_key]
 
     def get_db_config(self):
         return self.get_latest_config().get(consts.DB_CONFIG, {})
+
+    def get_site_config(self):
+        return self.get_latest_config().get(consts.SITE_CONFIG, {})
 
     def get_job_send_to(self, job_name: str):
         return self.get_jobs_config().get(job_name, {}).get(consts.SEND_TO, [])
@@ -115,7 +123,7 @@ class ConfigManager(Singleton):
 
     def _load_config(self, config_path: str) -> dict:
         try:
-            with open(config_path) as fin:
+            with open(config_path, encoding="utf-8") as fin:
                 try:
                     return json.loads(fin.read())
                 except json.JSONDecodeError as e:

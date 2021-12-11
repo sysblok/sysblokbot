@@ -177,10 +177,10 @@ class SysBlokBot:
             'получить статистику telegram канала за неделю'
         )
         self.add_manager_handler(
-            'get_postcards_report',
+            'get_report_from_sheet',
             CommandCategories.SUMMARY,
-            self.manager_reply_handler('postcards_report_job'),
-            'получить статистику по оцифровке открыток'
+            self.manager_reply_handler('sheet_report_job'),
+            'получить статистику по табличке (например, оцифровка открыток)'
         )
         # hidden from /help command for curator enrollment
         self.add_handler(
@@ -290,6 +290,12 @@ class SysBlokBot:
             CommandCategories.HR,
             self.admin_reply_handler('hr_check_trello_consistency_job'),
             'консистентность Трелло редакции'
+        )
+        self.add_admin_handler(
+            'check_site_health',
+            CommandCategories.DATA_SYNC,
+            self.admin_reply_handler('site_health_check_job'),
+            'проверка статуса сайта'
         )
 
         # sample handler
@@ -458,7 +464,8 @@ class SysBlokBot:
         return lambda update, tg_context: get_job_runnable(job_name)(
                 app_context=self.app_context,
                 send=self.telegram_sender.create_reply_send(update),
-                called_from_handler=True
+                called_from_handler=True,
+                args=update.message.text.split()[1:]
             )
 
     def _create_broadcast_handler(self, job_name: str) -> Callable:

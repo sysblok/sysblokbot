@@ -1,6 +1,7 @@
 appdirs==1.4.3
 astroid==2.3.3
 attrs==19.3.0
+BeautifulSoup4==4.10.0
 CacheControl==0.12.6
 cachetools==4.1.0
 certifi==2020.4.5.1
@@ -63,7 +64,7 @@ requests-oauthlib==1.3.0
 retrying==1.3.3
 rope==0.17.0
 rsa==4.0
-schedule==0.6.0
+schedule==1.0.0
 sheetfu==1.5.3
 six==1.14.0
 SQLAlchemy==1.3.17
