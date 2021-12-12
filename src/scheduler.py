@@ -75,8 +75,22 @@ class JobScheduler(Singleton):
                 schedules = [schedules]
             for schedule_dict in schedules:
                 try:
-                    scheduled = getattr(schedule.every(), schedule_dict[EVERY])
-                    if 'at' in schedule_dict:
+                    # E.g. ['minute'], ['sunday'] or ['10', 'minutes']
+                    every_param = schedule_dict[EVERY].strip().split()
+                    assert 1 <= len(every_param) <= 2
+                    if len(every_param) == 2:
+                        multiplier, time_unit = every_param
+                        multiplier = int(multiplier)
+                        assert 0 < multiplier
+                        # e.g. schedule.every(10).minutes
+                        scheduled = getattr(schedule.every(multiplier), time_unit)
+                    else:
+                        # e.g. schedule.every().hour
+                        scheduled = getattr(schedule.every(), every_param[0])
+                    if AT in schedule_dict:
+                        # can't set "every 10 minutes" and "at 10:00" at the same time
+                        assert len(every_param) < 2
+                        # e.g. schedule.every().wednesday.at("10:00")
                         scheduled = scheduled.at(schedule_dict[AT])
                     scheduled.do(
                         get_job_runnable(job_id),
