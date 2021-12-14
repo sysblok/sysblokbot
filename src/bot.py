@@ -286,10 +286,28 @@ class SysBlokBot:
             'консистентность чата редакции'
         )
         self.add_admin_handler(
+            'check_chat_consistency_frozen',
+            CommandCategories.HR,
+            self.admin_reply_handler('hr_check_chat_consistency_frozen_job'),
+            'консистентность чата редакции (замороженные участники)'
+        )
+        self.add_admin_handler(
             'check_trello_consistency',
             CommandCategories.HR,
             self.admin_reply_handler('hr_check_trello_consistency_job'),
             'консистентность Трелло редакции'
+        )
+        self.add_admin_handler(
+            'check_trello_consistency_frozen',
+            CommandCategories.HR,
+            self.admin_reply_handler('hr_check_trello_consistency_frozen_job'),
+            'консистентность Трелло редакции (замороженные участники)'
+        )
+        self.add_admin_handler(
+            'get_members_without_telegram',
+            CommandCategories.HR,
+            self.admin_reply_handler('hr_get_members_without_telegram_job'),
+            'активные участники без указанного телеграма'
         )
         self.add_admin_handler(
             'check_site_health',
