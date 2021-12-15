@@ -43,7 +43,7 @@ class TrelloGetArticlesRubricJob(BaseJob):
                     rubric_title=load(alias.value),
                     rubric_alias=alias,
                     rubric_name=rubric_name,
-            )
+                )
 
         utils.pretty_send(paragraphs, send)
 
@@ -80,7 +80,6 @@ class TrelloGetArticlesRubricJob(BaseJob):
                  title=rubric_title, length=len(cards_filtered))
         ]
         for card in cards_filtered:
-            formatted_card = TrelloGetArticlesRubricJob._format_card(card,
-                                                                   app_context)
+            formatted_card = TrelloGetArticlesRubricJob._format_card(card, app_context)
             paragraphs.append(formatted_card)
         return paragraphs
