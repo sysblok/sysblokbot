@@ -307,7 +307,10 @@ class SysBlokBot:
             'get_members_without_telegram',
             CommandCategories.HR,
             self.admin_reply_handler('hr_get_members_without_telegram_job'),
-            'активные участники без указанного телеграма'
+            (
+                'активные участники без указанного телеграма'
+                '(телефон это 10+ цифр+-(), отсутствие включает #N/A и кириллицу)'
+            )
         )
         self.add_admin_handler(
             'check_site_health',
