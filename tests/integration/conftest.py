@@ -21,8 +21,6 @@ api_session = config["api_session"]
 telegram_chat_id = int(config["error_logs_recipients"][0])
 telegram_bot_name = config.get("handle", '')
 
-print(telegram_bot_name)
-
 
 @pytest.fixture
 async def telegram_client() -> TelegramClient:
