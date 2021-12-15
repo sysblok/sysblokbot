@@ -21,10 +21,13 @@ from conftest import telegram_bot_name
     )
 )
 async def test_not_failing(telegram_client: TelegramClient, command: str):
-    async with telegram_client.conversation(telegram_bot_name, timeout=120) as conv:
-        await conv.send_message(command)
-        resp: Message = await conv.get_response()
-        assert resp.raw_text
+    try:
+        async with telegram_client.conversation(telegram_bot_name, timeout=120) as conv:
+            await conv.send_message(command)
+            resp: Message = await conv.get_response()
+            assert resp.raw_text
+    except ValueError:
+        assert not "Please add your bot name to config_override['telegram']['handle'] field"
 
 
 @pytest.mark.asyncio

@@ -141,6 +141,12 @@ class SysBlokBot:
             'получить карточки по тегу искусство'
         )
         self.add_manager_handler(
+            'get_articles_rubric',
+            CommandCategories.SUMMARY,
+            self.manager_reply_handler('trello_get_articles_rubric_job'),
+            'получить карточки по названию рубрики в трелло'
+        )
+        self.add_manager_handler(
             'get_chat_id',
             CommandCategories.REMINDERS,
             handlers.get_chat_id,
@@ -286,10 +292,31 @@ class SysBlokBot:
             'консистентность чата редакции'
         )
         self.add_admin_handler(
+            'check_chat_consistency_frozen',
+            CommandCategories.HR,
+            self.admin_reply_handler('hr_check_chat_consistency_frozen_job'),
+            'консистентность чата редакции (замороженные участники)'
+        )
+        self.add_admin_handler(
             'check_trello_consistency',
             CommandCategories.HR,
             self.admin_reply_handler('hr_check_trello_consistency_job'),
             'консистентность Трелло редакции'
+        )
+        self.add_admin_handler(
+            'check_trello_consistency_frozen',
+            CommandCategories.HR,
+            self.admin_reply_handler('hr_check_trello_consistency_frozen_job'),
+            'консистентность Трелло редакции (замороженные участники)'
+        )
+        self.add_admin_handler(
+            'get_members_without_telegram',
+            CommandCategories.HR,
+            self.admin_reply_handler('hr_get_members_without_telegram_job'),
+            (
+                'активные участники без указанного телеграма'
+                '(телефон это 10+ цифр+-(), отсутствие включает #N/A и кириллицу)'
+            )
         )
         self.add_admin_handler(
             'check_site_health',
