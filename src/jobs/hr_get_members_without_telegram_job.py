@@ -14,7 +14,7 @@ from .utils import pretty_send
 
 logger = logging.getLogger(__name__)
 
-PHONE_REGEX = r'\+?[0-9]{11}'
+PHONE_REGEX = r'[\+\-\(\)0-9]{10}?'
 
 
 class HRGetMembersWithoutTelegramJob(BaseJob):
@@ -29,7 +29,7 @@ class HRGetMembersWithoutTelegramJob(BaseJob):
                 user.telegram is None
                 or not user.telegram.strip()
                 or user.telegram == '#N/A'
-                or re.search(r'.*[а-яА-Я].*', user.telegram)
+                or re.search(r'.*[а-яА-ЯёЁ].*', user.telegram)  # damn this Unicode ё
             )
         ]
         members_with_phone_number = [
