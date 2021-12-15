@@ -21,7 +21,10 @@ from .sheet_report_job import SheetReportJob
 from .fill_posts_list_job import FillPostsListJob
 from .hr_acquisition_job import HRAcquisitionJob
 from .hr_check_chat_consistency_job import HRCheckChatConsistencyJob
+from .hr_check_chat_consistency_frozen_job import HRCheckChatConsistencyFrozenJob
 from .hr_check_trello_consistency_job import HRCheckTrelloConsistencyJob
+from .hr_check_trello_consistency_frozen_job import HRCheckTrelloConsistencyFrozenJob
+from .hr_get_members_without_telegram_job import HRGetMembersWithoutTelegramJob
 from .hr_status_job import HRStatusJob
 from .publication_plans_job import PublicationPlansJob
 from .sample_job import SampleJob
