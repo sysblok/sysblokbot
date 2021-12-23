@@ -15,8 +15,8 @@ from .db_fetch_team_sheet_job import DBFetchTeamSheetJob
 from .editorial_report_job import EditorialReportJob
 from .fb_analytics_report_job import FBAnalyticsReportJob
 from .ig_analytics_report_job import IGAnalyticsReportJob
-from .illustrative_report_job import IllustrativeReportJob
-from .illustrative_report_old_job import IllustrativeReportOldJob
+from .illustrative_report_members_job import IllustrativeReportMembersJob
+from .illustrative_report_columns_job import IllustrativeReportColumnsJob
 from .sheet_report_job import SheetReportJob
 from .fill_posts_list_job import FillPostsListJob
 from .hr_acquisition_job import HRAcquisitionJob

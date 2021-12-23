@@ -117,16 +117,16 @@ class SysBlokBot:
             'создать папки для иллюстраторов'
         )
         self.add_manager_handler(
-            'get_illustrative_report',
+            'get_illustrative_report_members',
             CommandCategories.SUMMARY,
-            self.manager_reply_handler('illustrative_report_job'),
-            'получить сводку с папками для иллюстраторов'
+            self.manager_reply_handler('illustrative_report_members_job'),
+            'получить сводку с папками для иллюстраторов (группы по иллюстраторам)'
         )
         self.add_manager_handler(
-            'get_illustrative_report_old',
+            'get_illustrative_report_columns',
             CommandCategories.SUMMARY,
-            self.manager_reply_handler('illustrative_report_old_job'),
-            'получить сводку с папками для иллюстраторов(версия 1.0)'
+            self.manager_reply_handler('illustrative_report_columns_job'),
+            'получить сводку с папками для иллюстраторов (группы по колонкам)'
         )
         self.add_manager_handler(
             'get_tasks_report',
