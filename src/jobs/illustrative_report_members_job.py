@@ -79,7 +79,17 @@ class IllustrativeReportMembersJob(BaseJob):
             load('common_trello_label__reviews'),
             load('common_trello_label__survey'),
             load('common_trello_label__test'),
-            load('common_trello_label__visual_legacy')
+            load('common_trello_label__visual_legacy'),
+            load('common_trello_label__archive'),
+            load('common_trello_label__digest'),
+            load('common_trello_label__promo'),
+            load('common_trello_label__video'),
+            load('common_trello_label__visualisation'),
+            load('common_trello_label__memes'),
+            load('common_trello_label__scientist_blogs'),
+            load('common_trello_label__podcasts'),
+            load('common_trello_label__pishu_postcard_weekly'),
+            load('common_trello_label__pishu_selection')
         ]
         for card in cards:
             if not card:
@@ -89,15 +99,6 @@ class IllustrativeReportMembersJob(BaseJob):
             card_fields = app_context.trello_client.get_custom_fields(card.id)
 
             label_names = [label.name for label in card.labels]
-            is_skipped_card = (
-                load('common_trello_label__archive') in label_names or
-                load('common_trello_label__mems') in label_names or
-                load('common_trello_label__digest') in label_names or
-                load('common_trello_label__video') in label_names
-            )
-
-            if is_skipped_card:
-                continue
 
             card_is_ok = IllustrativeReportMembersJob._check_trello_card(
                 app_context,
