@@ -256,7 +256,7 @@ def format_possibly_plural(name: str, values: List[str]) -> str:
     )
 
 
-def format_labels(values: List[str]) -> str:
+def format_trello_labels(values: List[str]) -> str:
     if len(values) == 0:
         return ''
     return '[' + ']['.join(values) + ']'

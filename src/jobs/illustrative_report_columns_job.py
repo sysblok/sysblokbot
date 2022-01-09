@@ -6,19 +6,19 @@ from ..app_context import AppContext
 from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias, TrelloCardColor
 from ..strings import load
 from .base_job import BaseJob
-from .utils import (check_trello_card, format_errors, format_possibly_plural,
+from .utils import (check_trello_card, format_trello_labels, format_errors, format_possibly_plural,
                     get_no_access_marker, pretty_send)
 
 logger = logging.getLogger(__name__)
 
 
-class IllustrativeReportOldJob(BaseJob):
+class IllustrativeReportColumnsJob(BaseJob):
     @staticmethod
     def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
         paragraphs = []  # list of paragraph strings
         errors = {}
 
-        paragraphs += IllustrativeReportOldJob._retrieve_cards_for_paragraph(
+        paragraphs += IllustrativeReportColumnsJob._retrieve_cards_for_paragraph(
             app_context=app_context,
             title=load('illustrative_report_job__title_to_chief_editor'),
             list_aliases=(TrelloListAlias.TO_CHIEF_EDITOR, ),
@@ -26,7 +26,7 @@ class IllustrativeReportOldJob(BaseJob):
             strict_archive_rules=False,
         )
 
-        paragraphs += IllustrativeReportOldJob._retrieve_cards_for_paragraph(
+        paragraphs += IllustrativeReportColumnsJob._retrieve_cards_for_paragraph(
             app_context=app_context,
             title=load('illustrative_report_job__title_edited_sometimes'),
             list_aliases=(TrelloListAlias.EDITED_SOMETIMES, ),
@@ -34,7 +34,7 @@ class IllustrativeReportOldJob(BaseJob):
             strict_archive_rules=False,
         )
 
-        paragraphs += IllustrativeReportOldJob._retrieve_cards_for_paragraph(
+        paragraphs += IllustrativeReportColumnsJob._retrieve_cards_for_paragraph(
             app_context=app_context,
             title=load('common_report__section_title_editorial_board'),
             list_aliases=(TrelloListAlias.EDITED_NEXT_WEEK, TrelloListAlias.TO_SEO_EDITOR),
@@ -72,7 +72,28 @@ class IllustrativeReportOldJob(BaseJob):
         paragraphs = [
             load('common_report__list_title_and_size', title=title, length=len(cards))
         ]
-
+        # additional labels to card title in report
+        labels_to_display = [
+            load('common_trello_label__main_post'),
+            load('common_trello_label__glossary'),
+            load('common_trello_label__interview'),
+            load('common_trello_label__neuropoems'),
+            load('common_trello_label__news'),
+            load('common_trello_label__reviews'),
+            load('common_trello_label__survey'),
+            load('common_trello_label__test'),
+            load('common_trello_label__visual_legacy'),
+            load('common_trello_label__archive'),
+            load('common_trello_label__digest'),
+            load('common_trello_label__promo'),
+            load('common_trello_label__video'),
+            load('common_trello_label__visualisation'),
+            load('common_trello_label__memes'),
+            load('common_trello_label__scientist_blogs'),
+            load('common_trello_label__podcasts'),
+            load('common_trello_label__pishu_postcard_weekly'),
+            load('common_trello_label__pishu_selection')
+        ]
         for card in cards:
             if not card:
                 parse_failure_counter += 1
@@ -134,10 +155,17 @@ class IllustrativeReportOldJob(BaseJob):
                 card_fields.google_doc if urlparse(card_fields.google_doc).scheme else card.url
             )
             no_access_marker = get_no_access_marker(file_url, app_context.drive_client)
+            is_edited_sometimes = (
+                card.lst.id == app_context.trello_client.lists_config[
+                    TrelloListAlias.EDITED_SOMETIMES
+                ]
+            )
+            card_labels = [label for label in label_names if label in labels_to_display]
             card_text = load(
                 'illustrative_report_job__card',
                 url=file_url,
                 name=card_fields.title or card.name,
+                labels=format_trello_labels(card_labels),
                 authors=format_possibly_plural(load('common_role__author'), card_fields.authors),
                 editors=format_possibly_plural(load('common_role__editor'), card_fields.editors),
                 illustrators=format_possibly_plural(
