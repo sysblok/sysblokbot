@@ -160,10 +160,7 @@ class IllustrativeReportColumnsJob(BaseJob):
                     TrelloListAlias.EDITED_SOMETIMES
                 ]
             )
-            card_labels = []
-            if is_edited_sometimes:
-                card_labels += [load('illustrative_report_job__edited_label')]
-            card_labels += [label for label in label_names if label in labels_to_display]
+            card_labels = [label for label in label_names if label in labels_to_display]
             card_text = load(
                 'illustrative_report_job__card',
                 url=file_url,
