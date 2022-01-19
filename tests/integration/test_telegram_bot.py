@@ -61,7 +61,6 @@ async def test_not_failing_db_update(telegram_client: TelegramClient, command: s
         '/get_illustrative_report_columns',
         '/get_illustrative_report_members',
         '/get_publication_plans',
-        '/get_report_from_sheet',
         '/get_tasks_report',
         '/get_trello_board_state'
     )
