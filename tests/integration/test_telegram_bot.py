@@ -127,7 +127,7 @@ async def test_not_failing_fill_registers(telegram_client: TelegramClient, comma
 )
 async def test_not_failing_hr(telegram_client: TelegramClient, command: str):
     try:
-        async with telegram_client.conversation(telegram_bot_name, timeout=120) as conv:
+        async with telegram_client.conversation(telegram_bot_name, timeout=180) as conv:
             await conv.send_message(command)
             resp: Message = await conv.get_response()
             assert resp.raw_text
