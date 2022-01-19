@@ -124,7 +124,6 @@ async def test_not_failing_fill_registers(telegram_client: TelegramClient, comma
         '/check_trello_consistency',
         '/check_trello_consistency_frozen',
         '/get_hr_status',
-        '/hr_acquisition',
     )
 )
 async def test_not_failing_hr(telegram_client: TelegramClient, command: str):
