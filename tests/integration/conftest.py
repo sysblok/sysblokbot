@@ -9,8 +9,8 @@ from telethon import TelegramClient
 from telethon.sessions import StringSession
 
 
-if os.path.exists('config_override.json'):
-    with open('config_override.json') as config_override:
+if os.path.exists('config_override_integration_tests.json'):
+    with open('config_override_integration_tests.json') as config_override:
         config = json.load(config_override)['telegram']
 else:
     config = json.loads(os.environ['CONFIG_OVERRIDE'])['telegram']
