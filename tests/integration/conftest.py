@@ -8,6 +8,8 @@ from typing import List
 from telethon import TelegramClient
 from telethon.sessions import StringSession
 
+from src.utils.singleton import Singleton
+
 
 if os.path.exists('config_override_integration_tests.json'):
     with open('config_override_integration_tests.json') as config_override:
@@ -22,7 +24,14 @@ telegram_chat_id = int(config["error_logs_recipients"][0])
 telegram_bot_name = config.get("handle", '')
 
 
-@pytest.fixture
+class PytestReportState(Singleton):
+    def __init__(self):
+        if self.was_initialized():
+            return
+        self.full_report_strings = []
+
+
+@pytest.fixture(scope='session')
 async def telegram_client() -> TelegramClient:
     client = TelegramClient(
         StringSession(api_session), api_id, api_hash,
@@ -37,6 +46,12 @@ async def telegram_client() -> TelegramClient:
 
     await client.disconnect()
     await client.disconnected
+
+
+@pytest.fixture(scope='session')
+async def conversation(telegram_client):
+    async with telegram_client.conversation(telegram_bot_name, timeout=180) as conv:
+        yield conv
 
 
 def pytest_sessionstart(session):
@@ -94,6 +109,11 @@ async def report_test_result(passed: bool, failed_tests: List[str] = []):
             )
             message = f'{telegram_bot_mention} разломан.\nСломались команды:\n{failed_cmds}'
         await conv.send_message(message)
+        with open('./integration_test_report.txt', 'w') as integration_test_report:
+            integration_test_report.write('report\n')
+            integration_test_report.write('\n'.join(PytestReportState().full_report_strings))
+            integration_test_report.write('/EOF')
+        await conv.send_file('./integration_test_report.txt')
     # disconnect
     await client.disconnect()
     await client.disconnected
