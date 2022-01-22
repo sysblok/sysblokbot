@@ -10,10 +10,10 @@ from telethon.tl.custom.message import Message
 from conftest import telegram_bot_name, PytestReportState
 
 
-async def _test_command(report_state, conversation, command: str):
+async def _test_command(report_state, conversation, command: str, timeout=120):
     try:
         await conversation.send_message(command)
-        resp: Message = await conversation.get_response()
+        resp: Message = await conversation.get_response(timeout=timeout)
         report_state.full_report_strings += [
             '>>>',
             command,
@@ -106,7 +106,9 @@ class Test:
         )
     )
     def test_not_failing_hr(self, conversation, command: str):
-        Test.loop.run_until_complete(_test_command(Test.report_state, conversation, command))
+        Test.loop.run_until_complete(
+            _test_command(Test.report_state, conversation, command, timeout=180)
+        )
 
     @pytest.mark.xfail
     @pytest.mark.parametrize(
@@ -116,4 +118,6 @@ class Test:
         )
     )
     def test_failing(self, conversation, command: str):
-        Test.loop.run_until_complete(_test_command(Test.report_state, conversation, command))
+        Test.loop.run_until_complete(
+            _test_command(Test.report_state, conversation, command, timeout=10)
+        )

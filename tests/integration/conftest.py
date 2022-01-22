@@ -50,7 +50,7 @@ async def telegram_client() -> TelegramClient:
 
 @pytest.fixture(scope='session')
 async def conversation(telegram_client):
-    async with telegram_client.conversation(telegram_bot_name, timeout=180) as conv:
+    async with telegram_client.conversation(telegram_bot_name) as conv:
         yield conv
 
 
