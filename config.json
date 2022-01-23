@@ -63,9 +63,5 @@
     },
     "strings": {
         "uri": "sqlite:///strings.sqlite"
-    },
-    "site": {
-        "index_url": "https://sysblok.ru/",
-        "body_substring": "Системный Блокъ"
     }
 }
