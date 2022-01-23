@@ -42,7 +42,6 @@ STRINGS_DB_CONFIG = 'strings'
 # Jobs-related keys
 EVERY = 'every'
 AT = 'at'
-MULT = 'mult'
 SEND_TO = 'send_to'
 KWARGS = 'kwargs'
 
@@ -247,3 +246,4 @@ class CommandCategories(Enum):
     REGISTRY = 'help__07_registry'
     REMINDERS = 'help__08_reminders'
     HR = 'help__09_hr'
+    DEBUG = 'help__10_debug'

@@ -52,3 +52,7 @@ class SiteHealthCheckJob(BaseJob):
                     status_code=page.status_code
                 )
             )
+
+    @staticmethod
+    def _usage_muted():
+        return True
