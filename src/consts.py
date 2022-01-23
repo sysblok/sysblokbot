@@ -39,7 +39,6 @@ FACEBOOK_CONFIG = 'facebook'
 VK_CONFIG = 'vk'
 JOBS_CONFIG = 'jobs'
 DB_CONFIG = 'db'
-SITE_CONFIG = 'site'
 STRINGS_DB_CONFIG = 'strings'
 
 # Jobs-related keys
