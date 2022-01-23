@@ -7,6 +7,7 @@ import requests
 from ..app_context import AppContext
 from ..consts import KWARGS
 from ..strings import load
+from ..tg.sender import pretty_send
 from .base_job import BaseJob
 
 logger = logging.getLogger(__name__)
@@ -27,7 +28,7 @@ class SiteHealthCheckJob(BaseJob):
             schedules = app_context.config_manager.get_jobs_config(__name__.split('.')[-1])
             if len(args) == 0:
                 names = [schedule.get(KWARGS, {}).get("name") for schedule in schedules]
-                send(f'Usage: /check_site_health name\nAvailable names: {names}')
+                pretty_send('Usage: /check_site_health name\nAvailable names: {names}', send)
                 return
             assert len(args) == 1
             name = args[0]
