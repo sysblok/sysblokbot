@@ -5,11 +5,11 @@ from typing import Callable, Iterable
 from ..consts import ReportPeriod
 from ..sheets.sheets_objects import PostRegistryItem
 from ..strings import load
+from ..tg.sender import pretty_send
 from ..vk.vk_objects import VkPostStats, VkPost
 
 from src.app_context import AppContext
 from src.jobs.base_job import BaseJob
-from src.jobs.utils import pretty_send
 
 logger = logging.getLogger(__name__)
 

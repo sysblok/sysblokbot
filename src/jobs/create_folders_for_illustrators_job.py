@@ -6,7 +6,7 @@ from ..app_context import AppContext
 from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias, TrelloCardColor
 from ..strings import load
 from .base_job import BaseJob
-from .utils import pretty_send
+from ..tg.sender import pretty_send
 from enum import IntEnum
 
 logger = logging.getLogger(__name__)

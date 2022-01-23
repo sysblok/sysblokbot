@@ -5,9 +5,10 @@ from urllib.parse import urlparse
 from ..app_context import AppContext
 from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias, TrelloCardColor
 from ..strings import load
+from ..tg.sender import pretty_send
 from .base_job import BaseJob
 from .utils import (check_trello_card, format_trello_labels, format_errors, format_possibly_plural,
-                    get_no_access_marker, pretty_send)
+                    get_no_access_marker)
 
 logger = logging.getLogger(__name__)
 

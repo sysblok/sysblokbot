@@ -5,9 +5,8 @@ from typing import Callable, List
 from ..app_context import AppContext
 from ..sheets.sheets_objects import HRPersonProcessed
 from ..strings import load
+from ..tg.sender import pretty_send
 from .base_job import BaseJob
-
-from .utils import pretty_send
 
 logger = logging.getLogger(__name__)
 
