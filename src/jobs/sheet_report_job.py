@@ -1,14 +1,13 @@
 import logging
 from datetime import datetime
-from typing import Callable, List
+from typing import Callable
 import re
 
 from ..app_context import AppContext
 from ..consts import KWARGS
 from ..strings import load
+from ..tg.sender import pretty_send
 from .base_job import BaseJob
-
-from .utils import pretty_send
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +30,7 @@ class SheetReportJob(BaseJob):
     ):
         logger.info(f'Getting sheet report for: {kwargs.get("name")}')
         if called_from_handler:
+            # TODO: refactor and move it to helper
             schedules = app_context.config_manager.get_jobs_config(__name__.split('.')[-1])
             if len(args) == 0:
                 names = [schedule.get(KWARGS, {}).get("name") for schedule in schedules]

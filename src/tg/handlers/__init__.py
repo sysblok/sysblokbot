@@ -24,3 +24,7 @@ from .list_job_handler import list_jobs
 from .set_log_level_handler import set_log_level
 from .mute_errors_handler import mute_errors, unmute_errors
 from .access_config_handler import get_config, set_config, add_manager, change_board
+
+# Debug handlers (also developer, but only needed for debug)
+from .clean_chat_data_handler import clean_chat_data
+from .get_chat_data_handler import get_chat_data

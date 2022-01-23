@@ -6,8 +6,9 @@ import telegram
 
 from ... import consts
 from ...app_context import AppContext
-from ...jobs.utils import paragraphs_to_messages, retrieve_username
+from ...jobs.utils import retrieve_username
 from ...strings import load
+from ...tg.sender import paragraphs_to_messages
 from ...trello.trello_objects import TrelloCard
 from .utils import manager_only, reply
 

@@ -4,10 +4,9 @@ from typing import Callable
 
 from ..consts import MSK_TIMEZONE
 from ..strings import load
-
+from ..tg.sender import pretty_send
 from src.app_context import AppContext
 from src.jobs.base_job import BaseJob
-from src.jobs.utils import pretty_send
 
 logger = logging.getLogger(__name__)
 

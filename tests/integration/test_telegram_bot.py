@@ -21,6 +21,7 @@ async def _test_command(report_state, conversation, command: str, timeout=120):
             resp.raw_text,
             '\n'
         ]
+        await asyncio.sleep(1)
         assert resp.raw_text
     except ValueError:
         assert not "Please add your bot name to config_override['telegram']['handle'] field"
@@ -34,7 +35,7 @@ class Test:
         'command',
         (
             '/start',
-            '/check_site_health',
+            '/check_site_health prod',
             '/help',
             '/get_config',
             '/list_jobs',
@@ -60,7 +61,7 @@ class Test:
         'command',
         (
             '/get_articles_arts',
-            '/get_articles_rubric',
+            '/get_articles_rubric arts',
             '/get_editorial_report',
             '/get_illustrative_report_columns',
             '/get_illustrative_report_members',
@@ -108,6 +109,18 @@ class Test:
     def test_not_failing_hr(self, conversation, command: str):
         Test.loop.run_until_complete(
             _test_command(Test.report_state, conversation, command, timeout=180)
+        )
+
+    @pytest.mark.parametrize(
+        'command',
+        (
+            '/get_chat_data',
+            '/clean_chat_data',
+        )
+    )
+    def test_clean_chat_data(self, conversation, command: str):
+        Test.loop.run_until_complete(
+            _test_command(Test.report_state, conversation, command, timeout=120)
         )
 
     @pytest.mark.xfail

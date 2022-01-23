@@ -1,15 +1,13 @@
 import logging
 from sheetfu import Table
 from sheetfu.modules.table import Item
-from typing import Callable, List
+from typing import Callable
 
 from ..app_context import AppContext
 from ..roles.roles import Roles
-from ..sheets.sheets_objects import HRPersonRaw, HRPersonProcessed
 from ..strings import load
+from ..tg.sender import pretty_send
 from .base_job import BaseJob
-
-from .utils import pretty_send
 
 logger = logging.getLogger(__name__)
 
