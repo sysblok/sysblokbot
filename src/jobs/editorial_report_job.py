@@ -4,13 +4,14 @@ import time
 from typing import Callable, List
 
 from ..app_context import AppContext
-from ..consts import TrelloListAlias, TrelloCardColor
+from ..consts import TrelloListAlias
 from ..strings import load
 from ..drive.drive_client import GoogleDriveClient
+from ..tg.sender import pretty_send
 from ..trello.trello_client import TrelloClient
 from .base_job import BaseJob
 from .utils import (check_trello_card, format_errors, format_possibly_plural,
-                    get_no_access_marker, pretty_send)
+                    get_no_access_marker)
 
 logger = logging.getLogger(__name__)
 

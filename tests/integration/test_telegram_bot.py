@@ -21,6 +21,7 @@ async def _test_command(report_state, conversation, command: str, timeout=120):
             resp.raw_text,
             '\n'
         ]
+        await asyncio.sleep(1)
         assert resp.raw_text
     except ValueError:
         assert not "Please add your bot name to config_override['telegram']['handle'] field"
@@ -60,7 +61,7 @@ class Test:
         'command',
         (
             '/get_articles_arts',
-            '/get_articles_rubric',
+            '/get_articles_rubric arts',
             '/get_editorial_report',
             '/get_illustrative_report_columns',
             '/get_illustrative_report_members',

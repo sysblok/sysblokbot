@@ -5,12 +5,11 @@ from typing import Callable, List
 from ..app_context import AppContext
 from ..consts import TrelloCardColor
 from ..strings import load
-from ..tg.sender import TelegramSender
-from ..trello.trello_client import TrelloClient
+from ..tg.sender import TelegramSender, pretty_send
 from ..trello.trello_objects import TrelloCard
 from ..utils import card_checks
 from .base_job import BaseJob
-from . import utils
+from .utils import get_cards_by_curator, retrieve_usernames
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ class TrelloBoardStateNotificationsJob(BaseJob):
     ):
         sender = TelegramSender()
 
-        curator_cards = utils.get_cards_by_curator(app_context)
+        curator_cards = get_cards_by_curator(app_context)
         for curator, curator_cards in curator_cards.items():
             curator_name, curator_tg = curator
             card_paragraphs = []
@@ -48,7 +47,7 @@ class TrelloBoardStateNotificationsJob(BaseJob):
                 try:
                     chat = app_context.db_client.get_chat_by_name(curator_tg)
                     if chat and chat.is_curator:
-                        utils.pretty_send(
+                        pretty_send(
                             paragraphs,
                             lambda msg: sender.send_to_chat_id(msg, chat.id)
                         )
@@ -88,7 +87,7 @@ class TrelloBoardStateNotificationsJob(BaseJob):
             load(
                 "trello_board_state_job__card_members",
                 members=", ".join(
-                    utils.retrieve_usernames(card.members, app_context.db_client)
+                    retrieve_usernames(card.members, app_context.db_client)
                 ),
                 curators="",
             )
