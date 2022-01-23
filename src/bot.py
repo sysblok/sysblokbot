@@ -324,6 +324,18 @@ class SysBlokBot:
             self.admin_reply_handler('site_health_check_job'),
             'проверка статуса сайта'
         )
+        self.add_admin_handler(
+            'get_chat_data',
+            CommandCategories.DEBUG,
+            handlers.get_chat_data,
+            'get_chat_data'
+        )
+        self.add_admin_handler(
+            'clean_chat_data',
+            CommandCategories.DEBUG,
+            handlers.clean_chat_data,
+            'clean_chat_data'
+        )
 
         # sample handler
         self.add_handler(

@@ -246,3 +246,4 @@ class CommandCategories(Enum):
     REGISTRY = 'help__07_registry'
     REMINDERS = 'help__08_reminders'
     HR = 'help__09_hr'
+    DEBUG = 'help__10_debug'
