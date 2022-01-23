@@ -117,16 +117,16 @@ class SysBlokBot:
             'создать папки для иллюстраторов'
         )
         self.add_manager_handler(
-            'get_illustrative_report',
+            'get_illustrative_report_members',
             CommandCategories.SUMMARY,
-            self.manager_reply_handler('illustrative_report_job'),
-            'получить сводку с папками для иллюстраторов'
+            self.manager_reply_handler('illustrative_report_members_job'),
+            'получить сводку с папками для иллюстраторов (группы по иллюстраторам)'
         )
         self.add_manager_handler(
-            'get_illustrative_report_old',
+            'get_illustrative_report_columns',
             CommandCategories.SUMMARY,
-            self.manager_reply_handler('illustrative_report_old_job'),
-            'получить сводку с папками для иллюстраторов(версия 1.0)'
+            self.manager_reply_handler('illustrative_report_columns_job'),
+            'получить сводку с папками для иллюстраторов (группы по колонкам)'
         )
         self.add_manager_handler(
             'get_tasks_report',
@@ -139,6 +139,12 @@ class SysBlokBot:
             CommandCategories.SUMMARY,
             self.manager_reply_handler('trello_get_articles_arts_job'),
             'получить карточки по тегу искусство'
+        )
+        self.add_manager_handler(
+            'get_articles_rubric',
+            CommandCategories.SUMMARY,
+            self.manager_reply_handler('trello_get_articles_rubric_job'),
+            'получить карточки по названию рубрики в трелло'
         )
         self.add_manager_handler(
             'get_chat_id',
@@ -177,10 +183,10 @@ class SysBlokBot:
             'получить статистику telegram канала за неделю'
         )
         self.add_manager_handler(
-            'get_sheet_report',
+            'get_report_from_sheet',
             CommandCategories.SUMMARY,
             self.manager_reply_handler('sheet_report_job'),
-            'получить статистику по табличкам (например, оцифровка открыток)'
+            'получить статистику по табличке (например, оцифровка открыток)'
         )
         # hidden from /help command for curator enrollment
         self.add_handler(
@@ -286,10 +292,49 @@ class SysBlokBot:
             'консистентность чата редакции'
         )
         self.add_admin_handler(
+            'check_chat_consistency_frozen',
+            CommandCategories.HR,
+            self.admin_reply_handler('hr_check_chat_consistency_frozen_job'),
+            'консистентность чата редакции (замороженные участники)'
+        )
+        self.add_admin_handler(
             'check_trello_consistency',
             CommandCategories.HR,
             self.admin_reply_handler('hr_check_trello_consistency_job'),
             'консистентность Трелло редакции'
+        )
+        self.add_admin_handler(
+            'check_trello_consistency_frozen',
+            CommandCategories.HR,
+            self.admin_reply_handler('hr_check_trello_consistency_frozen_job'),
+            'консистентность Трелло редакции (замороженные участники)'
+        )
+        self.add_admin_handler(
+            'get_members_without_telegram',
+            CommandCategories.HR,
+            self.admin_reply_handler('hr_get_members_without_telegram_job'),
+            (
+                'активные участники без указанного телеграма'
+                '(телефон это 10+ цифр+-(), отсутствие включает #N/A и кириллицу)'
+            )
+        )
+        self.add_admin_handler(
+            'check_site_health',
+            CommandCategories.DATA_SYNC,
+            self.admin_reply_handler('site_health_check_job'),
+            'проверка статуса сайта'
+        )
+        self.add_admin_handler(
+            'get_chat_data',
+            CommandCategories.DEBUG,
+            handlers.get_chat_data,
+            'get_chat_data'
+        )
+        self.add_admin_handler(
+            'clean_chat_data',
+            CommandCategories.DEBUG,
+            handlers.clean_chat_data,
+            'clean_chat_data'
         )
 
         # sample handler
@@ -458,7 +503,8 @@ class SysBlokBot:
         return lambda update, tg_context: get_job_runnable(job_name)(
                 app_context=self.app_context,
                 send=self.telegram_sender.create_reply_send(update),
-                called_from_handler=True
+                called_from_handler=True,
+                args=update.message.text.split()[1:]
             )
 
     def _create_broadcast_handler(self, job_name: str) -> Callable:

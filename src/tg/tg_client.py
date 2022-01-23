@@ -3,7 +3,7 @@ import logging
 from datetime import datetime
 from typing import List
 
-from telethon import TelegramClient
+from telethon import TelegramClient, functions
 from telethon.tl.types import User
 from telethon.sessions import StringSession
 
@@ -32,6 +32,10 @@ class TgClient(Singleton):
             self._tg_config['api_id'],
             self._tg_config['api_hash']
         )
+        # we need this to properly reauth in case the tokens need to be updated
+        # we need "with" to open and close the event loop
+        with self.api_client as client:
+            client(functions.auth.ResetAuthorizationsRequest())
         self.sysblok_chats = self._tg_config['sysblok_chats']
         self.channel = self._tg_config['channel']
 

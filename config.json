@@ -1,6 +1,7 @@
 {
     "telegram": {
         "token": "do_not_set_here_please_go_to_config_override",
+        "handle": "do_not_set_here_please_go_to_config_override",
         "is_silent": false,
         "disable_web_page_preview": true,
         "admin_chat_ids": [],
@@ -40,12 +41,18 @@
         "group_alias": "sysblok"
     },
     "jobs": {
-        "sample_job": {
-            "every": "wednesday",
-            "at": "10:00",
-            "send_to": [],
-            "kwargs": {}
-        },
+        "sample_job": [
+            {
+                "every": "wednesday",
+                "at": "10:00",
+                "send_to": [],
+                "kwargs": {}
+            },
+            {
+                "every": "12 hours",
+                "send_to": []
+            }
+        ],
         "send_reminders_job": {
             "every": "minute",
             "send_to": []
@@ -56,5 +63,9 @@
     },
     "strings": {
         "uri": "sqlite:///strings.sqlite"
+    },
+    "site": {
+        "index_url": "https://sysblok.ru/",
+        "body_substring": "Системный Блокъ"
     }
 }
