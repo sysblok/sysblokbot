@@ -111,6 +111,18 @@ class Test:
             _test_command(Test.report_state, conversation, command, timeout=180)
         )
 
+    @pytest.mark.parametrize(
+        'command',
+        (
+            '/get_chat_data',
+            '/clean_chat_data',
+        )
+    )
+    def test_clean_chat_data(self, conversation, command: str):
+        Test.loop.run_until_complete(
+            _test_command(Test.report_state, conversation, command, timeout=120)
+        )
+
     @pytest.mark.xfail
     @pytest.mark.parametrize(
         'command',
