@@ -35,7 +35,7 @@ class Test:
         'command',
         (
             '/start',
-            '/check_site_health',
+            '/check_site_health prod',
             '/help',
             '/get_config',
             '/list_jobs',
