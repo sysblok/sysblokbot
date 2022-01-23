@@ -60,7 +60,7 @@ class Test:
         'command',
         (
             '/get_articles_arts',
-            '/get_articles_rubric',
+            '/get_articles_rubric arts',
             '/get_editorial_report',
             '/get_illustrative_report_columns',
             '/get_illustrative_report_members',

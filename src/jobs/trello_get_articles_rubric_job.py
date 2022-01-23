@@ -4,6 +4,7 @@ from ..app_context import AppContext
 from ..strings import load
 from ..trello.trello_objects import TrelloCard
 from ..consts import TrelloListAlias
+from ..tg.sender import pretty_send
 from ..trello.trello_client import TrelloClient
 from .base_job import BaseJob
 from . import utils
@@ -27,7 +28,7 @@ class TrelloGetArticlesRubricJob(BaseJob):
         paragraphs = []
         if called_from_handler:
             if len(args) == 0:
-                utils.pretty_send('Please type in rubric name after get_articles_rubric', send)
+                send('Please type in rubric name after get_articles_rubric')
                 return
             else:
                 rubric_name = args[0]
@@ -45,7 +46,7 @@ class TrelloGetArticlesRubricJob(BaseJob):
                     rubric_name=rubric_name,
                 )
 
-        utils.pretty_send(paragraphs, send)
+        pretty_send(paragraphs, send)
 
     @staticmethod
     def _format_card(card: TrelloCard, app_context: AppContext) -> str:

@@ -1,6 +1,6 @@
 import logging
 
-from typing import Callable, List
+from typing import Callable
 
 from ..app_context import AppContext
 from ..roles.roles import Roles
