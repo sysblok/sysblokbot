@@ -2,33 +2,41 @@ import pytest
 
 import asyncio
 import os
+import time
 from typing import List
 
 from telethon import TelegramClient
 from telethon.tl.custom.message import Message
 
-from conftest import telegram_bot_name, PytestReportState
+from conftest import telegram_bot_name
+from pytest_report import PytestReport, PytestTestStatus
 
 
 async def _test_command(report_state, conversation, command: str, timeout=120):
+    test_report = {
+        'cmd': command
+    }
+    start_time = time.time()
     try:
         await conversation.send_message(command)
         resp: Message = await conversation.get_response(timeout=timeout)
-        report_state.full_report_strings += [
-            '>>>',
-            command,
-            '<<<',
-            resp.raw_text,
-            '\n'
-        ]
         await asyncio.sleep(1)
+        test_report['response'] = "\\n".join(resp.raw_text.splitlines())
         assert resp.raw_text
-    except ValueError:
-        assert not "Please add your bot name to config_override['telegram']['handle'] field"
+        test_report['status'] = PytestTestStatus.OK
+    except BaseException as e:
+        test_report['status'] = PytestTestStatus.FAILED
+        test_report['exception_class'] = str(e.__class__)
+        test_report['exception_message'] = str(e)
+
+        raise
+    finally:
+        test_report['time_elapsed'] = time.time() - start_time
+        report_state.data['tests'].append(test_report)
 
 
 class Test:
-    report_state = PytestReportState()
+    report_state = PytestReport()
     loop = asyncio.get_event_loop()
 
     @pytest.mark.parametrize(
