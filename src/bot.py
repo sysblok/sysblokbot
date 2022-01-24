@@ -9,7 +9,7 @@ from telegram.ext.dispatcher import run_async
 
 from .app_context import AppContext
 from .config_manager import ConfigManager
-from .consts import CommandCategories, USAGE_LOG_LEVEL
+from .consts import CommandCategories, APP_SOURCE, COMMIT_HASH, COMMIT_URL, USAGE_LOG_LEVEL
 from .jobs.utils import get_job_runnable
 from .tg import handlers, sender
 from .tg.handlers.utils import admin_only, direct_message_only, manager_only
@@ -36,8 +36,19 @@ class SysBlokBot:
             persistence=PicklePersistence(filename='persistent_storage.pickle')
         )
         self.dp = self.updater.dispatcher
-        self.app_context = AppContext(config_manager, skip_db_update)
         self.telegram_sender = sender.TelegramSender(bot=self.dp.bot, tg_config=tg_config)
+        try:
+            self.app_context = AppContext(config_manager, skip_db_update)
+        except Exception as e:
+            # todo infra for such messages
+            app_context_broken_msg = f'[{APP_SOURCE}] Bot failed to initialise AppContext'
+            if COMMIT_HASH:
+                app_context_broken_msg += (
+                    f', revision <a href="{COMMIT_URL}">{COMMIT_HASH}</a>.'
+                )
+            app_context_broken_msg += f'\n{e}'
+            self.telegram_sender.send_important_event(app_context_broken_msg)
+            raise
         self.handlers_info = defaultdict(lambda: defaultdict(dict))
         logger.info('SysBlokBot successfully initialized')
 

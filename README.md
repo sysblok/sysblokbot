@@ -1,5 +1,7 @@
 # SysBlokBot
 ![Docker](https://github.com/sysblok/SysBlokBot/workflows/Docker/badge.svg)
+[![Docker testing](https://github.com/sysblok/sysblokbot/actions/workflows/publish_dev.yml/badge.svg?branch=dev)](https://github.com/sysblok/sysblokbot/actions/workflows/publish_dev.yml)
+[![Docker production](https://github.com/sysblok/sysblokbot/actions/workflows/publish_master.yml/badge.svg?branch=master)](https://github.com/sysblok/sysblokbot/actions/workflows/publish_master.yml)
 
 Bot for SysBlok ("Системный Блокъ") editorial processes automatization.
 
