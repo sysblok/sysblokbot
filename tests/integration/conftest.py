@@ -72,7 +72,8 @@ async def report_test_result(passed: bool):
                     f'{telegram_bot_mention} разломан.',
                     'Сломались команды:'
                 ] + [
-                    f'{test["cmd"]}\n{test["exception_class"]}\n{test["exception_message"]}'
+                    f'{test["cmd"]}{telegram_bot_mention}\n'
+                    f'{test["exception_class"]}\n{test["exception_message"]}'
                     for test in PytestReport().data['tests']
                     if test['status'] == PytestTestStatus.FAILED
                 ])
