@@ -79,6 +79,22 @@ class TelegramSender(Singleton):
             return True
         except telegram.TelegramError as e:
             logger.error(f'Could not send a message to {chat_id}: {e}')
+            try:
+                # Try sending the plain-text version
+                pretty_send(
+                    [message_text.strip()],
+                    lambda msg:
+                        self.bot.send_message(
+                            text=msg,
+                            chat_id=chat_id,
+                            disable_notification=self.is_silent,
+                            disable_web_page_preview=self.disable_web_page_preview,
+                            **kwargs
+                        )
+                )
+                return True
+            except telegram.TelegramError as e:
+                logger.error(f'Could not send a plain-text message to {chat_id}: {e}')
         return False
 
     def send_error_log(self, error_log: str):
