@@ -39,85 +39,85 @@ class Test:
     report_state = PytestReport()
     loop = asyncio.get_event_loop()
 
-    # @pytest.mark.parametrize(
-    #     'command',
-    #     (
-    #         '/start',
-    #         '/check_site_health prod',
-    #         '/help',
-    #         '/get_config',
-    #         '/list_jobs',
-    #         '/get_chat_id',
-    #     )
-    # )
-    # def test_not_failing_health(self, conversation, command: str):
-    #     Test.loop.run_until_complete(_test_command(Test.report_state, conversation, command))
+    @pytest.mark.parametrize(
+        'command',
+        (
+            '/start',
+            '/check_site_health prod',
+            '/help',
+            '/get_config',
+            '/list_jobs',
+            '/get_chat_id',
+        )
+    )
+    def test_not_failing_health(self, conversation, command: str):
+        Test.loop.run_until_complete(_test_command(Test.report_state, conversation, command))
 
-    # @pytest.mark.parametrize(
-    #     'command',
-    #     (
-    #         '/db_fetch_authors_sheet',
-    #         '/db_fetch_curators_sheet',
-    #         '/db_fetch_strings_sheet',
-    #         '/db_fetch_team_sheet',
-    #     )
-    # )
-    # def test_not_failing_db_update(self, conversation, command: str):
-    #     Test.loop.run_until_complete(_test_command(Test.report_state, conversation, command))
+    @pytest.mark.parametrize(
+        'command',
+        (
+            '/db_fetch_authors_sheet',
+            '/db_fetch_curators_sheet',
+            '/db_fetch_strings_sheet',
+            '/db_fetch_team_sheet',
+        )
+    )
+    def test_not_failing_db_update(self, conversation, command: str):
+        Test.loop.run_until_complete(_test_command(Test.report_state, conversation, command))
 
-    # @pytest.mark.parametrize(
-    #     'command',
-    #     (
-    #         '/get_articles_arts',
-    #         '/get_articles_rubric arts',
-    #         '/get_editorial_report',
-    #         '/get_illustrative_report_columns',
-    #         '/get_illustrative_report_members',
-    #         '/get_publication_plans',
-    #         '/get_tasks_report',
-    #         '/get_trello_board_state'
-    #     )
-    # )
-    # def test_not_failing_reports(self, conversation, command: str):
-    #     Test.loop.run_until_complete(_test_command(Test.report_state, conversation, command))
+    @pytest.mark.parametrize(
+        'command',
+        (
+            '/get_articles_arts',
+            '/get_articles_rubric arts',
+            '/get_editorial_report',
+            '/get_illustrative_report_columns',
+            '/get_illustrative_report_members',
+            '/get_publication_plans',
+            '/get_tasks_report',
+            '/get_trello_board_state'
+        )
+    )
+    def test_not_failing_reports(self, conversation, command: str):
+        Test.loop.run_until_complete(_test_command(Test.report_state, conversation, command))
 
-    # @pytest.mark.parametrize(
-    #     'command',
-    #     (
-    #         '/get_fb_analytics_report',
-    #         '/get_ig_analytics_report',
-    #         '/get_main_stats',
-    #         '/get_tg_analytics_report',
-    #         '/get_vk_analytics_report',
-    #     )
-    # )
-    # def test_not_failing_analytics(self, conversation, command: str):
-    #     Test.loop.run_until_complete(_test_command(Test.report_state, conversation, command))
+    @pytest.mark.parametrize(
+        'command',
+        (
+            '/get_fb_analytics_report',
+            '/get_ig_analytics_report',
+            '/get_main_stats',
+            '/get_tg_analytics_report',
+            '/get_vk_analytics_report',
+        )
+    )
+    def test_not_failing_analytics(self, conversation, command: str):
+        Test.loop.run_until_complete(_test_command(Test.report_state, conversation, command))
 
-    # @pytest.mark.parametrize(
-    #     'command',
-    #     (
-    #         '/create_folders_for_illustrators',
-    #         '/fill_posts_list',
-    #     )
-    # )
-    # def test_not_failing_fill_registers(self, conversation, command: str):
-    #     Test.loop.run_until_complete(_test_command(Test.report_state, conversation, command))
+    @pytest.mark.parametrize(
+        'command',
+        (
+            '/create_folders_for_illustrators',
+            '/fill_posts_list',
+        )
+    )
+    def test_not_failing_fill_registers(self, conversation, command: str):
+        Test.loop.run_until_complete(_test_command(Test.report_state, conversation, command))
 
-    # @pytest.mark.parametrize(
-    #     'command',
-    #     (
-    #         '/check_chat_consistency',
-    #         '/check_chat_consistency_frozen',
-    #         '/check_trello_consistency',
-    #         '/check_trello_consistency_frozen',
-    #         '/get_hr_status',
-    #     )
-    # )
-    # def test_not_failing_hr(self, conversation, command: str):
-    #     Test.loop.run_until_complete(
-    #         _test_command(Test.report_state, conversation, command, timeout=180)
-    #     )
+    @pytest.mark.parametrize(
+        'command',
+        (
+            '/check_chat_consistency',
+            '/check_chat_consistency_frozen',
+            '/check_trello_consistency',
+            '/check_trello_consistency_frozen',
+            '/get_hr_status',
+        )
+    )
+    def test_not_failing_hr(self, conversation, command: str):
+        Test.loop.run_until_complete(
+            _test_command(Test.report_state, conversation, command, timeout=180)
+        )
 
     @pytest.mark.parametrize(
         'command',
@@ -131,7 +131,7 @@ class Test:
             _test_command(Test.report_state, conversation, command, timeout=120)
         )
 
-    # @pytest.mark.xfail
+    @pytest.mark.xfail
     @pytest.mark.parametrize(
         'command',
         (
