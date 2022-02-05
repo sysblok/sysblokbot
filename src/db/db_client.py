@@ -258,9 +258,15 @@ class DBClient(Singleton):
 
     def get_reminders_to_send(self) -> List[Reminder]:
         session = self.Session()
+        now = self._get_now_msk_naive()
         reminders = session.query(Reminder).filter(
-            Reminder.next_reminder_datetime <= self._get_now_msk_naive()
+            Reminder.next_reminder_datetime <= now
         ).all()
+        # if there's more than 3 hours lag then don't send
+        reminders_to_send = [
+            reminder for reminder in reminders
+            if reminder.next_reminder_datetime >= now - timedelta(hours=3)
+        ]
         for reminder in reminders:
             next_date = reminder.next_reminder_datetime + timedelta(days=reminder.frequency_days)
             session.query(Reminder).filter(
@@ -269,7 +275,7 @@ class DBClient(Singleton):
                 {Reminder.next_reminder_datetime: next_date}
             )
         session.commit()
-        return reminders
+        return reminders_to_send
 
     def add_reminder(
             self,
