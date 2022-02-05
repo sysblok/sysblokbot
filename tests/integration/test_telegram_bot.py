@@ -42,7 +42,7 @@ class Test:
     @pytest.mark.parametrize(
         'command',
         (
-            '/mute_errors'
+            '/mute_errors',
         )
     )
     def test_mute(self, conversation, command: str):
@@ -158,7 +158,7 @@ class Test:
     @pytest.mark.parametrize(
         'command',
         (
-            '/unmute_errors'
+            '/unmute_errors',
         )
     )
     def test_unmute(self, conversation, command: str):
