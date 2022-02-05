@@ -42,6 +42,15 @@ class Test:
     @pytest.mark.parametrize(
         'command',
         (
+            '/mute_errors'
+        )
+    )
+    def test_mute(self, conversation, command: str):
+        Test.loop.run_until_complete(_test_command(Test.report_state, conversation, command))
+
+    @pytest.mark.parametrize(
+        'command',
+        (
             '/start',
             '/check_site_health prod',
             '/help',
@@ -145,3 +154,12 @@ class Test:
             )
         except BaseException as e:
             print(f'Swallowed {str(e.__class__)}: {str(e)} on xfail test')
+
+    @pytest.mark.parametrize(
+        'command',
+        (
+            '/unmute_errors'
+        )
+    )
+    def test_unmute(self, conversation, command: str):
+        Test.loop.run_until_complete(_test_command(Test.report_state, conversation, command))
