@@ -86,7 +86,7 @@ class Test:
         (
             '/get_fb_analytics_report',
             '/get_ig_analytics_report',
-            '/get_main_stats',
+            '/get_editorial_board_stats',
             '/get_tg_analytics_report',
             '/get_vk_analytics_report',
         )
