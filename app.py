@@ -63,7 +63,7 @@ def get_bot():
 
 def report_critical_error(e: BaseException):
     requests.post(
-        url=f'https://api.telegram.org/bot${consts.TELEGRAM_TOKEN}/sendMessage',
+        url=f'https://api.telegram.org/bot{consts.TELEGRAM_TOKEN}/sendMessage',
         json={
             'text': f'Sysblokbot is down, {e}',
             'chat_id': consts.TELEGRAM_ERROR_CHAT_ID,
