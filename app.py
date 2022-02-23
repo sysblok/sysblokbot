@@ -29,7 +29,7 @@ def get_bot():
     """
     config_manager = ConfigManager(consts.CONFIG_PATH, consts.CONFIG_OVERRIDE_PATH)
     config = config_manager.load_config_with_override()
-    if not config or True:
+    if not config:
         raise ValueError(f"Could not load config, can't go on")
 
     scheduler = JobScheduler(config)
@@ -65,7 +65,7 @@ def report_critical_error(e: BaseException):
     requests.post(
         url=f'https://api.telegram.org/bot{consts.TELEGRAM_TOKEN}/sendMessage',
         json={
-            'text': f'Sysblokbot is down, {e}',
+            'text': f'Sysblokbot is down, {e}\n',
             'chat_id': consts.TELEGRAM_ERROR_CHAT_ID,
             'parse_mode': 'markdown',
         }
@@ -76,7 +76,4 @@ if __name__ == '__main__':
     try:
         get_bot().run()
     except BaseException as e:
-        print(e)
-        print(consts.TELEGRAM_ERROR_CHAT_ID)
-        print(consts.TELEGRAM_TOKEN)
         report_critical_error(e)
