@@ -133,8 +133,8 @@ jobs:
             touch ${{ env.ROOT_DIR }}/strings.sqlite
             docker run -dit --name sysblokbot-testing \
               --env APP_SOURCE="github CI" --restart unless-stopped \
-              --env TELEGRAM_ERROR_CHAT_ID="${{ env.TELEGRAM_ERROR_CHAT_ID }}" \
-              --env TELEGRAM_TOKEN="${{ env.TELEGRAM_TEST_TOKEN }}" \
+              --env TELEGRAM_ERROR_CHAT_ID="${{ TELEGRAM_ERROR_CHAT_ID }}" \
+              --env TELEGRAM_TOKEN="${{ TELEGRAM_TEST_TOKEN }}" \
               -v ${{ env.ROOT_DIR }}/config_override.json:/app/config_override.json \
               -v ${{ env.ROOT_DIR }}/config_gs.json:/app/config_gs.json \
               -v ${{ env.ROOT_DIR }}/sysblokbot.sqlite:/app/sysblokbot.sqlite \
