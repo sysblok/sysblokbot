@@ -77,4 +77,3 @@ if __name__ == '__main__':
         get_bot().run()
     except BaseException as e:
         report_critical_error(e)
-        
