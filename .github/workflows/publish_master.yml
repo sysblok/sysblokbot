@@ -118,6 +118,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
           ROOT_DIR: /home/${{ secrets.MASTER_DO_USER }}/prod
+          TELEGRAM_PROD_TOKEN: ${{ secrets.TELEGRAM_PROD_TOKEN }}
+          TELEGRAM_ERROR_CHAT_ID: ${{ secrets.TELEGRAM_ERROR_CHAT_ID }}
         with:
           host: ${{ secrets.MASTER_HOST }}
           username: ${{ secrets.MASTER_DO_USER }}

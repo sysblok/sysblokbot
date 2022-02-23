@@ -115,6 +115,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
           ROOT_DIR: /home/${{ secrets.MASTER_DO_USER }}/testing
+          TELEGRAM_TEST_TOKEN: ${{ secrets.TELEGRAM_TEST_TOKEN }}
+          TELEGRAM_ERROR_CHAT_ID: ${{ secrets.TELEGRAM_ERROR_CHAT_ID }}
         with:
           host: ${{ secrets.MASTER_HOST }}
           username: ${{ secrets.MASTER_DO_USER }}
