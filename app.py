@@ -76,4 +76,7 @@ if __name__ == '__main__':
     try:
         get_bot().run()
     except BaseException as e:
+        print(e)
+        print(consts.TELEGRAM_ERROR_CHAT_ID)
+        print(consts.TELEGRAM_TOKEN)
         report_critical_error(e)
