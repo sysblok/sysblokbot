@@ -4,6 +4,7 @@ import argparse
 import locale
 import logging
 import os
+import requests
 
 from src.bot import SysBlokBot
 from src.config_manager import ConfigManager
@@ -28,7 +29,7 @@ def get_bot():
     """
     config_manager = ConfigManager(consts.CONFIG_PATH, consts.CONFIG_OVERRIDE_PATH)
     config = config_manager.load_config_with_override()
-    if not config:
+    if not config or True:
         raise ValueError(f"Could not load config, can't go on")
 
     scheduler = JobScheduler(config)
@@ -60,5 +61,20 @@ def get_bot():
     return bot
 
 
+def report_critical_error(e: BaseException):
+    requests.post(
+        url=f'https://api.telegram.org/bot${consts.TELEGRAM_TOKEN}/sendMessage',
+        json={
+            'text': f'Sysblokbot is down, {e}',
+            'chat_id': consts.TELEGRAM_ERROR_CHAT_ID,
+            'parse_mode': 'markdown',
+        }
+    )
+
+
 if __name__ == '__main__':
-    get_bot().run()
+    try:
+        get_bot().run()
+    except BaseException as e:
+        report_critical_error(e)
+        
