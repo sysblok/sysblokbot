@@ -22,6 +22,8 @@ class AppSource(Enum):
 
 
 APP_SOURCE = os.environ.get('APP_SOURCE', AppSource.DEFAULT.value)
+TELEGRAM_ERROR_CHAT_ID = os.environ.get('TELEGRAM_ERROR_CHAT_ID', -1)
+TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '')
 
 ROOT_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 CONFIG_PATH = os.path.join(ROOT_DIR, 'config.json')

@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from typing import Callable
 import re
+import time
 
 from ..app_context import AppContext
 from ..consts import KWARGS
@@ -54,4 +55,5 @@ class SheetReportJob(BaseJob):
             cell_range = sheet.get_range_from_a1(element[2:-2])
             value = str(cell_range.get_values()[0][0])
             message_template_substituted = message_template_substituted.replace(element, value)
+            time.sleep(2)
         pretty_send([message_template_substituted], send)
