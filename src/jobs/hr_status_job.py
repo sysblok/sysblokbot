@@ -5,9 +5,8 @@ from typing import Callable, List
 from ..app_context import AppContext
 from ..sheets.sheets_objects import HRPersonProcessed
 from ..strings import load
+from ..tg.sender import pretty_send
 from .base_job import BaseJob
-
-from .utils import pretty_send
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ class HRStatusJob(BaseJob):
                     'hr_status_job__new_member',
                     member_name=item.name,
                     member_tg=item.telegram or '',
-                    date_submitted=item.date_submitted.split()[0],
+                    date_submitted=item.date_submitted.split()[0] if item.date_submitted else '???',
                     status=item.status_novice,
                     hr_name=item.hr_name,
                     interests=item.interests,
@@ -50,7 +49,7 @@ class HRStatusJob(BaseJob):
                 'hr_status_job__trial_member',
                 member_name=item.name,
                 member_tg=item.telegram if item.telegram and item.telegram != "#N/A" else '',
-                date_submitted=item.date_submitted.split()[0],
+                date_submitted=item.date_submitted.split()[0] if item.date_submitted else '???',
                 curator_name=curator.name if curator else item.curator,
                 curator_tg=curator.telegram if curator else '',
             )

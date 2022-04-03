@@ -2,6 +2,7 @@ import logging
 
 from ..sender import TelegramSender
 from ...app_context import AppContext
+from ...tg.sender import pretty_send
 
 logger = logging.getLogger(__name__)
 
@@ -78,5 +79,8 @@ def is_group_chat(update) -> bool:
     return update.message.chat.type in ('group', 'supergroup')
 
 
-def reply(message: str, tg_update, **kwargs) -> str:
-    return TelegramSender().send_to_chat_id(message, get_chat_id(tg_update), **kwargs)
+def reply(message: str, tg_update, **kwargs):
+    return pretty_send(
+        [message],
+        lambda msg: TelegramSender().send_to_chat_id(msg, get_chat_id(tg_update), **kwargs)
+    )

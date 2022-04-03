@@ -1,14 +1,12 @@
 import logging
 from sheetfu import Table
-from sheetfu.modules.table import Item
 from typing import Callable, List
 
 from ..app_context import AppContext
 from ..sheets.sheets_objects import HRPersonRaw, HRPersonProcessed
 from ..strings import load
+from ..tg.sender import pretty_send
 from .base_job import BaseJob
-
-from .utils import pretty_send
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +69,7 @@ class HRAcquisitionJob(BaseJob):
             person.status = load('sheets__hr__raw__status_processed')
             # TODO: PR to sheetfu which will allow better API here
             person_dict = {
+                'id': len(forms_processed) + 2,  # 1 for starting with 1 and 1 for the header
                 'name': person.name,
                 'interests': person.interests,
                 'other_contacts': person.other_contacts,

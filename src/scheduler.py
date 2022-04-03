@@ -9,7 +9,7 @@ import telegram
 
 from .app_context import AppContext
 from .config_manager import ConfigManager
-from .consts import CONFIG_RELOAD_MINUTES, EVERY, AT, SEND_TO
+from .consts import CONFIG_RELOAD_MINUTES, EVERY, AT, SEND_TO, KWARGS
 from .jobs.utils import get_job_runnable
 from .tg.sender import TelegramSender
 from .utils.singleton import Singleton
@@ -75,14 +75,29 @@ class JobScheduler(Singleton):
                 schedules = [schedules]
             for schedule_dict in schedules:
                 try:
-                    scheduled = getattr(schedule.every(), schedule_dict[EVERY])
-                    if 'at' in schedule_dict:
+                    # E.g. ['minute'], ['sunday'] or ['10', 'minutes']
+                    every_param = schedule_dict[EVERY].strip().split()
+                    assert 1 <= len(every_param) <= 2
+                    if len(every_param) == 2:
+                        multiplier, time_unit = every_param
+                        multiplier = int(multiplier)
+                        assert 0 < multiplier
+                        # e.g. schedule.every(10).minutes
+                        scheduled = getattr(schedule.every(multiplier), time_unit)
+                    else:
+                        # e.g. schedule.every().hour
+                        scheduled = getattr(schedule.every(), every_param[0])
+                    if AT in schedule_dict:
+                        # can't set "every 10 minutes" and "at 10:00" at the same time
+                        assert len(every_param) < 2
+                        # e.g. schedule.every().wednesday.at("10:00")
                         scheduled = scheduled.at(schedule_dict[AT])
                     scheduled.do(
                         get_job_runnable(job_id),
                         app_context=self.app_context,
                         send=self.telegram_sender.create_chat_ids_send(
-                            schedule_dict.get(SEND_TO, []))
+                            schedule_dict.get(SEND_TO, [])),
+                        kwargs=schedule_dict.get(KWARGS)
                     ).tag(CUSTOM_JOB_TAG)
                 except Exception as e:
                     logger.error(

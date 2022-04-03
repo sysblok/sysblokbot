@@ -9,6 +9,9 @@ import telegram
 LOG_FORMAT = '%(asctime)s - %(name)s\t- %(levelname)s\t- %(message)s'
 USAGE_LOG_LEVEL = (WARNING + INFO) / 2
 
+# Delay to ensure telegram messages come in right order.
+MESSAGE_DELAY_SEC = 0.1
+
 COMMIT_URL = f'https://github.com/sysblok/sysblokbot/commit/{os.environ.get("COMMIT_HASH")}'
 COMMIT_HASH = os.environ.get('COMMIT_HASH_SHORT')
 
@@ -19,6 +22,8 @@ class AppSource(Enum):
 
 
 APP_SOURCE = os.environ.get('APP_SOURCE', AppSource.DEFAULT.value)
+TELEGRAM_ERROR_CHAT_ID = os.environ.get('TELEGRAM_ERROR_CHAT_ID', -1)
+TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '')
 
 ROOT_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 CONFIG_PATH = os.path.join(ROOT_DIR, 'config.json')
@@ -42,6 +47,7 @@ STRINGS_DB_CONFIG = 'strings'
 EVERY = 'every'
 AT = 'at'
 SEND_TO = 'send_to'
+KWARGS = 'kwargs'
 
 # Telegram keys
 TELEGRAM_MANAGER_IDS = 'manager_chat_ids'
@@ -127,6 +133,7 @@ class PlainTextUserAction(Enum):
     """
     # /get_tasks_report items
     GET_TASKS_REPORT__ENTER_BOARD_URL = 'get_tasks_report__board_url'
+    GET_TASKS_REPORT__ENTER_BOARD_NUMBER = 'get_tasks_report__board_number'
     GET_TASKS_REPORT__ENTER_LIST_NUMBER = 'get_tasks_report__list_number'
     GET_TASKS_REPORT__ENTER_INTRO = 'get_tasks_report__introduction'
     GET_TASKS_REPORT__CHOOSE_IF_FILL_LABELS = 'get_tasks_report__fill_labels'
@@ -243,3 +250,4 @@ class CommandCategories(Enum):
     REGISTRY = 'help__07_registry'
     REMINDERS = 'help__08_reminders'
     HR = 'help__09_hr'
+    DEBUG = 'help__10_debug'

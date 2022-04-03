@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import Callable, List, Tuple
+from typing import Callable, Tuple
 
 from .base_job import BaseJob
 from . import utils
@@ -13,85 +13,87 @@ from ..utils import card_checks
 logger = logging.getLogger(__name__)
 
 
-class TrelloAnalyticsJob(BaseJob):
+class EditorialBoardStatsJob(BaseJob):
     @staticmethod
     def _execute(app_context: AppContext,
                  send: Callable[[str], None],
                  called_from_handler: bool = False):
         new_analytics = TrelloAnalytics()
         stats = [
-            TrelloAnalyticsJob._make_text_for_category(
+            EditorialBoardStatsJob._make_text_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
-                title=load('main_stats_job__title_pending_approval'),
+                title=load('editorial_board_stats_job__title_pending_approval'),
                 list_aliases=(
                     TrelloListAlias.TOPIC_SUGGESTION,
                 ),
                 column_name='topic_suggestion'
             ),
-            TrelloAnalyticsJob._make_text_for_category(
+            EditorialBoardStatsJob._make_text_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
-                title=load('main_stats_job__title_author_search'),
+                title=load('editorial_board_stats_job__title_author_search'),
                 list_aliases=(
                     TrelloListAlias.TOPIC_READY,
                 ),
                 column_name='topic_ready'
             ),
-            TrelloAnalyticsJob._make_text_for_category(
+            EditorialBoardStatsJob._make_text_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
-                title=load('main_stats_job__title_in_work'),
+                title=load('editorial_board_stats_job__title_in_work'),
                 list_aliases=(
                     TrelloListAlias.IN_PROGRESS,
                 ),
                 column_name='in_progress'
             ),
-            TrelloAnalyticsJob._make_text_for_category(
+            EditorialBoardStatsJob._make_text_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
-                title=load('main_stats_job__title_deadline_missed'),
+                title=load('editorial_board_stats_job__title_deadline_missed'),
                 list_aliases=(
                     TrelloListAlias.IN_PROGRESS,
                 ),
                 column_name='deadline_missed',
                 filter_func=lambda card: card_checks.is_deadline_missed(card, app_context)[0]
             ),
-            TrelloAnalyticsJob._make_text_for_category(
+            EditorialBoardStatsJob._make_text_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
-                title=load('main_stats_job__title_expect_this_week'),
+                title=load('editorial_board_stats_job__title_expect_this_week'),
                 list_aliases=(
                     TrelloListAlias.IN_PROGRESS,
                 ),
                 filter_func=(
-                    lambda card: TrelloAnalyticsJob._card_deadline_is_next_week(card, app_context)
+                    lambda card: EditorialBoardStatsJob._card_deadline_is_next_week(
+                        card, app_context
+                    )
                 ),
                 column_name='expect_this_week'
             ),
-            TrelloAnalyticsJob._make_text_for_category(
+            EditorialBoardStatsJob._make_text_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
-                title=load('main_stats_job__title_waiting_for_editors'),
+                title=load('editorial_board_stats_job__title_waiting_for_editors'),
                 list_aliases=(
                     TrelloListAlias.TO_EDITOR,
                 ),
                 column_name='waiting_for_editors',
             ),
-            TrelloAnalyticsJob._make_text_for_category(
+            EditorialBoardStatsJob._make_text_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
-                title=load('main_stats_job__title_editors_check'),
+                title=load('editorial_board_stats_job__title_editors_check'),
                 list_aliases=(
                     TrelloListAlias.TO_SEO_EDITOR,
                     TrelloListAlias.EDITED_NEXT_WEEK,
                 ),
                 column_name='editors_check'
             ),
-            TrelloAnalyticsJob._make_text_for_category(
+            EditorialBoardStatsJob._make_text_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
-                title=load('main_stats_job__title_ready_to_issue'),
+                title=load('editorial_board_stats_job__title_ready_to_issue'),
                 list_aliases=(
                     TrelloListAlias.EDITED_SOMETIMES,
                     TrelloListAlias.TO_CHIEF_EDITOR,
@@ -116,13 +118,20 @@ class TrelloAnalyticsJob(BaseJob):
             new_analytics.date = today_db_str
             app_context.db_client.add_item_to_statistics_table(new_analytics)
 
-        send(load('main_stats_job__text', stats='\n\n'.join(stats), date_interval=date_interval))
+        send(load(
+            'editorial_board_stats_job__text',
+            stats='\n\n'.join(stats),
+            date_interval=date_interval
+        ))
 
     @staticmethod
     def _card_deadline_is_next_week(card, app_context) -> bool:
         if card.due is None:
             return False
-        last_analytics_date = utils.retrieve_last_trello_analytics_date(app_context.db_client)
+        last_analytics_date = (
+            utils.retrieve_last_trello_analytics_date(app_context.db_client)
+            or datetime.datetime.now()  # in case database is empty, e.g. local testing
+        )
         timedelta = card.due - last_analytics_date
         return 0 <= timedelta.days < 7
 
@@ -149,14 +158,14 @@ class TrelloAnalyticsJob(BaseJob):
             delta = len(cards) - int(getattr(statistics, column_name))
             if delta != 0:
                 delta_string = load(
-                    'main_stats_job__delta_week',
+                    'editorial_board_stats_job__delta_week',
                     sign='+' if delta > 0 else '-',
                     delta=abs(delta)
                 )
                 size_and_delta = f'{len(cards)} {delta_string}'
 
         return load(
-            'main_stats_job__title_and_delta',
+            'editorial_board_stats_job__title_and_delta',
             title=title,
             delta=size_and_delta
         )

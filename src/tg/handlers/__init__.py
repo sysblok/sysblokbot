@@ -17,8 +17,14 @@ from .user_message_handler import handle_callback_query, handle_user_message, ha
 from .error_handler import error
 
 # Admin (developer) handlers
+from .get_roles_for_member_handler import get_roles_for_member
+from .get_members_for_role_handler import get_members_for_role
 from .list_chats_handler import list_chats
 from .list_job_handler import list_jobs
 from .set_log_level_handler import set_log_level
 from .mute_errors_handler import mute_errors, unmute_errors
 from .access_config_handler import get_config, set_config, add_manager, change_board
+
+# Debug handlers (also developer, but only needed for debug)
+from .clean_chat_data_handler import clean_chat_data
+from .get_chat_data_handler import get_chat_data

@@ -94,6 +94,58 @@ class Curator(Base):
         return curator
 
 
+class TeamMember(Base):
+    __tablename__ = 'team'
+
+    id = Column(String, primary_key=True)
+    name = Column(String)
+    status = Column(String)
+    curator = Column(String)
+    manager = Column(String)
+    telegram = Column(String)
+    trello = Column(String)
+    roles = Column(String)
+
+    def __repr__(self):
+        return f'Team member {self.name} tg={self.telegram}'
+
+    @classmethod
+    def from_dict(cls, data):
+        member = cls()
+        member.id = _get_str_data_item(data, 'id')
+        member.name = _get_str_data_item(data, 'name')
+        member.status = _get_str_data_item(data, 'status')
+        member.curator = _get_str_data_item(data, 'curator')
+        member.manager = _get_str_data_item(data, 'manager')
+        member.telegram = _get_str_data_item(data, 'telegram')
+        member.trello = _get_str_data_item(data, 'trello')
+        return member
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'status': self.status,
+            'curator': self.curator,
+            'manager': self.manager,
+            'telegram': self.telegram,
+            'trello': self.trello,
+            'roles': self.roles,
+        }
+
+    @classmethod
+    def from_sheetfu_item(cls, item):
+        member = cls()
+        member.id = item.get_field_value(load('sheets__team__id'))
+        member.name = item.get_field_value(load('sheets__team__name'))
+        member.status = item.get_field_value(load('sheets__team__status'))
+        member.curator = item.get_field_value(load('sheets__team__curator'))
+        member.manager = item.get_field_value(load('sheets__team__manager'))
+        member.telegram = item.get_field_value(load('sheets__team__telegram'))
+        member.trello = item.get_field_value(load('sheets__team__trello'))
+        return member
+
+
 def _get_str_data_item(data: dict, item_name: str) -> str:
     """Preprocess string data item from sheets"""
     return data[item_name].strip() if data.get(item_name) else ''

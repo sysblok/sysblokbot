@@ -1,13 +1,15 @@
 from datetime import datetime, timedelta
+import json
 import logging
+import re
 import requests
-from typing import List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy import create_engine, desc
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from .db_objects import Author, Base, Chat, Curator, Reminder, Rubric, TrelloAnalytics
+from .db_objects import Author, Base, Chat, Curator, Reminder, Rubric, TeamMember, TrelloAnalytics
 from .. import consts
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..utils.singleton import Singleton
@@ -42,6 +44,7 @@ class DBClient(Singleton):
     def fetch_all(self, sheets_client: GoogleSheetsClient):
         self.fetch_authors_sheet(sheets_client)
         self.fetch_curators_sheet(sheets_client)
+        self.fetch_team_sheet(sheets_client)
         self.fetch_rubrics_sheet(sheets_client)
 
     def fetch_authors_sheet(self, sheets_client: GoogleSheetsClient):
@@ -78,6 +81,23 @@ class DBClient(Singleton):
             return 0
         return len(curators)
 
+    def fetch_team_sheet(self, sheets_client: GoogleSheetsClient):
+        session = self.Session()
+        try:
+            # clean this table
+            session.query(TeamMember).delete()
+            # re-download it
+            team = sheets_client.fetch_hr_team()
+            for item in team:
+                member = TeamMember.from_sheetfu_item(item)
+                session.add(member)
+            session.commit()
+        except Exception as e:
+            logger.warning(f"Failed to update team table from sheet: {e}")
+            session.rollback()
+            return 0
+        return len(team)
+
     def fetch_rubrics_sheet(self, sheets_client: GoogleSheetsClient):
         session = self.Session()
         try:
@@ -96,6 +116,14 @@ class DBClient(Singleton):
             session.rollback()
             return 0
         return len(rubrics)
+
+    def fill_team_roles(self, member_roles: Dict[str, List[str]]):
+        # Set roles for users
+        session = self.Session()
+        for member_id, roles in member_roles.items():
+            update = {TeamMember.roles: json.dumps(roles)}
+            session.query(TeamMember).filter(TeamMember.id == member_id).update(update)
+        session.commit()
 
     def find_author_telegram_by_trello(self, trello_id: str):
         # TODO: make batch queries
@@ -165,6 +193,28 @@ class DBClient(Singleton):
         session = self.Session()
         return session.query(Chat).all()
 
+    def get_all_members(self) -> List[TeamMember]:
+        session = self.Session()
+        return session.query(TeamMember).all()
+
+    def get_members_for_role(self, role_name: str) -> List[TeamMember]:
+        if not re.match(r"[a-z_]+", role_name):
+            logger.warning(f'get_members_for_role: weird role_name: {role_name}')
+            return []
+        session = self.Session()
+        members = session.query(TeamMember).filter(TeamMember.roles.like(f'%{role_name}%')).all()
+        return members
+
+    def get_member_by_name(self, member_name: str) -> Optional[TeamMember]:
+        if not re.match(r"[А-Яа-я ]+", member_name):
+            logger.warning(f'get_member_by_name: weird member_name: {member_name}')
+            return None
+        session = self.Session()
+        members = session.query(TeamMember).filter(TeamMember.name.like(f'%{member_name}%')).all()
+        if len(members) > 1:
+            logger.warning(f'get_member: Name {member_name} fits {len(members)} members')
+        return members[0] if members else None
+
     def set_chat_name(self, chat_id: int, chat_name: str, set_curator: bool = False):
         # Update or set chat name. If chat is known to be curator's, set the flag.
         session = self.Session()
@@ -208,9 +258,15 @@ class DBClient(Singleton):
 
     def get_reminders_to_send(self) -> List[Reminder]:
         session = self.Session()
+        now = self._get_now_msk_naive()
         reminders = session.query(Reminder).filter(
-            Reminder.next_reminder_datetime <= self._get_now_msk_naive()
+            Reminder.next_reminder_datetime <= now
         ).all()
+        # if there's more than 3 hours lag then don't send
+        reminders_to_send = [
+            reminder for reminder in reminders
+            if reminder.next_reminder_datetime >= now - timedelta(hours=3)
+        ]
         for reminder in reminders:
             next_date = reminder.next_reminder_datetime + timedelta(days=reminder.frequency_days)
             session.query(Reminder).filter(
@@ -219,7 +275,7 @@ class DBClient(Singleton):
                 {Reminder.next_reminder_datetime: next_date}
             )
         session.commit()
-        return reminders
+        return reminders_to_send
 
     def add_reminder(
             self,

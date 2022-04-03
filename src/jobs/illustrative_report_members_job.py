@@ -7,26 +7,27 @@ from urllib.parse import urlparse
 from ..app_context import AppContext
 from ..consts import TrelloListAlias, TrelloCardFieldErrorAlias
 from ..strings import load
+from ..tg.sender import pretty_send
 from .base_job import BaseJob
-from .utils import (format_labels,
-                    get_no_access_marker, pretty_send, format_errors_with_tips)
+from .utils import format_trello_labels, get_no_access_marker, format_errors_with_tips
 from ..trello.trello_objects import TrelloCard, CardCustomFields
 
 logger = logging.getLogger(__name__)
 
 
-class IllustrativeReportJob(BaseJob):
+class IllustrativeReportMembersJob(BaseJob):
     @staticmethod
     def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
         paragraphs = []  # list of paragraph strings
         errors = {}
 
-        result = IllustrativeReportJob._retrieve_cards(
+        result = IllustrativeReportMembersJob._retrieve_cards(
             app_context=app_context,
             list_aliases=(
                 TrelloListAlias.EDITED_SOMETIMES,
                 TrelloListAlias.EDITED_NEXT_WEEK,
-                TrelloListAlias.TO_SEO_EDITOR
+                TrelloListAlias.TO_SEO_EDITOR,
+                TrelloListAlias.TO_CHIEF_EDITOR,
             ),
             errors=errors,
         )
@@ -37,7 +38,7 @@ class IllustrativeReportJob(BaseJob):
             # go first
             no_illustrators_cards = result.get('')
             if no_illustrators_cards and len(no_illustrators_cards) > 0:
-                paragraphs += IllustrativeReportJob._get_cards_group_paragraphs(
+                paragraphs += IllustrativeReportMembersJob._get_cards_group_paragraphs(
                     load('illustrative_report_job__no_illustrators'),
                     no_illustrators_cards
                 )
@@ -45,7 +46,7 @@ class IllustrativeReportJob(BaseJob):
                 if illustrators == '':
                     # already processed
                     continue
-                paragraphs += IllustrativeReportJob._get_cards_group_paragraphs(
+                paragraphs += IllustrativeReportMembersJob._get_cards_group_paragraphs(
                     illustrators,
                     cards
                 )
@@ -78,7 +79,17 @@ class IllustrativeReportJob(BaseJob):
             load('common_trello_label__reviews'),
             load('common_trello_label__survey'),
             load('common_trello_label__test'),
-            load('common_trello_label__visual_legacy')
+            load('common_trello_label__visual_legacy'),
+            load('common_trello_label__archive'),
+            load('common_trello_label__digest'),
+            load('common_trello_label__promo'),
+            load('common_trello_label__video'),
+            load('common_trello_label__visualisation'),
+            load('common_trello_label__memes'),
+            load('common_trello_label__scientist_blogs'),
+            load('common_trello_label__podcasts'),
+            load('common_trello_label__pishu_postcard_weekly'),
+            load('common_trello_label__pishu_selection')
         ]
         for card in cards:
             if not card:
@@ -88,17 +99,8 @@ class IllustrativeReportJob(BaseJob):
             card_fields = app_context.trello_client.get_custom_fields(card.id)
 
             label_names = [label.name for label in card.labels]
-            is_skipped_card = (
-                load('common_trello_label__archive') in label_names or
-                load('common_trello_label__mems') in label_names or
-                load('common_trello_label__digest') in label_names or
-                load('common_trello_label__video') in label_names
-            )
 
-            if is_skipped_card:
-                continue
-
-            card_is_ok = IllustrativeReportJob._check_trello_card(
+            card_is_ok = IllustrativeReportMembersJob._check_trello_card(
                 app_context,
                 card,
                 card_fields,
@@ -108,7 +110,7 @@ class IllustrativeReportJob(BaseJob):
             if not card_is_ok:
                 continue
 
-            cover = IllustrativeReportJob._get_cover_report_field(
+            cover = IllustrativeReportMembersJob._get_cover_report_field(
                 app_context,
                 card_fields.cover if card_fields.cover else ''
             )
@@ -129,7 +131,7 @@ class IllustrativeReportJob(BaseJob):
                 'illustrative_report_job__card_new',
                 url=doc_url,
                 name=card_fields.title or card.name,
-                labels=format_labels(card_labels),
+                labels=format_trello_labels(card_labels),
                 cover=cover,
                 card=load('illustrative_report_job__card_url', url=card.url)
             )

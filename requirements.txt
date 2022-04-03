@@ -1,6 +1,7 @@
 appdirs==1.4.3
 astroid==2.3.3
 attrs==19.3.0
+BeautifulSoup4==4.10.0
 CacheControl==0.12.6
 cachetools==4.1.0
 certifi==2020.4.5.1
@@ -9,7 +10,7 @@ chardet==3.0.4
 click==7.1.1
 colorama==0.4.3
 contextlib2==0.6.0
-cryptography==2.9
+cryptography==3.1.1
 decorator==4.4.2
 deepdiff==4.3.2
 distlib==0.3.0
@@ -63,11 +64,12 @@ requests-oauthlib==1.3.0
 retrying==1.3.3
 rope==0.17.0
 rsa==4.0
-schedule==0.6.0
+schedule==1.0.0
 sheetfu==1.5.3
 six==1.14.0
 SQLAlchemy==1.3.17
-Telethon==1.14.0
+# Telethon==1.16.0
+-e git+https://github.com/alexeyqu/Telethon.git@7cd20d1e5c0082450c53dbf242fb35145e448260#egg=Telethon
 toml==0.10.0
 tornado==6.0.4
 typed-ast==1.4.1
