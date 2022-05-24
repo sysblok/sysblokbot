@@ -11,7 +11,7 @@ from ..trello.trello_objects import CardCustomFields, TrelloCard
 
 logger = logging.getLogger(__name__)
 
-GS_DATE_FORMAT = '%Y-%m-%d'
+GS_DATE_FORMAT = '%d.%m.%Y'
 # Moscow timezone is UTC+3
 MOSCOW_HOURS_DIFFERENCE = 3
 MOSCOW_TIMEDELTA = timedelta(hours=MOSCOW_HOURS_DIFFERENCE)
