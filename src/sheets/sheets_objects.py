@@ -2,14 +2,19 @@ import logging
 
 from sheetfu.modules.table import Item, Table
 from typing import List
+from datetime import timedelta, timezone
 
 from .utils import convert_excel_datetime_to_string
 from ..consts import TrelloCardColor
 from ..strings import load
 from ..trello.trello_objects import CardCustomFields, TrelloCard
 
-
 logger = logging.getLogger(__name__)
+
+GS_DATE_FORMAT = '%Y-%m-%d'
+# Moscow timezone is UTC+3
+MOSCOW_HOURS_DIFFERENCE = 3
+MOSCOW_TIMEDELTA = timedelta(hours=MOSCOW_HOURS_DIFFERENCE)
 
 
 class RegistryPost:
@@ -27,6 +32,13 @@ class RegistryPost:
         'date_site': 'Дата (сайт)',
         'status_site': 'Статус публикации (сайт)',
         'pin_site': '📌',
+        'publication_vk_status': 'Статус публикации (ВК)',
+        'publication_vk_date': 'Дата (ВК)',
+        'publication_fb_status': 'Статус публикации (FB)',
+        'publication_fb_date': 'Дата (FB)',
+        'publication_telegram_status': 'Статус публикации (ТГ)',
+        'publication_telegram_date': 'Дата (ТГ)',
+        'publication_telegram_link': 'Ссылка на (ТГ)',
     }
 
     def __init__(
@@ -46,6 +58,10 @@ class RegistryPost:
         self.cover = custom_fields.cover
         self.is_main_post = is_main_post
         self.is_archive_post = is_archive_post
+        self.labels = card.labels
+        if card.lst:
+            self.lst_name = card.lst.name
+        self.due = card.due
 
         self._fill_rubrics(card, all_rubrics)
 
@@ -64,7 +80,38 @@ class RegistryPost:
             if rubric.name == card_rubrics[1]
         ), 'нет')
 
+    def _calculate_publication_status_telegram(self):
+        status = {'status': None, 'date': None, 'link': None}
+        for label in self.labels:
+            if label.name.lower() == 'телеграм' and label.color == TrelloCardColor.BLACK:
+                status['status'] = 'запланировано'
+                return status
+            if label.name.lower() == 'тг. на усмотрение':
+                status['status'] = 'на усмотрение'
+                return status
+        status['status'] = 'неформат'
+        status['date'] = 'нет'
+        status['link'] = 'нет'
+        return status
+
+    def _calculate_publication_status_vk(self):
+        status = {'status': None, 'date': None, 'link': None}
+        if self.lst_name == 'Отобрано для публикации на неделю (Корректору)':
+            status['status'] = 'запланировано'
+        status['date'] = self._format_date_gs(self.due)
+        return status
+
+    def _calculate_publication_status_fb(self):
+        status = {'status': None, 'date': None, 'link': None}
+        if self.lst_name == 'Отобрано для публикации на неделю (Корректору)':
+            status['status'] = 'запланировано'
+        status['date'] = self._format_date_gs(self.due)
+        return status
+
     def to_dict(self):
+        vk_publication = self._calculate_publication_status_vk()
+        fb_publication = self._calculate_publication_status_fb()
+        telegram_publication = self._calculate_publication_status_telegram()
         return {
             RegistryPost.key_title_map['name']: self.title,
             RegistryPost.key_title_map['author']: self.authors,
@@ -83,7 +130,22 @@ class RegistryPost:
             RegistryPost.key_title_map['pin_site']: (
                 'да' if not self.is_archive_post and self.is_main_post else 'нет'
             ),
+            RegistryPost.key_title_map['publication_telegram_status']: telegram_publication['status'],
+            RegistryPost.key_title_map['publication_telegram_date']: telegram_publication['date'],
+            RegistryPost.key_title_map['publication_telegram_link']: telegram_publication['link'],
+
+            RegistryPost.key_title_map['publication_vk_status']: vk_publication['status'],
+            RegistryPost.key_title_map['publication_vk_date']: vk_publication['date'],
+
+            RegistryPost.key_title_map['publication_fb_status']: fb_publication['status'],
+            RegistryPost.key_title_map['publication_fb_date']: fb_publication['date'],
         }
+
+    @staticmethod
+    def _format_date_gs(due_date):
+        if due_date is None:
+            return None
+        return (due_date + MOSCOW_TIMEDELTA).strftime(GS_DATE_FORMAT)
 
 
 class SheetsItem:
