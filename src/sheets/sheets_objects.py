@@ -1,8 +1,8 @@
 import logging
 
 from sheetfu.modules.table import Item, Table
-from typing import List
-from datetime import timedelta, timezone
+from typing import List, Optional
+from datetime import timedelta, datetime
 
 from .utils import convert_excel_datetime_to_string
 from ..consts import TrelloCardColor
@@ -142,7 +142,7 @@ class RegistryPost:
         }
 
     @staticmethod
-    def _format_date_gs(due_date):
+    def _format_date_gs(due_date: datetime) -> Optional[str]:
         if due_date is None:
             return None
         return (due_date + MOSCOW_TIMEDELTA).strftime(GS_DATE_FORMAT)
