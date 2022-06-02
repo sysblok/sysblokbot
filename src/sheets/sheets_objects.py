@@ -130,7 +130,8 @@ class RegistryPost:
             RegistryPost.key_title_map['pin_site']: (
                 'да' if not self.is_archive_post and self.is_main_post else 'нет'
             ),
-            RegistryPost.key_title_map['publication_telegram_status']: telegram_publication['status'],
+            RegistryPost.key_title_map['publication_telegram_status']:
+                                                    telegram_publication['status'],
             RegistryPost.key_title_map['publication_telegram_date']: telegram_publication['date'],
             RegistryPost.key_title_map['publication_telegram_link']: telegram_publication['link'],
 
