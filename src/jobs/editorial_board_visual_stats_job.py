@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 mpl.use('Agg')
 
 DEFAULT_BAR_WIDTH = 0.4
+
+
 class EditorialBoardVisualStatsJob(BaseJob):
     @staticmethod
     def _execute(app_context: AppContext,
@@ -120,25 +122,27 @@ class EditorialBoardVisualStatsJob(BaseJob):
             today_db_str = datetime.datetime.today().strftime('%Y-%m-%d')
             new_analytics.date = today_db_str
             app_context.db_client.add_item_to_statistics_table(new_analytics)
-        
-        # try to make and save plot  
+
         fig, ax = plt.subplots()
         labels = [x.split(': ')[0] for x in stats]
         x = np.arange(len(labels))
-        plt.xticks(rotation = 90)
+        plt.xticks(rotation=90)
         # Note we add the `width` parameter now which sets the width of each bar.
         b1 = ax.bar(x, [int(x.split(': ')[1].strip('</b>')) for x in stats],
                     width=DEFAULT_BAR_WIDTH)
         # Same thing, but offset the x by the width of the bar.
         try:
-            b2 = ax.bar(x + DEFAULT_BAR_WIDTH, [int(x.split(': ')[2].strip('</b>')) for x in stats], width=DEFAULT_BAR_WIDTH)
-        except:
+            b2 = ax.bar(
+                x + DEFAULT_BAR_WIDTH,
+                [int(x.split(': ')[2].strip('</b>')) for x in stats],
+                width=DEFAULT_BAR_WIDTH)
+        except Exception:
             pass
         ax.set_ylabel('Count')
         ax.set_title('Visual Stats Board')
         ax.set_xticks(x, labels)
         ax.legend()
-    
+
         plt.savefig('foo.png', bbox_inches='tight')
         send('foo.png')
 
