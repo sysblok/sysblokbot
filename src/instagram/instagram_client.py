@@ -113,6 +113,8 @@ class InstagramClient(Singleton):
         Get the average number of likes on recent posts.
         """
         posts = self._get_new_posts(since, until)
+        if len(posts) == 0:
+            return 0
         return int(sum(map(lambda post: post.like_count, posts)) / len(posts))
 
     def get_comments_count(self, since: datetime, until: datetime) -> int:
