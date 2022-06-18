@@ -26,6 +26,7 @@ from .ig_analytics_report_job import IGAnalyticsReportJob
 from .illustrative_report_members_job import IllustrativeReportMembersJob
 from .illustrative_report_columns_job import IllustrativeReportColumnsJob
 from .editorial_board_stats_job import EditorialBoardStatsJob
+from .editorial_board_visual_stats_job import EditorialBoardVisualStatsJob
 from .publication_plans_job import PublicationPlansJob
 from .sample_job import SampleJob
 from .site_health_check_job import SiteHealthCheckJob

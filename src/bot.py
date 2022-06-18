@@ -71,6 +71,12 @@ class SysBlokBot:
             self.manager_reply_handler('editorial_board_stats_job'),
             'получить статистику изменений за неделю'
         )
+        self.add_manager_handler(
+            'get_editorial_board_visual_stats',
+            CommandCategories.STATS,
+            self.manager_reply_handler('editorial_board_visual_stats_job'),
+            'получить статистику изменений за неделю в виде картинки'
+        )
         self.add_admin_handler(
             'send_publication_plans',
             CommandCategories.BROADCAST,
