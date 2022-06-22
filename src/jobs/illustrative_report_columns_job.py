@@ -43,6 +43,22 @@ class IllustrativeReportColumnsJob(BaseJob):
             strict_archive_rules=False,
         )
 
+        paragraphs += IllustrativeReportColumnsJob._retrieve_cards_for_paragraph(
+            app_context=app_context,
+            title=load('common_report__section_title_proofreading'),
+            list_aliases=(TrelloListAlias.PROOFREADING, ),
+            errors=errors,
+            strict_archive_rules=False,
+        )
+
+        paragraphs += IllustrativeReportColumnsJob._retrieve_cards_for_paragraph(
+            app_context=app_context,
+            title=load('common_report__section_title_typesetting'),
+            list_aliases=(TrelloListAlias.DONE,),
+            errors=errors,
+            strict_archive_rules=False,
+        )
+
         if len(errors) > 0:
             paragraphs = format_errors(errors)
 
