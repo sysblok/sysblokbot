@@ -6,8 +6,9 @@ import telegram
 
 from ... import consts
 from ...app_context import AppContext
-from ...jobs.utils import paragraphs_to_messages, retrieve_username
+from ...jobs.utils import retrieve_username
 from ...strings import load
+from ...tg.sender import paragraphs_to_messages
 from ...trello.trello_objects import TrelloCard
 from .utils import manager_only, reply
 
@@ -19,11 +20,24 @@ logger = logging.getLogger(__name__)
 @manager_only
 def get_tasks_report(update: telegram.Update, tg_context: telegram.ext.CallbackContext):
     # set initial dialogue data
+    app_context = AppContext()
+
+    boards_list = app_context.trello_client.get_boards_for_user()
+    boards_list_formatted = '\n'.join(
+             [f'{i + 1}) {brd.name}' for i, brd in enumerate(boards_list)]
+    )
+
     tg_context.chat_data[consts.LAST_ACTIONABLE_COMMAND] = TASK_NAME
+    tg_context.chat_data[consts.GetTasksReportData.LISTS] = [lst.to_dict() for lst in boards_list]
     tg_context.chat_data[TASK_NAME] = {
-        consts.NEXT_ACTION: consts.PlainTextUserAction.GET_TASKS_REPORT__ENTER_BOARD_URL.value
+        consts.NEXT_ACTION: consts.PlainTextUserAction.GET_TASKS_REPORT__ENTER_BOARD_NUMBER.value
     }
-    reply(load('get_tasks_report_handler__intro'), update)
+    reply(
+        load('get_tasks_report_handler__choose_trello_board', lists=boards_list_formatted),
+        update
+    )
+
+    return
 
 
 def generate_report_messages(

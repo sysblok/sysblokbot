@@ -6,7 +6,7 @@ from ..app_context import AppContext
 from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias, TrelloCardColor
 from ..strings import load
 from .base_job import BaseJob
-from .utils import pretty_send
+from ..tg.sender import pretty_send
 from enum import IntEnum
 
 logger = logging.getLogger(__name__)
@@ -127,3 +127,7 @@ class CreateFoldersForIllustratorsJob(BaseJob):
             return load('create_folders_for_illustrators_job__section_created')
         elif state == IllustratorFolderState.INCORRECT_URL:
             return load('create_folders_for_illustrators_job__section_incorrect_url')
+
+    @staticmethod
+    def _usage_muted():
+        return True

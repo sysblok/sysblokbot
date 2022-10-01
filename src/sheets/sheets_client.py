@@ -3,6 +3,7 @@ from pprint import pprint
 from typing import List, Dict, Optional
 
 from sheetfu import SpreadsheetApp, Table
+from sheetfu.model import Sheet
 
 from ..utils.singleton import Singleton
 
@@ -54,6 +55,9 @@ class GoogleSheetsClient(Singleton):
     def fetch_hr_forms_processed(self) -> Table:
         return self._fetch_table(self.hr_sheet_key, 'Анкеты')
 
+    def fetch_hr_team(self) -> Table:
+        return self._fetch_table(self.hr_sheet_key, 'Команда (с заморозкой)')
+
     def fetch_posts_registry(self) -> Table:
         return self._fetch_table(self.post_registry_sheet_key)
 
@@ -74,14 +78,15 @@ class GoogleSheetsClient(Singleton):
             logger.error(f'Failed to update post registry: {e}')
         return new_posts
 
+    def fetch_sheet(self, sheet_key: str, sheet_name: Optional[str] = None) -> Sheet:
+        sheet = self._open_by_key(sheet_key)
+        return sheet.get_sheet_by_name(sheet_name) if sheet_name else sheet.get_sheet_by_id(0)
+
     def _has_string(self, data, string: str):
         return string in str(data.get_values())
 
     def _fetch_table(self, sheet_key: str, sheet_name: Optional[str] = None) -> Table:
-        sheet = self._open_by_key(sheet_key)
-        worksheet = (
-            sheet.get_sheet_by_name(sheet_name) if sheet_name else sheet.get_sheet_by_id(0)
-        )
+        worksheet = self.fetch_sheet(sheet_key, sheet_name)
         return Table(worksheet.get_data_range())
 
     def _open_by_key(self, sheet_key: str):
