@@ -15,7 +15,7 @@ from ..utils import card_checks
 logger = logging.getLogger(__name__)
 mpl.use('Agg')
 
-DEFAULT_BAR_WIDTH = 0.4
+DEFAULT_BAR_HEIGHT = 0.4
 
 
 class EditorialBoardVisualStatsJob(BaseJob):
@@ -128,19 +128,32 @@ class EditorialBoardVisualStatsJob(BaseJob):
         x = np.arange(len(labels))
         plt.xticks(rotation=90)
         # Note we add the `width` parameter now which sets the width of each bar.
-        b1 = ax.bar(x, [int(x.split(': ')[1].strip('</b>')) for x in stats],
-                    width=DEFAULT_BAR_WIDTH)
+        last_week = [eval(x.split(': ')[1].split(' ')[0].strip('</b>')) for x in stats]
+        b1 = ax.barh(
+            x,
+            last_week,
+            height = DEFAULT_BAR_HEIGHT,
+            label = 'Предыдущая неделя'
+        )
         # Same thing, but offset the x by the width of the bar.
+        actual_week = []
+        for values in stats:
+            actual_week_values = values.split(': ')[1]
+            for i, j in {'(' : '', ')' : '','<' : '','b' : '','>' : '','/' : ''}.items():
+                actual_week_values = actual_week_values.replace(i, j)
+            actual_week.append(eval(actual_week_values))
         try:
-            b2 = ax.bar(
-                x + DEFAULT_BAR_WIDTH,
-                [int(x.split(': ')[2].strip('</b>')) for x in stats],
-                width=DEFAULT_BAR_WIDTH)
-        except Exception:
+            b2 = ax.barh(
+                x + DEFAULT_BAR_HEIGHT, 
+                actual_week,
+                height = DEFAULT_BAR_HEIGHT,
+                label = 'Текущая неделя'
+            )
+        except:
             pass
-        ax.set_ylabel('Count')
+        ax.set_xlabel('Count')
         ax.set_title('Visual Stats Board')
-        ax.set_xticks(x, labels)
+        ax.set_yticks(x, labels)
         ax.legend()
 
         plt.savefig('foo.png', bbox_inches='tight')
@@ -177,10 +190,18 @@ class EditorialBoardVisualStatsJob(BaseJob):
 
         size_and_delta = len(cards)
         if statistics:  # otherwise it's a first command run
-            size_and_delta = f'{len(cards)}: {int(getattr(statistics, column_name))}'
+            delta = len(cards) - int(getattr(statistics, column_name))
+            if delta != 0:
+                delta_string = load(
+                    'editorial_board_stats_job__delta_week',
+                    sign='+' if delta > 0 else '-',
+                    delta=abs(delta)
+                )
+                size_and_delta = f'{len(cards)} {delta_string}'
 
         return load(
             'editorial_board_stats_job__title_and_delta',
             title=title,
             delta=size_and_delta
         )
+
