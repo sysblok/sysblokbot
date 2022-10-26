@@ -132,24 +132,24 @@ class EditorialBoardVisualStatsJob(BaseJob):
         b1 = ax.barh(
             x,
             last_week,
-            height = DEFAULT_BAR_HEIGHT,
-            label = 'Предыдущая неделя'
+            height=DEFAULT_BAR_HEIGHT,
+            label='Предыдущая неделя'
         )
         # Same thing, but offset the x by the width of the bar.
         actual_week = []
         for values in stats:
             actual_week_values = values.split(': ')[1]
-            for i, j in {'(' : '', ')' : '','<' : '','b' : '','>' : '','/' : ''}.items():
+            for i, j in {'(': '', ')': '', '<': '', 'b': '', '>': '', '/': ''}.items():
                 actual_week_values = actual_week_values.replace(i, j)
             actual_week.append(eval(actual_week_values))
         try:
             b2 = ax.barh(
-                x + DEFAULT_BAR_HEIGHT, 
+                x + DEFAULT_BAR_HEIGHT,
                 actual_week,
-                height = DEFAULT_BAR_HEIGHT,
-                label = 'Текущая неделя'
+                height=DEFAULT_BAR_HEIGHT,
+                label='Текущая неделя'
             )
-        except:
+        except Exception:
             pass
         ax.set_xlabel('Count')
         ax.set_title('Visual Stats Board')
@@ -204,4 +204,3 @@ class EditorialBoardVisualStatsJob(BaseJob):
             title=title,
             delta=size_and_delta
         )
-
