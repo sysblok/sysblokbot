@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 mpl.use('Agg')
 
 DEFAULT_BAR_HEIGHT = 0.4
+
+
 class EditorialBoardVisualStatsJob(BaseJob):
     @staticmethod
     def _execute(app_context: AppContext,
@@ -120,12 +122,11 @@ class EditorialBoardVisualStatsJob(BaseJob):
             today_db_str = datetime.datetime.today().strftime('%Y-%m-%d')
             new_analytics.date = today_db_str
             app_context.db_client.add_item_to_statistics_table(new_analytics)
-        
-        # try to make and save plot  
+
         fig, ax = plt.subplots()
         labels = [x.split(': ')[0] for x in stats]
         x = np.arange(len(labels))
-        plt.xticks(rotation = 90)
+        plt.xticks(rotation=90)
         # Note we add the `width` parameter now which sets the width of each bar.
         last_week = [eval(x.split(': ')[1].split(' ')[0].strip('</b>')) for x in stats]
         b1 = ax.barh(
@@ -154,7 +155,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
         ax.set_title('Visual Stats Board')
         ax.set_yticks(x, labels)
         ax.legend()
-    
+
         plt.savefig('foo.png', bbox_inches='tight')
         send('foo.png')
 

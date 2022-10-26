@@ -66,10 +66,11 @@ class TelegramSender(Singleton):
         """
         if '.png' in message_text:
             for pict in re.findall(r'\S*\.png', message_text):
-                self.bot.send_photo(photo=open(pict, 'rb'),
-                chat_id=chat_id,
-                disable_notification=self.is_silent,
-                **kwargs
+                self.bot.send_photo(
+                    photo=open(pict, 'rb'),
+                    chat_id=chat_id,
+                    disable_notification=self.is_silent,
+                    **kwargs
                 )
             message_text = re.sub(r'\S*\.png', '', message_text)
         if message_text != '':
@@ -142,6 +143,7 @@ class TelegramSender(Singleton):
         self.is_silent = self._tg_config.get('is_silent', True)
         self.disable_web_page_preview = self._tg_config.get('disable_web_page_preview', True)
 
+
 def pretty_send(
         paragraphs: List[str],
         send: Callable[[str], None]
@@ -200,4 +202,3 @@ def paragraphs_to_messages(
     # first message is empty by design.
     assert messages[0] == ''
     return messages[1:]
-    
