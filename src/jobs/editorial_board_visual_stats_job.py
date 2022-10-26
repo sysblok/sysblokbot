@@ -28,39 +28,33 @@ class EditorialBoardVisualStatsJob(BaseJob):
             EditorialBoardVisualStatsJob._make_text_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
-                title=load('editorial_board_stats_job__title_pending_approval'),
+                title=load('editorial_board_stats_job__title_ready_to_issue'),
                 list_aliases=(
-                    TrelloListAlias.TOPIC_SUGGESTION,
+                    TrelloListAlias.EDITED_SOMETIMES,
+                    TrelloListAlias.TO_CHIEF_EDITOR,
+                    TrelloListAlias.PROOFREADING,
+                    TrelloListAlias.DONE,
                 ),
-                column_name='topic_suggestion'
+                column_name='ready_to_issue'
             ),
             EditorialBoardVisualStatsJob._make_text_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
-                title=load('editorial_board_stats_job__title_author_search'),
+                title=load('editorial_board_stats_job__title_editors_check'),
                 list_aliases=(
-                    TrelloListAlias.TOPIC_READY,
+                    TrelloListAlias.TO_SEO_EDITOR,
+                    TrelloListAlias.EDITED_NEXT_WEEK,
                 ),
-                column_name='topic_ready'
+                column_name='editors_check'
             ),
             EditorialBoardVisualStatsJob._make_text_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
-                title=load('editorial_board_stats_job__title_in_work'),
+                title=load('editorial_board_stats_job__title_waiting_for_editors'),
                 list_aliases=(
-                    TrelloListAlias.IN_PROGRESS,
+                    TrelloListAlias.TO_EDITOR,
                 ),
-                column_name='in_progress'
-            ),
-            EditorialBoardVisualStatsJob._make_text_for_category(
-                app_context=app_context,
-                new_analytics=new_analytics,
-                title=load('editorial_board_stats_job__title_deadline_missed'),
-                list_aliases=(
-                    TrelloListAlias.IN_PROGRESS,
-                ),
-                column_name='deadline_missed',
-                filter_func=lambda card: card_checks.is_deadline_missed(card, app_context)[0]
+                column_name='waiting_for_editors',
             ),
             EditorialBoardVisualStatsJob._make_text_for_category(
                 app_context=app_context,
@@ -79,34 +73,40 @@ class EditorialBoardVisualStatsJob(BaseJob):
             EditorialBoardVisualStatsJob._make_text_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
-                title=load('editorial_board_stats_job__title_waiting_for_editors'),
+                title=load('editorial_board_stats_job__title_deadline_missed'),
                 list_aliases=(
-                    TrelloListAlias.TO_EDITOR,
+                    TrelloListAlias.IN_PROGRESS,
                 ),
-                column_name='waiting_for_editors',
+                column_name='deadline_missed',
+                filter_func=lambda card: card_checks.is_deadline_missed(card, app_context)[0]
             ),
             EditorialBoardVisualStatsJob._make_text_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
-                title=load('editorial_board_stats_job__title_editors_check'),
+                title=load('editorial_board_stats_job__title_in_work'),
                 list_aliases=(
-                    TrelloListAlias.TO_SEO_EDITOR,
-                    TrelloListAlias.EDITED_NEXT_WEEK,
+                    TrelloListAlias.IN_PROGRESS,
                 ),
-                column_name='editors_check'
+                column_name='in_progress'
             ),
             EditorialBoardVisualStatsJob._make_text_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
-                title=load('editorial_board_stats_job__title_ready_to_issue'),
+                title=load('editorial_board_stats_job__title_author_search'),
                 list_aliases=(
-                    TrelloListAlias.EDITED_SOMETIMES,
-                    TrelloListAlias.TO_CHIEF_EDITOR,
-                    TrelloListAlias.PROOFREADING,
-                    TrelloListAlias.DONE,
+                    TrelloListAlias.TOPIC_READY,
                 ),
-                column_name='ready_to_issue'
-            )
+                column_name='topic_ready'
+            ),
+            EditorialBoardVisualStatsJob._make_text_for_category(
+                app_context=app_context,
+                new_analytics=new_analytics,
+                title=load('editorial_board_stats_job__title_pending_approval'),
+                list_aliases=(
+                    TrelloListAlias.TOPIC_SUGGESTION,
+                ),
+                column_name='topic_suggestion'
+            ),
         ]
 
         date_interval = ''
@@ -154,7 +154,9 @@ class EditorialBoardVisualStatsJob(BaseJob):
         ax.set_xlabel('Count')
         ax.set_title('Visual Stats Board')
         ax.set_yticks(x, labels)
-        ax.legend()
+        # reverse the legend
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(reversed(handles), reversed(labels))
 
         plt.savefig('foo.png', bbox_inches='tight')
         send('foo.png')
