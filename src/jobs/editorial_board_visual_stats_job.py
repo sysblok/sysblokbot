@@ -24,6 +24,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
                  send: Callable[[str], None],
                  called_from_handler: bool = False):
         new_analytics = TrelloAnalytics()
+        # the order here is displayed reversed as the chart is build from the bottom up :)
         stats = [
             EditorialBoardVisualStatsJob._make_text_for_category(
                 app_context=app_context,
