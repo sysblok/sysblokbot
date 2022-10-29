@@ -41,7 +41,6 @@ SHEETS_CONFIG = 'sheets'
 DRIVE_CONFIG = 'drive'
 FACEBOOK_CONFIG = 'facebook'
 VK_CONFIG = 'vk'
-JOBS_CONFIG = 'jobs'
 DB_CONFIG = 'db'
 STRINGS_DB_CONFIG = 'strings'
 

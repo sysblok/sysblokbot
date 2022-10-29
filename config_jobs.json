@@ -1,20 +1,18 @@
 {
-  "jobs": {
-        "sample_job": [
-            {
-                "every": "wednesday",
-                "at": "10:00",
-                "send_to": [],
-                "kwargs": {}
-            },
-            {
-                "every": "12 hours",
-                "send_to": []
-            }
-        ],
-        "send_reminders_job": {
-            "every": "minute",
-            "send_to": []
-        }
-    }
+      "sample_job": [
+          {
+              "every": "wednesday",
+              "at": "10:00",
+              "send_to": [],
+              "kwargs": {}
+          },
+          {
+              "every": "12 hours",
+              "send_to": []
+          }
+      ],
+      "send_reminders_job": {
+          "every": "minute",
+          "send_to": []
+      }
 }

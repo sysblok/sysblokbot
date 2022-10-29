@@ -27,12 +27,12 @@ def get_bot():
     All singleton classes must be initialized within this method before bot
     actually launched. This includes clients, config manager and scheduler.
     """
-    config_manager = ConfigManager(consts.CONFIG_PATH, consts.CONFIG_OVERRIDE_PATH)
+    config_manager = ConfigManager(consts.CONFIG_PATH, consts.CONFIG_OVERRIDE_PATH,
+                                   consts.CONFIG_JOBS_PATH, consts.CONFIG_JOBS_OVERRIDE_PATH)
     config = config_manager.load_config_with_override()
     if not config:
         raise ValueError(f"Could not load config, can't go on")
-    config_manager_jobs = ConfigManager(consts.CONFIG_JOBS_PATH, consts.CONFIG_JOBS_OVERRIDE_PATH)
-    config_jobs = config_manager_jobs.load_config_with_override()
+    config_jobs = config_manager.load_jobs_config_with_override()
     if not config_jobs:
         raise ValueError(f"Could not load job config, can't go on")
 

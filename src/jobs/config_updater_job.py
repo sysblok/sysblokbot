@@ -24,7 +24,7 @@ class ConfigUpdaterJob(BaseJob):
         # if anything at all changed in config
         diff = DeepDiff(
             job_scheduler.config,
-            job_scheduler.config_manager.load_config_with_override(),
+            job_scheduler.config_manager.load_jobs_config_with_override(),
             ignore_order=True,
             verbose_level=2
         )
