@@ -28,7 +28,6 @@ class EditorialBoardVisualStatsJob(BaseJob):
         stats = [
             EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
-                new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_ready_to_issue'),
                 list_aliases=(
                     TrelloListAlias.EDITED_SOMETIMES,
@@ -40,7 +39,6 @@ class EditorialBoardVisualStatsJob(BaseJob):
             ),
             EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
-                new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_editors_check'),
                 list_aliases=(
                     TrelloListAlias.TO_SEO_EDITOR,
@@ -50,7 +48,6 @@ class EditorialBoardVisualStatsJob(BaseJob):
             ),
             EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
-                new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_waiting_for_editors'),
                 list_aliases=(
                     TrelloListAlias.TO_EDITOR,
@@ -59,7 +56,6 @@ class EditorialBoardVisualStatsJob(BaseJob):
             ),
             EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
-                new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_expect_this_week'),
                 list_aliases=(
                     TrelloListAlias.IN_PROGRESS,
@@ -73,7 +69,6 @@ class EditorialBoardVisualStatsJob(BaseJob):
             ),
             EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
-                new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_deadline_missed'),
                 list_aliases=(
                     TrelloListAlias.IN_PROGRESS,
@@ -83,7 +78,6 @@ class EditorialBoardVisualStatsJob(BaseJob):
             ),
             EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
-                new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_in_work'),
                 list_aliases=(
                     TrelloListAlias.IN_PROGRESS,
@@ -92,7 +86,6 @@ class EditorialBoardVisualStatsJob(BaseJob):
             ),
             EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
-                new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_author_search'),
                 list_aliases=(
                     TrelloListAlias.TOPIC_READY,
@@ -101,7 +94,6 @@ class EditorialBoardVisualStatsJob(BaseJob):
             ),
             EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
-                new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_pending_approval'),
                 list_aliases=(
                     TrelloListAlias.TOPIC_SUGGESTION,
@@ -122,36 +114,32 @@ class EditorialBoardVisualStatsJob(BaseJob):
         except Exception as e:
             logger.error(f'Could not get main stats date interval: {e}')
 
-        #if not called_from_handler:
-        if 1==1:
+        if not called_from_handler:
             # scheduled runs should write results to db, otherwise not
             today_db_str = datetime.datetime.today().strftime('%Y-%m-%d')
             new_analytics.date = today_db_str
             app_context.db_client.add_item_to_statistics_table(new_analytics)
 
         fig, ax = plt.subplots()
-        labels = [x[0] for x in stats]
+        labels = [x['title'] for x in stats]
         x = np.arange(len(labels))
         plt.xticks(rotation=90)
         # Note we add the `width` parameter now which sets the width of each bar.
-        last_week = [x[1] for x in stats]
-        b1 = ax.barh(
+        last_week = [x['previous_period'] for x in stats]
+        ax.barh(
             x,
             last_week,
             height=DEFAULT_BAR_HEIGHT,
             label='Предыдущая неделя'
         )
-        # Same thing, but offset the x by the width of the bar.
-        actual_week = [x[2] for x in stats]
-        try:
-            b2 = ax.barh(
-                x + DEFAULT_BAR_HEIGHT,
-                actual_week,
-                height=DEFAULT_BAR_HEIGHT,
-                label='Текущая неделя'
-            )
-        except Exception:
-            pass
+        # Same thing, but for the current week
+        actual_week = [x['current_period'] for x in stats]
+        ax.barh(
+            x + DEFAULT_BAR_HEIGHT,
+            actual_week,
+            height=DEFAULT_BAR_HEIGHT,
+            label='Текущая неделя'
+        )
         ax.set_xlabel('Count')
         ax.set_title('Visual Stats Board')
         ax.set_yticks(x, labels)
@@ -176,23 +164,21 @@ class EditorialBoardVisualStatsJob(BaseJob):
     @staticmethod
     def _make_dict_for_category(
             app_context: AppContext,
-            new_analytics: TrelloAnalytics,
             title: str,
             list_aliases: Tuple,
             column_name: str,
             filter_func=None,
-    ) -> len:
+    ) -> dict:
         """
-        #TODO
-        Returns a map for category statistics (e.g. {"В работе у авторов": "3"})
+        Returns a dict for category statistics (e.g. {"title": "В работе у авторов",
+                                                        "previous_period": 11,
+                                                        "current_period": 13})
         """
         logger.info(f'Started counting: "{title}"')
         list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
         cards = list(filter(filter_func, app_context.trello_client.get_cards(list_ids)))
         statistics = utils.retrieve_last_trello_analytics(app_context.db_client)
-        #TODO? а зачем это?
-        #setattr(new_analytics, column_name, len(cards))
         previous_data = 0
         if statistics:  # otherwise it's a first command run
             previous_data = int(getattr(statistics, column_name))
-        return (title, previous_data, len(cards))
+        return {'title': title, 'previous_period': previous_data, 'current_period': len(cards)}
