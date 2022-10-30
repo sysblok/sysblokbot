@@ -110,18 +110,6 @@ class EditorialBoardVisualStatsJob(BaseJob):
             ),
         ]
 
-        date_interval = ''
-        try:
-            last_stats_date = utils.retrieve_last_trello_analytics_date(app_context.db_client)
-            if last_stats_date is None:
-                date_interval = ''
-                logger.warning(f'Last stats date is null. Setting the date interval to zero')
-            else:
-                today = datetime.datetime.today()
-                date_interval = f'{last_stats_date.strftime("%d.%m")}-{today.strftime("%d.%m")}'
-        except Exception as e:
-            logger.error(f'Could not get main stats date interval: {e}')
-
         if not called_from_handler:
             # scheduled runs should write results to db, otherwise not
             today_db_str = datetime.datetime.today().strftime('%Y-%m-%d')
@@ -132,7 +120,6 @@ class EditorialBoardVisualStatsJob(BaseJob):
         labels = [x['title'] for x in stats]
         x = np.arange(len(labels))
         plt.xticks(rotation=90)
-        # Note we add the `width` parameter now which sets the width of each bar.
         last_week = [x['previous_period'] for x in stats]
         ax.barh(
             x,
