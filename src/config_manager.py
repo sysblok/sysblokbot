@@ -12,15 +12,23 @@ REDACTED_KEYS = ('key', 'token')
 
 
 class ConfigManager(Singleton):
-    def __init__(self, config_path: str = '', config_override_path: str = ''):
+    def __init__(self, config_path: str = '', config_override_path: str = '',
+                 config_jobs_path: str = '', config_jobs_override_path: str = ''):
         if self.was_initialized():
             return
 
         self.config_path = config_path
         self.config_override_path = config_override_path
+        self.config_jobs_path = config_jobs_path
+        self.config_jobs_override_path = config_jobs_override_path
+
         self._latest_config = {}
         self._latest_config_override = {}
         self._latest_config_ts = None
+
+        self._latest_jobs_config = {}
+        self._latest_jobs_config_override = {}
+        self._latest_jobs_config_ts = None
 
     def load_config_with_override(self) -> dict:
         main_config = self._load_config(self.config_path) or {}
@@ -31,6 +39,15 @@ class ConfigManager(Singleton):
         self._latest_config_ts = datetime.datetime.now()
         return main_config
 
+    def load_jobs_config_with_override(self) -> dict:
+        main_config = self._load_config(self.config_jobs_path) or {}
+        override_config = self._load_config(self.config_jobs_override_path) or {}
+        ConfigManager.join_configs(main_config, override_config)
+        self._latest_jobs_config = main_config
+        self._latest_jobs_config_override = override_config
+        self._latest_jobs_config_ts = datetime.datetime.now()
+        return main_config
+
     def get_latest_config(self):
         """
         Recommended way to access config without re-reading from disk.
@@ -38,6 +55,14 @@ class ConfigManager(Singleton):
         """
         logger.debug(f'Got config, last updated: {self._latest_config_ts}')
         return self._latest_config
+
+    def get_latest_jobs_config(self):
+        """
+        Recommended way to access config without re-reading from disk.
+        Freshness of the config depends on jobs.config_checker_job
+        """
+        logger.debug(f'Got config, last updated: {self._latest_jobs_config_ts}')
+        return self._latest_jobs_config
 
     def get_trello_config(self):
         return self.get_latest_config().get(consts.TRELLO_CONFIG, {})
@@ -61,7 +86,7 @@ class ConfigManager(Singleton):
         return self.get_latest_config().get(consts.VK_CONFIG, {})
 
     def get_jobs_config(self, job_key=None):
-        config = self.get_latest_config().get(consts.JOBS_CONFIG, {})
+        config = self.get_latest_jobs_config()
         if job_key is None:
             return config
         if job_key not in config:
