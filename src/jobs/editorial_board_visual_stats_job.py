@@ -9,7 +9,7 @@ from . import utils
 from ..app_context import AppContext
 from ..consts import TrelloListAlias
 from ..db.db_objects import TrelloAnalytics
-from ..strings import load
+from ..strings import load, load_dict
 from ..utils import card_checks
 
 logger = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
         new_analytics = TrelloAnalytics()
         # the order here is displayed reversed as the chart is build from the bottom up :)
         stats = [
-            EditorialBoardVisualStatsJob._make_text_for_category(
+            EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_ready_to_issue'),
@@ -38,7 +38,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
                 ),
                 column_name='ready_to_issue'
             ),
-            EditorialBoardVisualStatsJob._make_text_for_category(
+            EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_editors_check'),
@@ -48,7 +48,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
                 ),
                 column_name='editors_check'
             ),
-            EditorialBoardVisualStatsJob._make_text_for_category(
+            EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_waiting_for_editors'),
@@ -57,7 +57,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
                 ),
                 column_name='waiting_for_editors',
             ),
-            EditorialBoardVisualStatsJob._make_text_for_category(
+            EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_expect_this_week'),
@@ -71,7 +71,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
                 ),
                 column_name='expect_this_week'
             ),
-            EditorialBoardVisualStatsJob._make_text_for_category(
+            EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_deadline_missed'),
@@ -81,7 +81,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
                 column_name='deadline_missed',
                 filter_func=lambda card: card_checks.is_deadline_missed(card, app_context)[0]
             ),
-            EditorialBoardVisualStatsJob._make_text_for_category(
+            EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_in_work'),
@@ -90,7 +90,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
                 ),
                 column_name='in_progress'
             ),
-            EditorialBoardVisualStatsJob._make_text_for_category(
+            EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_author_search'),
@@ -99,7 +99,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
                 ),
                 column_name='topic_ready'
             ),
-            EditorialBoardVisualStatsJob._make_text_for_category(
+            EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_pending_approval'),
@@ -113,8 +113,12 @@ class EditorialBoardVisualStatsJob(BaseJob):
         date_interval = ''
         try:
             last_stats_date = utils.retrieve_last_trello_analytics_date(app_context.db_client)
-            today = datetime.datetime.today()
-            date_interval = f'{last_stats_date.strftime("%d.%m")}-{today.strftime("%d.%m")}'
+            if last_stats_date is None:
+                date_interval = ''
+                logger.warning(f'Last stats date is null. Setting the date interval to zero')
+            else:
+                today = datetime.datetime.today()
+                date_interval = f'{last_stats_date.strftime("%d.%m")}-{today.strftime("%d.%m")}'
         except Exception as e:
             logger.error(f'Could not get main stats date interval: {e}')
 
@@ -125,7 +129,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
             app_context.db_client.add_item_to_statistics_table(new_analytics)
 
         fig, ax = plt.subplots()
-        labels = [x.split(': ')[0] for x in stats]
+        labels = [x['title'] for x in stats]
         x = np.arange(len(labels))
         plt.xticks(rotation=90)
         # Note we add the `width` parameter now which sets the width of each bar.
@@ -174,35 +178,36 @@ class EditorialBoardVisualStatsJob(BaseJob):
         return 0 <= timedelta.days < 7
 
     @staticmethod
-    def _make_text_for_category(
+    def _make_dict_for_category(
             app_context: AppContext,
             new_analytics: TrelloAnalytics,
             title: str,
             list_aliases: Tuple[str],
             column_name: str,
             filter_func=None,
-    ) -> str:
-        '''
-        Returns a single string for category statistics (e.g. "В работе у авторов: 3")
-        '''
+    ) -> dict:
+        """
+        Returns a map for category statistics (e.g. {"В работе у авторов": "3"})
+        """
         logger.info(f'Started counting: "{title}"')
         list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
         cards = list(filter(filter_func, app_context.trello_client.get_cards(list_ids)))
         statistics = utils.retrieve_last_trello_analytics(app_context.db_client)
         setattr(new_analytics, column_name, len(cards))
 
-        size_and_delta = len(cards)
+        size_and_delta = None
         if statistics:  # otherwise it's a first command run
             delta = len(cards) - int(getattr(statistics, column_name))
             if delta != 0:
-                delta_string = load(
+                delta_dict = load_dict(
                     'editorial_board_stats_job__delta_week',
                     sign='+' if delta > 0 else '-',
                     delta=abs(delta)
                 )
-                size_and_delta = f'{len(cards)} {delta_string}'
-
-        return load(
+                size_and_delta = (len(cards), delta_dict)
+        else:
+            size_and_delta = (len(cards), {})
+        return load_dict(
             'editorial_board_stats_job__title_and_delta',
             title=title,
             delta=size_and_delta

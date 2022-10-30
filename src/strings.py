@@ -12,7 +12,6 @@ from .utils.singleton import Singleton
 
 from sqlalchemy import Column, String
 
-
 logger = logging.getLogger(__name__)
 Base = declarative_base()
 
@@ -94,3 +93,12 @@ class StringsDBClient(Singleton):
 def load(string_id: str, **kwargs) -> str:
     db_client = StringsDBClient()
     return db_client.get_string(string_id).format_map(defaultdict(lambda: '?', kwargs)).strip()
+
+
+def load_dict(string_id: str, **kwargs) -> dict:
+    if string_id is None:
+        raise Exception("Empty string_id for loading data from db")
+    db_client = StringsDBClient()
+    resulting_dict = defaultdict(lambda: '?', kwargs)
+    resulting_dict[string_id] = db_client.get_string(string_id)
+    return resulting_dict
