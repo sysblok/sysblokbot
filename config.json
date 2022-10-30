@@ -40,24 +40,6 @@
         "group_admin_token": "do_not_set_here_please_go_to_config_override",
         "group_alias": "sysblok"
     },
-    "jobs": {
-        "sample_job": [
-            {
-                "every": "wednesday",
-                "at": "10:00",
-                "send_to": [],
-                "kwargs": {}
-            },
-            {
-                "every": "12 hours",
-                "send_to": []
-            }
-        ],
-        "send_reminders_job": {
-            "every": "minute",
-            "send_to": []
-        }
-    },
     "db": {
         "uri": "sqlite:///sysblokbot.sqlite"
     },
