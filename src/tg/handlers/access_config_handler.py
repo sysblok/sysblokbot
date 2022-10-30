@@ -8,7 +8,6 @@ from ...config_manager import ConfigManager
 from ...strings import load
 from ...tg.sender import TelegramSender
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -50,7 +49,6 @@ def get_config_jobs(update, tg_context):
     )
 
 
-
 @admin_only
 def set_config(update, tg_context):
     try:
@@ -72,7 +70,7 @@ def add_manager(update, tg_context):
         assert len(tokens) == 2
         manager_id = json.loads(tokens[1])
         assert isinstance(manager_id, int) or (
-            isinstance(manager_id, str) and not manager_id.startswith('@')
+                isinstance(manager_id, str) and not manager_id.startswith('@')
         )
         config_manager = ConfigManager()
         manager_ids = config_manager.get_telegram_config()[consts.TELEGRAM_MANAGER_IDS][:]
