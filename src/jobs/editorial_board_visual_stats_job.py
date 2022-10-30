@@ -9,7 +9,7 @@ from . import utils
 from ..app_context import AppContext
 from ..consts import TrelloListAlias
 from ..db.db_objects import TrelloAnalytics
-from ..strings import load, load_dict
+from ..strings import load
 from ..utils import card_checks
 
 logger = logging.getLogger(__name__)
@@ -122,18 +122,19 @@ class EditorialBoardVisualStatsJob(BaseJob):
         except Exception as e:
             logger.error(f'Could not get main stats date interval: {e}')
 
-        if not called_from_handler:
+        #if not called_from_handler:
+        if 1==1:
             # scheduled runs should write results to db, otherwise not
             today_db_str = datetime.datetime.today().strftime('%Y-%m-%d')
             new_analytics.date = today_db_str
             app_context.db_client.add_item_to_statistics_table(new_analytics)
 
         fig, ax = plt.subplots()
-        labels = [x['title'] for x in stats]
+        labels = [x[0] for x in stats]
         x = np.arange(len(labels))
         plt.xticks(rotation=90)
         # Note we add the `width` parameter now which sets the width of each bar.
-        last_week = [eval(x.split(': ')[1].split(' ')[0].strip('</b>')) for x in stats]
+        last_week = [x[1] for x in stats]
         b1 = ax.barh(
             x,
             last_week,
@@ -141,12 +142,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
             label='Предыдущая неделя'
         )
         # Same thing, but offset the x by the width of the bar.
-        actual_week = []
-        for values in stats:
-            actual_week_values = values.split(': ')[1]
-            for i, j in {'(': '', ')': '', '<': '', 'b': '', '>': '', '/': ''}.items():
-                actual_week_values = actual_week_values.replace(i, j)
-            actual_week.append(eval(actual_week_values))
+        actual_week = [x[2] for x in stats]
         try:
             b2 = ax.barh(
                 x + DEFAULT_BAR_HEIGHT,
@@ -182,33 +178,21 @@ class EditorialBoardVisualStatsJob(BaseJob):
             app_context: AppContext,
             new_analytics: TrelloAnalytics,
             title: str,
-            list_aliases: Tuple[str],
+            list_aliases: Tuple,
             column_name: str,
             filter_func=None,
-    ) -> dict:
+    ) -> len:
         """
+        #TODO
         Returns a map for category statistics (e.g. {"В работе у авторов": "3"})
         """
         logger.info(f'Started counting: "{title}"')
         list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
         cards = list(filter(filter_func, app_context.trello_client.get_cards(list_ids)))
         statistics = utils.retrieve_last_trello_analytics(app_context.db_client)
-        setattr(new_analytics, column_name, len(cards))
-
-        size_and_delta = None
+        #TODO? а зачем это?
+        #setattr(new_analytics, column_name, len(cards))
+        previous_data = 0
         if statistics:  # otherwise it's a first command run
-            delta = len(cards) - int(getattr(statistics, column_name))
-            if delta != 0:
-                delta_dict = load_dict(
-                    'editorial_board_stats_job__delta_week',
-                    sign='+' if delta > 0 else '-',
-                    delta=abs(delta)
-                )
-                size_and_delta = (len(cards), delta_dict)
-        else:
-            size_and_delta = (len(cards), {})
-        return load_dict(
-            'editorial_board_stats_job__title_and_delta',
-            title=title,
-            delta=size_and_delta
-        )
+            previous_data = int(getattr(statistics, column_name))
+        return (title, previous_data, len(cards))
