@@ -28,6 +28,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
         stats = [
             EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
+                new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_ready_to_issue'),
                 list_aliases=(
                     TrelloListAlias.EDITED_SOMETIMES,
@@ -39,6 +40,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
             ),
             EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
+                new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_editors_check'),
                 list_aliases=(
                     TrelloListAlias.TO_SEO_EDITOR,
@@ -48,6 +50,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
             ),
             EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
+                new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_waiting_for_editors'),
                 list_aliases=(
                     TrelloListAlias.TO_EDITOR,
@@ -56,6 +59,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
             ),
             EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
+                new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_expect_this_week'),
                 list_aliases=(
                     TrelloListAlias.IN_PROGRESS,
@@ -69,6 +73,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
             ),
             EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
+                new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_deadline_missed'),
                 list_aliases=(
                     TrelloListAlias.IN_PROGRESS,
@@ -78,6 +83,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
             ),
             EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
+                new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_in_work'),
                 list_aliases=(
                     TrelloListAlias.IN_PROGRESS,
@@ -86,6 +92,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
             ),
             EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
+                new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_author_search'),
                 list_aliases=(
                     TrelloListAlias.TOPIC_READY,
@@ -94,6 +101,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
             ),
             EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
+                new_analytics=new_analytics,
                 title=load('editorial_board_stats_job__title_pending_approval'),
                 list_aliases=(
                     TrelloListAlias.TOPIC_SUGGESTION,
@@ -164,6 +172,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
     @staticmethod
     def _make_dict_for_category(
             app_context: AppContext,
+            new_analytics: TrelloAnalytics,
             title: str,
             list_aliases: Tuple,
             column_name: str,
@@ -177,8 +186,10 @@ class EditorialBoardVisualStatsJob(BaseJob):
         logger.info(f'Started counting: "{title}"')
         list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
         cards = list(filter(filter_func, app_context.trello_client.get_cards(list_ids)))
+        current_period_num = len(cards)
+        setattr(new_analytics, column_name, current_period_num)
         statistics = utils.retrieve_last_trello_analytics(app_context.db_client)
-        previous_data = 0
+        previous_period_num = 0
         if statistics:  # otherwise it's a first command run
-            previous_data = int(getattr(statistics, column_name))
-        return {'title': title, 'previous_period': previous_data, 'current_period': len(cards)}
+            previous_period_num = int(getattr(statistics, column_name))
+        return {'title': title, 'previous_period': previous_period_num, 'current_period': current_period_num}
