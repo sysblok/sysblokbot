@@ -50,6 +50,24 @@ def get_config_jobs(update, tg_context):
 
 
 @admin_only
+def reload_config_jobs(update, tg_context):
+    try:
+        jobs_config_file_key = ConfigManager().get_jobs_config_file_key()
+        if jobs_config_file_key is None:
+            raise Exception("No jobs config file key provided")
+        jobs_config_json = AppContext().drive_client.download_file(jobs_config_file_key)
+        config_jobs = ConfigManager().set_jobs_config_with_override_from_json(jobs_config_json)
+    except Exception as e:
+        reply(load('access_config_handler__reload_config_jobs_usage_example'), update)
+        logger.warning(f'Failed to reload jobs config: {e}')
+        return
+    reply(
+        load('common__code_wrapper', arg=json.dumps(ConfigManager.redact(config_jobs), indent=2)),
+        update
+    )
+
+
+@admin_only
 def set_config(update, tg_context):
     try:
         tokens = update.message.text.strip().split(maxsplit=2)

@@ -261,6 +261,12 @@ class SysBlokBot:
             'получить текущий конфиг джобов (частично или полностью)'
         )
         self.add_admin_handler(
+            'reload_config_jobs',
+            CommandCategories.CONFIG,
+            handlers.reload_config_jobs,
+            'обновить конфиг джобов с Google-диска'
+        )
+        self.add_admin_handler(
             'set_config',
             CommandCategories.CONFIG,
             handlers.set_config,
