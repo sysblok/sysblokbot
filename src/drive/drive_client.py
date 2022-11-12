@@ -1,3 +1,4 @@
+import json
 import logging
 import re
 
@@ -12,7 +13,6 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload
 from ..trello.trello_objects import TrelloCard
 from ..utils.singleton import Singleton
-
 
 logger = logging.getLogger(__name__)
 SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -77,6 +77,9 @@ class GoogleDriveClient(Singleton):
             if permission.get('type') == 'anyone' and permission.get('role') == 'writer':
                 return True
         return False
+
+    def download_json(self, file_id: str):
+        return json.loads(self.download_file(file_id))
 
     def download_file(self, file_id: str) -> bytes:
         try:

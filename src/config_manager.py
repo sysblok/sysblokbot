@@ -47,9 +47,8 @@ class ConfigManager(Singleton):
         self._latest_jobs_config_ts = datetime.datetime.now()
         return main_config
 
-    def set_jobs_config_with_override_from_json(self, override_json) -> dict:
+    def set_jobs_config_with_override_from_json(self, override_config) -> dict:
         main_config = self._load_config(self.config_jobs_path) or {}
-        override_config = json.loads(override_json)
         ConfigManager.join_configs(main_config, override_config)
         self._latest_jobs_config = main_config
         self._latest_jobs_config_override = override_config

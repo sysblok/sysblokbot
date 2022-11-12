@@ -55,7 +55,7 @@ def reload_config_jobs(update, tg_context):
         jobs_config_file_key = ConfigManager().get_jobs_config_file_key()
         if jobs_config_file_key is None:
             raise Exception("No jobs config file key provided")
-        jobs_config_json = AppContext().drive_client.download_file(jobs_config_file_key)
+        jobs_config_json = AppContext().drive_client.download_json(jobs_config_file_key)
         config_jobs = ConfigManager().set_jobs_config_with_override_from_json(jobs_config_json)
     except Exception as e:
         reply(load('access_config_handler__reload_config_jobs_usage_example'), update)

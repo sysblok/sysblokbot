@@ -3,7 +3,6 @@
 import argparse
 import locale
 import logging
-import os
 import requests
 
 from src.bot import SysBlokBot
@@ -12,7 +11,6 @@ from src import consts
 from src.scheduler import JobScheduler
 from src.tg.sender import TelegramSender
 from src.utils.log_handler import ErrorBroadcastHandler
-
 
 locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
 logging.basicConfig(format=consts.LOG_FORMAT, level=logging.INFO)
@@ -32,17 +30,24 @@ def get_bot():
     config = config_manager.load_config_with_override()
     if not config:
         raise ValueError(f"Could not load config, can't go on")
-    config_jobs = config_manager.load_jobs_config_with_override()
-    if not config_jobs:
-        raise ValueError(f"Could not load job config, can't go on")
 
-    scheduler = JobScheduler(config_jobs)
+    scheduler = JobScheduler()
+
+    jobs_config_file_key = ConfigManager().get_jobs_config_file_key()
+    if jobs_config_file_key is None:
+        raise Exception("No jobs config file key provided")
+
     args = parser.parse_args()
 
     bot = SysBlokBot(config_manager, signal_handler=lambda signum,
-                     frame: scheduler.stop_running(),
+                                                           frame: scheduler.stop_running(),
                      skip_db_update=args.skip_db_update)
     bot.init_handlers()
+
+    jobs_config_json = bot.app_context.drive_client.download_json(jobs_config_file_key)
+    config_jobs = ConfigManager().set_jobs_config_with_override_from_json(jobs_config_json)
+    if not config_jobs:
+        raise ValueError(f"Could not load job config, can't go on")
 
     # Setting final logger and sending a message bot is up
     tg_sender = TelegramSender()
