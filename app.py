@@ -32,7 +32,6 @@ def get_bot():
     if not config:
         raise ValueError(f"Could not load config, can't go on")
 
-
     sentry_dsn = config.get("sentry_dsn", None)
     if sentry_dsn:
         sentry_sdk.init(dsn=sentry_dsn, traces_sample_rate=1.0)
@@ -45,8 +44,7 @@ def get_bot():
 
     args = parser.parse_args()
 
-    bot = SysBlokBot(config_manager, signal_handler=lambda signum,
-                                                           frame: scheduler.stop_running(),
+    bot = SysBlokBot(config_manager, signal_handler=lambda signum, frame: scheduler.stop_running(),
                      skip_db_update=args.skip_db_update)
     bot.init_handlers()
 
