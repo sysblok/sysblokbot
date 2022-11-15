@@ -93,7 +93,8 @@ class ConfigManager(Singleton):
         return self.get_latest_config().get(consts.VK_CONFIG, {})
 
     def get_jobs_config_file_key(self):
-        return self.get_latest_config().get(consts.DRIVE_CONFIG).get(consts.JOBS_CONFIG_FILE_KEY, {})
+        return self.get_latest_config().get(consts.DRIVE_CONFIG)\
+            .get(consts.JOBS_CONFIG_FILE_KEY, {})
 
     def get_jobs_config(self, job_key=None):
         config = self.get_latest_jobs_config()
