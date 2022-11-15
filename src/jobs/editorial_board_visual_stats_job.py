@@ -179,4 +179,5 @@ class EditorialBoardVisualStatsJob(BaseJob):
         previous_period_num = 0
         if statistics:  # otherwise it's a first command run
             previous_period_num = int(getattr(statistics, column_name))
-        return {'title': title, 'previous_period': previous_period_num, 'current_period': current_period_num}
+        return {'title': title, 'previous_period': previous_period_num,
+                'current_period': current_period_num}
