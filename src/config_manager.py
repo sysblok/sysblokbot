@@ -7,7 +7,6 @@ from src.utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
 
-
 REDACTED_KEYS = ('key', 'token')
 
 
@@ -42,6 +41,14 @@ class ConfigManager(Singleton):
     def load_jobs_config_with_override(self) -> dict:
         main_config = self._load_config(self.config_jobs_path) or {}
         override_config = self._load_config(self.config_jobs_override_path) or {}
+        ConfigManager.join_configs(main_config, override_config)
+        self._latest_jobs_config = main_config
+        self._latest_jobs_config_override = override_config
+        self._latest_jobs_config_ts = datetime.datetime.now()
+        return main_config
+
+    def set_jobs_config_with_override_from_json(self, override_config) -> dict:
+        main_config = self._load_config(self.config_jobs_path) or {}
         ConfigManager.join_configs(main_config, override_config)
         self._latest_jobs_config = main_config
         self._latest_jobs_config_override = override_config
@@ -84,6 +91,9 @@ class ConfigManager(Singleton):
 
     def get_vk_config(self):
         return self.get_latest_config().get(consts.VK_CONFIG, {})
+
+    def get_jobs_config_file_key(self):
+        return self.get_latest_config().get(consts.DRIVE_CONFIG).get(consts.JOBS_CONFIG_FILE_KEY, {})
 
     def get_jobs_config(self, job_key=None):
         config = self.get_latest_jobs_config()

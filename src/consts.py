@@ -43,6 +43,7 @@ FACEBOOK_CONFIG = 'facebook'
 VK_CONFIG = 'vk'
 DB_CONFIG = 'db'
 STRINGS_DB_CONFIG = 'strings'
+JOBS_CONFIG_FILE_KEY = 'jobs_config_key'
 
 # Jobs-related keys
 EVERY = 'every'
