@@ -69,6 +69,7 @@ class JobScheduler(Singleton):
         """
         logger.info('Starting setting job schedules...')
         jobs_config = self.config_manager.get_jobs_config()
+        logger.info(f'Got jobs config')
         for job_id, schedules in jobs_config.items():
             logger.info(f'Found job "{job_id}"')
             if isinstance(schedules, dict):
