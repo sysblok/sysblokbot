@@ -1,7 +1,7 @@
 import json
 import logging
 
-from .utils import admin_only, reply
+from .utils import admin_only, reply, manager_only
 from ... import consts, jobs
 from ...app_context import AppContext
 from ...config_manager import ConfigManager
@@ -50,7 +50,7 @@ def get_config_jobs(update, tg_context):
     )
 
 
-@admin_only
+@manager_only
 def reload_config_jobs(update, tg_context):
     try:
         jobs_config_file_key = ConfigManager().get_jobs_config_file_key()
