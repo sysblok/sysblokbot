@@ -23,23 +23,18 @@ TRELLO_TEST_DIR = os.path.join(STATIC_TEST_DIR, 'trello')
 
 CONFIG_PATH = os.path.join(STATIC_TEST_DIR, 'config.json')
 CONFIG_OVERRIDE_PATH = os.path.join(STATIC_TEST_DIR, 'config_override.json')
-CONFIG_JOBS_PATH = os.path.join(STATIC_TEST_DIR, 'config_jobs.json')
-CONFIG_JOBS_OVERRIDE_PATH = os.path.join(STATIC_TEST_DIR, 'config_jobs_override.json')
 
 
 @pytest.fixture
 def mock_config_manager(monkeypatch):
-    config_manager = ConfigManager(CONFIG_PATH, CONFIG_OVERRIDE_PATH,
-                                   CONFIG_JOBS_PATH, CONFIG_JOBS_OVERRIDE_PATH)
+    config_manager = ConfigManager(CONFIG_PATH, CONFIG_OVERRIDE_PATH)
     config_manager.load_config_with_override()
     return config_manager
 
 
 @pytest.fixture
 def mock_config_jobs_manager(monkeypatch):
-    config_manager = ConfigManager(CONFIG_PATH, CONFIG_OVERRIDE_PATH,
-                                   CONFIG_JOBS_PATH, CONFIG_JOBS_OVERRIDE_PATH)
-    config_manager.load_jobs_config_with_override()
+    config_manager = ConfigManager(CONFIG_PATH, CONFIG_OVERRIDE_PATH)
     return config_manager
 
 

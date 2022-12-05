@@ -1,16 +1,15 @@
-import datetime
+import html
 import json
 import logging
 from typing import Callable
 
 from deepdiff import DeepDiff
-import html
 
+from .base_job import BaseJob
 from ..app_context import AppContext
 from ..scheduler import JobScheduler
 from ..strings import load
 from ..tg.sender import TelegramSender
-from .base_job import BaseJob
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +21,13 @@ class ConfigUpdaterJob(BaseJob):
         # get the scheduler instance
         job_scheduler = JobScheduler()
         # if anything at all changed in config
+        jobs_config_file_key = job_scheduler.config_manager.get_jobs_config_file_key()
+        if jobs_config_file_key is None:
+            raise Exception("No jobs config file key provided")
+        jobs_config_json = AppContext().drive_client.download_json(jobs_config_file_key)
         diff = DeepDiff(
             job_scheduler.config,
-            job_scheduler.config_manager.load_jobs_config_with_override(),
+            jobs_config_json,
             ignore_order=True,
             verbose_level=2
         )

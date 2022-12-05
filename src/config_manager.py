@@ -11,15 +11,12 @@ REDACTED_KEYS = ('key', 'token')
 
 
 class ConfigManager(Singleton):
-    def __init__(self, config_path: str = '', config_override_path: str = '',
-                 config_jobs_path: str = '', config_jobs_override_path: str = ''):
+    def __init__(self, config_path: str = '', config_override_path: str = ''):
         if self.was_initialized():
             return
 
         self.config_path = config_path
         self.config_override_path = config_override_path
-        self.config_jobs_path = config_jobs_path
-        self.config_jobs_override_path = config_jobs_override_path
 
         self._latest_config = {}
         self._latest_config_override = {}
@@ -38,17 +35,8 @@ class ConfigManager(Singleton):
         self._latest_config_ts = datetime.datetime.now()
         return main_config
 
-    def load_jobs_config_with_override(self) -> dict:
-        main_config = self._load_config(self.config_jobs_path) or {}
-        override_config = self._load_config(self.config_jobs_override_path) or {}
-        ConfigManager.join_configs(main_config, override_config)
-        self._latest_jobs_config = main_config
-        self._latest_jobs_config_override = override_config
-        self._latest_jobs_config_ts = datetime.datetime.now()
-        return main_config
-
     def set_jobs_config_with_override_from_json(self, override_config) -> dict:
-        main_config = self._load_config(self.config_jobs_path) or {}
+        main_config = {}
         ConfigManager.join_configs(main_config, override_config)
         self._latest_jobs_config = main_config
         self._latest_jobs_config_override = override_config

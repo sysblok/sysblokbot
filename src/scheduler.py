@@ -92,7 +92,7 @@ class JobScheduler(Singleton):
                         # can't set "every 10 minutes" and "at 10:00" at the same time
                         assert len(every_param) < 2
                         # e.g. schedule.every().wednesday.at("10:00")
-                        scheduled = scheduled.at(schedule_dict[AT])
+                        scheduled = scheduled.at(schedule_dict[AT], 'Europe/Moscow')
                     scheduled.do(
                         get_job_runnable(job_id),
                         app_context=self.app_context,
