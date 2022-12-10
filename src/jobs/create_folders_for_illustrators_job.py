@@ -127,3 +127,7 @@ class CreateFoldersForIllustratorsJob(BaseJob):
             return load('create_folders_for_illustrators_job__section_created')
         elif state == IllustratorFolderState.INCORRECT_URL:
             return load('create_folders_for_illustrators_job__section_incorrect_url')
+
+    @staticmethod
+    def _usage_muted():
+        return True

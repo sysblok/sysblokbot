@@ -12,7 +12,6 @@ from .utils.singleton import Singleton
 
 from sqlalchemy import Column, String
 
-
 logger = logging.getLogger(__name__)
 Base = declarative_base()
 

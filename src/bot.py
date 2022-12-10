@@ -71,6 +71,12 @@ class SysBlokBot:
             self.manager_reply_handler('editorial_board_stats_job'),
             'получить статистику изменений за неделю'
         )
+        self.add_manager_handler(
+            'get_editorial_board_visual_stats',
+            CommandCategories.STATS,
+            self.manager_reply_handler('editorial_board_visual_stats_job'),
+            'получить статистику изменений за неделю в виде картинки'
+        )
         self.add_admin_handler(
             'send_publication_plans',
             CommandCategories.BROADCAST,
@@ -247,6 +253,18 @@ class SysBlokBot:
             CommandCategories.CONFIG,
             handlers.get_config,
             'получить текущий конфиг (частично или полностью)'
+        )
+        self.add_admin_handler(
+            'get_config_jobs',
+            CommandCategories.CONFIG,
+            handlers.get_config_jobs,
+            'получить текущий конфиг джобов (частично или полностью)'
+        )
+        self.add_admin_handler(
+            'reload_config_jobs',
+            CommandCategories.CONFIG,
+            handlers.reload_config_jobs,
+            'обновить конфиг джобов с Google-диска'
         )
         self.add_admin_handler(
             'set_config',

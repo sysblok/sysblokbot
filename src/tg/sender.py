@@ -1,6 +1,7 @@
 """Sends messages"""
 
 import logging
+import re
 import time
 from typing import Callable, List
 
@@ -63,42 +64,52 @@ class TelegramSender(Singleton):
         """
         Sends a message to a single chat_id.
         """
-        try:
-            pretty_send(
-                [message_text.strip()],
-                lambda msg:
-                    self.bot.send_message(
-                        text=msg,
-                        chat_id=chat_id,
-                        disable_notification=self.is_silent,
-                        disable_web_page_preview=self.disable_web_page_preview,
-                        parse_mode=telegram.ParseMode.HTML,
-                        **kwargs
-                    )
-            )
-            return True
-        except telegram.TelegramError as e:
-            logger.error(f'Could not send a message to {chat_id}: {e}')
-            # HTML parse error isn't a separate class in Telegram
-            # So we need to dig into the exception message
-            if "Can't parse entities" in e.message:
-                try:
-                    # Try sending the plain-text version
-                    pretty_send(
-                        [message_text.strip()],
-                        lambda msg:
-                            self.bot.send_message(
-                                text=msg,
-                                chat_id=chat_id,
-                                disable_notification=self.is_silent,
-                                disable_web_page_preview=self.disable_web_page_preview,
-                                **kwargs
-                            )
-                    )
-                    return True
-                except telegram.TelegramError as e:
-                    logger.error(f'Could not send a plain-text message to {chat_id}: {e}')
-        return False
+        if '.png' in message_text:
+            for pict in re.findall(r'\S*\.png', message_text):
+                self.bot.send_photo(
+                    photo=open(pict, 'rb'),
+                    chat_id=chat_id,
+                    disable_notification=self.is_silent,
+                    **kwargs
+                )
+            message_text = re.sub(r'\S*\.png', '', message_text)
+        if message_text != '':
+            try:
+                pretty_send(
+                    [message_text.strip()],
+                    lambda msg:
+                        self.bot.send_message(
+                            text=msg,
+                            chat_id=chat_id,
+                            disable_notification=self.is_silent,
+                            disable_web_page_preview=self.disable_web_page_preview,
+                            parse_mode=telegram.ParseMode.HTML,
+                            **kwargs
+                        )
+                )
+                return True
+            except telegram.TelegramError as e:
+                logger.error(f'Could not send a message to {chat_id}: {e}')
+                # HTML parse error isn't a separate class in Telegram
+                # So we need to dig into the exception message
+                if "Can't parse entities" in e.message:
+                    try:
+                        # Try sending the plain-text version
+                        pretty_send(
+                            [message_text.strip()],
+                            lambda msg:
+                                self.bot.send_message(
+                                    text=msg,
+                                    chat_id=chat_id,
+                                    disable_notification=self.is_silent,
+                                    disable_web_page_preview=self.disable_web_page_preview,
+                                    **kwargs
+                                )
+                        )
+                        return True
+                    except telegram.TelegramError as e:
+                        logger.error(f'Could not send a plain-text message to {chat_id}: {e}')
+            return False
 
     def send_error_log(self, error_log: str):
         self.send_to_chat_ids(error_log, self.error_logs_recipients)
@@ -145,6 +156,10 @@ def pretty_send(
     for i, message in enumerate(messages):
         if i > 0:
             time.sleep(MESSAGE_DELAY_SEC)
+        if message.startswith("<code>") and not message.endswith("</code>"):
+            message = message + "</code>"
+        elif not message.startswith("<code>") and message.endswith("</code>"):
+            message = "<code>" + message
         send(message)
     return '\n'.join(messages)
 

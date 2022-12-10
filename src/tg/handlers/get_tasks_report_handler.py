@@ -148,7 +148,7 @@ def _make_cards_text(
         app_context: AppContext
 ) -> List[str]:
     # generates the text of the cards, cards come already sorted by date
-    return[_format_card(card, need_label) for card in cards]
+    return [_format_card(card, need_label) for card in cards]
 
 
 def _sort_cards_by_date(cards: Iterable[TrelloCard]) -> Iterable[TrelloCard]:
