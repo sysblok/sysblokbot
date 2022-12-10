@@ -1,6 +1,7 @@
 from logging import LogRecord, StreamHandler, Formatter
 from logging import ERROR
 import html
+from sentry_sdk import capture_message
 
 from .singleton import Singleton
 from ..consts import LOG_FORMAT, USAGE_LOG_LEVEL
@@ -41,10 +42,25 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
                     exc_info=None,
                 ))
         if record.levelno >= ERROR and not self.is_muted:
+            error_message = f'{record.levelname} - {record.module} - {record.message}'
+            if record.exc_text:
+                error_message += f' - {record.exc_text}'
             try:
-                error_message = f'{record.levelname} - {record.module} - {record.message}'
-                if record.exc_text:
-                    error_message += f' - {record.exc_text}'
+                capture_message(error_message)
+            except Exception as e:
+                # if it can't send a message, still should log it to the stream
+                super().emit(
+                    LogRecord(
+                        name=__name__,
+                        level=ERROR,
+                        pathname=None,
+                        lineno=-1,
+                        msg=f"Failed to capture sentry log",
+                        args=None,
+                        exc_info=e,
+                    )
+                )
+            try:
                 self.tg_sender.send_error_log(f'<code>{html.escape(error_message)}</code>')
             except Exception as e:
                 # if it can't send a message, still should log it to the stream

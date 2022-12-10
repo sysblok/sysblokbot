@@ -16,7 +16,6 @@ from src.strings import StringsDBClient
 from src.tg.sender import TelegramSender
 from src.trello.trello_client import TrelloClient
 
-
 ROOT_TEST_DIR = os.path.abspath(os.path.dirname(__file__))
 STATIC_TEST_DIR = os.path.join(ROOT_TEST_DIR, 'static')
 SHEETS_TEST_DIR = os.path.join(STATIC_TEST_DIR, 'sheets')
@@ -34,8 +33,13 @@ def mock_config_manager(monkeypatch):
 
 
 @pytest.fixture
-def mock_trello(monkeypatch, mock_config_manager):
+def mock_config_jobs_manager(monkeypatch):
+    config_manager = ConfigManager(CONFIG_PATH, CONFIG_OVERRIDE_PATH)
+    return config_manager
 
+
+@pytest.fixture
+def mock_trello(monkeypatch, mock_config_manager):
     def _make_request(_, uri: str, payload={}) -> (int, Dict):
 
         load_json = JsonLoader(TRELLO_TEST_DIR).load_json
@@ -67,7 +71,6 @@ def mock_trello(monkeypatch, mock_config_manager):
 
 @pytest.fixture
 def mock_sheets_client(monkeypatch, mock_config_manager):
-
     def _authorize(self):
         pass
 
@@ -92,7 +95,6 @@ def mock_sheets_client(monkeypatch, mock_config_manager):
 
 @pytest.fixture
 def mock_drive_client(monkeypatch, mock_config_manager):
-
     def _authorize(self):
         pass
 
@@ -116,7 +118,6 @@ def mock_telegram_bot(monkeypatch, mock_config_manager):
 
 @pytest.fixture
 def mock_sender(monkeypatch, mock_config_manager, mock_telegram_bot):
-
     def send_to_chat_id(self, message_text: str, chat_id: int, **kwargs):
         pass
 

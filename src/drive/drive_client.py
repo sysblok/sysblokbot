@@ -1,17 +1,18 @@
+import json
 import logging
 import re
 
 from typing import List
 from urllib.parse import urljoin, urlparse
+import io
 
 # https://developers.google.com/analytics/devguides/config/mgmt/v3/quickstart/service-py
 from apiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.errors import HttpError
-
+from googleapiclient.http import MediaIoBaseDownload
 from ..trello.trello_objects import TrelloCard
 from ..utils.singleton import Singleton
-
 
 logger = logging.getLogger(__name__)
 SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -76,6 +77,22 @@ class GoogleDriveClient(Singleton):
             if permission.get('type') == 'anyone' and permission.get('role') == 'writer':
                 return True
         return False
+
+    def download_json(self, file_id: str):
+        return json.loads(self.download_file(file_id))
+
+    def download_file(self, file_id: str) -> bytes:
+        try:
+            request = self.service.files().get_media(fileId=file_id)
+            file = io.BytesIO()
+            downloader = MediaIoBaseDownload(file, request)
+            done = False
+            while done is False:
+                status, done = downloader.next_chunk()
+        except Exception as e:
+            logger.error(f'Failed to download {file_id} from Google drive: {e}')
+            return None
+        return file.getvalue()
 
     def _create_file(self, name: str, description: str, parents: List[str]) -> str:
         file_metadata = {
