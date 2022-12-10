@@ -32,11 +32,11 @@ logger = logging.getLogger(__name__)
         ({"job": {"every": "day", "at": "10"}}, 0),
     ]
 )
-def test_jobs_scheduled(jobs_config, num_jobs, mock_config_jobs_manager, mock_sender):
+def test_jobs_scheduled(jobs_config, num_jobs, mock_config_manager, mock_sender):
     for job_id in jobs_config:
         setattr(jobs, job_id, fake_job)
 
-    mock_config_jobs_manager._latest_jobs_config = jobs_config
+    mock_config_manager._latest_config = {'jobs': jobs_config}
 
     scheduler.schedule.clear()
 
@@ -50,10 +50,10 @@ def test_jobs_scheduled(jobs_config, num_jobs, mock_config_jobs_manager, mock_se
     assert len(scheduler.schedule.jobs) == num_jobs
 
 
-def test_jobs_executed(mock_config_jobs_manager, mock_sender):
+def test_jobs_executed(mock_config_manager, mock_sender):
     setattr(jobs, "job", fake_job)
 
-    mock_config_jobs_manager._latest_jobs_config = {"job": {"every": "day", "at": "12:00"}}
+    mock_config_manager._latest_config = {'jobs': {"job": {"every": "day", "at": "12:00"}}}
 
     scheduler.schedule.clear()
     fake_job.reset_run_counter()

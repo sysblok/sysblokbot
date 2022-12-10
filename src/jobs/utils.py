@@ -214,8 +214,6 @@ def retrieve_last_trello_analytics(db_client: DBClient) -> dict:
 
 def retrieve_last_trello_analytics_date(db_client: DBClient) -> datetime.datetime:
     try:
-        if db_client.get_latest_trello_analytics() is None:
-            return None
         return datetime.datetime.strptime(
             db_client.get_latest_trello_analytics().date,
             '%Y-%m-%d'

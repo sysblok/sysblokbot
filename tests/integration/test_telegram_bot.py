@@ -55,7 +55,6 @@ class Test:
             '/check_site_health prod',
             '/help',
             '/get_config',
-            '/get_config_jobs',
             '/list_jobs',
             '/get_chat_id',
         )

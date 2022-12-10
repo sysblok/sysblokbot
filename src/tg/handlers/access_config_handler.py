@@ -1,13 +1,13 @@
 import json
 import logging
 
-from .utils import admin_only, reply, manager_only
+from .utils import admin_only, reply
 from ... import consts, jobs
 from ...app_context import AppContext
 from ...config_manager import ConfigManager
-from ...scheduler import JobScheduler
 from ...strings import load
 from ...tg.sender import TelegramSender
+
 
 logger = logging.getLogger(__name__)
 
@@ -27,45 +27,6 @@ def get_config(update, tg_context):
         return
     reply(
         load('common__code_wrapper', arg=json.dumps(ConfigManager.redact(config), indent=2)),
-        update
-    )
-
-
-@admin_only
-def get_config_jobs(update, tg_context):
-    config_jobs = ConfigManager().get_latest_jobs_config()
-    try:
-        tokens = update.message.text.strip().split()
-        config_path = tokens[1] if len(tokens) > 1 else ''
-        if config_path:
-            for config_item in config_path.split('.'):
-                config_jobs = config_jobs[config_item]
-    except Exception as e:
-        reply(load('access_config_handler__get_jobs_config_usage_example'), update)
-        logger.warning(f'Failed to get jobs config: {e}')
-        return
-    reply(
-        load('common__code_wrapper', arg=json.dumps(ConfigManager.redact(config_jobs), indent=2)),
-        update
-    )
-
-
-@manager_only
-def reload_config_jobs(update, tg_context):
-    try:
-        jobs_config_file_key = ConfigManager().get_jobs_config_file_key()
-        if jobs_config_file_key is None:
-            raise Exception("No jobs config file key provided")
-        jobs_config_json = AppContext().drive_client.download_json(jobs_config_file_key)
-        config_jobs = ConfigManager().set_jobs_config_with_override_from_json(jobs_config_json)
-        job_scheduler = JobScheduler()
-        job_scheduler.reschedule_jobs()
-    except Exception as e:
-        reply(load('access_config_handler__reload_config_jobs_usage_example'), update)
-        logger.warning(f'Failed to reload jobs config: {e}')
-        return
-    reply(
-        load('common__code_wrapper', arg=json.dumps(ConfigManager.redact(config_jobs), indent=2)),
         update
     )
 
@@ -91,7 +52,7 @@ def add_manager(update, tg_context):
         assert len(tokens) == 2
         manager_id = json.loads(tokens[1])
         assert isinstance(manager_id, int) or (
-                isinstance(manager_id, str) and not manager_id.startswith('@')
+            isinstance(manager_id, str) and not manager_id.startswith('@')
         )
         config_manager = ConfigManager()
         manager_ids = config_manager.get_telegram_config()[consts.TELEGRAM_MANAGER_IDS][:]
