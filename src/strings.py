@@ -45,7 +45,7 @@ class StringsDBClient(Singleton):
         self.engine = create_engine(
             self._strings_db_config['uri'],
             connect_args={'check_same_thread': False},
-            echo=True,
+            echo=False,
         )
         session_factory = sessionmaker(bind=self.engine)
         self.Session = scoped_session(session_factory)
