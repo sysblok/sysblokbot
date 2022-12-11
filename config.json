@@ -30,7 +30,8 @@
     },
     "drive": {
         "api_key_path": "do_not_set_here_please_go_to_config_override",
-        "illustrations_folder_key": "do_not_set_here_please_go_to_config_override"
+        "illustrations_folder_key": "do_not_set_here_please_go_to_config_override",
+        "jobs_config_key": "do_not_set_here_please_go_to_config_override"
     },
     "facebook": {
         "token": "do_not_set_here_please_go_to_config_override",
@@ -39,24 +40,6 @@
     "vk": {
         "group_admin_token": "do_not_set_here_please_go_to_config_override",
         "group_alias": "sysblok"
-    },
-    "jobs": {
-        "sample_job": [
-            {
-                "every": "wednesday",
-                "at": "10:00",
-                "send_to": [],
-                "kwargs": {}
-            },
-            {
-                "every": "12 hours",
-                "send_to": []
-            }
-        ],
-        "send_reminders_job": {
-            "every": "minute",
-            "send_to": []
-        }
     },
     "db": {
         "uri": "sqlite:///sysblokbot.sqlite"

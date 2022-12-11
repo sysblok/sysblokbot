@@ -105,8 +105,8 @@ class DBClient(Singleton):
             session.query(Rubric).delete()
             # re-download it
             rubrics = sheets_client.fetch_rubrics()
-            for rubric_dict in rubrics:
-                rubric = Rubric.from_dict(rubric_dict)
+            for item in rubrics:
+                rubric = Rubric.from_sheetfu_item(item)
                 if rubric is None:
                     continue
                 session.add(rubric)

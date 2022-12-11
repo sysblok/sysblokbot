@@ -156,6 +156,10 @@ def pretty_send(
     for i, message in enumerate(messages):
         if i > 0:
             time.sleep(MESSAGE_DELAY_SEC)
+        if message.startswith("<code>") and not message.endswith("</code>"):
+            message = message + "</code>"
+        elif not message.startswith("<code>") and message.endswith("</code>"):
+            message = "<code>" + message
         send(message)
     return '\n'.join(messages)
 
