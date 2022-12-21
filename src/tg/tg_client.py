@@ -29,13 +29,11 @@ class TgClient(Singleton):
         self._update_from_config()
 
     def _update_from_config(self):
-        #TODO???
-        if self.api_client is None:
-            self.api_client = TelegramClient(
-                StringSession(self._tg_config['api_session']),
-                self._tg_config['api_id'],
-                self._tg_config['api_hash']
-            )
+        self.api_client = TelegramClient(
+            StringSession(self._tg_config['api_session']),
+            self._tg_config['api_id'],
+            self._tg_config['api_hash']
+        )
         # we need this to properly reauth in case the tokens need to be updated
         # we need "with" to open and close the event loop
         with self.api_client as client:
