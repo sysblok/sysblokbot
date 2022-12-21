@@ -26,12 +26,13 @@ class ConfigUpdaterJob(BaseJob):
             raise Exception("No jobs config file key provided")
         jobs_config_json = AppContext().drive_client.download_json(jobs_config_file_key)
         diff = DeepDiff(
-            job_scheduler.config,
+            job_scheduler.config_manager.get_jobs_config(),
             jobs_config_json,
             ignore_order=True,
             verbose_level=2
         )
         if diff:
+            job_scheduler.config_manager.set_jobs_config_with_override_from_json(jobs_config_json)
             logger.info(f'Config was changed, diff: {diff}')
             try:
                 diff = json.dumps(dict(diff), indent=2)
