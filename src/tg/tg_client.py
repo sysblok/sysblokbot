@@ -16,8 +16,6 @@ class TgClient(Singleton):
     def __init__(self, tg_config=None):
         if self.was_initialized():
             return
-        #TODO?
-        self.api_client = None
 
         self._tg_config = tg_config
         self._update_from_config()
