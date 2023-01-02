@@ -10,7 +10,7 @@ def start(update, tg_context):
     sender_id = get_sender_id(update)
     if is_group_chat(update) and not is_sender_admin(update):
         logger.warning(
-            f'/start was invoked in a group {update.message.chat_id} by {sender_id}'
+            f"/start was invoked in a group {update.message.chat_id} by {sender_id}"
         )
         return
-    reply(load('start_handler__message'), update)  # noqa
+    reply(load("start_handler__message"), update)  # noqa

@@ -16,14 +16,15 @@ from .utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
 
-CUSTOM_JOB_TAG = 'custom'
-TECHNICAL_JOB_TAG = 'technical'
+CUSTOM_JOB_TAG = "custom"
+TECHNICAL_JOB_TAG = "technical"
 
 
 class JobScheduler(Singleton):
     """
     Don't forget to call run() after initializing.
     """
+
     def __init__(self, config: dict = None):
         if self.was_initialized():
             return
@@ -36,12 +37,11 @@ class JobScheduler(Singleton):
         # re-read config on schedule
 
     def run(self):
-        logger.info('Starting JobScheduler...')
+        logger.info("Starting JobScheduler...")
         self.app_context = AppContext()
         self.telegram_sender = TelegramSender()
         schedule.every(CONFIG_RELOAD_MINUTES).minutes.do(
-            get_job_runnable('config_updater_job'),
-            self.app_context
+            get_job_runnable("config_updater_job"), self.app_context
         ).tag(TECHNICAL_JOB_TAG)
 
         cease_continuous_run = threading.Event()
@@ -53,23 +53,22 @@ class JobScheduler(Singleton):
                     try:
                         schedule.run_pending()
                     except Exception as e:
-                        logger.error(
-                            f'Error while running scheduled jobs: {e}')
+                        logger.error(f"Error while running scheduled jobs: {e}")
                     time.sleep(1)
                 return cease_continuous_run
 
         continuous_thread = ScheduleThread()
         continuous_thread.start()
         self.stop_run_event = cease_continuous_run
-        logger.info('JobScheduler successfully initialized')
+        logger.info("JobScheduler successfully initialized")
 
     def init_jobs(self):
         """
         Initializing jobs on latest config state.
         """
-        logger.info('Starting setting job schedules...')
+        logger.info("Starting setting job schedules...")
         jobs_config = self.config_manager.get_jobs_config()
-        logger.info(f'Got jobs config')
+        logger.info(f"Got jobs config")
         for job_id, schedules in jobs_config.items():
             logger.info(f'Found job "{job_id}"')
             if isinstance(schedules, dict):
@@ -92,36 +91,37 @@ class JobScheduler(Singleton):
                         # can't set "every 10 minutes" and "at 10:00" at the same time
                         assert len(every_param) < 2
                         # e.g. schedule.every().wednesday.at("10:00")
-                        scheduled = scheduled.at(schedule_dict[AT], 'Europe/Moscow')
+                        scheduled = scheduled.at(schedule_dict[AT], "Europe/Moscow")
                     scheduled.do(
                         get_job_runnable(job_id),
                         app_context=self.app_context,
                         send=self.telegram_sender.create_chat_ids_send(
-                            schedule_dict.get(SEND_TO, [])),
-                        kwargs=schedule_dict.get(KWARGS)
+                            schedule_dict.get(SEND_TO, [])
+                        ),
+                        kwargs=schedule_dict.get(KWARGS),
                     ).tag(CUSTOM_JOB_TAG)
                 except Exception as e:
                     logger.error(
-                        f'Failed to schedule job {job_id} with params {schedule_dict}: {e}'
+                        f"Failed to schedule job {job_id} with params {schedule_dict}: {e}"
                     )
-        logger.info('Finished setting jobs')
+        logger.info("Finished setting jobs")
 
     @staticmethod
     def list_jobs() -> List[str]:
         return [html.escape(str(job)) for job in schedule.jobs]
 
     def reschedule_jobs(self):
-        logger.info('Clearing all scheduled jobs...')
+        logger.info("Clearing all scheduled jobs...")
         # clear only jobs originating from config
         schedule.clear(CUSTOM_JOB_TAG)
         self.config = self.config_manager.get_latest_config()
         self.init_jobs()
 
     def stop_running(self):
-        '''Set a stopping event so we can finish last job gracefully'''
-        logger.info((
-            'Scheduler received a signal. '
-            'Will terminate after ongoing jobs end'))
+        """Set a stopping event so we can finish last job gracefully"""
+        logger.info(
+            ("Scheduler received a signal. " "Will terminate after ongoing jobs end")
+        )
         self.stop_run_event.set()
 
     @staticmethod

@@ -8,6 +8,7 @@ class Singleton:
     Singleton base class.
     To ease introspection, client classes supposed to be singletons.
     """
+
     _instance = None
 
     def __new__(cls, *args, **kwargs):

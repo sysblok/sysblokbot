@@ -22,13 +22,16 @@ def list_chats(update, tg_context):
         if chat.id < 0:
             groups.append(chat.title)
     text = load(
-        'get_usage_list__message',
+        "get_usage_list__message",
         admins=_format_tg_usernames(admins),
         managers=_format_tg_usernames(managers),
         curators=_format_tg_usernames(curators),
-        groups='\n'.join(
-            [load('get_usage_list__username_format', username=group) for group in sorted(groups)]
-        )
+        groups="\n".join(
+            [
+                load("get_usage_list__username_format", username=group)
+                for group in sorted(groups)
+            ]
+        ),
     )
     reply(text, update)
 
@@ -41,12 +44,14 @@ def _format_tg_usernames(usernames: Iterable[str]) -> str:
             int_username = int(username)
             # if it is, we try to determine a username from DB
             try:
-                username = f'@{DBClient().get_chat_name(int_username)}'
+                username = f"@{DBClient().get_chat_name(int_username)}"
             except ValueError:
                 # if no name was found, just leave it as is
                 pass
         except ValueError:
-            if not username.startswith('@'):
-                username = f'@{username}'
-        formatted_usernames.append(load('get_usage_list__username_format', username=username))
-    return '\n'.join(sorted(formatted_usernames))
+            if not username.startswith("@"):
+                username = f"@{username}"
+        formatted_usernames.append(
+            load("get_usage_list__username_format", username=username)
+        )
+    return "\n".join(sorted(formatted_usernames))
