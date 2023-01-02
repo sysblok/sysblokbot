@@ -48,7 +48,9 @@ class SheetReportJob(BaseJob):
         spreadsheet_key = kwargs["spreadsheet_key"]
         sheet_name = kwargs.get("sheet_name")
         message_template = load(
-            kwargs["template_string"], date=datetime.now().strftime("%d.%m.%Y")
+            kwargs['template_string'],
+            date=datetime.now().strftime('%d.%m.%Y'),
+            url=f'https://docs.google.com/spreadsheets/d/{spreadsheet_key}'
         )
         sheet = app_context.sheets_client.fetch_sheet(spreadsheet_key, sheet_name)
         message_template_substituted = message_template
