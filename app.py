@@ -13,12 +13,14 @@ from src.tg.sender import TelegramSender
 from src.utils.log_handler import ErrorBroadcastHandler
 import sentry_sdk
 
-locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
+locale.setlocale(locale.LC_TIME, "ru_RU.UTF-8")
 logging.basicConfig(format=consts.LOG_FORMAT, level=logging.INFO)
 
 parser = argparse.ArgumentParser()
 # maybe we'll move those to config.json later...
-parser.add_argument("--skip-db-update", help="Skip db update on startup", action='store_true')
+parser.add_argument(
+    "--skip-db-update", help="Skip db update on startup", action="store_true"
+)
 
 
 def get_bot():
@@ -43,12 +45,17 @@ def get_bot():
 
     args = parser.parse_args()
 
-    bot = SysBlokBot(config_manager, signal_handler=lambda signum, frame: scheduler.stop_running(),
-                     skip_db_update=args.skip_db_update)
+    bot = SysBlokBot(
+        config_manager,
+        signal_handler=lambda signum, frame: scheduler.stop_running(),
+        skip_db_update=args.skip_db_update,
+    )
     bot.init_handlers()
 
     jobs_config_json = bot.app_context.drive_client.download_json(jobs_config_file_key)
-    config_jobs = ConfigManager().set_jobs_config_with_override_from_json(jobs_config_json)
+    config_jobs = ConfigManager().set_jobs_config_with_override_from_json(
+        jobs_config_json
+    )
     if not config_jobs:
         raise ValueError(f"Could not load job config, can't go on")
 
@@ -63,7 +70,7 @@ def get_bot():
     scheduler.run()
     scheduler.init_jobs()
 
-    start_msg = f'[{consts.APP_SOURCE}] Bot successfully started'
+    start_msg = f"[{consts.APP_SOURCE}] Bot successfully started"
     if consts.COMMIT_HASH:
         start_msg += (
             f', revision <a href="{consts.COMMIT_URL}">{consts.COMMIT_HASH}</a>.'
@@ -76,16 +83,16 @@ def get_bot():
 def report_critical_error(e: BaseException):
     sentry_sdk.capture_exception(e)
     requests.post(
-        url=f'https://api.telegram.org/bot{consts.TELEGRAM_TOKEN}/sendMessage',
+        url=f"https://api.telegram.org/bot{consts.TELEGRAM_TOKEN}/sendMessage",
         json={
-            'text': f'Sysblokbot is down, {e}\n',
-            'chat_id': consts.TELEGRAM_ERROR_CHAT_ID,
-            'parse_mode': 'markdown',
-        }
+            "text": f"Sysblokbot is down, {e}\n",
+            "chat_id": consts.TELEGRAM_ERROR_CHAT_ID,
+            "parse_mode": "markdown",
+        },
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         get_bot().run()
     except BaseException as e:

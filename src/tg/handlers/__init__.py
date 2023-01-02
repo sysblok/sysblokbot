@@ -12,7 +12,12 @@ from .enroll_curator_handler import enroll_curator
 from .manage_reminders_handler import manage_reminders, manage_all_reminders
 
 # Plain text message handler
-from .user_message_handler import handle_callback_query, handle_user_message, handle_new_members
+from .user_message_handler import (
+    handle_callback_query,
+    handle_user_message,
+    handle_new_members,
+)
+
 # Error handler
 from .error_handler import error
 
@@ -23,8 +28,14 @@ from .list_chats_handler import list_chats
 from .list_job_handler import list_jobs
 from .set_log_level_handler import set_log_level
 from .mute_errors_handler import mute_errors, unmute_errors
-from .access_config_handler import get_config, get_config_jobs, set_config, add_manager, \
-                                    change_board, reload_config_jobs
+from .access_config_handler import (
+    get_config,
+    get_config_jobs,
+    set_config,
+    add_manager,
+    change_board,
+    reload_config_jobs,
+)
 
 # Debug handlers (also developer, but only needed for debug)
 from .clean_chat_data_handler import clean_chat_data
