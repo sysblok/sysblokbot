@@ -78,14 +78,14 @@ class TelegramSender(Singleton):
                 pretty_send(
                     [message_text.strip()],
                     lambda msg:
-                        self.bot.send_message(
-                            text=msg,
-                            chat_id=chat_id,
-                            disable_notification=self.is_silent,
-                            disable_web_page_preview=self.disable_web_page_preview,
-                            parse_mode=telegram.ParseMode.HTML,
-                            **kwargs
-                        )
+                    self.bot.send_message(
+                        text=msg,
+                        chat_id=chat_id,
+                        disable_notification=self.is_silent,
+                        disable_web_page_preview=self.disable_web_page_preview,
+                        parse_mode=telegram.ParseMode.HTML,
+                        **kwargs
+                    )
                 )
                 return True
             except telegram.TelegramError as e:
@@ -98,13 +98,13 @@ class TelegramSender(Singleton):
                         pretty_send(
                             [message_text.strip()],
                             lambda msg:
-                                self.bot.send_message(
-                                    text=msg,
-                                    chat_id=chat_id,
-                                    disable_notification=self.is_silent,
-                                    disable_web_page_preview=self.disable_web_page_preview,
-                                    **kwargs
-                                )
+                            self.bot.send_message(
+                                text=msg,
+                                chat_id=chat_id,
+                                disable_notification=self.is_silent,
+                                disable_web_page_preview=self.disable_web_page_preview,
+                                **kwargs
+                            )
                         )
                         return True
                     except telegram.TelegramError as e:
@@ -156,9 +156,9 @@ def pretty_send(
     for i, message in enumerate(messages):
         if i > 0:
             time.sleep(MESSAGE_DELAY_SEC)
-        if message.startswith("<code>") and not message.endswith("</code>"):
+        if message.startswith("<code>") and "</code>" not in message:
             message = message + "</code>"
-        elif not message.startswith("<code>") and message.endswith("</code>"):
+        elif message.endswith("</code>") and "<code>" not in message:
             message = "<code>" + message
         send(message)
     return '\n'.join(messages)
