@@ -28,10 +28,11 @@ def is_deadline_missed(card: TrelloCard, app_context: AppContext) -> Tuple[bool,
         [TrelloListAlias.IN_PROGRESS]
     )
     is_missed = (
-        card.lst.id in list_ids and card.due is not None
+        card.lst.id in list_ids
+        and card.due is not None
         and card.due.date() < datetime.datetime.now().date()
     )
-    return is_missed, {'date': card.due.strftime("%d.%m")} if is_missed else {}
+    return is_missed, {"date": card.due.strftime("%d.%m")} if is_missed else {}
 
 
 def is_due_date_missing(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dict]:
@@ -73,7 +74,7 @@ def is_tag_missing(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dic
         TrelloListAlias.EDITED_SOMETIMES,
         TrelloListAlias.TO_CHIEF_EDITOR,
         TrelloListAlias.PROOFREADING,
-        TrelloListAlias.DONE
+        TrelloListAlias.DONE,
     )
     list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
     return card.lst.id in list_ids, {}
@@ -87,7 +88,7 @@ def is_doc_missing(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dic
         TrelloListAlias.EDITED_SOMETIMES,
         TrelloListAlias.TO_CHIEF_EDITOR,
         TrelloListAlias.PROOFREADING,
-        TrelloListAlias.DONE
+        TrelloListAlias.DONE,
     )
     list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
     if card.lst.id not in list_ids:
@@ -105,7 +106,7 @@ def has_no_doc_access(card: TrelloCard, app_context: AppContext) -> Tuple[bool, 
         TrelloListAlias.EDITED_SOMETIMES,
         TrelloListAlias.TO_CHIEF_EDITOR,
         TrelloListAlias.PROOFREADING,
-        TrelloListAlias.DONE
+        TrelloListAlias.DONE,
     )
     list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
     if card.lst.id not in list_ids:

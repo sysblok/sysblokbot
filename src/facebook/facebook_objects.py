@@ -17,11 +17,11 @@ class FacebookPage:
     def from_dict(cls, data):
         page = cls()
         try:
-            page.id = data['id']
-            page.name = data['name']
-            page.link = data['link']
-            page.followers_count = data['followers_count']
-            page.fan_count = data['fan_count']
+            page.id = data["id"]
+            page.name = data["name"]
+            page.link = data["link"]
+            page.followers_count = data["followers_count"]
+            page.fan_count = data["fan_count"]
 
         except Exception as e:
             page._ok = False
@@ -30,9 +30,9 @@ class FacebookPage:
 
     def to_dict(self):
         return {
-            'id': self.id,
-            'name': self.name,
-            'link': self.link,
-            'followers_count': self.followers_count,
-            'fan_count': self.fan_count,
+            "id": self.id,
+            "name": self.name,
+            "link": self.link,
+            "followers_count": self.followers_count,
+            "fan_count": self.fan_count,
         }

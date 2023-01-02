@@ -6,7 +6,6 @@ from ..instagram.instagram_client import InstagramClient
 
 
 class ApiInstagramAnalytics(BaseAnalytics):
-
     def __init__(self, ig_client: InstagramClient):
         self._ig_client = ig_client
 
@@ -18,11 +17,11 @@ class ApiInstagramAnalytics(BaseAnalytics):
 
     def get_new_subscribers_count(self, since: datetime, until: datetime) -> int:
         new_subscribers = self._ig_client.get_new_subscribers(since, until)
-        return sum(map(lambda day: day['value'], new_subscribers['data'][0]['values']))
+        return sum(map(lambda day: day["value"], new_subscribers["data"][0]["values"]))
 
     def get_reach(self, since: datetime, until: datetime) -> int:
         new_subscribers = self._ig_client.get_reach(since, until)
-        return sum(map(lambda day: day['value'], new_subscribers['data'][0]['values']))
+        return sum(map(lambda day: day["value"], new_subscribers["data"][0]["values"]))
 
     def get_interactions_count(self, since: datetime, until: datetime) -> int:
         likes_count = self._ig_client.get_likes_count(since, until)

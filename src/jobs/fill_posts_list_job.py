@@ -17,7 +17,9 @@ logger = logging.getLogger(__name__)
 
 class FillPostsListJob(BaseJob):
     @staticmethod
-    def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
+    def _execute(
+        app_context: AppContext, send: Callable[[str], None], called_from_handler=False
+    ):
         errors = {}
         registry_posts = []
         all_rubrics = app_context.db_client.get_rubrics()
@@ -32,13 +34,16 @@ class FillPostsListJob(BaseJob):
         )
 
         if len(errors) == 0:
-            posts_added = app_context.sheets_client.update_posts_registry(registry_posts)
+            posts_added = app_context.sheets_client.update_posts_registry(
+                registry_posts
+            )
             if len(posts_added) == 0:
-                paragraphs = [load('fill_posts_list_job__unchanged')]
+                paragraphs = [load("fill_posts_list_job__unchanged")]
             else:
-                paragraphs = [load('fill_posts_list_job__success')] + [
-                    '\n'.join(
-                        f'{index + 1}) {post_name}' for index, post_name in enumerate(posts_added)
+                paragraphs = [load("fill_posts_list_job__success")] + [
+                    "\n".join(
+                        f"{index + 1}) {post_name}"
+                        for index, post_name in enumerate(posts_added)
                     )
                 ]
         else:
@@ -48,17 +53,17 @@ class FillPostsListJob(BaseJob):
 
     @staticmethod
     def _retrieve_cards_for_registry(
-            trello_client: TrelloClient,
-            list_aliases: List[str],
-            errors: dict,
-            all_rubrics: List,
-            show_due=True,
-            need_illustrators=True,
-            strict_archive_rules=True,
+        trello_client: TrelloClient,
+        list_aliases: List[str],
+        errors: dict,
+        all_rubrics: List,
+        show_due=True,
+        need_illustrators=True,
+        strict_archive_rules=True,
     ) -> List[str]:
-        '''
+        """
         Returns a list of paragraphs that should always go in a single message.
-        '''
+        """
         list_ids = trello_client.get_list_id_from_aliases(list_aliases)
         cards = trello_client.get_cards(list_ids)
         if show_due:
@@ -69,8 +74,8 @@ class FillPostsListJob(BaseJob):
 
         for card in cards:
             label_names = [label.name for label in card.labels]
-            is_main_post = load('common_trello_label__main_post') in label_names
-            is_archive_post = load('common_trello_label__archive') in label_names
+            is_main_post = load("common_trello_label__main_post") in label_names
+            is_archive_post = load("common_trello_label__archive") in label_names
 
             if not card:
                 parse_failure_counter += 1
@@ -82,24 +87,28 @@ class FillPostsListJob(BaseJob):
                 card,
                 errors,
                 is_bad_title=(
-                    card_fields.title is None and
-                    card.lst.id != trello_client.lists_config[
-                        TrelloListAlias.EDITED_NEXT_WEEK
-                    ]
+                    card_fields.title is None
+                    and card.lst.id
+                    != trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK]
                 ),
                 is_bad_google_doc=card_fields.google_doc is None,
                 is_bad_authors=len(card_fields.authors) == 0,
                 is_bad_editors=len(card_fields.editors) == 0,
                 is_bad_cover=card_fields.cover is None and not is_archive_post,
                 is_bad_illustrators=(
-                    len(card_fields.illustrators) == 0 and
-                    need_illustrators and
-                    not is_archive_post
+                    len(card_fields.illustrators) == 0
+                    and need_illustrators
+                    and not is_archive_post
                 ),
                 is_bad_due_date=card.due is None and show_due,
-                is_bad_label_names=len([
-                    label for label in card.labels if label.color != TrelloCardColor.BLACK
-                ]) == 0,
+                is_bad_label_names=len(
+                    [
+                        label
+                        for label in card.labels
+                        if label.color != TrelloCardColor.BLACK
+                    ]
+                )
+                == 0,
             )
 
             if not card_is_ok:
@@ -116,5 +125,5 @@ class FillPostsListJob(BaseJob):
             )
 
         if parse_failure_counter > 0:
-            logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
+            logger.error(f"Unparsed cards encountered: {parse_failure_counter}")
         return registry_posts

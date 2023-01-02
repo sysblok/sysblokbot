@@ -9,27 +9,27 @@ logger = logging.getLogger(__name__)
 
 
 class Roles(str, Enum):
-    NEWBIE = 'newbie'
-    ACTIVE_MEMBER = 'active_member'
-    FROZEN_MEMBER = 'frozen_member'
-    AUTHOR = 'author'
-    REDACTOR = 'redactor'
-    ILLUSTRATOR = 'illustrator'
-    COMMISSIONING_EDITOR = 'commissioning_editor'
-    DIRECTOR = 'director'
-    SOFTWARE_ENGINEER = 'software_engineer'
+    NEWBIE = "newbie"
+    ACTIVE_MEMBER = "active_member"
+    FROZEN_MEMBER = "frozen_member"
+    AUTHOR = "author"
+    REDACTOR = "redactor"
+    ILLUSTRATOR = "illustrator"
+    COMMISSIONING_EDITOR = "commissioning_editor"
+    DIRECTOR = "director"
+    SOFTWARE_ENGINEER = "software_engineer"
 
 
 class Role:
     @classmethod
     def get_name(cls) -> str:
         if not cls._name:
-            raise NotImplementedError('')
+            raise NotImplementedError("")
         return cls._name
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
-        raise NotImplementedError('')
+        raise NotImplementedError("")
 
 
 class RoleNewbie(Role):
@@ -37,7 +37,7 @@ class RoleNewbie(Role):
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
-        return member.status.lower() == load('sheets__team__status__newbie').lower()
+        return member.status.lower() == load("sheets__team__status__newbie").lower()
 
 
 class RoleActiveMember(Role):
@@ -45,7 +45,7 @@ class RoleActiveMember(Role):
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
-        return member.status.lower() == load('sheets__team__status__active').lower()
+        return member.status.lower() == load("sheets__team__status__active").lower()
 
 
 class RoleFrozenMember(Role):
@@ -53,7 +53,7 @@ class RoleFrozenMember(Role):
 
     @staticmethod
     def fits(member: TeamMember) -> bool:
-        return member.status.lower() == load('sheets__team__status__frozen').lower()
+        return member.status.lower() == load("sheets__team__status__frozen").lower()
 
 
 class RoleAuthor(Role):
@@ -71,7 +71,8 @@ class RoleRedactor(Role):
     def fits(member: TeamMember) -> bool:
         return (
             RoleActiveMember.fits(member)
-            and member.manager.lower() == load('sheets__team__manager__redactor').lower()
+            and member.manager.lower()
+            == load("sheets__team__manager__redactor").lower()
         )
 
 
@@ -82,7 +83,8 @@ class RoleIllustrator(Role):
     def fits(member: TeamMember) -> bool:
         return (
             RoleActiveMember.fits(member)
-            and member.manager.lower() == load('sheets__team__manager__illustrator').lower()
+            and member.manager.lower()
+            == load("sheets__team__manager__illustrator").lower()
         )
 
 
@@ -93,7 +95,7 @@ class RoleCommissioningEditor(Role):
     def fits(member: TeamMember) -> bool:
         return (
             RoleActiveMember.fits(member)
-            and member.manager.lower() == load('sheets__team__manager__editor').lower()
+            and member.manager.lower() == load("sheets__team__manager__editor").lower()
         )
 
 
@@ -104,7 +106,8 @@ class RoleDirector(Role):
     def fits(member: TeamMember) -> bool:
         return (
             RoleActiveMember.fits(member)
-            and member.manager.lower() == load('sheets__team__manager__director').lower()
+            and member.manager.lower()
+            == load("sheets__team__manager__director").lower()
         )
 
 
@@ -115,7 +118,7 @@ class RoleSoftwareEngineer(Role):
     def fits(member: TeamMember) -> bool:
         return (
             RoleActiveMember.fits(member)
-            and member.manager.lower() == load('sheets__team__manager__swe').lower()
+            and member.manager.lower() == load("sheets__team__manager__swe").lower()
         )
 
 
@@ -128,5 +131,5 @@ all_roles = [
     RoleIllustrator,
     RoleCommissioningEditor,
     RoleDirector,
-    RoleSoftwareEngineer
+    RoleSoftwareEngineer,
 ]

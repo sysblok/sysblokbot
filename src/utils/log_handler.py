@@ -14,7 +14,7 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
             return
         if tg_sender is None:
             raise ValueError(
-                'On first initialization must pass tg_sender to ErrorBroadcastHandler'
+                "On first initialization must pass tg_sender to ErrorBroadcastHandler"
             )
         super().__init__()
         self.setFormatter(Formatter(LOG_FORMAT))
@@ -26,25 +26,29 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
         super().emit(record)
         if record.levelno == USAGE_LOG_LEVEL and not self.is_muted:
             try:
-                usage_message = f'{record.asctime} - {record.message}'
+                usage_message = f"{record.asctime} - {record.message}"
                 if record.exc_text:
-                    usage_message += f' - {record.exc_text}'
-                self.tg_sender.send_usage_log(f'<code>{html.escape(usage_message)}</code>')
+                    usage_message += f" - {record.exc_text}"
+                self.tg_sender.send_usage_log(
+                    f"<code>{html.escape(usage_message)}</code>"
+                )
             except Exception as e:
                 # if it can't send a message, still should log it to the stream
-                super().emit(LogRecord(
-                    name=__name__,
-                    level=ERROR,
-                    pathname=None,
-                    lineno=-1,
-                    msg=f'Could not send error to telegram: {e}',
-                    args=None,
-                    exc_info=None,
-                ))
+                super().emit(
+                    LogRecord(
+                        name=__name__,
+                        level=ERROR,
+                        pathname=None,
+                        lineno=-1,
+                        msg=f"Could not send error to telegram: {e}",
+                        args=None,
+                        exc_info=None,
+                    )
+                )
         if record.levelno >= ERROR and not self.is_muted:
-            error_message = f'{record.levelname} - {record.module} - {record.message}'
+            error_message = f"{record.levelname} - {record.module} - {record.message}"
             if record.exc_text:
-                error_message += f' - {record.exc_text}'
+                error_message += f" - {record.exc_text}"
             try:
                 capture_message(error_message)
             except Exception as e:
@@ -61,18 +65,22 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
                     )
                 )
             try:
-                self.tg_sender.send_error_log(f'<code>{html.escape(error_message)}</code>')
+                self.tg_sender.send_error_log(
+                    f"<code>{html.escape(error_message)}</code>"
+                )
             except Exception as e:
                 # if it can't send a message, still should log it to the stream
-                super().emit(LogRecord(
-                    name=__name__,
-                    level=ERROR,
-                    pathname=None,
-                    lineno=-1,
-                    msg=f'Could not send error to telegram: {e}',
-                    args=None,
-                    exc_info=None,
-                ))
+                super().emit(
+                    LogRecord(
+                        name=__name__,
+                        level=ERROR,
+                        pathname=None,
+                        lineno=-1,
+                        msg=f"Could not send error to telegram: {e}",
+                        args=None,
+                        exc_info=None,
+                    )
+                )
 
     def set_muted(self, is_muted: bool):
         self.is_muted = is_muted

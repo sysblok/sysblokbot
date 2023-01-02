@@ -29,7 +29,9 @@ class TrelloBoardStateJob(BaseJob):
             curator_cards.sort(key=lambda c: c.due if c.due else datetime.datetime.min)
             for card in curator_cards:
                 card_paragraph = TrelloBoardStateJob._format_card(
-                    card, card_checks.make_card_failure_reasons(card, app_context), app_context
+                    card,
+                    card_checks.make_card_failure_reasons(card, app_context),
+                    app_context,
                 )
                 if card_paragraph:
                     card_paragraphs.append(card_paragraph)
@@ -39,11 +41,13 @@ class TrelloBoardStateJob(BaseJob):
         pretty_send(paragraphs, send)
 
     @staticmethod
-    def _format_card(card: TrelloCard, failure_reasons: List[str], app_context: AppContext) -> str:
+    def _format_card(
+        card: TrelloCard, failure_reasons: List[str], app_context: AppContext
+    ) -> str:
         if not failure_reasons:
             return None
 
-        failure_reasons_formatted = ', '.join(failure_reasons)
+        failure_reasons_formatted = ", ".join(failure_reasons)
         labels = (
             load(
                 "trello_board_state_job__card_labels",

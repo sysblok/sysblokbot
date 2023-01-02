@@ -1,21 +1,25 @@
 appdirs==1.4.3
 astroid==2.3.3
 attrs==19.3.0
-BeautifulSoup4==4.10.0
+beautifulsoup4==4.10.0
+black==22.12.0
 CacheControl==0.12.6
 cachetools==4.1.0
 certifi==2020.4.5.1
 cffi==1.14.0
 chardet==3.0.4
-click==7.1.1
+charset-normalizer==2.1.1
+click==8.1.3
 colorama==0.4.3
 contextlib2==0.6.0
 cryptography==3.1.1
+cycler==0.11.0
 decorator==4.4.2
 deepdiff==4.3.2
 distlib==0.3.0
 distro==1.4.0
 -e git+https://github.com/mobolic/facebook-sdk.git@ffd9980700be48964d6a6a61144edb1c3ea29cff#egg=facebook_sdk
+fonttools==4.38.0
 freezegun==0.3.15
 future==0.18.2
 google-api-core==1.17.0
@@ -31,18 +35,23 @@ idna==2.9
 importlib-metadata==1.6.0
 ipaddr==2.2.0
 isort==4.3.21
+kiwisolver==1.4.4
 lazy-object-proxy==1.4.3
 lockfile==0.12.2
 matplotlib==3.5.2
 mccabe==0.6.1
 more-itertools==8.2.0
 msgpack==0.6.2
+mypy-extensions==0.4.3
+numpy==1.24.1
 oauth2client==4.1.3
 oauthlib==3.1.0
 ordered-set==3.1.1
 packaging==20.3
-pathspec==0.8.0
+pathspec==0.10.3
 pep517==0.8.2
+Pillow==9.4.0
+platformdirs==2.6.2
 pluggy==0.13.1
 progress==1.5
 protobuf==3.12.2
@@ -65,17 +74,19 @@ requests-oauthlib==1.3.0
 retrying==1.3.3
 rope==0.17.0
 rsa==4.0
-# schedule==1.1.0
 -e git+https://github.com/dbader/schedule.git@3eac646a8d2658929587d7454bd2c85696df254e#egg=schedule
 sentry-sdk==1.10.1
 sheetfu==1.5.3
 six==1.14.0
+soupsieve==2.3.2.post1
 SQLAlchemy==1.3.17
-# Telethon==1.16.0
+SysBlokBot==0.0.0
 -e git+https://github.com/alexeyqu/Telethon.git@7cd20d1e5c0082450c53dbf242fb35145e448260#egg=Telethon
 toml==0.10.0
+tomli==2.0.1
 tornado==6.0.4
 typed-ast==1.4.1
+typing-extensions==4.4.0
 uritemplate==3.0.1
 urllib3==1.26.12
 vk-api==11.9.1
