@@ -15,8 +15,8 @@ from ..trello.trello_objects import TrelloCard
 from ..utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
-SCOPES = ['https://www.googleapis.com/auth/drive']
-BASE_URL = 'https://drive.google.com/drive/u/1/folders/'
+SCOPES = ["https://www.googleapis.com/auth/drive"]
+BASE_URL = "https://drive.google.com/drive/u/1/folders/"
 
 
 class GoogleDriveClient(Singleton):
@@ -26,7 +26,7 @@ class GoogleDriveClient(Singleton):
 
         self._drive_config = drive_config
         self._update_from_config()
-        logger.info('DriveClient successfully initialized')
+        logger.info("DriveClient successfully initialized")
 
     def update_config(self, new_drive_config: dict):
         """To be called after config automatic update"""
@@ -34,15 +34,16 @@ class GoogleDriveClient(Singleton):
         self._update_from_config()
 
     def _update_from_config(self):
-        '''Update attributes according to current self._sheets_config'''
-        self.illustrations_folder_key = self._drive_config['illustrations_folder_key']
+        """Update attributes according to current self._sheets_config"""
+        self.illustrations_folder_key = self._drive_config["illustrations_folder_key"]
         self._authorize()
 
     def _authorize(self):
         self._credentials = ServiceAccountCredentials.from_json_keyfile_name(
-            self._drive_config['api_key_path'], scopes=SCOPES)
+            self._drive_config["api_key_path"], scopes=SCOPES
+        )
         # https://developers.google.com/drive/api/v3/quickstart/python
-        self.service = build('drive', 'v3', credentials=self._credentials)
+        self.service = build("drive", "v3", credentials=self._credentials)
 
     def create_folder_for_card(self, trello_card: TrelloCard) -> str:
         existing = self._lookup_file_by_name(trello_card.name)
@@ -67,14 +68,20 @@ class GoogleDriveClient(Singleton):
         """
         file_id = GoogleDriveClient._get_id_from_url(file_url)
         try:
-            permissions = self.service.permissions().list(
-                fileId=file_id
-            ).execute().get('permissions')
+            permissions = (
+                self.service.permissions()
+                .list(fileId=file_id)
+                .execute()
+                .get("permissions")
+            )
         except HttpError:
-            logger.debug(f'Could not get google doc: {file_url}')
+            logger.debug(f"Could not get google doc: {file_url}")
             return False
         for permission in permissions:
-            if permission.get('type') == 'anyone' and permission.get('role') == 'writer':
+            if (
+                permission.get("type") == "anyone"
+                and permission.get("role") == "writer"
+            ):
                 return True
         return False
 
@@ -90,21 +97,25 @@ class GoogleDriveClient(Singleton):
             while done is False:
                 status, done = downloader.next_chunk()
         except Exception as e:
-            logger.error(f'Failed to download {file_id} from Google drive: {e}')
+            logger.error(f"Failed to download {file_id} from Google drive: {e}")
             return None
         return file.getvalue()
 
     def _create_file(self, name: str, description: str, parents: List[str]) -> str:
         file_metadata = {
-            'name': name,
-            'description': description,
-            'parents': parents,
-            'mimeType': 'application/vnd.google-apps.folder'
+            "name": name,
+            "description": description,
+            "parents": parents,
+            "mimeType": "application/vnd.google-apps.folder",
         }
         try:
-            file = self.service.files().create(body=file_metadata, fields='id').execute()
+            file = (
+                self.service.files().create(body=file_metadata, fields="id").execute()
+            )
         except Exception as e:
-            logger.error(f'Failed to create a folder for {description} in Google drive: {e}')
+            logger.error(
+                f"Failed to create a folder for {description} in Google drive: {e}"
+            )
             return None
         return file.get("id")
 
@@ -112,43 +123,53 @@ class GoogleDriveClient(Singleton):
         page_token = None
         name = name.replace('"', '\\"')
         try:
-            results = self.service.files().list(
-                q=f'name contains "{name}" and "{self.illustrations_folder_key}" in parents',
-                pageSize=10,
-                fields='nextPageToken, files(id, name)',
-                pageToken=page_token
-            ).execute()
+            results = (
+                self.service.files()
+                .list(
+                    q=f'name contains "{name}" and "{self.illustrations_folder_key}" in parents',
+                    pageSize=10,
+                    fields="nextPageToken, files(id, name)",
+                    pageToken=page_token,
+                )
+                .execute()
+            )
         except Exception as e:
-            logger.error(f'Failed to query Google drive for existing folder {name}: {e}')
+            logger.error(
+                f"Failed to query Google drive for existing folder {name}: {e}"
+            )
             return None
-        items = results.get('files', [])
+        items = results.get("files", [])
         if len(items) == 0:
             return None
-        logger.info(f'Found {len(items)} folders matching {name}.')
-        return items[0].get('id')
+        logger.info(f"Found {len(items)} folders matching {name}.")
+        return items[0].get("id")
 
     def _lookup_file_by_parent_url(self, parent_url: str) -> str:
         page_token = None
         try:
-            results = self.service.files().list(
-                q=f'"{GoogleDriveClient._get_id_from_url(parent_url)}" in parents',
-                pageSize=10,
-                fields='nextPageToken, files(id, name)',
-                pageToken=page_token
-            ).execute()
+            results = (
+                self.service.files()
+                .list(
+                    q=f'"{GoogleDriveClient._get_id_from_url(parent_url)}" in parents',
+                    pageSize=10,
+                    fields="nextPageToken, files(id, name)",
+                    pageToken=page_token,
+                )
+                .execute()
+            )
         except Exception as e:
             logger.warning(
-                f'Failed to query Google drive for existing parent url {parent_url}: {e}'
+                f"Failed to query Google drive for existing parent url {parent_url}: {e}"
             )
             return None
-        items = results.get('files', [])
+        items = results.get("files", [])
         if len(items) == 0:
             return None
-        logger.info(f'Found {len(items)} child files for {parent_url}.')
-        return items[0].get('id')
+        logger.info(f"Found {len(items)} child files for {parent_url}.")
+        return items[0].get("id")
 
     @staticmethod
     def _get_id_from_url(url: str) -> str:
         """Works with any id (doc/drive/sheets)"""
-        match = re.search('google.com.*/([a-zA-Z0-9-_]{25,})', url)
-        return match.group(1) if match else ''
+        match = re.search("google.com.*/([a-zA-Z0-9-_]{25,})", url)
+        return match.group(1) if match else ""

@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
         ({"job": {"every": "sunday", "at": "10:00"}}, 1),
         ({"job": {"every": "hour"}}, 1),
         ({"job": {"every": "day", "at": "10"}}, 0),
-    ]
+    ],
 )
 def test_jobs_scheduled(jobs_config, num_jobs, mock_config_jobs_manager, mock_sender):
     for job_id in jobs_config:
@@ -53,7 +53,9 @@ def test_jobs_scheduled(jobs_config, num_jobs, mock_config_jobs_manager, mock_se
 def test_jobs_executed(mock_config_jobs_manager, mock_sender):
     setattr(jobs, "job", fake_job)
 
-    mock_config_jobs_manager._latest_jobs_config = {"job": {"every": "day", "at": "12:00"}}
+    mock_config_jobs_manager._latest_jobs_config = {
+        "job": {"every": "day", "at": "12:00"}
+    }
 
     scheduler.schedule.clear()
     fake_job.reset_run_counter()

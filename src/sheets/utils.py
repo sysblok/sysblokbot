@@ -1,7 +1,7 @@
 from datetime import datetime
 
 
-TIME_FORMAT = '%d.%m.%Y %H:%M:%S'
+TIME_FORMAT = "%d.%m.%Y %H:%M:%S"
 
 
 def convert_excel_datetime_to_string(excel_datetime: float) -> str:

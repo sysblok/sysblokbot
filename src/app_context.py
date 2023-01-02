@@ -28,7 +28,10 @@ class AppContext(Singleton):
     Stores client references in one place,
     so that they can be easily used in jobs.
     """
-    def __init__(self, config_manager: ConfigManager = None, skip_db_update: bool = False):
+
+    def __init__(
+        self, config_manager: ConfigManager = None, skip_db_update: bool = False
+    ):
         if self.was_initialized():
             return
 
@@ -71,5 +74,5 @@ class AppContext(Singleton):
         self.set_access_rights(tg_config)
 
     def set_access_rights(self, tg_config: dict):
-        self.admin_chat_ids = set(tg_config['admin_chat_ids'])
-        self.manager_chat_ids = set(tg_config['manager_chat_ids'])
+        self.admin_chat_ids = set(tg_config["admin_chat_ids"])
+        self.manager_chat_ids = set(tg_config["manager_chat_ids"])

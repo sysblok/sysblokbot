@@ -17,7 +17,9 @@ logger = logging.getLogger(__name__)
 
 class IllustrativeReportMembersJob(BaseJob):
     @staticmethod
-    def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
+    def _execute(
+        app_context: AppContext, send: Callable[[str], None], called_from_handler=False
+    ):
         paragraphs = []  # list of paragraph strings
         errors = {}
 
@@ -36,19 +38,18 @@ class IllustrativeReportMembersJob(BaseJob):
             paragraphs = format_errors_with_tips(errors)
         else:
             # go first
-            no_illustrators_cards = result.get('')
+            no_illustrators_cards = result.get("")
             if no_illustrators_cards and len(no_illustrators_cards) > 0:
                 paragraphs += IllustrativeReportMembersJob._get_cards_group_paragraphs(
-                    load('illustrative_report_job__no_illustrators'),
-                    no_illustrators_cards
+                    load("illustrative_report_job__no_illustrators"),
+                    no_illustrators_cards,
                 )
             for illustrators, cards in result.items():
-                if illustrators == '':
+                if illustrators == "":
                     # already processed
                     continue
                 paragraphs += IllustrativeReportMembersJob._get_cards_group_paragraphs(
-                    illustrators,
-                    cards
+                    illustrators, cards
                 )
         logger.warning(paragraphs)
 
@@ -56,14 +57,14 @@ class IllustrativeReportMembersJob(BaseJob):
 
     @staticmethod
     def _retrieve_cards(
-            app_context: AppContext,
-            list_aliases: List[TrelloListAlias],
-            errors: dict,
+        app_context: AppContext,
+        list_aliases: List[TrelloListAlias],
+        errors: dict,
     ) -> Dict[str, List[Tuple[bool, str]]]:
         """
         Returns card reports texts grouped by illustrators
         """
-        logger.info(f'Started retrieving cards')
+        logger.info(f"Started retrieving cards")
         list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
         cards = app_context.trello_client.get_cards(list_ids)
         parse_failure_counter = 0
@@ -71,25 +72,25 @@ class IllustrativeReportMembersJob(BaseJob):
         result = defaultdict(list)
         # additional labels to card title in report
         labels_to_display = [
-            load('common_trello_label__main_post'),
-            load('common_trello_label__glossary'),
-            load('common_trello_label__interview'),
-            load('common_trello_label__neuropoems'),
-            load('common_trello_label__news'),
-            load('common_trello_label__reviews'),
-            load('common_trello_label__survey'),
-            load('common_trello_label__test'),
-            load('common_trello_label__visual_legacy'),
-            load('common_trello_label__archive'),
-            load('common_trello_label__digest'),
-            load('common_trello_label__promo'),
-            load('common_trello_label__video'),
-            load('common_trello_label__visualisation'),
-            load('common_trello_label__memes'),
-            load('common_trello_label__scientist_blogs'),
-            load('common_trello_label__podcasts'),
-            load('common_trello_label__pishu_postcard_weekly'),
-            load('common_trello_label__pishu_selection')
+            load("common_trello_label__main_post"),
+            load("common_trello_label__glossary"),
+            load("common_trello_label__interview"),
+            load("common_trello_label__neuropoems"),
+            load("common_trello_label__news"),
+            load("common_trello_label__reviews"),
+            load("common_trello_label__survey"),
+            load("common_trello_label__test"),
+            load("common_trello_label__visual_legacy"),
+            load("common_trello_label__archive"),
+            load("common_trello_label__digest"),
+            load("common_trello_label__promo"),
+            load("common_trello_label__video"),
+            load("common_trello_label__visualisation"),
+            load("common_trello_label__memes"),
+            load("common_trello_label__scientist_blogs"),
+            load("common_trello_label__podcasts"),
+            load("common_trello_label__pishu_postcard_weekly"),
+            load("common_trello_label__pishu_selection"),
         ]
         for card in cards:
             if not card:
@@ -111,31 +112,35 @@ class IllustrativeReportMembersJob(BaseJob):
                 continue
 
             cover = IllustrativeReportMembersJob._get_cover_report_field(
-                app_context,
-                card_fields.cover if card_fields.cover else ''
+                app_context, card_fields.cover if card_fields.cover else ""
             )
             doc_url = (
-                card_fields.google_doc if urlparse(card_fields.google_doc).scheme else ''
+                card_fields.google_doc
+                if urlparse(card_fields.google_doc).scheme
+                else ""
             )
             no_access_marker = get_no_access_marker(doc_url, app_context.drive_client)
             is_edited_sometimes = (
-                card.lst.id == app_context.trello_client.lists_config[
+                card.lst.id
+                == app_context.trello_client.lists_config[
                     TrelloListAlias.EDITED_SOMETIMES
                 ]
             )
             card_labels = []
             if is_edited_sometimes:
-                card_labels += [load('illustrative_report_job__edited_label')]
-            card_labels += [label for label in label_names if label in labels_to_display]
+                card_labels += [load("illustrative_report_job__edited_label")]
+            card_labels += [
+                label for label in label_names if label in labels_to_display
+            ]
             card_text = load(
-                'illustrative_report_job__card_new',
+                "illustrative_report_job__card_new",
                 url=doc_url,
                 name=card_fields.title or card.name,
                 labels=format_trello_labels(card_labels),
                 cover=cover,
-                card=load('illustrative_report_job__card_url', url=card.url)
+                card=load("illustrative_report_job__card_url", url=card.url),
             )
-            card_illustrators = ''
+            card_illustrators = ""
             if card_fields.illustrators:
                 card_illustrators = ", ".join(sorted(card_fields.illustrators))
             result[card_illustrators].append(
@@ -143,8 +148,8 @@ class IllustrativeReportMembersJob(BaseJob):
             )
 
         if parse_failure_counter > 0:
-            logger.error(f'Unparsed cards encountered: {parse_failure_counter}')
-        logger.info(f'Finished retrieving cards')
+            logger.error(f"Unparsed cards encountered: {parse_failure_counter}")
+        logger.info(f"Finished retrieving cards")
         return result
 
     @staticmethod
@@ -155,56 +160,50 @@ class IllustrativeReportMembersJob(BaseJob):
         if urlparse(cover_folder_path).scheme:
             if app_context.drive_client.is_folder_empty(cover_folder_path):
                 return load(
-                    'illustrative_report_job__card_cover_url_empty',
-                    url=cover_folder_path
+                    "illustrative_report_job__card_cover_url_empty",
+                    url=cover_folder_path,
                 )
             return load(
-                    'illustrative_report_job__card_cover_url',
-                    url=cover_folder_path
-                )
-        return load('illustrative_report_job__card_cover', name=cover_folder_path)
+                "illustrative_report_job__card_cover_url", url=cover_folder_path
+            )
+        return load("illustrative_report_job__card_cover", name=cover_folder_path)
 
     @staticmethod
     def _get_cards_group_paragraphs(
-            illustrators: str, cards: List[Tuple[bool, str]]
+        illustrators: str, cards: List[Tuple[bool, str]]
     ) -> List[str]:
         """
         Returns a list of paragraphs for illustrators group
         """
         if len(cards) == 0:
             return []
-        paragraphs = [load(
-            'illustrative_report_job__author_title', name=illustrators
-        )]
+        paragraphs = [load("illustrative_report_job__author_title", name=illustrators)]
         paragraphs += [
-            card_text for _, card_text in sorted(
-                cards, key=itemgetter(0), reverse=True
-            )
+            card_text for _, card_text in sorted(cards, key=itemgetter(0), reverse=True)
         ]
         return paragraphs
 
     @staticmethod
     def _check_trello_card(
-            app_context: AppContext,
-            card: TrelloCard,
-            card_fields: CardCustomFields,
-            errors: dict,
+        app_context: AppContext,
+        card: TrelloCard,
+        card_fields: CardCustomFields,
+        errors: dict,
     ) -> bool:
         """
         Check card and add bad card fields aliases in errors dict.
         Return true if there are no errors
         """
         this_card_bad_fields_aliases = []
-        if (
-            not card_fields.title and
-            card.lst.id not in (
-                app_context.trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK],
-                app_context.trello_client.lists_config[TrelloListAlias.TO_SEO_EDITOR]
-            )
+        if not card_fields.title and card.lst.id not in (
+            app_context.trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK],
+            app_context.trello_client.lists_config[TrelloListAlias.TO_SEO_EDITOR],
         ):
             this_card_bad_fields_aliases.append(TrelloCardFieldErrorAlias.BAD_TITLE)
         if not card_fields.google_doc:
-            this_card_bad_fields_aliases.append(TrelloCardFieldErrorAlias.BAD_GOOGLE_DOC)
+            this_card_bad_fields_aliases.append(
+                TrelloCardFieldErrorAlias.BAD_GOOGLE_DOC
+            )
         if not card_fields.cover:
             this_card_bad_fields_aliases.append(TrelloCardFieldErrorAlias.BAD_COVER)
 
