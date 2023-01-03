@@ -1,4 +1,4 @@
-FROM python:3.7-alpine3.13
+FROM python:3.8-alpine3.13
 
 RUN apk add --no-cache build-base gcc python3-dev jpeg-dev zlib-dev libressl-dev musl-dev libffi-dev sqlite git; rm -rf /var/lib/apt/lists/*
 
