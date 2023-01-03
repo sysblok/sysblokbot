@@ -1,16 +1,15 @@
 import logging
+from datetime import datetime
 from enum import Enum
 from typing import List, Tuple
 from urllib.parse import parse_qs, urlparse
-import dateutil.parser as dateparser
 
+import dateutil.parser as dateparser
 import facebook
 
-from datetime import datetime
-
-from .instagram_objects import InstagramPage, InstagramMedia
 from ..consts import ReportPeriod
 from ..utils.singleton import Singleton
+from .instagram_objects import InstagramMedia, InstagramPage
 
 logger = logging.getLogger(__name__)
 

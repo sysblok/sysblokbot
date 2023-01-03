@@ -3,10 +3,11 @@ import logging
 from datetime import datetime, timezone
 from typing import Callable, Tuple
 
-from ..strings import load
-from ..tg.sender import pretty_send
 from src.app_context import AppContext
 from src.jobs.base_job import BaseJob
+
+from ..strings import load
+from ..tg.sender import pretty_send
 
 logger = logging.getLogger(__name__)
 

@@ -1,16 +1,18 @@
 ﻿import datetime
 import logging
 from typing import Callable, Tuple
+
 import matplotlib as mpl
-import numpy as np
 import matplotlib.pyplot as plt
-from .base_job import BaseJob
-from . import utils
+import numpy as np
+
 from ..app_context import AppContext
 from ..consts import TrelloListAlias
 from ..db.db_objects import TrelloAnalytics
 from ..strings import load
 from ..utils import card_checks
+from . import utils
+from .base_job import BaseJob
 
 logger = logging.getLogger(__name__)
 mpl.use("Agg")

@@ -1,13 +1,13 @@
 import logging
+from datetime import datetime, timedelta
+from typing import List, Optional
 
 from sheetfu.modules.table import Item, Table
-from typing import List, Optional
-from datetime import timedelta, datetime
 
-from .utils import convert_excel_datetime_to_string
 from ..consts import TrelloCardColor
 from ..strings import load
 from ..trello.trello_objects import CardCustomFields, TrelloCard
+from .utils import convert_excel_datetime_to_string
 
 logger = logging.getLogger(__name__)
 

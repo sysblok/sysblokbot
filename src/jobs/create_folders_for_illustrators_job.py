@@ -1,13 +1,13 @@
 import logging
+from enum import IntEnum
 from typing import Callable, List, Tuple
 from urllib.parse import urlparse
 
 from ..app_context import AppContext
-from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias, TrelloCardColor
+from ..consts import TrelloCardColor, TrelloCustomFieldTypeAlias, TrelloListAlias
 from ..strings import load
-from .base_job import BaseJob
 from ..tg.sender import pretty_send
-from enum import IntEnum
+from .base_job import BaseJob
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +57,7 @@ class CreateFoldersForIllustratorsJob(BaseJob):
         app_context: AppContext,
         list_aliases: List[TrelloListAlias],
     ) -> List[Tuple[IllustratorFolderState, str]]:
-        logger.info(f"Started counting:")
+        logger.info("Started counting:")
         list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
         cards = app_context.trello_client.get_cards(list_ids)
 

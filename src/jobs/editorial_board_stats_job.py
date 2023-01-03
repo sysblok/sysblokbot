@@ -2,13 +2,13 @@ import datetime
 import logging
 from typing import Callable, Tuple
 
-from .base_job import BaseJob
-from . import utils
 from ..app_context import AppContext
 from ..consts import TrelloListAlias
 from ..db.db_objects import TrelloAnalytics
 from ..strings import load
 from ..utils import card_checks
+from . import utils
+from .base_job import BaseJob
 
 logger = logging.getLogger(__name__)
 

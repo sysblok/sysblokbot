@@ -1,11 +1,11 @@
 from typing import Callable, List
 
 from ..app_context import AppContext
-from ..strings import load
-from ..trello.trello_objects import TrelloCard
 from ..consts import TrelloListAlias
+from ..strings import load
 from ..tg.sender import pretty_send
 from ..trello.trello_client import TrelloClient
+from ..trello.trello_objects import TrelloCard
 from .base_job import BaseJob
 from .utils import format_possibly_plural
 

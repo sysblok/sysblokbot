@@ -1,11 +1,11 @@
-from logging import LogRecord, StreamHandler, Formatter
-from logging import ERROR
 import html
+from logging import ERROR, Formatter, LogRecord, StreamHandler
+
 from sentry_sdk import capture_message
 
-from .singleton import Singleton
 from ..consts import LOG_FORMAT, USAGE_LOG_LEVEL
 from ..tg.sender import TelegramSender
+from .singleton import Singleton
 
 
 class ErrorBroadcastHandler(StreamHandler, Singleton):
@@ -59,7 +59,7 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
                         level=ERROR,
                         pathname=None,
                         lineno=-1,
-                        msg=f"Failed to capture sentry log",
+                        msg="Failed to capture sentry log",
                         args=None,
                         exc_info=e,
                     )

@@ -1,8 +1,8 @@
-from .base_analytics import BaseAnalytics
 from datetime import datetime, timedelta
 
 from ..consts import ReportPeriod
 from ..instagram.instagram_client import InstagramClient
+from .base_analytics import BaseAnalytics
 
 
 class ApiInstagramAnalytics(BaseAnalytics):

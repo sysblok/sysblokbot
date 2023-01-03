@@ -1,8 +1,8 @@
 import logging
 
-from ..sender import TelegramSender
 from ...app_context import AppContext
 from ...tg.sender import pretty_send
+from ..sender import TelegramSender
 
 logger = logging.getLogger(__name__)
 

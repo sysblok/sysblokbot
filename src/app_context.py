@@ -3,11 +3,11 @@ import logging
 from .analytics.api_facebook_analytics import ApiFacebookAnalytics
 from .analytics.api_instagram_analytics import ApiInstagramAnalytics
 from .analytics.api_vk_analytics import ApiVkAnalytics
-from .consts import TRELLO_CONFIG
-
 from .config_manager import ConfigManager
+from .consts import TRELLO_CONFIG
 from .db.db_client import DBClient
 from .drive.drive_client import GoogleDriveClient
+from .facebook.facebook_client import FacebookClient
 from .instagram.instagram_client import InstagramClient
 from .roles.role_manager import RoleManager
 from .sheets.sheets_client import GoogleSheetsClient
@@ -15,10 +15,8 @@ from .strings import StringsDBClient
 from .tg.sender import TelegramSender
 from .tg.tg_client import TgClient
 from .trello.trello_client import TrelloClient
-from .facebook.facebook_client import FacebookClient
 from .utils.singleton import Singleton
 from .vk.vk_client import VkClient
-
 
 logger = logging.getLogger(__name__)
 

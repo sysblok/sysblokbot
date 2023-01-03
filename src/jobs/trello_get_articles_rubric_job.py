@@ -1,13 +1,13 @@
 from typing import Callable, List
 
 from ..app_context import AppContext
-from ..strings import load
-from ..trello.trello_objects import TrelloCard
 from ..consts import TrelloListAlias
+from ..strings import load
 from ..tg.sender import pretty_send
 from ..trello.trello_client import TrelloClient
-from .base_job import BaseJob
+from ..trello.trello_objects import TrelloCard
 from . import utils
+from .base_job import BaseJob
 
 
 class TrelloGetArticlesRubricJob(BaseJob):
@@ -74,7 +74,6 @@ class TrelloGetArticlesRubricJob(BaseJob):
         cards = trello_client.get_cards(list_ids)
         cards_filtered = []
         for card in cards:
-            card_column = str(card.lst)
             if rubric_name in [label.name for label in card.labels]:
                 cards_filtered.append(card)
 

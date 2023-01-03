@@ -1,7 +1,7 @@
 import logging
 
-from .utils import admin_only, reply
 from ...strings import load
+from .utils import admin_only, reply
 
 logger = logging.getLogger(__name__)
 

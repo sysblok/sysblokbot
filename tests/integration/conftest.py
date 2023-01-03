@@ -1,16 +1,15 @@
 import asyncio
 import json
-import pytest
 import os
 import re
-from telethon import TelegramClient
-from telethon.sessions import StringSession
 from typing import List
 
-from src.utils.singleton import Singleton
-
+import pytest
 from pytest_report import PytestReport, PytestTestStatus
+from telethon import TelegramClient
+from telethon.sessions import StringSession
 
+from src.utils.singleton import Singleton
 
 if os.path.exists("config_override_integration_tests.json"):
     with open("config_override_integration_tests.json") as config_override:

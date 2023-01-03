@@ -1,9 +1,8 @@
-from enum import Enum
 import logging
+from enum import Enum
 
 from src.db.db_objects import TeamMember
 from src.strings import load
-
 
 logger = logging.getLogger(__name__)
 

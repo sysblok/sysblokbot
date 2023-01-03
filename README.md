@@ -10,6 +10,7 @@ Bot for SysBlok ("Системный Блокъ") editorial processes automatiza
 - Create `config_override.json` in the same directory and put sensitive tokens there (you can copypaste from `config.json` first). Do not push `config_override.json` to the repo!
 - `pip install -e .`
 - `pip install -r requirements.txt`
+- `pre-commit install`
 - If access to Telegram servers is restricted by your internet provider: install and run any VPN service
 - `python3 app.py`
 

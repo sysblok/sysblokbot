@@ -1,11 +1,10 @@
 import logging
-
 from datetime import datetime
 from typing import List
 
 from telethon import TelegramClient, functions
-from telethon.tl.types import User
 from telethon.sessions import StringSession
+from telethon.tl.types import User
 
 from ..utils.singleton import Singleton
 

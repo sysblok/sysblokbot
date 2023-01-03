@@ -1,8 +1,7 @@
 from typing import Iterable
 
-from ...db.db_client import DBClient
 from ...app_context import AppContext
-
+from ...db.db_client import DBClient
 from ...strings import load
 from .utils import admin_only, direct_message_only, reply
 

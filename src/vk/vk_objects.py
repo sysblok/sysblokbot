@@ -1,5 +1,5 @@
-from datetime import datetime
 import logging
+from datetime import datetime
 from typing import Iterable, List, Set
 
 from ..consts import VK_POST_LINK

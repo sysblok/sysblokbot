@@ -3,15 +3,16 @@
 import argparse
 import locale
 import logging
-import requests
 
+import requests
+import sentry_sdk
+
+from src import consts
 from src.bot import SysBlokBot
 from src.config_manager import ConfigManager
-from src import consts
 from src.scheduler import JobScheduler
 from src.tg.sender import TelegramSender
 from src.utils.log_handler import ErrorBroadcastHandler
-import sentry_sdk
 
 locale.setlocale(locale.LC_TIME, "ru_RU.UTF-8")
 logging.basicConfig(format=consts.LOG_FORMAT, level=logging.INFO)
@@ -31,7 +32,7 @@ def get_bot():
     config_manager = ConfigManager(consts.CONFIG_PATH, consts.CONFIG_OVERRIDE_PATH)
     config = config_manager.load_config_with_override()
     if not config:
-        raise ValueError(f"Could not load config, can't go on")
+        raise ValueError("Could not load config, can't go on")
 
     sentry_dsn = config.get("sentry_dsn", None)
     if sentry_dsn:
@@ -57,7 +58,7 @@ def get_bot():
         jobs_config_json
     )
     if not config_jobs:
-        raise ValueError(f"Could not load job config, can't go on")
+        raise ValueError("Could not load job config, can't go on")
 
     # Setting final logger and sending a message bot is up
     tg_sender = TelegramSender()

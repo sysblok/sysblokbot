@@ -1,17 +1,15 @@
 import datetime
 import logging
-import pytest
 import time
 
-from freezegun import freeze_time
+import pytest
 import schedule
+from fakes import fake_job
+from freezegun import freeze_time
 
-from src import jobs
-from src import scheduler
+from src import jobs, scheduler
 from src.bot import SysBlokBot
 from src.config_manager import ConfigManager
-
-from fakes import fake_job
 
 logger = logging.getLogger(__name__)
 

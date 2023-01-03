@@ -2,14 +2,14 @@ import logging
 from datetime import datetime, timedelta
 from typing import Callable, Iterable
 
+from src.app_context import AppContext
+from src.jobs.base_job import BaseJob
+
 from ..consts import ReportPeriod
 from ..sheets.sheets_objects import PostRegistryItem
 from ..strings import load
 from ..tg.sender import pretty_send
-from ..vk.vk_objects import VkPostStats, VkPost
-
-from src.app_context import AppContext
-from src.jobs.base_job import BaseJob
+from ..vk.vk_objects import VkPost, VkPostStats
 
 logger = logging.getLogger(__name__)
 

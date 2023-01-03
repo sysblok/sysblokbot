@@ -1,13 +1,12 @@
 import logging
-from typing import List, Iterable
+from datetime import datetime
+from typing import Iterable, List
 
 import vk_api
 
-from datetime import datetime
-
-from .vk_objects import VkGroup, VkGroupStats, VkPost, VkPostStats
 from ..consts import ReportPeriod
 from ..utils.singleton import Singleton
+from .vk_objects import VkGroup, VkGroupStats, VkPost, VkPostStats
 
 logger = logging.getLogger(__name__)
 

@@ -5,8 +5,8 @@ from typing import Callable, List
 
 from ..app_context import AppContext
 from ..consts import TrelloListAlias
-from ..strings import load
 from ..drive.drive_client import GoogleDriveClient
+from ..strings import load
 from ..tg.sender import pretty_send
 from ..trello.trello_client import TrelloClient
 from .base_job import BaseJob

@@ -1,15 +1,15 @@
+import html
 import logging
-import time
 import threading
+import time
 from typing import List
 
-import html
 import schedule
 import telegram
 
 from .app_context import AppContext
 from .config_manager import ConfigManager
-from .consts import CONFIG_RELOAD_MINUTES, EVERY, AT, SEND_TO, KWARGS
+from .consts import AT, CONFIG_RELOAD_MINUTES, EVERY, KWARGS, SEND_TO
 from .jobs.utils import get_job_runnable
 from .tg.sender import TelegramSender
 from .utils.singleton import Singleton
@@ -68,7 +68,7 @@ class JobScheduler(Singleton):
         """
         logger.info("Starting setting job schedules...")
         jobs_config = self.config_manager.get_jobs_config()
-        logger.info(f"Got jobs config")
+        logger.info("Got jobs config")
         for job_id, schedules in jobs_config.items():
             logger.info(f'Found job "{job_id}"')
             if isinstance(schedules, dict):

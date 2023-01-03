@@ -7,7 +7,7 @@ from ... import consts
 from ...db.db_client import DBClient
 from ...db.db_objects import Chat, Reminder
 from ...strings import load
-from .utils import admin_only, get_sender_id, manager_only, direct_message_only, reply
+from .utils import admin_only, direct_message_only, get_sender_id, manager_only, reply
 
 TASK_NAME = "manage_reminders"
 

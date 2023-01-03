@@ -1,8 +1,8 @@
-from .base_analytics import BaseAnalytics
 from datetime import datetime, timedelta
 
 from ..consts import ReportPeriod
 from ..facebook.facebook_client import FacebookClient
+from .base_analytics import BaseAnalytics
 
 
 class ApiFacebookAnalytics(BaseAnalytics):
