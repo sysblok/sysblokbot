@@ -1,10 +1,11 @@
-import logging
 import json
+import logging
+
+from src.app_context import AppContext
+from src.roles.role_manager import RoleManager
+from src.strings import load
 
 from .utils import admin_only, reply
-from src.app_context import AppContext
-from src.strings import load
-from src.roles.role_manager import RoleManager
 
 logger = logging.getLogger(__name__)
 

@@ -1,13 +1,14 @@
 import json
 import logging
-import requests
 from typing import List
 from urllib.parse import quote, urljoin
 
-from . import trello_objects as objects
-from ..consts import TrelloListAlias, TrelloCustomFieldTypes, TrelloCustomFieldTypeAlias
+import requests
+
+from ..consts import TrelloCustomFieldTypeAlias, TrelloCustomFieldTypes, TrelloListAlias
 from ..strings import load
 from ..utils.singleton import Singleton
+from . import trello_objects as objects
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ class TrelloClient(Singleton):
     def get_board_by_url(self, board_url):
         # Safari may copy unquoted url with cyrillic symbols
         board_url = quote(board_url, safe=":/%")
-        _, data = self._make_request(f"members/me/boards")
+        _, data = self._make_request("members/me/boards")
         for board in data:
             if board.get("url") == board_url:
                 return objects.TrelloBoard.from_dict(board)
@@ -47,7 +48,7 @@ class TrelloClient(Singleton):
         return labels
 
     def get_boards_for_user(self, user_id=None):
-        _, data = self._make_request(f"members/me/boards")
+        _, data = self._make_request("members/me/boards")
         boards = [objects.TrelloBoard.from_dict(label) for label in data]
         logger.debug(f"get_boards_for_user: {boards}")
         return boards

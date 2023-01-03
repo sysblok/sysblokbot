@@ -1,16 +1,16 @@
+import io
 import json
 import logging
 import re
-
 from typing import List
 from urllib.parse import urljoin, urlparse
-import io
 
 # https://developers.google.com/analytics/devguides/config/mgmt/v3/quickstart/service-py
 from apiclient.discovery import build
-from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload
+from oauth2client.service_account import ServiceAccountCredentials
+
 from ..trello.trello_objects import TrelloCard
 from ..utils.singleton import Singleton
 

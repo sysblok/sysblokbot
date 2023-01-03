@@ -1,9 +1,10 @@
 import logging
 import sys
 
+from src.jobs.base_job import BaseJob
+
 sys.path.append("...")  # noqa hack to import BaseJob
 
-from src.jobs.base_job import BaseJob
 
 logger = logging.getLogger(__name__)
 

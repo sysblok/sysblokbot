@@ -1,10 +1,8 @@
-import pytest
-
 import os
 
+import pytest
 from conftest import TRELLO_TEST_DIR
 from utils.json_loader import JsonLoader
-
 
 json_loader = JsonLoader(os.path.join(TRELLO_TEST_DIR, "expected"))
 

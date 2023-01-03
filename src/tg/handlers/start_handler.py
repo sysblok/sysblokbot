@@ -1,7 +1,7 @@
 import logging
 
-from .utils import is_sender_admin, is_group_chat, get_sender_id, reply
 from ...strings import load
+from .utils import get_sender_id, is_group_chat, is_sender_admin, reply
 
 logger = logging.getLogger(__name__)
 

@@ -1,8 +1,8 @@
 import json
 import os
+from typing import Dict
 
 from deepdiff import DeepDiff
-from typing import Dict
 
 
 class JsonLoader:

@@ -3,15 +3,15 @@ from typing import Callable, List
 from urllib.parse import urlparse
 
 from ..app_context import AppContext
-from ..consts import TrelloListAlias, TrelloCustomFieldTypeAlias, TrelloCardColor
+from ..consts import TrelloCardColor, TrelloCustomFieldTypeAlias, TrelloListAlias
 from ..strings import load
 from ..tg.sender import pretty_send
 from .base_job import BaseJob
 from .utils import (
     check_trello_card,
-    format_trello_labels,
     format_errors,
     format_possibly_plural,
+    format_trello_labels,
     get_no_access_marker,
 )
 
@@ -197,12 +197,6 @@ class IllustrativeReportColumnsJob(BaseJob):
                 else card.url
             )
             no_access_marker = get_no_access_marker(file_url, app_context.drive_client)
-            is_edited_sometimes = (
-                card.lst.id
-                == app_context.trello_client.lists_config[
-                    TrelloListAlias.EDITED_SOMETIMES
-                ]
-            )
             card_labels = [label for label in label_names if label in labels_to_display]
             card_text = load(
                 "illustrative_report_job__card",

@@ -1,15 +1,13 @@
-import pytest
-
 import asyncio
 import os
 import time
 from typing import List
 
-from telethon import TelegramClient
-from telethon.tl.custom.message import Message
-
+import pytest
 from conftest import telegram_bot_name
 from pytest_report import PytestReport, PytestTestStatus
+from telethon import TelegramClient
+from telethon.tl.custom.message import Message
 
 
 async def _test_command(report_state, conversation, command: str, timeout=120):

@@ -1,6 +1,6 @@
 import logging
 from pprint import pprint
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 from sheetfu import SpreadsheetApp, Table
 from sheetfu.model import Sheet

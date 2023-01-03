@@ -1,16 +1,16 @@
 import logging
-from operator import itemgetter
-from typing import Callable, List, Tuple, Dict
 from collections import defaultdict
+from operator import itemgetter
+from typing import Callable, Dict, List, Tuple
 from urllib.parse import urlparse
 
 from ..app_context import AppContext
-from ..consts import TrelloListAlias, TrelloCardFieldErrorAlias
+from ..consts import TrelloCardFieldErrorAlias, TrelloListAlias
 from ..strings import load
 from ..tg.sender import pretty_send
+from ..trello.trello_objects import CardCustomFields, TrelloCard
 from .base_job import BaseJob
-from .utils import format_trello_labels, get_no_access_marker, format_errors_with_tips
-from ..trello.trello_objects import TrelloCard, CardCustomFields
+from .utils import format_errors_with_tips, format_trello_labels, get_no_access_marker
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +64,7 @@ class IllustrativeReportMembersJob(BaseJob):
         """
         Returns card reports texts grouped by illustrators
         """
-        logger.info(f"Started retrieving cards")
+        logger.info("Started retrieving cards")
         list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
         cards = app_context.trello_client.get_cards(list_ids)
         parse_failure_counter = 0
@@ -149,7 +149,7 @@ class IllustrativeReportMembersJob(BaseJob):
 
         if parse_failure_counter > 0:
             logger.error(f"Unparsed cards encountered: {parse_failure_counter}")
-        logger.info(f"Finished retrieving cards")
+        logger.info("Finished retrieving cards")
         return result
 
     @staticmethod

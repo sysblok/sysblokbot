@@ -1,5 +1,5 @@
-from enum import Enum
 import time
+from enum import Enum
 
 from src.utils.singleton import Singleton
 

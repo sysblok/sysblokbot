@@ -1,8 +1,8 @@
 import logging
 from typing import Callable
 
-from bs4 import BeautifulSoup
 import requests
+from bs4 import BeautifulSoup
 
 from ..app_context import AppContext
 from ..consts import KWARGS

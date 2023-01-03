@@ -1,8 +1,8 @@
-from .base_analytics import BaseAnalytics
 from datetime import datetime, timedelta
 
 from ..consts import ReportPeriod
 from ..vk.vk_client import VkClient
+from .base_analytics import BaseAnalytics
 
 
 class ApiVkAnalytics(BaseAnalytics):

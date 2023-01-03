@@ -1,10 +1,8 @@
 import html
 import logging
-
 from datetime import datetime
 
 from ..consts import TrelloCardColor, TrelloCustomFieldTypes
-
 
 logger = logging.getLogger(__name__)
 

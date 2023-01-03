@@ -1,11 +1,9 @@
-import pytest
-
 import json
 import os
+from typing import Dict, List
 
+import pytest
 from deepdiff import DeepDiff
-from typing import List, Dict
-
 from utils.json_loader import JsonLoader
 
 from src.config_manager import ConfigManager

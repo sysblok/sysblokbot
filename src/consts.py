@@ -2,7 +2,7 @@
 import os
 from datetime import timedelta, timezone
 from enum import Enum
-from logging import WARNING, INFO
+from logging import INFO, WARNING
 
 import telegram
 

@@ -1,9 +1,10 @@
 import logging
-from sheetfu import Table
 from typing import Callable, List
 
+from sheetfu import Table
+
 from ..app_context import AppContext
-from ..sheets.sheets_objects import HRPersonRaw, HRPersonProcessed
+from ..sheets.sheets_objects import HRPersonProcessed, HRPersonRaw
 from ..strings import load
 from ..tg.sender import pretty_send
 from .base_job import BaseJob

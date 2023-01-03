@@ -1,6 +1,6 @@
-from collections import defaultdict
 import logging
 import os
+from collections import defaultdict
 from typing import Callable
 
 from telegram.ext import (
@@ -16,11 +16,11 @@ from telegram.ext.dispatcher import run_async
 from .app_context import AppContext
 from .config_manager import ConfigManager
 from .consts import (
-    CommandCategories,
     APP_SOURCE,
     COMMIT_HASH,
     COMMIT_URL,
     USAGE_LOG_LEVEL,
+    CommandCategories,
 )
 from .jobs.utils import get_job_runnable
 from .tg import handlers, sender

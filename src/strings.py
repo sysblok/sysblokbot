@@ -1,16 +1,14 @@
-from collections import defaultdict
 import logging
+from collections import defaultdict
 from typing import List, Tuple
 
-from sqlalchemy import create_engine
+from sqlalchemy import Column, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from . import consts
 from .sheets.sheets_client import GoogleSheetsClient
 from .utils.singleton import Singleton
-
-from sqlalchemy import Column, String
 
 logger = logging.getLogger(__name__)
 Base = declarative_base()
@@ -42,8 +40,8 @@ class StringsDBClient(Singleton):
 
     def _update_from_config(self):
         self.engine = create_engine(
-            self._strings_db_config['uri'],
-            connect_args={'check_same_thread': False},
+            self._strings_db_config["uri"],
+            connect_args={"check_same_thread": False},
             echo=False,
         )
         session_factory = sessionmaker(bind=self.engine)

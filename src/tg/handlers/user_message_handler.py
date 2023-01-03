@@ -1,16 +1,16 @@
 import calendar
-from datetime import datetime
 import logging
+from datetime import datetime
 
 import telegram
 
-from .utils import get_chat_id, get_chat_name, get_sender_id, reply
 from ... import consts
-from ...consts import PlainTextUserAction, ButtonValues
+from ...consts import ButtonValues, PlainTextUserAction
 from ...db.db_client import DBClient
 from ...strings import load
 from ...tg.handlers import get_tasks_report_handler
 from ...trello.trello_client import TrelloClient
+from .utils import get_chat_id, get_chat_name, get_sender_id, reply
 
 logger = logging.getLogger(__name__)
 

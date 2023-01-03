@@ -5,11 +5,11 @@ from typing import Callable
 
 from deepdiff import DeepDiff
 
-from .base_job import BaseJob
 from ..app_context import AppContext
 from ..scheduler import JobScheduler
 from ..strings import load
 from ..tg.sender import TelegramSender
+from .base_job import BaseJob
 
 logger = logging.getLogger(__name__)
 
