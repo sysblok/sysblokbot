@@ -110,12 +110,16 @@ def add_manager(update, tg_context):
         ]
         if manager_id not in manager_ids:
             manager_ids.append(manager_id)
-        _set_config(
-            update,
-            f"{consts.TELEGRAM_CONFIG}.{consts.TELEGRAM_MANAGER_IDS}",
-            manager_ids,
-            config_manager,
-        )
+            _set_config(
+                update,
+                f"{consts.TELEGRAM_CONFIG}.{consts.TELEGRAM_MANAGER_IDS}",
+                manager_ids,
+                config_manager,
+            )
+            tg_config = config_manager.get_telegram_config()
+            # update admins and managers
+            app_context = AppContext()
+            app_context.set_access_rights(tg_config)
     except Exception as e:
         reply(load("access_config_handler__add_manager_usage_example"), update)
         logger.warning(f"Failed to add manager: {e}")
