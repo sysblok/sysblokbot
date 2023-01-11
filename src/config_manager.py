@@ -114,6 +114,8 @@ class ConfigManager(Singleton):
             new_config_piece = {config_item: new_config_piece}
         config_override = self._latest_config_override
         ConfigManager.join_configs(config_override, new_config_piece)
+        self._latest_config = config_override
+        self._latest_config_ts = datetime.datetime.now()
         self._write_config_override(config_override)
 
     @staticmethod
