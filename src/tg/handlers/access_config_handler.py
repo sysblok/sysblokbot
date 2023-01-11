@@ -120,6 +120,8 @@ def add_manager(update, tg_context):
             # update admins and managers
             app_context = AppContext()
             app_context.set_access_rights(tg_config)
+        else:
+            reply(load("access_config_handler__set_config_no_update"), update)
     except Exception as e:
         reply(load("access_config_handler__add_manager_usage_example"), update)
         logger.warning(f"Failed to add manager: {e}")
