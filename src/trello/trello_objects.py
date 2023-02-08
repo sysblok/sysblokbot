@@ -147,7 +147,7 @@ class TrelloCardLabel:
             try:
                 label.color = TrelloCardColor(data["color"])
             except Exception:
-                label.color = TrelloCardColor("unknown")
+                label.color = TrelloCardColor(TrelloCardColor.UNKNOWN)
         except Exception as e:
             label._ok = False
             logger.error(f"Bad card label json {data}: {e}")
