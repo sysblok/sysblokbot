@@ -77,6 +77,7 @@ class TrelloCardColor(Enum):
     LIME = 'lime'
     PINK = 'pink'
     BLACK = 'black'
+    UNKNOWN = 'unknown'
 
 
 class TrelloListAlias(Enum):
