@@ -1,16 +1,15 @@
 import logging
+from datetime import datetime
 from enum import Enum
 from typing import List, Tuple
 from urllib.parse import parse_qs, urlparse
-import dateutil.parser as dateparser
 
+import dateutil.parser as dateparser
 import facebook
 
-from datetime import datetime
-
-from .instagram_objects import InstagramPage, InstagramMedia
 from ..consts import ReportPeriod
 from ..utils.singleton import Singleton
+from .instagram_objects import InstagramMedia, InstagramPage
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ class InstagramClient(Singleton):
 
         self._facebook_config = facebook_config
         self._update_from_config()
-        logger.info('InstagramClient successfully initialized')
+        logger.info("InstagramClient successfully initialized")
 
     def update_config(self, new_facebook_config: dict):
         """To be called after config automatic update"""
@@ -30,14 +29,14 @@ class InstagramClient(Singleton):
         self._update_from_config()
 
     def _update_from_config(self):
-        self._api_client = facebook.GraphAPI(self._facebook_config['token'], 10.0)
-        self._page_id = self._facebook_config.get('ig_page_id')
+        self._api_client = facebook.GraphAPI(self._facebook_config["token"], 10.0)
+        self._page_id = self._facebook_config.get("ig_page_id")
 
     def get_page(self) -> InstagramPage:
         """
         Get the Instagram page
         """
-        page_dict = self._api_client.get_object(self._page_id, fields='username,name')
+        page_dict = self._api_client.get_object(self._page_id, fields="username,name")
         return InstagramPage.from_dict(page_dict)
 
     def _get_all_posts(self) -> List[InstagramMedia]:
@@ -45,10 +44,11 @@ class InstagramClient(Singleton):
         Get all media (posts, stories, IGTV etc) on the page
         """
         media_dicts = self._api_client.get_all_connections(
-            self._page_id, 'media',
+            self._page_id,
+            "media",
             fields=(
-                'id,ig_id,media_url,timestamp,media_type,like_count,comments_count'
-            )
+                "id,ig_id,media_url,timestamp,media_type,like_count,comments_count"
+            ),
         )
         return [InstagramMedia.from_dict(media_dict) for media_dict in media_dicts]
 
@@ -58,7 +58,8 @@ class InstagramClient(Singleton):
         """
         all_media = self._get_all_posts()
         return [
-            media for media in all_media
+            media
+            for media in all_media
             if media.timestamp > since and media.timestamp < until
         ]
 
@@ -72,20 +73,21 @@ class InstagramClient(Singleton):
         """
         Get the total number of subscribers.
         """
-        return self._api_client.get_object(
-            self._page_id, fields='followers_count'
-        )['followers_count']
+        return self._api_client.get_object(self._page_id, fields="followers_count")[
+            "followers_count"
+        ]
 
     def get_new_subscribers(self, since: datetime, until: datetime) -> dict:
         """
         Get the number of new subscribers for the period.
         """
         new_followers = self._api_client.get_connections(
-            self._page_id, 'insights',
+            self._page_id,
+            "insights",
             since=since,
             until=until,
-            metric='follower_count',
-            period='day'
+            metric="follower_count",
+            period="day",
         )
         return new_followers
 
@@ -94,11 +96,12 @@ class InstagramClient(Singleton):
         Get the total reach for the period.
         """
         return self._api_client.get_connections(
-            self._page_id, 'insights',
+            self._page_id,
+            "insights",
             since=since,
             until=until,
-            metric='reach',
-            period='day'
+            metric="reach",
+            period="day",
         )
 
     def get_likes_count(self, since: datetime, until: datetime) -> int:
@@ -133,10 +136,11 @@ class InstagramClient(Singleton):
         for post in posts:
             insights = self._get_post_insights(post.id)
             saves_insights = [
-                insight for insight in insights['data']
-                if insight.get('name', None) == 'saved'
+                insight
+                for insight in insights["data"]
+                if insight.get("name", None) == "saved"
             ][0]
-            saves += saves_insights['values'][0]['value']
+            saves += saves_insights["values"][0]["value"]
         return saves
 
     def _get_post_insights(self, post_id: str) -> dict:
@@ -145,18 +149,17 @@ class InstagramClient(Singleton):
         https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights
         """
         return self._api_client.get_connections(
-            post_id, "insights",
-            metric="engagement,impressions,reach,saved"
+            post_id, "insights", metric="engagement,impressions,reach,saved"
         )
 
     def _get_all_batches(
-            self, connection_name: str, since: datetime, until: datetime, **args
+        self, connection_name: str, since: datetime, until: datetime, **args
     ) -> List[dict]:
         result = []
-        args['since'] = since
-        args['until'] = until
+        args["since"] = since
+        args["until"] = until
         page = self._api_client.get_connections(self._page_id, connection_name, **args)
-        result += page['data']
+        result += page["data"]
         # process next
         result += self._iterate_over_pages(connection_name, since, until, page, True)
         # process previous
@@ -164,32 +167,44 @@ class InstagramClient(Singleton):
         return result
 
     def _iterate_over_pages(
-            self, connection_name: str, since: datetime, until: datetime,
-            previous_page: str, go_next: bool
+        self,
+        connection_name: str,
+        since: datetime,
+        until: datetime,
+        previous_page: str,
+        go_next: bool,
     ) -> List[dict]:
         result = []
         current_page = previous_page
         while True:
-            direction_tag = 'previous'
+            direction_tag = "previous"
             if go_next:
-                direction_tag = 'next'
-            next = current_page.get('paging', {}).get(direction_tag)
+                direction_tag = "next"
+            next = current_page.get("paging", {}).get(direction_tag)
             if not next:
                 break
             args = parse_qs(urlparse(next).query)
             if go_next:
-                page_since = args.get('since')
-                if not page_since or \
-                        datetime.fromtimestamp(int(page_since[0]), tz=until.tzinfo) > until:
+                page_since = args.get("since")
+                if (
+                    not page_since
+                    or datetime.fromtimestamp(int(page_since[0]), tz=until.tzinfo)
+                    > until
+                ):
                     break
             else:
-                page_until = args.get('until')
-                if not page_until or \
-                        datetime.fromtimestamp(int(page_until[0]), tz=since.tzinfo) < since:
+                page_until = args.get("until")
+                if (
+                    not page_until
+                    or datetime.fromtimestamp(int(page_until[0]), tz=since.tzinfo)
+                    < since
+                ):
                     break
-            args.pop('access_token', None)
-            current_page = self._api_client.get_connections(self._page_id, connection_name, **args)
-            result += current_page['data']
+            args.pop("access_token", None)
+            current_page = self._api_client.get_connections(
+                self._page_id, connection_name, **args
+            )
+            result += current_page["data"]
         return result
 
     @staticmethod
@@ -198,9 +213,9 @@ class InstagramClient(Singleton):
     ) -> List[Tuple[datetime, int]]:
         value_by_date = []
         for batch in batches:
-            for value_info in batch['values']:
-                end_time = dateparser.isoparse(value_info['end_time'])
+            for value_info in batch["values"]:
+                end_time = dateparser.isoparse(value_info["end_time"])
                 if end_time < since or end_time > until:
                     continue
-                value_by_date.append((end_time, value_info['value']))
+                value_by_date.append((end_time, value_info["value"]))
         return value_by_date

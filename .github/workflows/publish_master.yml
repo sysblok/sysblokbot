@@ -40,13 +40,13 @@ jobs:
       - name: Notify us about failure
         if: ${{ failure() }}
         env:
-          TELEGRAM_TEST_TOKEN: ${{ secrets.TELEGRAM_TEST_TOKEN }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_PROD_TOKEN }}
           TELEGRAM_ERROR_CHAT_ID: ${{ secrets.TELEGRAM_ERROR_CHAT_ID }}
         run: |
           curl -X POST \
             -H 'Content-Type: application/json' \
             -d '{"parse_mode": "markdown", "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", "text": "[github CI] pycodestyle [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})"}' \
-            https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
+            https://api.telegram.org/bot${{env.TELEGRAM_TOKEN}}/sendMessage
 
 #      - name: Python Pytest Github Action
 #        uses: fylein/python-pytest-github-action@v2
@@ -56,13 +56,13 @@ jobs:
       - name: Notify us about failure
         if: ${{ failure() }}
         env:
-          TELEGRAM_TEST_TOKEN: ${{ secrets.TELEGRAM_TEST_TOKEN }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_PROD_TOKEN }}
           TELEGRAM_ERROR_CHAT_ID: ${{ secrets.TELEGRAM_ERROR_CHAT_ID }}
         run: |
           curl -X POST \
             -H 'Content-Type: application/json' \
             -d '{"parse_mode": "markdown", "chat_id": ${{ env.TELEGRAM_ERROR_CHAT_ID }}, "text": "[github CI] Unit tests [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})"}' \
-            https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
+            https://api.telegram.org/bot${{env.TELEGRAM_TOKEN}}/sendMessage
 
   # Push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
@@ -102,14 +102,14 @@ jobs:
       - name: Notify us about failure
         if: ${{ failure() }}
         env:
-          TELEGRAM_TEST_TOKEN: ${{ secrets.TELEGRAM_TEST_TOKEN }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_PROD_TOKEN }}
           TELEGRAM_ERROR_CHAT_ID: ${{ secrets.TELEGRAM_ERROR_CHAT_ID }}
         run: |
           curl -X POST \
             -H 'Content-Type: application/json' \
             -d '{"parse_mode": "markdown", "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", "text": "[github CI] build [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
             }' \
-            https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
+            https://api.telegram.org/bot${{env.TELEGRAM_TOKEN}}/sendMessage
     
       - name: Deploy package to digitalocean
         uses: appleboy/ssh-action@master
@@ -118,7 +118,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
           ROOT_DIR: /home/${{ secrets.MASTER_DO_USER }}/prod
-          TELEGRAM_PROD_TOKEN: ${{ secrets.TELEGRAM_PROD_TOKEN }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_PROD_TOKEN }}
           TELEGRAM_ERROR_CHAT_ID: ${{ secrets.TELEGRAM_ERROR_CHAT_ID }}
         with:
           host: ${{ secrets.MASTER_HOST }}
@@ -126,7 +126,7 @@ jobs:
           passphrase: ${{ secrets.MASTER_DO_SSH_KEY_PASSWORD }}
           key: ${{ secrets.MASTER_DO_SSH_KEY }}
           port: ${{ secrets.MASTER_PORT }}
-          envs: GITHUB_USERNAME, GITHUB_TOKEN, IMAGE_NAME, ROOT_DIR, TELEGRAM_PROD_TOKEN, TELEGRAM_ERROR_CHAT_ID
+          envs: GITHUB_USERNAME, GITHUB_TOKEN, IMAGE_NAME, ROOT_DIR, TELEGRAM_TOKEN, TELEGRAM_ERROR_CHAT_ID
           script: |
             export CONTAINER_ID=$(docker ps -aq --filter name=prod)
             export IMAGE_ID=$(docker images -aq --filter reference='docker.pkg.github.com/sysblok/sysblokbot/sysblokbot:prod')
@@ -139,7 +139,7 @@ jobs:
             docker run -dit --name sysblokbot-prod \
               --env APP_SOURCE="github CI" --restart unless-stopped \
               --env TELEGRAM_ERROR_CHAT_ID="${{ env.TELEGRAM_ERROR_CHAT_ID }}" \
-              --env TELEGRAM_TOKEN="${{ env.TELEGRAM_TEST_TOKEN }}" \
+              --env TELEGRAM_TOKEN="${{ env.TELEGRAM_TOKEN }}" \
               -v ${{ env.ROOT_DIR }}/config_override.json:/app/config_override.json \
               -v ${{ env.ROOT_DIR }}/config_gs.json:/app/config_gs.json \
               -v ${{ env.ROOT_DIR }}/sysblokbot.sqlite:/app/sysblokbot.sqlite \
@@ -150,13 +150,13 @@ jobs:
       - name: Notify us about failure
         if: ${{ failure() }}
         env:
-          TELEGRAM_PROD_TOKEN: ${{ secrets.TELEGRAM_PROD_TOKEN }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_PROD_TOKEN }}
           TELEGRAM_ERROR_CHAT_ID: ${{ secrets.TELEGRAM_ERROR_CHAT_ID }}
         run: |
           curl -X POST \
             -H 'Content-Type: application/json' \
             -d '{"parse_mode": "markdown", "chat_id": ${{ env.TELEGRAM_ERROR_CHAT_ID }}, "text": "[github CI] deploy [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})"}' \
-            https://api.telegram.org/bot${{env.TELEGRAM_PROD_TOKEN}}/sendMessage
+            https://api.telegram.org/bot${{env.TELEGRAM_TOKEN}}/sendMessage
 
   integration_tests:
     needs: push

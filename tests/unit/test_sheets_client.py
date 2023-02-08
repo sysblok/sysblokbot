@@ -1,12 +1,10 @@
-import pytest
-
 import os
 
+import pytest
 from conftest import SHEETS_TEST_DIR
 from utils.json_loader import JsonLoader
 
-
-json_loader = JsonLoader(os.path.join(SHEETS_TEST_DIR, 'expected'))
+json_loader = JsonLoader(os.path.join(SHEETS_TEST_DIR, "expected"))
 
 
 def test_init(mock_sheets_client):
@@ -16,19 +14,19 @@ def test_init(mock_sheets_client):
 @pytest.mark.skip(reason="TODO")
 def test_fetch_authors(mock_sheets_client):
     authors = [author.to_dict() for author in mock_sheets_client.fetch_authors()]
-    json_loader.assert_equal(authors, 'authors.json')
+    json_loader.assert_equal(authors, "authors.json")
 
 
 @pytest.mark.skip(reason="TODO")
 def test_fetch_curators(mock_sheets_client):
     curators = [curator.to_dict() for curator in mock_sheets_client.fetch_curators()]
-    json_loader.assert_equal(curators, 'curators.json')
+    json_loader.assert_equal(curators, "curators.json")
 
 
 @pytest.mark.skip(reason="TODO")
 def test_fetch_rubrics(mock_sheets_client):
     rubrics = [rubric.to_dict() for rubric in mock_sheets_client.fetch_rubrics()]
-    json_loader.assert_equal(rubrics, 'rubrics.json')
+    json_loader.assert_equal(rubrics, "rubrics.json")
 
 
 @pytest.mark.skip(reason="TODO")

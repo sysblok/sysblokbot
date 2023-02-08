@@ -1,12 +1,11 @@
-from .base_analytics import BaseAnalytics
 from datetime import datetime, timedelta
 
 from ..consts import ReportPeriod
 from ..facebook.facebook_client import FacebookClient
+from .base_analytics import BaseAnalytics
 
 
 class ApiFacebookAnalytics(BaseAnalytics):
-
     def __init__(self, fb_client: FacebookClient):
         self._fb_client = fb_client
 
@@ -17,7 +16,7 @@ class ApiFacebookAnalytics(BaseAnalytics):
         result = self._fb_client.get_total_reach(
             ApiFacebookAnalytics._get_end_week_day_start(end_week),
             ApiFacebookAnalytics._get_end_week_day_end(end_week),
-            period=ReportPeriod.WEEK
+            period=ReportPeriod.WEEK,
         )
         if not result:
             return 0
@@ -27,7 +26,7 @@ class ApiFacebookAnalytics(BaseAnalytics):
         result = self._fb_client.get_organic_reach(
             ApiFacebookAnalytics._get_end_week_day_start(end_week),
             ApiFacebookAnalytics._get_end_week_day_end(end_week),
-            period=ReportPeriod.WEEK
+            period=ReportPeriod.WEEK,
         )
         if not result:
             return 0
@@ -37,7 +36,7 @@ class ApiFacebookAnalytics(BaseAnalytics):
         result = self._fb_client.get_new_follower_count(
             ApiFacebookAnalytics._get_end_week_day_start(end_week),
             ApiFacebookAnalytics._get_end_week_day_end(end_week),
-            period=ReportPeriod.WEEK
+            period=ReportPeriod.WEEK,
         )
         if not result:
             return 0
@@ -47,7 +46,7 @@ class ApiFacebookAnalytics(BaseAnalytics):
         result = self._fb_client.get_new_fan_count(
             ApiFacebookAnalytics._get_end_week_day_start(end_week),
             ApiFacebookAnalytics._get_end_week_day_end(end_week),
-            period=ReportPeriod.WEEK
+            period=ReportPeriod.WEEK,
         )
         if not result:
             return 0

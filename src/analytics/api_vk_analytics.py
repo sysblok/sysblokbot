@@ -1,8 +1,8 @@
-from .base_analytics import BaseAnalytics
 from datetime import datetime, timedelta
 
 from ..consts import ReportPeriod
 from ..vk.vk_client import VkClient
+from .base_analytics import BaseAnalytics
 
 
 class ApiVkAnalytics(BaseAnalytics):
@@ -17,7 +17,7 @@ class ApiVkAnalytics(BaseAnalytics):
         result = self._vk_client.get_total_reach(
             ApiVkAnalytics._get_end_week_day_start(end_week),
             ApiVkAnalytics._get_end_week_day_end(end_week),
-            period=ReportPeriod.WEEK
+            period=ReportPeriod.WEEK,
         )
         if not result:
             return 0
@@ -27,7 +27,7 @@ class ApiVkAnalytics(BaseAnalytics):
         result = self._vk_client.get_organic_reach(
             ApiVkAnalytics._get_end_week_day_start(end_week),
             ApiVkAnalytics._get_end_week_day_end(end_week),
-            period=ReportPeriod.WEEK
+            period=ReportPeriod.WEEK,
         )
         if not result:
             return 0
@@ -37,7 +37,7 @@ class ApiVkAnalytics(BaseAnalytics):
         result = self._vk_client.get_new_follower_count(
             ApiVkAnalytics._get_end_week_day_start(end_week),
             ApiVkAnalytics._get_end_week_day_end(end_week),
-            period=ReportPeriod.WEEK
+            period=ReportPeriod.WEEK,
         )
         if not result:
             return 0
@@ -47,7 +47,7 @@ class ApiVkAnalytics(BaseAnalytics):
         result = self._vk_client.get_new_fan_count(
             ApiVkAnalytics._get_end_week_day_start(end_week),
             ApiVkAnalytics._get_end_week_day_end(end_week),
-            period=ReportPeriod.WEEK
+            period=ReportPeriod.WEEK,
         )
         if not result:
             return 0

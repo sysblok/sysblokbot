@@ -2,19 +2,21 @@ import logging
 from datetime import datetime, timedelta
 from typing import Callable
 
+from src.app_context import AppContext
+from src.jobs.base_job import BaseJob
+
 from ..consts import MSK_TIMEZONE
 from ..strings import load
 from ..tg.sender import pretty_send
-
-from src.app_context import AppContext
-from src.jobs.base_job import BaseJob
 
 logger = logging.getLogger(__name__)
 
 
 class FBAnalyticsReportJob(BaseJob):
     @staticmethod
-    def _execute(app_context: AppContext, send: Callable[[str], None], called_from_handler=False):
+    def _execute(
+        app_context: AppContext, send: Callable[[str], None], called_from_handler=False
+    ):
         # statistics for current day hasn't fully calculated yet
         # use statistics for previous day
         today = datetime.now(MSK_TIMEZONE)
@@ -25,11 +27,11 @@ class FBAnalyticsReportJob(BaseJob):
         page = app_context.facebook_client.get_page()
         paragraphs = [
             load(
-                'fb_analytics_report_job__text',
+                "fb_analytics_report_job__text",
                 link=page.link,
                 name=page.name,
-                since=week_ago.strftime('%d.%m'),
-                until=end_week_day.strftime('%d.%m'),
+                since=week_ago.strftime("%d.%m"),
+                until=end_week_day.strftime("%d.%m"),
                 new_posts_count=app_context.facebook_analytics.get_new_posts_count(
                     since=week_ago, until=end_week_day
                 ),
@@ -46,7 +48,7 @@ class FBAnalyticsReportJob(BaseJob):
                 ),
                 organic_reach=app_context.facebook_analytics.get_weekly_organic_reach_of_new_posts(
                     end_week_day
-                )
+                ),
             )
         ]
         pretty_send(paragraphs, send)

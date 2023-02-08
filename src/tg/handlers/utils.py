@@ -1,8 +1,8 @@
 import logging
 
-from ..sender import TelegramSender
 from ...app_context import AppContext
 from ...tg.sender import pretty_send
+from ..sender import TelegramSender
 
 logger = logging.getLogger(__name__)
 
@@ -13,10 +13,14 @@ def admin_only(func):
     Checks the immediate sender: if forwarded by non-admin, it doesn't run handler.
     If admin sends command to the chat, it does run handler.
     """
+
     def wrapper(update, tg_context, *args, **kwargs):
         if is_sender_admin(update):
             return func(update, tg_context, *args, **kwargs)
-        logger.warning(f'Admin-only handler {func.__name__} invoked by {get_sender_id(update)}')
+        logger.warning(
+            f"Admin-only handler {func.__name__} invoked by {get_sender_id(update)}"
+        )
+
     return wrapper
 
 
@@ -26,10 +30,14 @@ def manager_only(func):
     Checks the immediate sender: if forwarded by non-manager, it doesn't run handler.
     If manager sends command to the chat, it does run handler.
     """
+
     def wrapper(update, tg_context, *args, **kwargs):
         if is_sender_manager(update) or is_sender_admin(update):
             return func(update, tg_context, *args, **kwargs)
-        logger.warning(f'Manager-only handler {func.__name__} invoked by {get_sender_id(update)}')
+        logger.warning(
+            f"Manager-only handler {func.__name__} invoked by {get_sender_id(update)}"
+        )
+
     return wrapper
 
 
@@ -38,10 +46,14 @@ def direct_message_only(func):
     Decorator disallowing users to call command in chats.
     Can be used along with other restriction decorators.
     """
+
     def wrapper(update, tg_context, *args, **kwargs):
         if not is_group_chat(update):
             return func(update, tg_context, *args, **kwargs)
-        logger.warning(f'DM-only handler {func.__name__} invoked by {get_sender_id(update)}')
+        logger.warning(
+            f"DM-only handler {func.__name__} invoked by {get_sender_id(update)}"
+        )
+
     return wrapper
 
 
@@ -68,7 +80,7 @@ def get_chat_id(update) -> int:
 def get_chat_name(update) -> str:
     if update.message is not None:
         return update.message.chat.title or update.message.chat.username
-    return ''
+    return ""
 
 
 def get_sender_username(update) -> str:
@@ -76,11 +88,13 @@ def get_sender_username(update) -> str:
 
 
 def is_group_chat(update) -> bool:
-    return update.message.chat.type in ('group', 'supergroup')
+    return update.message.chat.type in ("group", "supergroup")
 
 
 def reply(message: str, tg_update, **kwargs):
     return pretty_send(
         [message],
-        lambda msg: TelegramSender().send_to_chat_id(msg, get_chat_id(tg_update), **kwargs)
+        lambda msg: TelegramSender().send_to_chat_id(
+            msg, get_chat_id(tg_update), **kwargs
+        ),
     )

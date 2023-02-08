@@ -7,11 +7,11 @@ from src.utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
 
-REDACTED_KEYS = ('key', 'token')
+REDACTED_KEYS = ("key", "token")
 
 
 class ConfigManager(Singleton):
-    def __init__(self, config_path: str = '', config_override_path: str = ''):
+    def __init__(self, config_path: str = "", config_override_path: str = ""):
         if self.was_initialized():
             return
 
@@ -48,7 +48,7 @@ class ConfigManager(Singleton):
         Recommended way to access config without re-reading from disk.
         Freshness of the config depends on jobs.config_checker_job
         """
-        logger.debug(f'Got config, last updated: {self._latest_config_ts}')
+        logger.debug(f"Got config, last updated: {self._latest_config_ts}")
         return self._latest_config
 
     def get_latest_jobs_config(self):
@@ -56,7 +56,7 @@ class ConfigManager(Singleton):
         Recommended way to access config without re-reading from disk.
         Freshness of the config depends on jobs.config_checker_job
         """
-        logger.debug(f'Got config, last updated: {self._latest_jobs_config_ts}')
+        logger.debug(f"Got config, last updated: {self._latest_jobs_config_ts}")
         return self._latest_jobs_config
 
     def get_trello_config(self):
@@ -81,15 +81,20 @@ class ConfigManager(Singleton):
         return self.get_latest_config().get(consts.VK_CONFIG, {})
 
     def get_jobs_config_file_key(self):
-        return self.get_latest_config().get(consts.DRIVE_CONFIG)\
+        return (
+            self.get_latest_config()
+            .get(consts.DRIVE_CONFIG)
             .get(consts.JOBS_CONFIG_FILE_KEY, {})
+        )
 
     def get_jobs_config(self, job_key=None):
         config = self.get_latest_jobs_config()
         if job_key is None:
             return config
         if job_key not in config:
-            raise ValueError(f'Trying to get job config for {job_key}, config does not exist')
+            raise ValueError(
+                f"Trying to get job config for {job_key}, config does not exist"
+            )
         return config[job_key]
 
     def get_db_config(self):
@@ -105,10 +110,12 @@ class ConfigManager(Singleton):
         Note: no sanity checks performed inside the method!
         """
         new_config_piece = new_value
-        for config_item in config_path.split('.')[::-1]:
+        for config_item in config_path.split(".")[::-1]:
             new_config_piece = {config_item: new_config_piece}
         config_override = self._latest_config_override
         ConfigManager.join_configs(config_override, new_config_piece)
+        self._latest_config = config_override
+        self._latest_config_ts = datetime.datetime.now()
         self._write_config_override(config_override)
 
     @staticmethod
@@ -117,9 +124,7 @@ class ConfigManager(Singleton):
         for key in override_config:
             if key in main_config and isinstance(main_config[key], dict):
                 # recursively do the same
-                ConfigManager.join_configs(
-                    main_config[key], override_config[key]
-                )
+                ConfigManager.join_configs(main_config[key], override_config[key])
             else:
                 # rewrite if key is absent, or is list/str/int/bool
                 main_config[key] = override_config[key]
@@ -138,7 +143,7 @@ class ConfigManager(Singleton):
                 redacted_config[key] = value
                 for redacted_key in REDACTED_KEYS:
                     if redacted_key in key:
-                        redacted_config[key] = 'XXXXX'
+                        redacted_config[key] = "XXXXX"
                         break
         return redacted_config
 
@@ -150,8 +155,8 @@ class ConfigManager(Singleton):
                 except json.JSONDecodeError as e:
                     logger.error(e)
         except IOError:
-            logger.warning(f'Config file at {config_path} not found')
+            logger.warning(f"Config file at {config_path} not found")
 
     def _write_config_override(self, config_override: dict):
-        with open(self.config_override_path, 'w') as fout:
+        with open(self.config_override_path, "w") as fout:
             fout.write(json.dumps(config_override, indent=4))

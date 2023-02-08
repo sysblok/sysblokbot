@@ -1,8 +1,8 @@
-from collections import defaultdict
 import logging
+from collections import defaultdict
 from typing import List, Tuple
 
-from sqlalchemy import create_engine
+from sqlalchemy import Column, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -10,14 +10,12 @@ from . import consts
 from .sheets.sheets_client import GoogleSheetsClient
 from .utils.singleton import Singleton
 
-from sqlalchemy import Column, String
-
 logger = logging.getLogger(__name__)
 Base = declarative_base()
 
 
 class DBString(Base):
-    __tablename__ = 'strings'
+    __tablename__ = "strings"
     id = Column(String, primary_key=True)
     value = Column(String)
 
@@ -33,7 +31,7 @@ class StringsDBClient(Singleton):
 
         self._strings_db_config = strings_db_config
         self._update_from_config()
-        logger.info('StringDBClient successfully initialized')
+        logger.info("StringDBClient successfully initialized")
 
     def update_config(self, new_strings_db_config: dict):
         """To be called after config automatic update"""
@@ -42,9 +40,9 @@ class StringsDBClient(Singleton):
 
     def _update_from_config(self):
         self.engine = create_engine(
-            self._strings_db_config['uri'],
-            connect_args={'check_same_thread': False},
-            echo=True,
+            self._strings_db_config["uri"],
+            connect_args={"check_same_thread": False},
+            echo=False,
         )
         session_factory = sessionmaker(bind=self.engine)
         self.Session = scoped_session(session_factory)
@@ -59,15 +57,15 @@ class StringsDBClient(Singleton):
             strings = sheets_client.fetch_strings()
             string_ids = set()
             for item in strings:
-                string_id = item.get_field_value('Id')
+                string_id = item.get_field_value("Id")
                 if string_id is None:
                     # we use that to separate different strings
                     continue
                 if string_id in string_ids:
-                    logger.error(f'found duplicate string id: {string_id}')
+                    logger.error(f"found duplicate string id: {string_id}")
                     continue
                 string_ids.add(string_id)
-                string_value = item.get_field_value('Message')
+                string_value = item.get_field_value("Message")
                 string = DBString(string_id, string_value)
                 if string is None:
                     continue
@@ -81,15 +79,17 @@ class StringsDBClient(Singleton):
 
     def get_string(self, string_id: str) -> str:
         session = self.Session()
-        message = session.query(DBString).filter(
-            DBString.id == string_id
-        ).first()
+        message = session.query(DBString).filter(DBString.id == string_id).first()
         if not message:
-            logger.error(f'Message not found for id {string_id}')
-            return f'<{string_id}>'
+            logger.error(f"Message not found for id {string_id}")
+            return f"<{string_id}>"
         return message.value
 
 
 def load(string_id: str, **kwargs) -> str:
     db_client = StringsDBClient()
-    return db_client.get_string(string_id).format_map(defaultdict(lambda: '?', kwargs)).strip()
+    return (
+        db_client.get_string(string_id)
+        .format_map(defaultdict(lambda: "?", kwargs))
+        .strip()
+    )
