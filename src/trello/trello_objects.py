@@ -143,7 +143,11 @@ class TrelloCardLabel:
         try:
             label.id = data["id"]
             label.name = html.escape(data["name"])
-            label.color = TrelloCardColor(data["color"])
+            label.color = None
+            try:
+                label.color = TrelloCardColor(data["color"])
+            except Exception:
+                label.color = TrelloCardColor(TrelloCardColor.UNKNOWN)
         except Exception as e:
             label._ok = False
             logger.error(f"Bad card label json {data}: {e}")
