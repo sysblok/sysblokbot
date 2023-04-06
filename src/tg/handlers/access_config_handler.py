@@ -1,5 +1,6 @@
 import json
 import logging
+from json import JSONDecodeError
 
 from ... import consts, jobs
 from ...app_context import AppContext
@@ -68,6 +69,10 @@ def reload_config_jobs(update, tg_context):
         )
         job_scheduler = JobScheduler()
         job_scheduler.reschedule_jobs()
+    except JSONDecodeError as json_e:
+        reply(f"Error in JSON structure: {json_e}", update)
+        logger.warning(f"Failed to reload jobs config: {json_e}")
+        return
     except Exception as e:
         reply(load("access_config_handler__reload_config_jobs_usage_example"), update)
         logger.warning(f"Failed to reload jobs config: {e}")
