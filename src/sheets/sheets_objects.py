@@ -188,7 +188,7 @@ class SheetsItem:
             # Excel time format, http://www.cpearson.com/excel/datetime.htm
             # 40000 is around 2009
             # 50000 is around 2040, ph I hope Sysblok will thrive in 2040
-            if type(value) == float and 40000 <= value <= 50000:
+            if type(value) is float and 40000 <= value <= 50000:
                 return convert_excel_datetime_to_string(value)
             else:
                 return value

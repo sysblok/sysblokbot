@@ -164,7 +164,7 @@ def _set_config(update, config_path: str, new_value, config_manager: ConfigManag
             update,
         )
         return
-    if type(current_config) != type(new_value):
+    if type(current_config) is not type(new_value):
         reply(
             load(
                 "access_config_handler__set_config_type_mismatch",
