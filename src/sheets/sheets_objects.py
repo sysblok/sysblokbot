@@ -244,6 +244,31 @@ class HRPersonProcessed(SheetsItem):
     }
 
 
+class HRPersonPTRaw(SheetsItem):
+    field_alias = {
+        "ts": "sheets__hr__pt__raw__timestamp",
+        "name": "sheets__hr__pt__raw__name",
+        "interests": "sheets__hr__pt__raw__interests",
+        "about": "sheets__hr__pt__raw__about",
+        "telegram": "sheets__hr__pt__raw__telegram",
+        "referral": "sheets__hr__pt__raw__referral",
+        "status": "sheets__hr__raw__status",
+    }
+
+
+class HRPersonPTProcessed(SheetsItem):
+    field_alias = {
+        "id": "sheets__hr__pt__processed__id",
+        "name": "sheets__hr__pt__processed__name",
+        "interests": "sheets__hr__pt__processed__interests",
+        "about": "sheets__hr__pt__processed__about",
+        "referral": "sheets__hr__pt__processed__referral",
+        "date_submitted": "sheets__hr__pt__processed__date_submitted",
+        "telegram": "sheets__hr__pt__processed__telegram",
+        "status": "sheets__hr__pt__processed__status",
+    }
+
+
 class PostRegistryItem(SheetsItem):
     field_alias = {
         "name": "sheets__post_registry__column_name",
