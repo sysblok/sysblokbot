@@ -188,7 +188,7 @@ class SheetsItem:
             # Excel time format, http://www.cpearson.com/excel/datetime.htm
             # 40000 is around 2009
             # 50000 is around 2040, ph I hope Sysblok will thrive in 2040
-            if type(value) == float and 40000 <= value <= 50000:
+            if type(value) is float and 40000 <= value <= 50000:
                 return convert_excel_datetime_to_string(value)
             else:
                 return value
@@ -241,6 +241,31 @@ class HRPersonProcessed(SheetsItem):
         "status_novice": "sheets__hr__processed__status_novice",
         "source": "sheets__hr__processed__source",
         "curator": "sheets__hr__processed__curator",
+    }
+
+
+class HRPersonPTRaw(SheetsItem):
+    field_alias = {
+        "ts": "sheets__hr__pt__raw__timestamp",
+        "name": "sheets__hr__pt__raw__name",
+        "interests": "sheets__hr__pt__raw__interests",
+        "about": "sheets__hr__pt__raw__about",
+        "telegram": "sheets__hr__pt__raw__telegram",
+        "referral": "sheets__hr__pt__raw__referral",
+        "status": "sheets__hr__raw__status",
+    }
+
+
+class HRPersonPTProcessed(SheetsItem):
+    field_alias = {
+        "id": "sheets__hr__pt__processed__id",
+        "name": "sheets__hr__pt__processed__name",
+        "interests": "sheets__hr__pt__processed__interests",
+        "about": "sheets__hr__pt__processed__about",
+        "referral": "sheets__hr__pt__processed__referral",
+        "date_submitted": "sheets__hr__pt__processed__date_submitted",
+        "telegram": "sheets__hr__pt__processed__telegram",
+        "status": "sheets__hr__pt__processed__status",
     }
 
 

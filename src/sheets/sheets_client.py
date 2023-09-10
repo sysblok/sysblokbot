@@ -29,6 +29,7 @@ class GoogleSheetsClient(Singleton):
         self.authors_sheet_key = self._sheets_config["authors_sheet_key"]
         self.curators_sheet_key = self._sheets_config["curators_sheet_key"]
         self.hr_sheet_key = self._sheets_config["hr_sheet_key"]
+        self.hr_pt_sheet_key = self._sheets_config["hr_pt_sheet_key"]
         self.post_registry_sheet_key = self._sheets_config["post_registry_sheet_key"]
         self.rubrics_registry_sheet_key = self._sheets_config[
             "rubrics_registry_sheet_key"
@@ -56,6 +57,12 @@ class GoogleSheetsClient(Singleton):
 
     def fetch_hr_forms_processed(self) -> Table:
         return self._fetch_table(self.hr_sheet_key, "Анкеты")
+
+    def fetch_hr_pt_forms_raw(self) -> Table:
+        return self._fetch_table(self.hr_pt_sheet_key, "Ответы Главный сайт")
+
+    def fetch_hr_pt_forms_processed(self) -> Table:
+        return self._fetch_table(self.hr_pt_sheet_key, "Анкеты")
 
     def fetch_hr_team(self) -> Table:
         return self._fetch_table(self.hr_sheet_key, "Команда (с заморозкой)")
