@@ -258,18 +258,14 @@ class HRPersonPTRaw(SheetsItem):
 
 class HRPersonPTProcessed(SheetsItem):
     field_alias = {
-        "id": "sheets__hr__processed__id",
-        "name": "sheets__hr__processed__name",
-        "interests": "sheets__hr__processed__interests",
-        "other_contacts": "sheets__hr__processed__other_contacts",
-        "about": "sheets__hr__processed__about",
-        "hr_name": "sheets__hr__processed__hr_name",
-        "date_submitted": "sheets__hr__processed__date_submitted",
-        "telegram": "sheets__hr__processed__telegram",
-        "status": "sheets__hr__processed__status",
-        "status_novice": "sheets__hr__processed__status_novice",
-        "source": "sheets__hr__processed__source",
-        "curator": "sheets__hr__processed__curator",
+        "id": "sheets__hr__pt__processed__id",
+        "name": "sheets__hr__pt__processed__name",
+        "interests": "sheets__hr__pt__processed__interests",
+        "about": "sheets__hr__pt__processed__about",
+        "referral": "sheets__hr__pt__processed__referral",
+        "date_submitted": "sheets__hr__pt__processed__date_submitted",
+        "telegram": "sheets__hr__pt__processed__telegram",
+        "status": "sheets__hr__pt__processed__status",
     }
 
 

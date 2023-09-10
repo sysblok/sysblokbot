@@ -59,29 +59,28 @@ class HRAcquisitionPTJob(BaseJob):
         for person in new_people:
             # filter out incomplete responses
             if not person.telegram and not person.other_contacts:
-                person.status = load("sheets__hr__raw__status_rejection")
+                person.status = load("sheets__hr__pt__raw__status_rejection")
                 continue
             if person.telegram and (
                 person.telegram in {person.telegram for person in existing_people}
                 or person.telegram in {person.telegram for person in new_items}
             ):
-                person.status = load("sheets__hr__raw__status_double")
+                person.status = load("sheets__hr__pt__raw__status_double")
                 continue
 
             # move good ones to another sheet
-            person.status = load("sheets__hr__raw__status_processed")
+            person.status = load("sheets__hr__pt__raw__status_processed")
             # TODO: PR to sheetfu which will allow better API here
             person_dict = {
                 "id": len(forms_processed)
                 + 2,  # 1 for starting with 1 and 1 for the header
                 "name": person.name,
                 "interests": person.interests,
-                "other_contacts": person.other_contacts,
                 "about": person.about,
                 "date_submitted": person.ts,
+                "referral": person.referral,
                 "telegram": person.telegram,
-                "status": load("sheets__hr__processed__status__new_form"),
-                "source": load("sheets__hr__processed__source__form"),
+                "status": "TODO",  # this is a legitimate value, not an actual TODO
             }
             new_items.append(
                 HRPersonPTProcessed.add_one_to_table(forms_processed, person_dict)
@@ -99,14 +98,11 @@ class HRAcquisitionPTJob(BaseJob):
         )
         interests = load("hr_acquisition_job__interests", interests=item.interests)
         about = load("hr_acquisition_job__about", description=item.about)
-        other_contacts = load(
-            "hr_acquisition_job__other_contacts", contacts=item.other_contacts
-        )
         paragraph = load(
             "hr_acquisition_job__person",
             name=name,
             interests=interests,
             about=about,
-            contacts=other_contacts,
+            contacts="",  # no other contacts field in PT
         )
         return paragraph
