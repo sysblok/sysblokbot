@@ -41,7 +41,6 @@ class SiteHealthCheckJob(BaseJob):
                     kwargs = schedule[KWARGS]
         url = kwargs.get("index_url")
         logger.debug(f"Checking site health for {kwargs.get('name')}: {url}")
-        
         try:
             page = requests.get(url)
         except Exception as e:
