@@ -79,7 +79,7 @@ class SiteHealthCheckJob(BaseJob):
             logger.error(f"Bad body contents for {url}")
             logger.warning(f"Html:\n\n{body_contents}")
             return
-        logger.debug("Site contents look healthy")
+        logger.debug("Site content looks healthy")
         if called_from_handler:
             send(
                 load(
