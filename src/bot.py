@@ -389,6 +389,12 @@ class SysBlokBot:
             handlers.clean_chat_data,
             "clean_chat_data",
         )
+        self.add_admin_handler(
+            "get_managers",
+            CommandCategories.MOST_USED,
+            handlers.get_managers,
+            "get_managers",
+        )
 
         # sample handler
         self.add_handler(
