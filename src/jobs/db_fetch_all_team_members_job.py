@@ -13,17 +13,22 @@ class DBFetchAllTeamMembersJob(BaseJob):
     def _execute(
         app_context: AppContext, send: Callable[[str], None], called_from_handler=False
     ):
-        team_size = app_context.db_client.fetch_authors_sheet(
+        num_authors = app_context.db_client.fetch_authors_sheet(
             app_context.sheets_client
         )
-        team_size += app_context.db_client.fetch_curators_sheet(
+        logger.info(f"Fetched {num_authors} authors")
+        send(load("db_fetch_authors_sheet_job__success", num_authors=num_authors))
+
+        num_curators = app_context.db_client.fetch_curators_sheet(
             app_context.sheets_client
         )
-        team_size += app_context.db_client.fetch_team_sheet(
+        logger.info(f"Fetched {num_curators} curators")
+        send(load("db_fetch_curators_sheet_job__success", num_curators=num_curators))
+
+        team_size = app_context.db_client.fetch_team_sheet(
             app_context.sheets_client
         )
-        # Do we need TODO this? Copied from db_fetch_team_sheet_job.py:
         # after we fetch the team, we need to recalculate the roles
-        # app_context.role_manager.calculate_db_roles()
+        app_context.role_manager.calculate_db_roles()
         logger.info(f"Fetched {team_size} team members")
-        send(load("db_fetch_all_team_members_job__success", team_size=team_size))
+        send(load("db_fetch_team_sheet_job__success", team_size=team_size))

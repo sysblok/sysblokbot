@@ -4,6 +4,8 @@ persistent_storage.pickle
 *.sqlite-journal
 config_gs.json
 
+*.sqlite
+
 *.token
 
 # Byte-compiled / optimized / DLL files
