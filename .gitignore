@@ -2,6 +2,7 @@ config_override.json
 src/sheets/sysblokbot.json
 persistent_storage.pickle
 *.sqlite-journal
+config_gs.json
 
 *.token
 
