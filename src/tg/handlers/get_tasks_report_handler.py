@@ -17,9 +17,9 @@ TASK_NAME = "get_tasks_report"
 logger = logging.getLogger(__name__)
 
 
-@manager_only
-def get_tasks_report(update: telegram.Update, tg_context: telegram.ext.CallbackContext):
-    # set initial dialogue data
+def get_task_report_base(
+    update: telegram.Update, tg_context: telegram.ext.CallbackContext, advanced: bool
+):
     app_context = AppContext()
 
     boards_list = app_context.trello_client.get_boards_for_user()
@@ -34,12 +34,27 @@ def get_tasks_report(update: telegram.Update, tg_context: telegram.ext.CallbackC
     tg_context.chat_data[TASK_NAME] = {
         consts.NEXT_ACTION: consts.PlainTextUserAction.GET_TASKS_REPORT__ENTER_BOARD_NUMBER.value
     }
+    tg_context.chat_data["advanced"] = advanced
     reply(
         load(
             "get_tasks_report_handler__choose_trello_board", lists=boards_list_formatted
         ),
         update,
     )
+
+
+@manager_only
+def get_tasks_report(update: telegram.Update, tg_context: telegram.ext.CallbackContext):
+    get_task_report_base(update, tg_context, advanced=False)
+
+    return
+
+
+@manager_only
+def get_tasks_report_advanced(
+    update: telegram.Update, tg_context: telegram.ext.CallbackContext
+):
+    get_task_report_base(update, tg_context, advanced=True)
 
     return
 
