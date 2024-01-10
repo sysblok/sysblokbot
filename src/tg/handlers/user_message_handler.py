@@ -157,7 +157,7 @@ def handle_user_message(
             command_data[consts.GetTasksReportData.INTRO_TEXT] = None
             handle_task_report(command_data, add_labels, update)
             return
-            
+
         reply(
             load("get_tasks_report_handler__enter_intro"),
             update,
@@ -546,7 +546,7 @@ def handle_new_members(
     # writes chat_id and chat name to db when anybody (including the bot) is added to a new chat
     # very heuristic solution
     DBClient().set_chat_name(get_chat_id(update), get_chat_name(update))
-    
+
 
 def handle_task_report(command_data, add_labels, update):
     board_id = command_data[consts.GetTasksReportData.BOARD_ID]
