@@ -17,7 +17,23 @@ TASK_NAME = "get_tasks_report"
 logger = logging.getLogger(__name__)
 
 
-def get_task_report_base(
+@manager_only
+def get_tasks_report(update: telegram.Update, tg_context: telegram.ext.CallbackContext):
+    _get_task_report_base(update, tg_context, advanced=False)
+
+    return
+
+
+@manager_only
+def get_tasks_report_advanced(
+    update: telegram.Update, tg_context: telegram.ext.CallbackContext
+):
+    _get_task_report_base(update, tg_context, advanced=True)
+
+    return
+
+
+def _get_task_report_base(
     update: telegram.Update, tg_context: telegram.ext.CallbackContext, advanced: bool
 ):
     app_context = AppContext()
@@ -41,22 +57,6 @@ def get_task_report_base(
         ),
         update,
     )
-
-
-@manager_only
-def get_tasks_report(update: telegram.Update, tg_context: telegram.ext.CallbackContext):
-    get_task_report_base(update, tg_context, advanced=False)
-
-    return
-
-
-@manager_only
-def get_tasks_report_advanced(
-    update: telegram.Update, tg_context: telegram.ext.CallbackContext
-):
-    get_task_report_base(update, tg_context, advanced=True)
-
-    return
 
 
 def generate_report_messages(
