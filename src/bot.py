@@ -389,6 +389,12 @@ class SysBlokBot:
             handlers.clean_chat_data,
             "clean_chat_data",
         )
+        self.add_admin_handler(
+            "get_managers",
+            CommandCategories.MOST_USED,
+            handlers.get_managers,
+            "get_managers",
+        )
 
         # sample handler
         self.add_handler(
@@ -420,6 +426,12 @@ class SysBlokBot:
             CommandCategories.DATA_SYNC,
             self.admin_reply_handler("db_fetch_strings_sheet_job"),
             "обновить таблицу со строками из Google Sheets",
+        )
+        self.add_admin_handler(
+            "db_fetch_all_team_members",
+            CommandCategories.DATA_SYNC,
+            self.admin_reply_handler("db_fetch_all_team_members_job"),
+            "обновить таблицы всех пользователей (авторов, кураторов, команда) из Google Sheets",
         )
 
         # general purpose cmds

@@ -41,7 +41,18 @@ class SiteHealthCheckJob(BaseJob):
                     kwargs = schedule[KWARGS]
         url = kwargs.get("index_url")
         logger.debug(f"Checking site health for {kwargs.get('name')}: {url}")
-        page = requests.get(url)
+        try:
+            page = requests.get(url)
+        except Exception as e:
+            send(
+                load(
+                    "site_health_check_job__connection_error",
+                    url=url,
+                )
+            )
+            logger.error(f"Connection error for {url}")
+            return
+
         if page.status_code != 200:
             send(
                 load(
@@ -68,7 +79,7 @@ class SiteHealthCheckJob(BaseJob):
             logger.error(f"Bad body contents for {url}")
             logger.warning(f"Html:\n\n{body_contents}")
             return
-        logger.debug("Site contents look healthy")
+        logger.debug("Site content looks healthy")
         if called_from_handler:
             send(
                 load(

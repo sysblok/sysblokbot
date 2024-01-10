@@ -58,7 +58,7 @@ class HRAcquisitionPTJob(BaseJob):
 
         for person in new_people:
             # filter out incomplete responses
-            if not person.telegram and not person.other_contacts:
+            if not person.telegram:
                 person.status = load("sheets__hr__pt__raw__status_rejection")
                 continue
             if person.telegram and (

@@ -105,10 +105,12 @@ def add_manager(update, tg_context):
     try:
         tokens = update.message.text.strip().split(maxsplit=2)
         assert len(tokens) == 2
-        manager_id = json.loads(tokens[1])
-        assert isinstance(manager_id, int) or (
-            isinstance(manager_id, str) and not manager_id.startswith("@")
-        )
+        try:
+            manager_id = json.loads(tokens[1])
+        except Exception:
+            manager_id = tokens[1]
+            manager_id = manager_id.lstrip("@")
+        assert isinstance(manager_id, int) or isinstance(manager_id, str)
         config_manager = ConfigManager()
         manager_ids = config_manager.get_telegram_config()[consts.TELEGRAM_MANAGER_IDS][
             :
