@@ -6,12 +6,15 @@ from urllib.parse import parse_qs, urlparse
 
 import dateutil.parser as dateparser
 import facebook
+import requests
 
 from ..consts import ReportPeriod
 from ..utils.singleton import Singleton
 from .facebook_objects import FacebookPage
 
 logger = logging.getLogger(__name__)
+BASE_URL = 'https://graph.facebook.com'
+API_VERSION = 'v10.0'
 
 
 class FacebookClient(Singleton):
@@ -32,13 +35,20 @@ class FacebookClient(Singleton):
         self._api_client = facebook.GraphAPI(self._facebook_config["token"], 7.0)
         self._page_id = self._facebook_config["page_id"]
 
+    def _make_graph_api_call(self, uri: str, params: dict) -> dict:
+        params['access_token'] = self._facebook_config["token"]
+        response = requests.get(
+            '/'.join([BASE_URL, API_VERSION, uri]) + '?' +
+            '&'.join(f"{key}={value}" for key, value in params.items()))
+        return response.json()
+
     def get_page(self) -> FacebookPage:
         """
         Get facebook page
         """
-        page_dict = self._api_client.get_object(
-            self._page_id, fields="link,name,followers_count,fan_count"
-        )
+        page_dict = self._make_graph_api_call(str(self._page_id), {
+            'fields': 'link,name,followers_count,fan_count'
+        })
         return FacebookPage.from_dict(page_dict)
 
     def get_new_posts_count(self, since: datetime, until: datetime) -> int:
