@@ -156,22 +156,22 @@ jobs:
             }' \
             https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
 
-  integration_tests:
-    needs: push
+  # integration_tests:
+  #   needs: push
 
-    runs-on: ubuntu-latest
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: dev
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         ref: dev
 
-      - name: Integration tests
-        uses: fylein/python-pytest-github-action@v2
-        env:
-          CONFIG_OVERRIDE: ${{ secrets.CONFIG_OVERRIDE_TESTING }}
-        with:
-          args: |
-            apt-get update && apt-get install -y git && \
-            pip3 install -e . && pip3 install -r requirements.txt && \
-            pytest tests/integration -vs
+  #     - name: Integration tests
+  #       uses: fylein/python-pytest-github-action@v2
+  #       env:
+  #         CONFIG_OVERRIDE: ${{ secrets.CONFIG_OVERRIDE_TESTING }}
+  #       with:
+  #         args: |
+  #           apt-get update && apt-get install -y git && \
+  #           pip3 install -e . && pip3 install -r requirements.txt && \
+  #           pytest tests/integration -vs

@@ -90,6 +90,7 @@ def handle_user_message(
             assert 0 <= list_idx < len(board_list)
             board_id = board_list[list_idx]["id"]
             trello_lists = trello_client.get_lists(board_id)
+            trello_lists = trello_lists[::-1]
         except Exception as e:
             logger.warning(e)
             reply(
@@ -107,7 +108,10 @@ def handle_user_message(
         ]
 
         trello_lists_formatted = "\n".join(
-            [f"{i + 1}) {lst.name}" for i, lst in enumerate(trello_lists)]
+            [
+                f"{len(trello_lists) - i}) {lst.name}"
+                for i, lst in enumerate(trello_lists)
+            ]
         )
         reply(
             load(
@@ -123,8 +127,8 @@ def handle_user_message(
     elif next_action == PlainTextUserAction.GET_TASKS_REPORT__ENTER_LIST_NUMBER:
         try:
             trello_lists = command_data.get(consts.GetTasksReportData.LISTS, [])
-            list_idx = int(user_input) - 1
-            assert 0 <= list_idx < len(trello_lists)
+            list_idx = -int(user_input)
+            assert 0 > list_idx >= -len(trello_lists)
             list_id = trello_lists[list_idx]["id"]
         except Exception as e:
             logger.warning(e)
@@ -148,6 +152,12 @@ def handle_user_message(
                 ]
             ]
         )
+        if not tg_context.chat_data.get("advanced"):
+            add_labels = button == ButtonValues.GET_TASKS_REPORT__LABELS__NO
+            command_data[consts.GetTasksReportData.INTRO_TEXT] = None
+            handle_task_report(command_data, add_labels, update)
+            return
+
         reply(
             load("get_tasks_report_handler__enter_intro"),
             update,
@@ -188,17 +198,7 @@ def handle_user_message(
             reply(load("user_message_handler__press_button_please"), update)
             return
         add_labels = button == ButtonValues.GET_TASKS_REPORT__LABELS__YES
-        board_id = command_data[consts.GetTasksReportData.BOARD_ID]
-        list_id = command_data[consts.GetTasksReportData.LIST_ID]
-        introduction = command_data[consts.GetTasksReportData.INTRO_TEXT]
-        messages = get_tasks_report_handler.generate_report_messages(
-            board_id, list_id, introduction, add_labels
-        )
-        for message in messages:
-            reply(message, update)
-        # finished with last action for /trello_client_get_lists
-        set_next_action(command_data, None)
-        return
+        handle_task_report(command_data, add_labels, update)
     elif next_action == PlainTextUserAction.MANAGE_REMINDERS__CHOOSE_ACTION:
         if button is None:
             reply(load("user_message_handler__press_button_please"), update)
@@ -546,3 +546,17 @@ def handle_new_members(
     # writes chat_id and chat name to db when anybody (including the bot) is added to a new chat
     # very heuristic solution
     DBClient().set_chat_name(get_chat_id(update), get_chat_name(update))
+
+
+def handle_task_report(command_data, add_labels, update):
+    board_id = command_data[consts.GetTasksReportData.BOARD_ID]
+    list_id = command_data[consts.GetTasksReportData.LIST_ID]
+    introduction = command_data[consts.GetTasksReportData.INTRO_TEXT]
+    messages = get_tasks_report_handler.generate_report_messages(
+        board_id, list_id, introduction, add_labels
+    )
+    for message in messages:
+        reply(message, update)
+    # finished with last action for /trello_client_get_lists
+    set_next_action(command_data, None)
+    return

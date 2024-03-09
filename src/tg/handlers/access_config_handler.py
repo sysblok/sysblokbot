@@ -77,11 +77,23 @@ def reload_config_jobs(update, tg_context):
         reply(load("access_config_handler__reload_config_jobs_usage_example"), update)
         logger.warning(f"Failed to reload jobs config: {e}")
         return
+    num_strings = 0
+    try:
+        num_strings = AppContext().strings_db_client.fetch_strings_sheet(
+            AppContext().sheets_client
+        )
+    except Exception as e:
+        reply(load("access_config_handler__reload_config_jobs_usage_example"), update)
+        logger.warning(f"Failed to reload jobs config when fetching strings: {e}")
     reply(
         load(
             "common__code_wrapper",
             arg=json.dumps(ConfigManager.redact(config_jobs), indent=2),
         ),
+        update,
+    )
+    reply(
+        load("db_fetch_strings_sheet_job__success", num_strings=num_strings),
         update,
     )
 
