@@ -8,6 +8,8 @@ Bot for SysBlok ("Системный Блокъ") editorial processes automatiza
 ## How to make a first local run
 - Create a testing bot through BotFather and obtain the token.
 - Create `config_override.json` in the same directory and put sensitive tokens there (you can copypaste from `config.json` first). Do not push `config_override.json` to the repo!
+  - Run `export INFRA_HOST=<SYSBLOK_INFRA_HOST>`, putting in the actual URL
+  - Run `sh get_keys.sh`. This will download `config_override.json` and `config_gs.json` to your folder.
 - `pip install -e .`
 - `pip install -r requirements.txt`
 - `pre-commit install`
