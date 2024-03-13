@@ -62,7 +62,6 @@ class FacebookClient(Singleton):
                 'since': int(datetime.timestamp(since)),
                 'until': int(datetime.timestamp(until)),
                 'limit': 0,
-                # 'access_token': f"{self._facebook_config['token']}"
             }
         )
         return result["summary"]["total_count"]
