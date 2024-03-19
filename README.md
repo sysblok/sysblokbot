@@ -6,10 +6,14 @@
 Bot for SysBlok ("Системный Блокъ") editorial processes automatization.
 
 ## How to make a first local run
+- You might need to set up `ru_RU.UTF-8` locale. To do that, run
+  - `sudo locale-gen "ru_RU.UTF-8"`
+  - `sudo dpkg-reconfigure locales`
 - Create a testing bot through BotFather and obtain the token.
 - Create `config_override.json` in the same directory and put sensitive tokens there (you can copypaste from `config.json` first). Do not push `config_override.json` to the repo!
   - Run `export INFRA_HOST=<SYSBLOK_INFRA_HOST>`, putting in the actual URL
   - Run `sh get_keys.sh`. This will download `config_override.json` and `config_gs.json` to your folder.
+- Replace `YOUR_CHAT_ID`, `YOUR_USERNAME` and `BOT_TOKEN` with appropriate values
 - `pip install -e .`
 - `pip install -r requirements.txt`
 - `pre-commit install`
