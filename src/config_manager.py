@@ -7,8 +7,6 @@ from src.utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
 
-REDACTED_KEYS = ("key", "token")
-
 
 class ConfigManager(Singleton):
     def __init__(self, config_path: str = "", config_override_path: str = ""):
@@ -141,7 +139,7 @@ class ConfigManager(Singleton):
                 redacted_config[key] = ConfigManager.redact(value)
             else:
                 redacted_config[key] = value
-                for redacted_key in REDACTED_KEYS:
+                for redacted_key in consts.REDACTED_KEYS:
                     if redacted_key in key:
                         redacted_config[key] = "XXXXX"
                         break
