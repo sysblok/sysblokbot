@@ -14,7 +14,7 @@ from .facebook_objects import FacebookPage
 
 logger = logging.getLogger(__name__)
 BASE_URL = 'https://graph.facebook.com'
-API_VERSION = 'v10.0'
+API_VERSION = 'v19.0'
 
 
 class FacebookClient(Singleton):
@@ -55,12 +55,14 @@ class FacebookClient(Singleton):
         """
         Get the number of new posts for the period.
         """
-        result = self._api_client.get_connections(
-            self._page_id,
-            connection_name="published_posts",
-            summary="total_count",
-            since=since,
-            until=until,
+        result = self._make_graph_api_call(
+            str(self._page_id) + '/published_posts',
+            {
+                'summary': 'total_count',
+                'since': int(datetime.timestamp(since)),
+                'until': int(datetime.timestamp(until)),
+                'limit': 0,
+            }
         )
         return result["summary"]["total_count"]
 

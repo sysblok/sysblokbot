@@ -408,36 +408,26 @@ class SysBlokBot:
             self.admin_reply_handler("sample_job"),
         )
 
-        # admin-only DB cmds
-        self.add_admin_handler(
+        # db commands hidden from /help command
+        self.add_handler(
             "db_fetch_authors_sheet",
-            CommandCategories.DATA_SYNC,
             self.admin_reply_handler("db_fetch_authors_sheet_job"),
-            "обновить таблицу с авторами из Google Sheets",
         )
-        self.add_admin_handler(
+        self.add_handler(
             "db_fetch_curators_sheet",
-            CommandCategories.DATA_SYNC,
             self.admin_reply_handler("db_fetch_curators_sheet_job"),
-            "обновить таблицу с кураторами из Google Sheets",
         )
-        self.add_admin_handler(
+        self.add_handler(
             "db_fetch_team_sheet",
-            CommandCategories.DATA_SYNC,
             self.admin_reply_handler("db_fetch_team_sheet_job"),
-            "обновить таблицу с командой из Google Sheets",
         )
-        self.add_admin_handler(
+        self.add_handler(
             "db_fetch_strings_sheet",
-            CommandCategories.DATA_SYNC,
             self.admin_reply_handler("db_fetch_strings_sheet_job"),
-            "обновить таблицу со строками из Google Sheets",
         )
-        self.add_admin_handler(
+        self.add_handler(
             "db_fetch_all_team_members",
-            CommandCategories.DATA_SYNC,
             self.admin_reply_handler("db_fetch_all_team_members_job"),
-            "обновить таблицы всех пользователей (авторов, кураторов, команда) из Google Sheets",
         )
 
         # general purpose cmds

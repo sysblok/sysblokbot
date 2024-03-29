@@ -60,6 +60,9 @@ TRELLO_BOARD_ID = "board_id"
 # Vk consts
 VK_POST_LINK = "https://vk.com/{group_alias}?w=wall-{group_id}_{post_id}"
 
+# List of keys whose values need to be hidden
+REDACTED_KEYS = ("key", "token", "id", "hash", "session")
+
 
 # Report enum
 class ReportPeriod(Enum):
