@@ -20,11 +20,19 @@ def get_board_credentials(update: telegram.Update, tg_context):
         with open('board_credentials.json', encoding="utf-8") as fin:
             try:
                 board_json = json.loads(fin.read())
-                creds = next((cred for cred in board_json if cred["trelloUsername"] == f"@{member.trello}"), None)
+                creds = next((
+                    cred for cred in board_json if cred["trelloUsername"] == f"@{member.trello}"
+                ), None)
                 if not creds:
                     reply(load('get_board_credentials_handler__not_found'), update)
                     return
-                reply(load('get_board_credentials_handler__found', username=creds["focalboardUsername"], password=creds["focalboardPassword"]), update)
+                reply(
+                    load('get_board_credentials_handler__found',
+                         username=creds["focalboardUsername"],
+                         password=creds["focalboardPassword"]
+                    ),
+                    update
+                )
             except json.JSONDecodeError as e:
                 logger.error(e)
     except IOError:
