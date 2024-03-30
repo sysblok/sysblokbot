@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 def get_board_credentials(update: telegram.Update, tg_context):
+    if update.message.chat_id < 0:
+        return
     member = next((
         member for member in DBClient().get_all_members()
         if member.telegram == f"@{get_sender_username(update)}"
