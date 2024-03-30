@@ -17,7 +17,7 @@ def get_board_credentials(update: telegram.Update, tg_context):
     ), None)
     if member is None or not member.trello:
         logger.warn(
-            f'Trello username not found for {get_sender_username(update)}, ID={get_sender_id(update)}'
+            f'Trello not found for {get_sender_username(update)}, ID={get_sender_id(update)}'
         )
         reply(load('get_board_credentials_handler__not_found'), update)
         return
