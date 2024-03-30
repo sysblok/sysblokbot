@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 import telegram
 
 from ...db.db_client import DBClient
@@ -20,11 +19,12 @@ def get_board_credentials(update: telegram.Update, tg_context):
         reply(load('get_board_credentials_handler__not_found'), update)
         return
     try:
+        print(member.trello)
         with open('board_credentials.json', encoding="utf-8") as fin:
             try:
                 board_json = json.loads(fin.read())
                 creds = next((
-                    cred for cred in board_json if cred["trelloUsername"] == f"@{member.trello}"
+                    cred for cred in board_json if cred["trelloUsername"] == member.trello
                 ), None)
                 if not creds:
                     reply(load('get_board_credentials_handler__not_found'), update)
@@ -32,7 +32,7 @@ def get_board_credentials(update: telegram.Update, tg_context):
                 reply(
                     load(
                         'get_board_credentials_handler__found',
-                        username=creds["focalboardUsername"],
+                        username=creds["focalboardUsername"][1:],
                         password=creds["focalboardPassword"]
                     ),
                     update
