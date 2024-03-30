@@ -12,7 +12,10 @@ logger = logging.getLogger(__name__)
 
 
 def get_board_credentials(update: telegram.Update, tg_context):
-    member = next((member for member in DBClient().get_all_members() if member.telegram == f"@{get_sender_username(update)}"), None)
+    member = next((
+        member for member in DBClient().get_all_members()
+        if member.telegram == f"@{get_sender_username(update)}"
+    ), None)
     if member is None or not member.trello:
         reply(load('get_board_credentials_handler__not_found'), update)
         return
@@ -27,7 +30,8 @@ def get_board_credentials(update: telegram.Update, tg_context):
                     reply(load('get_board_credentials_handler__not_found'), update)
                     return
                 reply(
-                    load('get_board_credentials_handler__found',
+                    load(
+                        'get_board_credentials_handler__found',
                          username=creds["focalboardUsername"],
                          password=creds["focalboardPassword"]
                     ),
