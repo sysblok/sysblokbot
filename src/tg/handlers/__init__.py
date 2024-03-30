@@ -35,6 +35,7 @@ from .set_log_level_handler import set_log_level
 
 # User-facing handlers
 from .start_handler import start
+from .get_board_credentials_handler import get_board_credentials
 
 # Plain text message handler
 from .user_message_handler import (

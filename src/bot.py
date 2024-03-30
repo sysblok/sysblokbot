@@ -435,6 +435,12 @@ class SysBlokBot:
             "start", CommandCategories.MOST_USED, handlers.start, "начать чат с ботом"
         )
         self.add_admin_handler(
+            "get_board_credentials",
+            CommandCategories.MOST_USED,
+            lambda update, context: handlers.get_board_credentials(update, context),
+            "получить пароль от Focalboard",
+        )
+        self.add_admin_handler(
             "help",
             CommandCategories.MOST_USED,
             lambda update, context: handlers.help(update, context, self.handlers_info),
