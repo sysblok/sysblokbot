@@ -2,7 +2,6 @@ import json
 import logging
 import telegram
 
-from ...consts import USAGE_LOG_LEVEL
 from ...db.db_client import DBClient
 from ...strings import load
 from .utils import get_sender_id, get_sender_username, reply
@@ -17,7 +16,7 @@ def get_board_credentials(update: telegram.Update, tg_context):
         if member.telegram == f"@{get_sender_username(update)}"
     ), None)
     if member is None or not member.trello:
-        logger.warn(
+        logger.usage(
             f'Trello not found for {get_sender_username(update)}, ID={get_sender_id(update)}'
         )
         reply(load('get_board_credentials_handler__not_found'), update)
@@ -31,12 +30,12 @@ def get_board_credentials(update: telegram.Update, tg_context):
                     cred for cred in board_json if cred["trelloUsername"] == member.trello
                 ), None)
                 if not creds:
-                    logger.warn(
+                    logger.usage(
                         f'Board creds not found for user {get_sender_username(update)}'
                     )
                     reply(load('get_board_credentials_handler__not_found'), update)
                     return
-                logger.warn(f'Board creds found for username {get_sender_username(update)}')
+                logger.usage(f'Board creds found for username {get_sender_username(update)}')
                 reply(
                     load(
                         'get_board_credentials_handler__found',
