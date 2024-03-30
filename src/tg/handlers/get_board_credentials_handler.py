@@ -28,7 +28,9 @@ def get_board_credentials(update: telegram.Update, tg_context):
                     cred for cred in board_json if cred["trelloUsername"] == member.trello
                 ), None)
                 if not creds:
-                    logger.warn(f'Board creds not found for user {get_sender_username(update)}')
+                    logger.warn(
+                        f'Board creds not found for user {get_sender_username(update)}'
+                    )
                     reply(load('get_board_credentials_handler__not_found'), update)
                     return
                 logger.info(f'Board creds found for username {get_sender_username(update)}')
