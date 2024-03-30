@@ -32,8 +32,8 @@ def get_board_credentials(update: telegram.Update, tg_context):
                 reply(
                     load(
                         'get_board_credentials_handler__found',
-                         username=creds["focalboardUsername"],
-                         password=creds["focalboardPassword"]
+                        username=creds["focalboardUsername"],
+                        password=creds["focalboardPassword"]
                     ),
                     update
                 )
