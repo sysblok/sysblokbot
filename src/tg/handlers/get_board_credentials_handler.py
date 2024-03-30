@@ -2,6 +2,7 @@ import json
 import logging
 import telegram
 
+from ...consts import USAGE_LOG_LEVEL
 from ...db.db_client import DBClient
 from ...strings import load
 from .utils import get_sender_id, get_sender_username, reply
@@ -35,7 +36,10 @@ def get_board_credentials(update: telegram.Update, tg_context):
                     )
                     reply(load('get_board_credentials_handler__not_found'), update)
                     return
-                logger.info(f'Board creds found for username {get_sender_username(update)}')
+                logger._log(
+                    USAGE_LOG_LEVEL,
+                    f'Board creds found for username {get_sender_username(update)}'
+                )
                 reply(
                     load(
                         'get_board_credentials_handler__found',
