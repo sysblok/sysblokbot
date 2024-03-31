@@ -41,7 +41,10 @@ def get_tasks_report_advanced(
 
 
 def _get_task_report_base(
-    update: telegram.Update, tg_context: telegram.ext.CallbackContext, advanced: bool, use_focalboard: bool=False
+    update: telegram.Update,
+    tg_context: telegram.ext.CallbackContext,
+    advanced: bool,
+    use_focalboard: bool = False
 ):
     app_context = AppContext()
 

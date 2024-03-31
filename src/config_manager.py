@@ -59,7 +59,7 @@ class ConfigManager(Singleton):
 
     def get_trello_config(self):
         return self.get_latest_config().get(consts.TRELLO_CONFIG, {})
-    
+
     def get_focalboard_config(self):
         return self.get_latest_config().get(consts.FOCALBOARD_CONFIG, {})
 
