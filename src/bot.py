@@ -185,6 +185,12 @@ class SysBlokBot:
             "получить список задач из Trello (расширенный)",
         )
         self.add_manager_handler(
+            "get_tasks_report_focalboard",
+            CommandCategories.SUMMARY,
+            direct_message_only(handlers.get_tasks_report_focalboard),
+            "получить список задач из Focalboard",
+        )
+        self.add_manager_handler(
             "get_articles_arts",
             CommandCategories.SUMMARY,
             self.manager_reply_handler("trello_get_articles_arts_job"),

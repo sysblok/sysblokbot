@@ -38,6 +38,18 @@ class TrelloBoard:
             logger.error(f"Bad board json {data}: {e}")
         return board
 
+    @classmethod
+    def from_focalboard_dict(cls, data):
+        board = cls()
+        try:
+            board.id = data["id"]
+            board.name = html.escape(data["title"])
+            # board.url = data["shortUrl"]
+        except Exception as e:
+            board._ok = False
+            logger.error(f"Bad board json {data}: {e}")
+        return board
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -107,6 +119,18 @@ class TrelloList:
             trello_list.id = data["id"]
             trello_list.name = html.escape(data["name"])
             trello_list.board_id = data["idBoard"]
+        except Exception as e:
+            trello_list._ok = False
+            logger.error(f"Bad list json {data}: {e}")
+        return trello_list
+
+    @classmethod
+    def from_focalboard_dict(cls, data, board_id):
+        trello_list = cls()
+        try:
+            trello_list.id = data["id"]
+            trello_list.name = html.escape(data["value"])
+            trello_list.board_id = board_id
         except Exception as e:
             trello_list._ok = False
             logger.error(f"Bad list json {data}: {e}")
@@ -200,6 +224,22 @@ class TrelloCard:
             card.due = (
                 datetime.strptime(data["due"], TIME_FORMAT) if data["due"] else None
             )
+        except Exception as e:
+            card._ok = False
+            logger.error(f"Bad card json {data}: {e}")
+        return card
+
+    @classmethod
+    def from_focalboard_dict(cls, data):
+        card = cls()
+        try:
+            card.id = data["id"]
+            card.name = html.escape(data["title"])
+            # card.labels = [TrelloCardLabel.from_dict(label) for label in data["labels"]]
+            # card.url = data["shortUrl"]
+            # card.due = (
+            #     datetime.strptime(data["due"], TIME_FORMAT) if data["due"] else None
+            # )
         except Exception as e:
             card._ok = False
             logger.error(f"Bad card json {data}: {e}")
@@ -459,6 +499,14 @@ class TrelloMember:
         member.id = data["id"]
         member.username = data["username"]
         member.full_name = data["fullName"]
+        return member
+
+    @classmethod
+    def from_focalboard_dict(cls, data):
+        member = cls()
+        member.id = data["id"]
+        member.username = data["username"]
+        member.full_name = data["username"]
         return member
 
     def to_dict(self):

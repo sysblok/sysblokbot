@@ -25,6 +25,13 @@ def get_tasks_report(update: telegram.Update, tg_context: telegram.ext.CallbackC
 
 
 @manager_only
+def get_tasks_report_focalboard(update: telegram.Update, tg_context: telegram.ext.CallbackContext):
+    _get_task_report_base(update, tg_context, advanced=False, use_focalboard=True)
+
+    return
+
+
+@manager_only
 def get_tasks_report_advanced(
     update: telegram.Update, tg_context: telegram.ext.CallbackContext
 ):
@@ -34,11 +41,14 @@ def get_tasks_report_advanced(
 
 
 def _get_task_report_base(
-    update: telegram.Update, tg_context: telegram.ext.CallbackContext, advanced: bool
+    update: telegram.Update, tg_context: telegram.ext.CallbackContext, advanced: bool, use_focalboard: bool=False
 ):
     app_context = AppContext()
 
-    boards_list = app_context.trello_client.get_boards_for_user()
+    if use_focalboard:
+        boards_list = app_context.focalboard_client.get_boards_for_user()
+    else:
+        boards_list = app_context.trello_client.get_boards_for_user()
     boards_list_formatted = "\n".join(
         [f"{i + 1}) {brd.name}" for i, brd in enumerate(boards_list)]
     )
@@ -47,6 +57,7 @@ def _get_task_report_base(
     tg_context.chat_data[consts.GetTasksReportData.LISTS] = [
         lst.to_dict() for lst in boards_list
     ]
+    tg_context.chat_data[consts.GetTasksReportData.USE_FOCALBOARD] = use_focalboard
     tg_context.chat_data[TASK_NAME] = {
         consts.NEXT_ACTION: consts.PlainTextUserAction.GET_TASKS_REPORT__ENTER_BOARD_NUMBER.value
     }
@@ -60,15 +71,22 @@ def _get_task_report_base(
 
 
 def generate_report_messages(
-    board_id: str, list_id: str, introduction: str, add_labels: bool
+    board_id: str, list_id: str, introduction: str, add_labels: bool, use_focalboard: bool
 ) -> List[str]:
     app_context = AppContext()
     paragraphs = []  # list of paragraph strings
 
-    trello_list = app_context.trello_client.get_list(list_id)
+    if use_focalboard:
+        trello_list = app_context.focalboard_client.get_list(board_id, list_id)
+    else:
+        trello_list = app_context.trello_client.get_list(list_id)
     paragraphs.append(load("common__bold_wrapper", arg=trello_list.name))
 
-    list_cards = app_context.trello_client.get_cards([list_id], board_id)
+    if use_focalboard:
+        list_cards = app_context.focalboard_client.get_cards([list_id], board_id)
+    else:
+        list_cards = app_context.trello_client.get_cards([list_id], board_id)
+    print(list_cards)
     paragraphs += _create_paragraphs_from_cards(
         list_cards, introduction, add_labels, app_context
     )

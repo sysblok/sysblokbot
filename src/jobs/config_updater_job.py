@@ -58,6 +58,10 @@ class ConfigUpdaterJob(BaseJob):
                 app_context.trello_client.update_config(
                     job_scheduler.config_manager.get_trello_config()
                 )
+                # update config['focalboard']
+                app_context.focalboard_client.update_config(
+                    job_scheduler.config_manager.get_focalboard_config()
+                )
                 # update config['sheets']
                 app_context.sheets_client.update_config(
                     job_scheduler.config_manager.get_sheets_config()
