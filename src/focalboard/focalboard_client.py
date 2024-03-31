@@ -34,35 +34,54 @@ class FocalboardClient(Singleton):
         # essentially all list information is already passed via boards handler
         _, data = self._make_request(f"api/v2/teams/0/boards")
         list_data = [
-            prop for prop in [board for board in data if board["id"] == board_id][0]["cardProperties"]
+            prop
+            for prop in [board for board in data if board["id"] == board_id][0][
+                "cardProperties"
+            ]
             if prop["name"] == "List"
         ][0]
         lists_data = list_data["options"]
-        lists = [objects.TrelloList.from_focalboard_dict(trello_list, board_id) for trello_list in lists_data]
+        lists = [
+            objects.TrelloList.from_focalboard_dict(trello_list, board_id)
+            for trello_list in lists_data
+        ]
         logger.debug(f"get_lists: {lists}")
         return lists
 
     def get_list(self, board_id, list_id):
         _, data = self._make_request(f"api/v2/teams/0/boards")
         lists_data = [
-            prop for prop in [board for board in data if board["id"] == board_id][0]["cardProperties"]
+            prop
+            for prop in [board for board in data if board["id"] == board_id][0][
+                "cardProperties"
+            ]
             if prop["name"] == "List"
         ][0]["options"]
-        lst = [objects.TrelloList.from_focalboard_dict(trello_list, board_id) for trello_list in lists_data if trello_list["id"] == list_id][0]
+        lst = [
+            objects.TrelloList.from_focalboard_dict(trello_list, board_id)
+            for trello_list in lists_data
+            if trello_list["id"] == list_id
+        ][0]
         logger.debug(f"get_list: {lst}")
         return lst
 
     def _get_list_property(self, board_id):
         _, data = self._make_request(f"api/v2/teams/0/boards")
         return [
-            prop for prop in [board for board in data if board["id"] == board_id][0]["cardProperties"]
+            prop
+            for prop in [board for board in data if board["id"] == board_id][0][
+                "cardProperties"
+            ]
             if prop["name"] == "List"
         ][0]["id"]
 
     def _get_member_property(self, board_id):
         _, data = self._make_request(f"api/v2/teams/0/boards")
         return [
-            prop for prop in [board for board in data if board["id"] == board_id][0]["cardProperties"]
+            prop
+            for prop in [board for board in data if board["id"] == board_id][0][
+                "cardProperties"
+            ]
             if prop["name"] == "Assignee"
         ][0]["id"]
 
@@ -83,13 +102,14 @@ class FocalboardClient(Singleton):
         lists = self.get_lists(board_id)
         list_prop = self._get_list_property(board_id)
         member_prop = self._get_member_property(board_id)
-        view_id = [
-            card_dict for card_dict in data 
-            if card_dict["type"] == "view"
-        ][0]["id"]
+        view_id = [card_dict for card_dict in data if card_dict["type"] == "view"][0][
+            "id"
+        ]
         data = [
-            card_dict for card_dict in data 
-            if card_dict["type"] == "card" and card_dict["fields"]["properties"].get(list_prop, '') in list_ids
+            card_dict
+            for card_dict in data
+            if card_dict["type"] == "card"
+            and card_dict["fields"]["properties"].get(list_prop, "") in list_ids
         ]
         for card_dict in data:
             card = objects.TrelloCard.from_focalboard_dict(card_dict)
@@ -97,7 +117,9 @@ class FocalboardClient(Singleton):
             print(card.url)
             # TODO: move this to app state
             for trello_list in lists:
-                if trello_list.id == card_dict["fields"]["properties"].get(list_prop, ''):
+                if trello_list.id == card_dict["fields"]["properties"].get(
+                    list_prop, ""
+                ):
                     card.lst = trello_list
                     break
             else:
@@ -105,7 +127,9 @@ class FocalboardClient(Singleton):
             # TODO: move this to app state
             if len(card_dict["fields"]["properties"].get(member_prop, [])) > 0:
                 for member in members:
-                    if member.id in card_dict["fields"]["properties"].get(member_prop, []):
+                    if member.id in card_dict["fields"]["properties"].get(
+                        member_prop, []
+                    ):
                         card.members.append(member)
                 if len(card.members) == 0:
                     logger.error(f"Member username not found for {card}")
@@ -123,17 +147,15 @@ class FocalboardClient(Singleton):
         self.token = self._focalboard_config["token"]
         self.url = self._focalboard_config["url"]
         self.headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.token}',
-            'X-Requested-With': 'XMLHttpRequest',
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.token}",
+            "X-Requested-With": "XMLHttpRequest",
         }
 
     def _make_request(self, uri, payload={}):
         response = requests.get(
-            urljoin(self.url, uri),
-            params=payload,
-            headers=self.headers
+            urljoin(self.url, uri), params=payload, headers=self.headers
         )
         logger.debug(f"{response.url}")
         return response.status_code, response.json()
