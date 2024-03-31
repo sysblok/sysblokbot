@@ -37,6 +37,7 @@ MSK_TIMEZONE = timezone(timedelta(hours=3))
 # Upper level config keys
 TELEGRAM_CONFIG = "telegram"
 TRELLO_CONFIG = "trello"
+FOCALBOARD_CONFIG = "focalboard"
 SHEETS_CONFIG = "sheets"
 DRIVE_CONFIG = "drive"
 FACEBOOK_CONFIG = "facebook"
@@ -166,6 +167,7 @@ class GetTasksReportData:
     LISTS = "lists"
     INTRO_TEXT = "introduction"
     INCLUDE_LABELS = "include_labels"
+    USE_FOCALBOARD = "use_focalboard"
 
 
 class ManageRemindersData:

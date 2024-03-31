@@ -15,6 +15,7 @@ from .strings import StringsDBClient
 from .tg.sender import TelegramSender
 from .tg.tg_client import TgClient
 from .trello.trello_client import TrelloClient
+from .focalboard.focalboard_client import FocalboardClient
 from .utils.singleton import Singleton
 from .vk.vk_client import VkClient
 
@@ -53,6 +54,9 @@ class AppContext(Singleton):
 
         self.trello_client = TrelloClient(
             trello_config=config_manager.get_trello_config()
+        )
+        self.focalboard_client = FocalboardClient(
+            focalboard_config=config_manager.get_focalboard_config()
         )
         self.facebook_client = FacebookClient(
             facebook_config=config_manager.get_facebook_config()
