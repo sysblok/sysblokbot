@@ -3,7 +3,9 @@ version: '3'
 services:
   sysblokbot:
     container_name: sysblokbot
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
     volumes:
       - ./config_override.json:/app/config_override.json
       - ./config_gs.json:/app/config_gs.json

@@ -8,7 +8,7 @@
 
 ## How to use Docker Compose (optional for development)
 - Install [Docker Compose](https://docs.docker.com/compose/install/) or [Colima](https://github.com/abiosoft/colima) on macOS.
-- Run `docker compose -f docker-compose.dev.yml up -d` to build the docker image and run the app.
+- Run `docker compose -f docker-compose.dev.yml up -d` or `docker-compose -f docker-compose.dev.yml up -d` to build the docker image and run the app.
 
 ## How to deploy it to DigitalOcean droplet (test purposes only)
 - Run `docker save --output sysblokbot.tar sysblokbot` to serialize the docker image (about 300MB)
