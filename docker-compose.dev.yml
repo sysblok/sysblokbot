@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  sysblokbot:
+    container_name: sysblokbot
+    build: .
+    volumes:
+      - ./config_override.json:/app/config_override.json
+      - ./config_gs.json:/app/config_gs.json
+      - ./sysblokbot.sqlite:/app/sysblokbot.sqlite sysblokbot
+    networks:
+      - sysblokbot-network
+
+
+networks:
+  sysblokbot-network:
+    driver: bridge

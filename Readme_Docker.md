@@ -6,6 +6,10 @@
 - Run `docker ps`, look up the container's id and use `docker stop <ID>` to stop it
 - Run `docker logs -f <ID>` to look at its logs
 
+## How to use Docker Compose (optional for development)
+- Install [Docker Compose](https://docs.docker.com/compose/install/) or [Colima](https://github.com/abiosoft/colima) on macOS.
+- Run `docker compose -f docker-compose.dev.yml up -d` to build the docker image and run the app.
+
 ## How to deploy it to DigitalOcean droplet (test purposes only)
 - Run `docker save --output sysblokbot.tar sysblokbot` to serialize the docker image (about 300MB)
 - `scp` it to the droplet along with `config_gs.json` and `config_override.json`
