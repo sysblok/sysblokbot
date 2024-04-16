@@ -26,7 +26,6 @@ class FillPostsListFocalboardJob(BaseJob):
         errors = {}
         registry_posts = []
         all_rubrics = app_context.db_client.get_rubrics()
-        board_id = app_context.config_manager.get_focalboard_config().get("board_id")
 
         registry_posts += FillPostsListFocalboardJob._retrieve_cards_for_registry(
             focalboard_client=app_context.focalboard_client,
@@ -36,7 +35,6 @@ class FillPostsListFocalboardJob(BaseJob):
             errors=errors,
             show_due=True,
             strict_archive_rules=True,
-            board_id=board_id,
         )
 
         if len(errors) == 0:
@@ -64,7 +62,6 @@ class FillPostsListFocalboardJob(BaseJob):
         list_aliases: List[str],
         errors: dict,
         all_rubrics: List,
-        board_id: str,
         show_due=True,
         need_illustrators=True,
         strict_archive_rules=True,
@@ -73,7 +70,7 @@ class FillPostsListFocalboardJob(BaseJob):
         Returns a list of paragraphs that should always go in a single message.
         """
         list_ids = focalboard_client.get_list_id_from_aliases(list_aliases)
-        cards = focalboard_client.get_cards(list_ids, board_id)
+        cards = focalboard_client.get_cards(list_ids)
         if show_due:
             cards.sort(key=lambda card: card.due or datetime.datetime.min)
         parse_failure_counter = 0
