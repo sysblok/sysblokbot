@@ -5,7 +5,7 @@ from urllib.parse import quote, urljoin
 
 import requests
 
-from ..consts import TrelloListAlias
+from ..consts import TrelloCustomFieldTypeAlias, TrelloCustomFieldTypes, TrelloListAlias
 from ..strings import load
 from ..trello import trello_objects as objects
 from ..utils.singleton import Singleton
@@ -112,6 +112,37 @@ class FocalboardClient(Singleton):
                 result[alias] = suitable_items[0].id
         return result
 
+    def _fill_id_type_map(self, items, item_enum):
+        result = {}
+        for item in items:
+            result[item.id] = TrelloCustomFieldTypes(item.type)
+        return result
+
+    def get_board_custom_field_types(self):
+        board_id = self.board_id
+        _, data = self._make_request(f"api/v2/boards/{board_id}")
+        custom_field_types = [
+            objects.TrelloCustomFieldType.from_focalboard_dict(custom_field_type)
+            for custom_field_type in data["cardProperties"]
+        ]
+        logger.debug(f"get_board_custom_field_types: {custom_field_types}")
+        return custom_field_types
+
+    def get_board_custom_fields_dict(self, card_id):
+        custom_fields = self.get_board_custom_field_types()
+        custom_fields_dict = {}
+        for alias, type_id in self.custom_fields_config.items():
+            suitable_fields = [fld for fld in custom_fields if fld.id == type_id]
+            if len(suitable_fields) > 0:
+                custom_fields_dict[alias] = suitable_fields[0]
+        return custom_fields_dict
+
+    def get_custom_fields(self, card_id: str) -> objects.CardCustomFields:
+        card_fields = objects.CardCustomFields(card_id)
+        card_fields_dict = self.get_board_custom_fields_dict(card_id)
+        card_fields._data = card_fields_dict
+        logger.info(card_fields)
+
     def get_members(self, board_id) -> List[objects.TrelloMember]:
         _, data = self._make_request(f"api/v2/boards/{board_id}/members")
         members = []
@@ -183,6 +214,13 @@ class FocalboardClient(Singleton):
         }
         lists = self.get_lists()
         self.lists_config = self._fill_alias_id_map(lists, TrelloListAlias)
+        custom_field_types = self.get_board_custom_field_types()
+        self.custom_fields_type_config = self._fill_id_type_map(
+            custom_field_types, TrelloCustomFieldTypes
+        )
+        self.custom_fields_config = self._fill_alias_id_map(
+            custom_field_types, TrelloCustomFieldTypeAlias
+        )
 
     def _make_request(self, uri, payload={}):
         response = requests.get(
