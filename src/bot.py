@@ -118,15 +118,6 @@ class SysBlokBot:
             direct_message_only(self.manager_reply_handler("fill_posts_list_job")),
             "заполнить реестр постов",
         )
-
-        self.add_manager_handler(
-            "fill_posts_list_focalboard",
-            CommandCategories.REGISTRY,
-            direct_message_only(
-                self.manager_reply_handler("fill_posts_list_focalboard_job")
-            ),
-            "заполнить реестр постов из Focalboard",
-        )
         self.add_admin_handler(
             "send_editorial_report",
             CommandCategories.BROADCAST,

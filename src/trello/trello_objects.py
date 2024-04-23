@@ -291,22 +291,6 @@ class TrelloCustomFieldType:
             logger.error(f"Bad field type json {data}: {e}")
         return field_type
 
-    @classmethod
-    def from_focalboard_dict(cls, data):
-        field_type = cls()
-        try:
-            field_type.id = data["id"]
-            field_type.name = html.escape(data["name"])
-            field_type.type = TrelloCustomFieldTypes(data["type"])
-            if field_type.type == TrelloCustomFieldTypes.LIST:
-                field_type.options = {
-                    option["id"]: option["value"] for option in data["options"]
-                }
-        except Exception as e:
-            field_type._ok = False
-            logger.error(f"Bad field type json {data}: {e}")
-        return field_type
-
     def to_dict(self):
         dct = {
             "id": self.id,

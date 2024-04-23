@@ -17,7 +17,6 @@ from .editorial_board_stats_job import EditorialBoardStatsJob
 from .editorial_board_visual_stats_job import EditorialBoardVisualStatsJob
 from .editorial_report_job import EditorialReportJob
 from .fb_analytics_report_job import FBAnalyticsReportJob
-from .fill_posts_list_focalboard_job import FillPostsListFocalboardJob
 from .fill_posts_list_job import FillPostsListJob
 from .hr_acquisition_job import HRAcquisitionJob
 from .hr_acquisition_pt_job import HRAcquisitionPTJob

@@ -116,13 +116,6 @@ class TrelloCustomFieldTypes(Enum):
     TEXT = "text"
     CHECKBOX = "checkbox"
     LIST = "list"
-    CREATED_AT = "createdTime"
-    CREATED_BY = "createdBy"
-    SELECT = "select"
-    MULTISELECT = "multiSelect"
-    MULTIPERSON = "multiPerson"
-    DATE = "date"
-    URL = "url"
 
 
 class TrelloCardFieldErrorAlias(Enum):
