@@ -28,8 +28,10 @@ class FocalboardClient(Singleton):
         logger.debug(f"get_boards_for_user: {boards}")
         return boards
 
-    def get_lists(self):
-        board_id = self.board_id
+    def get_lists(self, board_id=None, sorted=False):
+        if board_id is None:
+            # default board
+            board_id = self.board_id
         # TODO make it more efficient
         # essentially all list information is already passed via boards handler
         _, data = self._make_request("api/v2/teams/0/boards")
@@ -45,6 +47,19 @@ class FocalboardClient(Singleton):
             objects.TrelloList.from_focalboard_dict(trello_list, board_id)
             for trello_list in lists_data
         ]
+        if sorted:
+            # we need to get sorting order from the view, which is currently not efficient
+            try:
+                _, data = self._make_request(f"api/v2/boards/{board_id}/blocks?all=true")
+                view = [card_dict for card_dict in data if card_dict["type"] == "view"][0]
+                order = view["fields"]["visibleOptionIds"]
+                sorted_lists = []
+                for list_id in order:
+                    this_list = [lst for lst in lists if lst.id == list_id][0]
+                    sorted_lists.append(this_list)
+                lists = sorted_lists
+            except Exception as e:
+                logger.error(f"can't sort focalboard lists", exc_info=e)
         logger.debug(f"get_lists: {lists}")
         return lists
 
@@ -152,13 +167,14 @@ class FocalboardClient(Singleton):
         logger.debug(f"get_members: {members}")
         return members
 
-    def get_cards(self, list_ids):
-        board_id = self.board_id
+    def get_cards(self, list_ids, board_id=None):
+        if board_id is None:
+            board_id = self.board_id
         _, data = self._make_request(f"api/v2/boards/{board_id}/blocks?all=true")
         cards = []
         # TODO: move this to app state
         members = self.get_members(board_id)
-        lists = self.get_lists()
+        lists = self.get_lists(board_id=board_id)
         list_prop = self._get_list_property(board_id)
         member_prop = self._get_member_property(board_id)
         view_id = [card_dict for card_dict in data if card_dict["type"] == "view"][0][
