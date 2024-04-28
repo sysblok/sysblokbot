@@ -125,7 +125,7 @@ class SysBlokBot:
             direct_message_only(
                 self.manager_reply_handler("fill_posts_list_focalboard_job")
             ),
-            "заполнить реестр постов из Focalboard",
+            "заполнить реестр постов из Focalboard (пока не работает)",
         )
         self.add_admin_handler(
             "send_editorial_report",
