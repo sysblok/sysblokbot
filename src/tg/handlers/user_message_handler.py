@@ -93,7 +93,7 @@ def handle_user_message(
             assert 0 <= list_idx < len(board_list)
             board_id = board_list[list_idx]["id"]
             if use_focalboard:
-                trello_lists = focalboard_client.get_lists(board_id)
+                trello_lists = focalboard_client.get_lists(board_id, sorted=True)
                 trello_lists = trello_lists[::-1]
             else:
                 trello_lists = trello_client.get_lists(board_id)
