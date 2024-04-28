@@ -17,7 +17,7 @@ class Author(Base):
     focalboard = Column(String)
 
     def __repr__(self):
-        return f"Author {self.name} tg={self.telegram} trello={self.trello} focalboard={self.focalboard}"
+        return f"Author {self.name} tg={self.telegram} trello={self.trello} f={self.focalboard}"
 
     @classmethod
     def from_dict(cls, data):
