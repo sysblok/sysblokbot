@@ -205,7 +205,7 @@ class FocalboardClient(Singleton):
         """Update attributes according to current self._focalboard_config"""
         self.token = self._focalboard_config["token"]
         self.url = self._focalboard_config["url"]
-        self.board_id = "5e91d48a9e9d947b95fb0df7"
+        self.board_id = self._focalboard_config["board_id"]
         self.headers = {
             "Accept": "application/json",
             "Content-Type": "application/json",
