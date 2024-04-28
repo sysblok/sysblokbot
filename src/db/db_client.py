@@ -137,7 +137,9 @@ class DBClient(Singleton):
     def find_author_telegram_by_trello(self, trello_id: str):
         # TODO: make batch queries
         session = self.Session()
-        author = session.query(Author).filter(Author.trello == trello_id).first()
+        author = session.query(Author).filter(
+            (Author.trello == trello_id) | (Author.focalboard == trello_id)
+        ).first()
         if author is None:
             logger.warning(f"Telegram id not found for author {trello_id}")
             return None

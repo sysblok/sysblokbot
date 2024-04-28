@@ -14,9 +14,10 @@ class Author(Base):
     status = Column(String)
     telegram = Column(String)
     trello = Column(String)
+    focalboard = Column(String)
 
     def __repr__(self):
-        return f"Author {self.name} tg={self.telegram} trello={self.trello}"
+        return f"Author {self.name} tg={self.telegram} trello={self.trello} f={self.focalboard}"
 
     @classmethod
     def from_dict(cls, data):
@@ -26,6 +27,7 @@ class Author(Base):
         author.status = _get_str_data_item(data, "status")
         author.telegram = _get_str_data_item(data, "telegram")
         author.trello = _get_str_data_item(data, "trello")
+        author.focalboard = _get_str_data_item(data, "focalboard")
         return author
 
     def to_dict(self):
@@ -35,6 +37,7 @@ class Author(Base):
             "status": self.status,
             "telegram": self.telegram,
             "trello": self.trello,
+            "focalboard": self.focalboard,
         }
 
     @classmethod
@@ -45,6 +48,7 @@ class Author(Base):
         author.status = item.get_field_value(load("sheets__status"))
         author.telegram = item.get_field_value(load("sheets__telegram"))
         author.trello = item.get_field_value(load("sheets__trello"))
+        author.focalboard = item.get_field_value(load("sheets__focalboard"))
         return author
 
 
