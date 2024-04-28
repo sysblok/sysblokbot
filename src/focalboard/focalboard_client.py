@@ -228,15 +228,20 @@ class FocalboardClient(Singleton):
             "Authorization": f"Bearer {self.token}",
             "X-Requested-With": "XMLHttpRequest",
         }
-        lists = self.get_lists()
-        self.lists_config = self._fill_alias_id_map(lists, TrelloListAlias)
-        custom_field_types = self.get_board_custom_field_types()
-        self.custom_fields_type_config = self._fill_id_type_map(
-            custom_field_types, TrelloCustomFieldTypes
-        )
-        self.custom_fields_config = self._fill_alias_id_map(
-            custom_field_types, TrelloCustomFieldTypeAlias
-        )
+        try:
+            lists = self.get_lists()
+            self.lists_config = self._fill_alias_id_map(lists, TrelloListAlias)
+            custom_field_types = self.get_board_custom_field_types()
+            self.custom_fields_type_config = self._fill_id_type_map(
+                custom_field_types, TrelloCustomFieldTypes
+            )
+            self.custom_fields_config = self._fill_alias_id_map(
+                custom_field_types, TrelloCustomFieldTypeAlias
+            )
+        except Exception as e:
+            # TODO remove this when main board is migrated
+            logger.error(f"something went wrong when setting up focalboard client", exc_info=e)
+            pass
 
     def _make_request(self, uri, payload={}):
         response = requests.get(
