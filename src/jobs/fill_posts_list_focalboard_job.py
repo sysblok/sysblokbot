@@ -9,7 +9,6 @@ from ..focalboard.focalboard_client import FocalboardClient
 from ..sheets.sheets_objects import RegistryPost
 from ..strings import load
 from ..tg.sender import pretty_send
-from ..trello.trello_client import TrelloClient
 from .base_job import BaseJob
 from .utils import check_trello_card, format_errors
 
@@ -29,12 +28,9 @@ class FillPostsListFocalboardJob(BaseJob):
 
         registry_posts += FillPostsListFocalboardJob._retrieve_cards_for_registry(
             focalboard_client=app_context.focalboard_client,
-            trello_client=app_context.trello_client,
             list_aliases=(TrelloListAlias.PROOFREADING, TrelloListAlias.DONE),
             all_rubrics=all_rubrics,
             errors=errors,
-            show_due=True,
-            strict_archive_rules=True,
         )
 
         if len(errors) == 0:
@@ -58,7 +54,6 @@ class FillPostsListFocalboardJob(BaseJob):
     @staticmethod
     def _retrieve_cards_for_registry(
         focalboard_client: FocalboardClient,
-        trello_client: TrelloClient,
         list_aliases: List[str],
         errors: dict,
         all_rubrics: List,
@@ -78,26 +73,56 @@ class FillPostsListFocalboardJob(BaseJob):
         registry_posts = []
 
         for card in cards:
-            # label_names = [label.name for label in card.labels]
-            # is_main_post = load("common_trello_label__main_post") in label_names
-            # is_archive_post = load("common_trello_label__archive") in label_names
+            label_names = [label.name for label in card.labels]
+            is_main_post = load("common_trello_label__main_post") in label_names
+            is_archive_post = load("common_trello_label__archive") in label_names
 
             if not card:
                 parse_failure_counter += 1
                 continue
 
             card_fields = focalboard_client.get_custom_fields(card.id)
-            logger.info(card_fields)
 
-            # registry_posts.append(
-            #     RegistryPost(
-            #         card,
-            #         card_fields,
-            #         is_main_post,
-            #         is_archive_post,
-            #         all_rubrics,
-            #     )
-            # )
+            card_is_ok = check_trello_card(
+                card,
+                errors,
+                is_bad_title=(
+                    card_fields.title is None
+                    and card.lst.id
+                    != focalboard_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK]
+                ),
+                is_bad_google_doc=card_fields.google_doc is None,
+                is_bad_authors=len(card_fields.authors) == 0,
+                is_bad_editors=len(card_fields.editors) == 0,
+                is_bad_cover=card_fields.cover is None and not is_archive_post,
+                is_bad_illustrators=(
+                    len(card_fields.illustrators) == 0
+                    and need_illustrators
+                    and not is_archive_post
+                ),
+                # is_bad_due_date=card.due is None and show_due,
+                # is_bad_label_names=len(
+                #     [
+                #         label
+                #         for label in card.labels
+                #         if label.color != TrelloCardColor.BLACK
+                #     ]
+                # )
+                # == 0,
+            )
+
+            if not card_is_ok:
+                continue
+
+            registry_posts.append(
+                RegistryPost(
+                    card,
+                    card_fields,
+                    is_main_post,
+                    is_archive_post,
+                    all_rubrics,
+                )
+            )
 
         if parse_failure_counter > 0:
             logger.error(f"Unparsed cards encountered: {parse_failure_counter}")

@@ -50,8 +50,12 @@ class FocalboardClient(Singleton):
         if sorted:
             # we need to get sorting order from the view, which is currently not efficient
             try:
-                _, data = self._make_request(f"api/v2/boards/{board_id}/blocks?all=true")
-                view = [card_dict for card_dict in data if card_dict["type"] == "view"][0]
+                _, data = self._make_request(
+                    f"api/v2/boards/{board_id}/blocks?all=true"
+                )
+                view = [card_dict for card_dict in data if card_dict["type"] == "view"][
+                    0
+                ]
                 order = view["fields"]["visibleOptionIds"]
                 sorted_lists = []
                 for list_id in order:
@@ -59,7 +63,7 @@ class FocalboardClient(Singleton):
                     sorted_lists.append(this_list)
                 lists = sorted_lists
             except Exception as e:
-                logger.error(f"can't sort focalboard lists", exc_info=e)
+                logger.error("can't sort focalboard lists", exc_info=e)
         logger.debug(f"get_lists: {lists}")
         return lists
 
@@ -143,20 +147,43 @@ class FocalboardClient(Singleton):
         logger.debug(f"get_board_custom_field_types: {custom_field_types}")
         return custom_field_types
 
-    def get_board_custom_fields_dict(self, card_id):
-        custom_fields = self.get_board_custom_field_types()
-        custom_fields_dict = {}
-        for alias, type_id in self.custom_fields_config.items():
-            suitable_fields = [fld for fld in custom_fields if fld.id == type_id]
-            if len(suitable_fields) > 0:
-                custom_fields_dict[alias] = suitable_fields[0]
-        return custom_fields_dict
+    def get_username(self, user_id: str):
+        _, data = self._make_request(f"api/v2/users/{user_id}")
+        username = data["username"]
+        return username
 
     def get_custom_fields(self, card_id: str) -> objects.CardCustomFields:
         card_fields = objects.CardCustomFields(card_id)
-        card_fields_dict = self.get_board_custom_fields_dict(card_id)
-        card_fields._data = card_fields_dict
-        logger.info(card_fields)
+        card_fields_dict = {}
+        _, data = self._make_request(f"api/v2/cards/{card_id}")
+        fields = data["properties"]
+        for alias, type_id in self.custom_fields_config.items():
+            if type_id in fields:
+                changed_alias = alias.name.split(".")[-1].lower()
+                card_fields_dict[changed_alias] = fields[type_id]
+
+        card_fields.authors = [
+            self.get_username(author.strip())
+            for author in card_fields_dict.get("author", [])
+        ]
+        card_fields.editors = [
+            self.get_username(editor.strip())
+            for editor in card_fields_dict.get("editor", [])
+        ]
+        card_fields.illustrators = [
+            self.get_username(illustrator.strip())
+            for illustrator in card_fields_dict.get("illustrator", [])
+        ]
+        card_fields.cover = (
+            card_fields_dict["cover"] if "cover" in card_fields_dict else None
+        )
+        card_fields.google_doc = (
+            card_fields_dict["google_doc"] if "google_doc" in card_fields_dict else None
+        )
+        card_fields.title = (
+            card_fields_dict["title"] if "title" in card_fields_dict else None
+        )
+        return card_fields
 
     def get_members(self, board_id) -> List[objects.TrelloMember]:
         _, data = self._make_request(f"api/v2/boards/{board_id}/members")
@@ -189,7 +216,6 @@ class FocalboardClient(Singleton):
         for card_dict in data:
             card = objects.TrelloCard.from_focalboard_dict(card_dict)
             card.url = urljoin(self.url, f"{board_id}/{view_id}/{card.id}")
-            print(card.url)
             # TODO: move this to app state
             for trello_list in lists:
                 if trello_list.id == card_dict["fields"]["properties"].get(
@@ -240,7 +266,9 @@ class FocalboardClient(Singleton):
             )
         except Exception as e:
             # TODO remove this when main board is migrated
-            logger.error(f"something went wrong when setting up focalboard client", exc_info=e)
+            logger.error(
+                "something went wrong when setting up focalboard client", exc_info=e
+            )
             pass
 
     def _make_request(self, uri, payload={}):
