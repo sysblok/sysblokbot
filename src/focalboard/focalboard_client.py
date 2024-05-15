@@ -1,3 +1,4 @@
+import ast
 import json
 import logging
 from typing import List
@@ -84,6 +85,25 @@ class FocalboardClient(Singleton):
         logger.debug(f"get_list: {lst}")
         return lst
 
+    def get_labels(self, board_id=None):
+        if board_id is None:
+            # default board
+            board_id = self.board_id
+        _, data = self._make_request("api/v2/teams/0/boards")
+        label_data = [
+            prop
+            for prop in [board for board in data if board["id"] == board_id][0][
+                "cardProperties"
+            ]
+            if prop["name"] == "Label"
+        ][0]
+        labels_data = label_data["options"]
+        labels = [
+            objects.TrelloBoardLabel.from_focalboard_dict(label)
+            for label in labels_data
+        ]
+        return labels
+
     def _get_list_property(self, board_id):
         _, data = self._make_request("api/v2/teams/0/boards")
         return [
@@ -93,6 +113,44 @@ class FocalboardClient(Singleton):
             ]
             if prop["name"] == "List"
         ][0]["id"]
+
+    def _get_label_property(self, board_id=None):
+        if board_id is None:
+            # default board
+            board_id = self.board_id
+        _, data = self._make_request("api/v2/teams/0/boards")
+        return [
+            prop
+            for prop in [board for board in data if board["id"] == board_id][0][
+                "cardProperties"
+            ]
+            if prop["name"] == "Label"
+        ][0]["id"]
+
+    def _get_due_property(self, board_id=None):
+        if board_id is None:
+            # default board
+            board_id = self.board_id
+        _, data = self._make_request("api/v2/teams/0/boards")
+        return [
+            prop
+            for prop in [board for board in data if board["id"] == board_id][0][
+                "cardProperties"
+            ]
+            if prop["name"] == "Due"
+        ][0]["id"]
+
+    def get_card_due(self, card_id: str):
+        _, data = self._make_request(f"api/v2/cards/{card_id}")
+        due_id = self._get_due_property()
+        due_value = None
+
+        fields = data["properties"]
+        for type_id, value in fields.items():
+            if type_id == due_id:
+                due_value = value
+        due_value_dict = ast.literal_eval(due_value)
+        return due_value_dict.get("from", [])
 
     def _get_member_property(self, board_id):
         _, data = self._make_request("api/v2/teams/0/boards")
@@ -154,13 +212,27 @@ class FocalboardClient(Singleton):
 
     def get_custom_fields(self, card_id: str) -> objects.CardCustomFields:
         card_fields = objects.CardCustomFields(card_id)
+        board_labels = self.get_labels()
         card_fields_dict = {}
+        card_labels_ids = []
+        card_labels = []
         _, data = self._make_request(f"api/v2/cards/{card_id}")
         fields = data["properties"]
         for alias, type_id in self.custom_fields_config.items():
             if type_id in fields:
                 changed_alias = alias.name.split(".")[-1].lower()
                 card_fields_dict[changed_alias] = fields[type_id]
+
+        board_label_id = self._get_label_property()
+
+        for type_id, value in fields.items():
+            if type_id == board_label_id:
+                card_labels_ids = value
+
+        for card_label_id in card_labels_ids:
+            for board_label in board_labels:
+                if card_label_id == board_label.id:
+                    card_labels.append(board_label)
 
         card_fields.authors = [
             self.get_username(author.strip())
@@ -183,6 +255,8 @@ class FocalboardClient(Singleton):
         card_fields.title = (
             card_fields_dict["title"] if "title" in card_fields_dict else None
         )
+
+        card_fields._data = card_labels
         return card_fields
 
     def get_members(self, board_id) -> List[objects.TrelloMember]:

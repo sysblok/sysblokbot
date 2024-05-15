@@ -73,15 +73,21 @@ class FillPostsListFocalboardJob(BaseJob):
         registry_posts = []
 
         for card in cards:
-            label_names = [label.name for label in card.labels]
-            is_main_post = load("common_trello_label__main_post") in label_names
-            is_archive_post = load("common_trello_label__archive") in label_names
-
             if not card:
                 parse_failure_counter += 1
                 continue
 
             card_fields = focalboard_client.get_custom_fields(card.id)
+
+            label_names = [label.name for label in card_fields._data]
+            card.labels = card_fields._data
+            is_main_post = load("common_trello_label__main_post") in label_names
+            is_archive_post = load("common_trello_label__archive") in label_names
+
+            card_due = focalboard_client.get_card_due(card.id)
+            card.due = (
+                datetime.datetime.fromtimestamp(card_due / 1000) if card_due else None
+            )
 
             card_is_ok = check_trello_card(
                 card,
@@ -100,15 +106,15 @@ class FillPostsListFocalboardJob(BaseJob):
                     and need_illustrators
                     and not is_archive_post
                 ),
-                # is_bad_due_date=card.due is None and show_due,
-                # is_bad_label_names=len(
-                #     [
-                #         label
-                #         for label in card.labels
-                #         if label.color != TrelloCardColor.BLACK
-                #     ]
-                # )
-                # == 0,
+                is_bad_due_date=card.due is None and show_due,
+                is_bad_label_names=len(
+                    [
+                        label
+                        for label in card.labels
+                        if label.color != TrelloCardColor.BLACK
+                    ]
+                )
+                == 0,
             )
 
             if not card_is_ok:
