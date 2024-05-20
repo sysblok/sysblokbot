@@ -26,7 +26,7 @@ from .jobs.utils import get_job_runnable
 from .tg import handlers, sender
 from .tg.handlers.utils import admin_only, direct_message_only, manager_only
 
-logging.addLevelName(USAGE_LOG_LEVEL, "USAGE")
+logging.addLevelName(USAGE_LOG_LEVEL, "NOTICE")
 
 
 def usage(self, message, *args, **kws):
