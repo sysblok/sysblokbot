@@ -89,6 +89,12 @@ class SysBlokBot:
             "получить сводку о состоянии доски",
         )
         self.add_manager_handler(
+            "get_board_state",
+            CommandCategories.SUMMARY,
+            self.manager_reply_handler("board_state_job"),
+            "получить сводку о состоянии доски (focalboard)",
+        )
+        self.add_manager_handler(
             "get_editorial_board_stats",
             CommandCategories.STATS,
             self.manager_reply_handler("editorial_board_stats_job"),

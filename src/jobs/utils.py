@@ -271,8 +271,11 @@ def check_trello_card(
     return True
 
 
-def get_cards_by_curator(app_context: AppContext):
-    cards = app_context.trello_client.get_cards()
+def get_cards_by_curator(app_context: AppContext, focalboard=False):
+    if focalboard:
+        cards = app_context.focalboard_client.get_cards()
+    else:
+        cards = app_context.trello_client.get_cards()
     curator_cards = defaultdict(list)
     for card in cards:
         curators = get_curators_by_card(card, app_context.db_client)

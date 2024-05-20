@@ -235,15 +235,15 @@ class FocalboardClient(Singleton):
                     card_labels.append(board_label)
 
         card_fields.authors = [
-            self.get_username(author.strip())
+            author.strip()
             for author in card_fields_dict.get("author", [])
         ]
         card_fields.editors = [
-            self.get_username(editor.strip())
+            editor.strip()
             for editor in card_fields_dict.get("editor", [])
         ]
         card_fields.illustrators = [
-            self.get_username(illustrator.strip())
+            illustrator.strip()
             for illustrator in card_fields_dict.get("illustrator", [])
         ]
         card_fields.cover = (
@@ -268,7 +268,7 @@ class FocalboardClient(Singleton):
         logger.debug(f"get_members: {members}")
         return members
 
-    def get_cards(self, list_ids, board_id=None):
+    def get_cards(self, list_ids=None, board_id=None):
         if board_id is None:
             board_id = self.board_id
         _, data = self._make_request(f"api/v2/boards/{board_id}/blocks?all=true")
@@ -281,12 +281,19 @@ class FocalboardClient(Singleton):
         view_id = [card_dict for card_dict in data if card_dict["type"] == "view"][0][
             "id"
         ]
-        data = [
-            card_dict
-            for card_dict in data
-            if card_dict["type"] == "card"
-            and card_dict["fields"]["properties"].get(list_prop, "") in list_ids
-        ]
+        if list_ids:
+            data = [
+                card_dict
+                for card_dict in data
+                if card_dict["type"] == "card"
+                and card_dict["fields"]["properties"].get(list_prop, "") in list_ids
+            ]
+        else:
+            data = [
+                card_dict
+                for card_dict in data
+                if card_dict["type"] == "card"
+            ]
         for card_dict in data:
             card = objects.TrelloCard.from_focalboard_dict(card_dict)
             card.url = urljoin(self.url, f"{board_id}/{view_id}/{card.id}")
