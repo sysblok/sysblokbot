@@ -117,7 +117,7 @@ jobs:
           ROOT_DIR: /home/${{ secrets.MASTER_DO_USER }}/testing
           TELEGRAM_TEST_TOKEN: ${{ secrets.TELEGRAM_TEST_TOKEN }}
           TELEGRAM_ERROR_CHAT_ID: ${{ secrets.TELEGRAM_ERROR_CHAT_ID }}
-          UPTRACE_DSN: ${{ UPTRACE_DSN }}
+          UPTRACE_DSN: ${{ secrets.UPTRACE_DSN }}
         with:
           host: ${{ secrets.MASTER_HOST }}
           username: ${{ secrets.MASTER_DO_USER }}
