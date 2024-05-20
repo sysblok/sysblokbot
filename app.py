@@ -12,6 +12,7 @@ from src.config_manager import ConfigManager
 from src.scheduler import JobScheduler
 from src.tg.sender import TelegramSender
 from src.utils.log_handler import ErrorBroadcastHandler
+from src.utils.uptrace_logger import add_uptrace_logging
 
 locale.setlocale(locale.LC_TIME, "ru_RU.UTF-8")
 logging.basicConfig(format=consts.LOG_FORMAT, level=logging.INFO)
@@ -61,6 +62,8 @@ def get_bot():
     for handler in logging.getLogger().handlers:
         logging.getLogger().removeHandler(handler)
     logging.getLogger().addHandler(ErrorBroadcastHandler(tg_sender))
+    if consts.UPTRACE_DSN:
+        add_uptrace_logging(consts.UPTRACE_DSN)
 
     # Scheduler must be run after clients initialized
     scheduler.run()

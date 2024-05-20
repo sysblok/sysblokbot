@@ -16,11 +16,13 @@ COMMIT_URL = (
     f'https://github.com/sysblok/sysblokbot/commit/{os.environ.get("COMMIT_HASH")}'
 )
 COMMIT_HASH = os.environ.get("COMMIT_HASH_SHORT")
+UPTRACE_DSN = os.environ.get("UPTRACE_DSN")
 
 
 class AppSource(Enum):
     DEFAULT = "manual"
-    GITHUB = "github CI"
+    GITHUB = "prod"
+    GITHUB_DEV = "testing"
 
 
 APP_SOURCE = os.environ.get("APP_SOURCE", AppSource.DEFAULT.value)
