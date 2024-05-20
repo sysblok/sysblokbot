@@ -5,7 +5,6 @@ import locale
 import logging
 
 import requests
-import sentry_sdk
 
 from src import consts
 from src.bot import SysBlokBot
@@ -33,10 +32,6 @@ def get_bot():
     config = config_manager.load_config_with_override()
     if not config:
         raise ValueError("Could not load config, can't go on")
-
-    sentry_dsn = config.get("sentry_dsn", None)
-    if sentry_dsn:
-        sentry_sdk.init(dsn=sentry_dsn, traces_sample_rate=1.0)
 
     scheduler = JobScheduler()
 
@@ -82,7 +77,6 @@ def get_bot():
 
 
 def report_critical_error(e: BaseException):
-    sentry_sdk.capture_exception(e)
     requests.post(
         url=f"https://api.telegram.org/bot{consts.TELEGRAM_TOKEN}/sendMessage",
         json={
