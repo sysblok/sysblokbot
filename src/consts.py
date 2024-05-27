@@ -99,6 +99,7 @@ class TrelloListAlias(Enum):
     TO_CHIEF_EDITOR = "trello_list_name__to_chief_editor"
     PROOFREADING = "trello_list_name__proofreading"
     DONE = "trello_list_name__typesetting"
+    PUBLISHED = "trello_list_name__published"
     BACK_BURNER = "trello_list_name__back_burner"
 
 

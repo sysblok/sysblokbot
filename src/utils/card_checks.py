@@ -57,6 +57,7 @@ def is_author_missing(card: TrelloCard, app_context: AppContext) -> Tuple[bool, 
         TrelloListAlias.TO_CHIEF_EDITOR,
         TrelloListAlias.PROOFREADING,
         TrelloListAlias.DONE,
+        TrelloListAlias.PUBLISHED,
     )
     list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
     return card.lst.id in list_ids, {}
@@ -75,6 +76,7 @@ def is_tag_missing(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dic
         TrelloListAlias.TO_CHIEF_EDITOR,
         TrelloListAlias.PROOFREADING,
         TrelloListAlias.DONE,
+        TrelloListAlias.PUBLISHED,
     )
     list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
     return card.lst.id in list_ids, {}
@@ -89,6 +91,7 @@ def is_doc_missing(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dic
         TrelloListAlias.TO_CHIEF_EDITOR,
         TrelloListAlias.PROOFREADING,
         TrelloListAlias.DONE,
+        TrelloListAlias.PUBLISHED,
     )
     list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
     if card.lst.id not in list_ids:
@@ -107,6 +110,7 @@ def has_no_doc_access(card: TrelloCard, app_context: AppContext) -> Tuple[bool, 
         TrelloListAlias.TO_CHIEF_EDITOR,
         TrelloListAlias.PROOFREADING,
         TrelloListAlias.DONE,
+        TrelloListAlias.PUBLISHED,
     )
     list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
     if card.lst.id not in list_ids:
