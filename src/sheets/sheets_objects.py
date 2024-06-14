@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from sheetfu.modules.table import Item, Table
 
-from ..consts import TrelloCardColor
+from ..consts import TrelloCardColor, BoardCardColor
 from ..strings import load
 from ..trello.trello_objects import CardCustomFields, TrelloCard
 from .utils import convert_excel_datetime_to_string
@@ -68,7 +68,8 @@ class RegistryPost:
     def _fill_rubrics(self, card: TrelloCard, all_rubrics: List):
         # We filter BLACK cards as this is an auxiliary label
         card_rubrics = [
-            label.name for label in card.labels if label.color != TrelloCardColor.BLACK
+            label.name for label in card.labels
+            if label.color not in [TrelloCardColor.BLACK, BoardCardColor.BLACK]
         ]
         self.rubric_1 = next(
             (rubric.vk_tag for rubric in all_rubrics if rubric.name == card_rubrics[0]),
@@ -92,7 +93,7 @@ class RegistryPost:
         for label in self.labels:
             if (
                 label.name.lower() == "телеграм"
-                and label.color == TrelloCardColor.BLACK
+                and label.color in [TrelloCardColor.BLACK, BoardCardColor.BLACK]
             ):
                 status["status"] = "запланировано"
                 return status

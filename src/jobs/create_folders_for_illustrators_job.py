@@ -4,7 +4,7 @@ from typing import Callable, List, Tuple
 from urllib.parse import urlparse
 
 from ..app_context import AppContext
-from ..consts import TrelloCardColor, TrelloCustomFieldTypeAlias, TrelloListAlias
+from ..consts import TrelloCardColor, TrelloCustomFieldTypeAlias, TrelloListAlias, BoardCardColor
 from ..strings import load
 from ..tg.sender import pretty_send
 from .base_job import BaseJob
@@ -73,7 +73,7 @@ class CreateFoldersForIllustratorsJob(BaseJob):
             label_names = [
                 label.name
                 for label in card.labels
-                if label.color != TrelloCardColor.BLACK
+                if label.color not in [TrelloCardColor.BLACK, BoardCardColor.BLACK]
             ]
             is_archive_card = load("common_trello_label__archive") in label_names
 

@@ -4,7 +4,7 @@ import time
 from typing import Callable, List
 
 from ..app_context import AppContext
-from ..consts import TrelloCardColor, TrelloListAlias
+from ..consts import TrelloCardColor, TrelloListAlias, BoardCardColor
 from ..strings import load
 from ..tg.sender import pretty_send
 from ..trello.trello_client import TrelloClient
@@ -85,7 +85,7 @@ class PublicationPlansJob(BaseJob):
             label_names = [
                 label.name
                 for label in card.labels
-                if label.color != TrelloCardColor.BLACK
+                if label.color not in [TrelloCardColor.BLACK, BoardCardColor.BLACK]
             ]
 
             is_archive_card = load("common_trello_label__archive") in label_names

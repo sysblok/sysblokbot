@@ -3,7 +3,7 @@ import logging
 from typing import Callable, List
 
 from ..app_context import AppContext
-from ..consts import TrelloCardColor
+from ..consts import TrelloCardColor, BoardCardColor
 from ..strings import load
 from ..tg.sender import pretty_send
 from ..trello.trello_objects import TrelloCard
@@ -59,7 +59,7 @@ class TrelloBoardStateJob(BaseJob):
                     # We filter BLACK cards as this is an auxiliary label
                     label.name
                     for label in card.labels
-                    if label.color != TrelloCardColor.BLACK
+                    if label.color not in [TrelloCardColor.BLACK, BoardCardColor.BLACK]
                 ),
             )
             if card.labels

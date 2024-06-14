@@ -4,7 +4,7 @@ import time
 from typing import Callable, List
 
 from ..app_context import AppContext
-from ..consts import TrelloCardColor, TrelloListAlias
+from ..consts import TrelloCardColor, TrelloListAlias, BoardCardColor
 from ..sheets.sheets_objects import RegistryPost
 from ..strings import load
 from ..tg.sender import pretty_send
@@ -107,7 +107,7 @@ class FillPostsListJob(BaseJob):
                     [
                         label
                         for label in card.labels
-                        if label.color != TrelloCardColor.BLACK
+                        if label.color not in [TrelloCardColor.BLACK, BoardCardColor.BLACK]
                     ]
                 )
                 == 0,
