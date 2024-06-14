@@ -247,6 +247,7 @@ class TrelloClient(Singleton):
         self.api_key = self._trello_config["api_key"]
         self.token = self._trello_config["token"]
         self.board_id = self._trello_config["board_id"]
+        self.deprecated = self._trello_config["deprecated"]
         self.default_payload = {
             "key": self.api_key,
             "token": self.token,
