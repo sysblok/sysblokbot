@@ -237,7 +237,7 @@ def check_trello_card(
     strict_archive_rules=False,
 ):
     label_names = [
-        label.name for label in card.labels 
+        label.name for label in card.labels
         if label.color not in [TrelloCardColor.BLACK, BoardCardColor.BLACK]
     ]
 
