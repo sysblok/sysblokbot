@@ -110,6 +110,7 @@ class TeamMember(Base):
     manager = Column(String)
     telegram = Column(String)
     trello = Column(String)
+    focalboard = Column(String)
     roles = Column(String)
 
     def __repr__(self):
@@ -125,6 +126,7 @@ class TeamMember(Base):
         member.manager = _get_str_data_item(data, "manager")
         member.telegram = _get_str_data_item(data, "telegram")
         member.trello = _get_str_data_item(data, "trello")
+        member.focalboard = _get_str_data_item(data, "focalboard")
         return member
 
     def to_dict(self):
@@ -136,6 +138,7 @@ class TeamMember(Base):
             "manager": self.manager,
             "telegram": self.telegram,
             "trello": self.trello,
+            "focalboard": self.focalboard,
             "roles": self.roles,
         }
 
@@ -149,6 +152,7 @@ class TeamMember(Base):
         member.manager = item.get_field_value(load("sheets__team__manager"))
         member.telegram = item.get_field_value(load("sheets__team__telegram"))
         member.trello = item.get_field_value(load("sheets__team__trello"))
+        member.focalboard = item.get_field_value(load("sheets__focalboard"))
         return member
 
 

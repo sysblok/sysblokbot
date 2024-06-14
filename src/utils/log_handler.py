@@ -1,8 +1,6 @@
 import html
 from logging import ERROR, Formatter, LogRecord, StreamHandler
 
-from sentry_sdk import capture_message
-
 from ..consts import LOG_FORMAT, USAGE_LOG_LEVEL
 from ..tg.sender import TelegramSender
 from .singleton import Singleton
@@ -49,21 +47,6 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
             error_message = f"{record.levelname} - {record.module} - {record.message}"
             if record.exc_text:
                 error_message += f" - {record.exc_text}"
-            try:
-                capture_message(error_message)
-            except Exception as e:
-                # if it can't send a message, still should log it to the stream
-                super().emit(
-                    LogRecord(
-                        name=__name__,
-                        level=ERROR,
-                        pathname=None,
-                        lineno=-1,
-                        msg="Failed to capture sentry log",
-                        args=None,
-                        exc_info=e,
-                    )
-                )
             try:
                 self.tg_sender.send_error_log(
                     f"<code>{html.escape(error_message)}</code>"

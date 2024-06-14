@@ -1,3 +1,4 @@
+import ast
 import json
 import logging
 from typing import List
@@ -40,7 +41,7 @@ class FocalboardClient(Singleton):
             for prop in [board for board in data if board["id"] == board_id][0][
                 "cardProperties"
             ]
-            if prop["name"] == "List"
+            if prop["name"] == "Колонка"
         ][0]
         lists_data = list_data["options"]
         lists = [
@@ -50,8 +51,12 @@ class FocalboardClient(Singleton):
         if sorted:
             # we need to get sorting order from the view, which is currently not efficient
             try:
-                _, data = self._make_request(f"api/v2/boards/{board_id}/blocks?all=true")
-                view = [card_dict for card_dict in data if card_dict["type"] == "view"][0]
+                _, data = self._make_request(
+                    f"api/v2/boards/{board_id}/blocks?all=true"
+                )
+                view = [card_dict for card_dict in data if card_dict["type"] == "view"][
+                    0
+                ]
                 order = view["fields"]["visibleOptionIds"]
                 sorted_lists = []
                 for list_id in order:
@@ -59,7 +64,7 @@ class FocalboardClient(Singleton):
                     sorted_lists.append(this_list)
                 lists = sorted_lists
             except Exception as e:
-                logger.error(f"can't sort focalboard lists", exc_info=e)
+                logger.error("can't sort focalboard lists", exc_info=e)
         logger.debug(f"get_lists: {lists}")
         return lists
 
@@ -70,7 +75,7 @@ class FocalboardClient(Singleton):
             for prop in [board for board in data if board["id"] == board_id][0][
                 "cardProperties"
             ]
-            if prop["name"] == "List"
+            if prop["name"] == "Колонка"
         ][0]["options"]
         lst = [
             objects.TrelloList.from_focalboard_dict(trello_list, board_id)
@@ -80,6 +85,25 @@ class FocalboardClient(Singleton):
         logger.debug(f"get_list: {lst}")
         return lst
 
+    def _get_labels(self, board_id=None):
+        if board_id is None:
+            # default board
+            board_id = self.board_id
+        _, data = self._make_request("api/v2/teams/0/boards")
+        label_data = [
+            prop
+            for prop in [board for board in data if board["id"] == board_id][0][
+                "cardProperties"
+            ]
+            if prop["name"] == "Рубрика"
+        ][0]
+        labels_data = label_data["options"]
+        labels = [
+            objects.TrelloCardLabel.from_focalboard_dict(label)
+            for label in labels_data
+        ]
+        return labels
+
     def _get_list_property(self, board_id):
         _, data = self._make_request("api/v2/teams/0/boards")
         return [
@@ -87,8 +111,46 @@ class FocalboardClient(Singleton):
             for prop in [board for board in data if board["id"] == board_id][0][
                 "cardProperties"
             ]
-            if prop["name"] == "List"
+            if prop["name"] == "Колонка"
         ][0]["id"]
+
+    def _get_label_property(self, board_id=None):
+        if board_id is None:
+            # default board
+            board_id = self.board_id
+        _, data = self._make_request("api/v2/teams/0/boards")
+        return [
+            prop
+            for prop in [board for board in data if board["id"] == board_id][0][
+                "cardProperties"
+            ]
+            if prop["name"] == "Рубрика"
+        ][0]["id"]
+
+    def _get_due_property(self, board_id=None):
+        if board_id is None:
+            # default board
+            board_id = self.board_id
+        _, data = self._make_request("api/v2/teams/0/boards")
+        return [
+            prop
+            for prop in [board for board in data if board["id"] == board_id][0][
+                "cardProperties"
+            ]
+            if prop["name"] == "Дедлайн"
+        ][0]["id"]
+
+    def get_card_due(self, card_id: str):
+        _, data = self._make_request(f"api/v2/cards/{card_id}")
+        due_id = self._get_due_property()
+        due_value = None
+
+        fields = data["properties"]
+        for type_id, value in fields.items():
+            if type_id == due_id:
+                due_value = value
+        due_value_dict = ast.literal_eval(due_value)
+        return due_value_dict.get("from", [])
 
     def _get_member_property(self, board_id):
         _, data = self._make_request("api/v2/teams/0/boards")
@@ -97,7 +159,7 @@ class FocalboardClient(Singleton):
             for prop in [board for board in data if board["id"] == board_id][0][
                 "cardProperties"
             ]
-            if prop["name"] == "Assignee"
+            if prop["name"] == "Ответственный"
         ][0]["id"]
 
     def get_list_id_from_aliases(self, list_aliases):
@@ -143,20 +205,59 @@ class FocalboardClient(Singleton):
         logger.debug(f"get_board_custom_field_types: {custom_field_types}")
         return custom_field_types
 
-    def get_board_custom_fields_dict(self, card_id):
-        custom_fields = self.get_board_custom_field_types()
-        custom_fields_dict = {}
-        for alias, type_id in self.custom_fields_config.items():
-            suitable_fields = [fld for fld in custom_fields if fld.id == type_id]
-            if len(suitable_fields) > 0:
-                custom_fields_dict[alias] = suitable_fields[0]
-        return custom_fields_dict
+    def get_username(self, user_id: str):
+        _, data = self._make_request(f"api/v2/users/{user_id}")
+        username = data["username"]
+        return username
 
     def get_custom_fields(self, card_id: str) -> objects.CardCustomFields:
         card_fields = objects.CardCustomFields(card_id)
-        card_fields_dict = self.get_board_custom_fields_dict(card_id)
-        card_fields._data = card_fields_dict
-        logger.info(card_fields)
+        board_labels = self._get_labels()
+        card_fields_dict = {}
+        card_labels_ids = []
+        card_labels = []
+        _, data = self._make_request(f"api/v2/cards/{card_id}")
+        fields = data["properties"]
+        for alias, type_id in self.custom_fields_config.items():
+            if type_id in fields:
+                changed_alias = alias.name.split(".")[-1].lower()
+                card_fields_dict[changed_alias] = fields[type_id]
+
+        board_label_id = self._get_label_property()
+
+        for type_id, value in fields.items():
+            if type_id == board_label_id:
+                card_labels_ids = value
+
+        for card_label_id in card_labels_ids:
+            for board_label in board_labels:
+                if card_label_id == board_label.id:
+                    card_labels.append(board_label)
+
+        card_fields.authors = [
+            author.strip()
+            for author in card_fields_dict.get("author", [])
+        ]
+        card_fields.editors = [
+            editor.strip()
+            for editor in card_fields_dict.get("editor", [])
+        ]
+        card_fields.illustrators = [
+            illustrator.strip()
+            for illustrator in card_fields_dict.get("illustrator", [])
+        ]
+        card_fields.cover = (
+            card_fields_dict["cover"] if "cover" in card_fields_dict else None
+        )
+        card_fields.google_doc = (
+            card_fields_dict["google_doc"] if "google_doc" in card_fields_dict else None
+        )
+        card_fields.title = (
+            card_fields_dict["title"] if "title" in card_fields_dict else None
+        )
+
+        card_fields._data = card_labels
+        return card_fields
 
     def get_members(self, board_id) -> List[objects.TrelloMember]:
         _, data = self._make_request(f"api/v2/boards/{board_id}/members")
@@ -167,7 +268,7 @@ class FocalboardClient(Singleton):
         logger.debug(f"get_members: {members}")
         return members
 
-    def get_cards(self, list_ids, board_id=None):
+    def get_cards(self, list_ids=None, board_id=None):
         if board_id is None:
             board_id = self.board_id
         _, data = self._make_request(f"api/v2/boards/{board_id}/blocks?all=true")
@@ -180,16 +281,22 @@ class FocalboardClient(Singleton):
         view_id = [card_dict for card_dict in data if card_dict["type"] == "view"][0][
             "id"
         ]
-        data = [
-            card_dict
-            for card_dict in data
-            if card_dict["type"] == "card"
-            and card_dict["fields"]["properties"].get(list_prop, "") in list_ids
-        ]
+        if list_ids:
+            data = [
+                card_dict
+                for card_dict in data
+                if card_dict["type"] == "card"
+                and card_dict["fields"]["properties"].get(list_prop, "") in list_ids
+            ]
+        else:
+            data = [
+                card_dict
+                for card_dict in data
+                if card_dict["type"] == "card"
+            ]
         for card_dict in data:
             card = objects.TrelloCard.from_focalboard_dict(card_dict)
             card.url = urljoin(self.url, f"{board_id}/{view_id}/{card.id}")
-            print(card.url)
             # TODO: move this to app state
             for trello_list in lists:
                 if trello_list.id == card_dict["fields"]["properties"].get(
@@ -240,7 +347,9 @@ class FocalboardClient(Singleton):
             )
         except Exception as e:
             # TODO remove this when main board is migrated
-            logger.error(f"something went wrong when setting up focalboard client", exc_info=e)
+            logger.error(
+                "something went wrong when setting up focalboard client", exc_info=e
+            )
             pass
 
     def _make_request(self, uri, payload={}):

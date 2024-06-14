@@ -17,19 +17,18 @@ def get_board_credentials(update: telegram.Update, tg_context):
         member for member in DBClient().get_all_members()
         if member.telegram == f"@{get_sender_username(update)}"
     ), None)
-    if member is None or not member.trello:
+    if member is None or not member.focalboard:
         logger.usage(
-            f'Trello not found for {get_sender_username(update)}, ID={get_sender_id(update)}'
+            f'Focalboard not found for {get_sender_username(update)}, ID={get_sender_id(update)}'
         )
         reply(load('get_board_credentials_handler__not_found'), update)
         return
     try:
-        print(member.trello)
         with open('board_credentials.json', encoding="utf-8") as fin:
             try:
                 board_json = json.loads(fin.read())
                 creds = next((
-                    cred for cred in board_json if cred["trelloUsername"] == member.trello
+                    cred for cred in board_json if cred["focalboardUsername"] == member.focalboard
                 ), None)
                 if not creds:
                     logger.usage(

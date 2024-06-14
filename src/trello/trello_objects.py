@@ -2,7 +2,7 @@ import html
 import logging
 from datetime import datetime
 
-from ..consts import TrelloCardColor, TrelloCustomFieldTypes
+from ..consts import BoardCardColor, TrelloCardColor, TrelloCustomFieldTypes
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +81,18 @@ class TrelloBoardLabel:
         try:
             label.id = data["id"]
             label.name = html.escape(data["name"])
+            label.color = data["color"]
+        except Exception as e:
+            label._ok = False
+            logger.error(f"Bad board label json {data}: {e}")
+        return label
+
+    @classmethod
+    def from_focalboard_dict(cls, data):
+        label = cls()
+        try:
+            label.id = data["id"]
+            label.name = html.escape(data["value"])
             label.color = data["color"]
         except Exception as e:
             label._ok = False
@@ -177,6 +189,22 @@ class TrelloCardLabel:
             logger.error(f"Bad card label json {data}: {e}")
         return label
 
+    @classmethod
+    def from_focalboard_dict(cls, data):
+        label = cls()
+        try:
+            label.id = data["id"]
+            label.name = html.escape(data["value"])
+            label.color = None
+            try:
+                label.color = BoardCardColor(data["color"])
+            except Exception:
+                label.color = BoardCardColor(BoardCardColor.UNKNOWN)
+        except Exception as e:
+            label._ok = False
+            logger.error(f"Bad card label json {data}: {e}")
+        return label
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -235,11 +263,7 @@ class TrelloCard:
         try:
             card.id = data["id"]
             card.name = html.escape(data["title"])
-            # card.labels = [TrelloCardLabel.from_dict(label) for label in data["labels"]]
-            # card.url = data["shortUrl"]
-            # card.due = (
-            #     datetime.strptime(data["due"], TIME_FORMAT) if data["due"] else None
-            # )
+            # card.labels=[TrelloCardLabel.from_focalboard_dict(label) for label in data["labels"]]
         except Exception as e:
             card._ok = False
             logger.error(f"Bad card json {data}: {e}")

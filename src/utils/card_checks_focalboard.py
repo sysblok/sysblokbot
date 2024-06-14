@@ -24,7 +24,7 @@ def make_card_failure_reasons(card: TrelloCard, app_context: AppContext):
 
 
 def is_deadline_missed(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dict]:
-    list_ids = app_context.trello_client.get_list_id_from_aliases(
+    list_ids = app_context.focalboard_client.get_list_id_from_aliases(
         [TrelloListAlias.IN_PROGRESS]
     )
     is_missed = (
@@ -38,7 +38,7 @@ def is_deadline_missed(card: TrelloCard, app_context: AppContext) -> Tuple[bool,
 def is_due_date_missing(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dict]:
     if card.due:
         return False, {}
-    list_ids = app_context.trello_client.get_list_id_from_aliases(
+    list_ids = app_context.focalboard_client.get_list_id_from_aliases(
         [TrelloListAlias.IN_PROGRESS]
     )
     return card.lst.id in list_ids, {}
@@ -57,9 +57,8 @@ def is_author_missing(card: TrelloCard, app_context: AppContext) -> Tuple[bool, 
         TrelloListAlias.TO_CHIEF_EDITOR,
         TrelloListAlias.PROOFREADING,
         TrelloListAlias.DONE,
-        TrelloListAlias.PUBLISHED,
     )
-    list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
+    list_ids = app_context.focalboard_client.get_list_id_from_aliases(list_aliases)
     return card.lst.id in list_ids, {}
 
 
@@ -76,9 +75,8 @@ def is_tag_missing(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dic
         TrelloListAlias.TO_CHIEF_EDITOR,
         TrelloListAlias.PROOFREADING,
         TrelloListAlias.DONE,
-        TrelloListAlias.PUBLISHED,
     )
-    list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
+    list_ids = app_context.focalboard_client.get_list_id_from_aliases(list_aliases)
     return card.lst.id in list_ids, {}
 
 
@@ -91,13 +89,12 @@ def is_doc_missing(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dic
         TrelloListAlias.TO_CHIEF_EDITOR,
         TrelloListAlias.PROOFREADING,
         TrelloListAlias.DONE,
-        TrelloListAlias.PUBLISHED,
     )
-    list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
+    list_ids = app_context.focalboard_client.get_list_id_from_aliases(list_aliases)
     if card.lst.id not in list_ids:
         return False, {}
 
-    doc_url = app_context.trello_client.get_custom_fields(card.id).google_doc
+    doc_url = app_context.focalboard_client.get_custom_fields(card.id).google_doc
     return not doc_url, {}
 
 
@@ -110,13 +107,12 @@ def has_no_doc_access(card: TrelloCard, app_context: AppContext) -> Tuple[bool, 
         TrelloListAlias.TO_CHIEF_EDITOR,
         TrelloListAlias.PROOFREADING,
         TrelloListAlias.DONE,
-        TrelloListAlias.PUBLISHED,
     )
-    list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
+    list_ids = app_context.focalboard_client.get_list_id_from_aliases(list_aliases)
     if card.lst.id not in list_ids:
         return False, {}
 
-    doc_url = app_context.trello_client.get_custom_fields(card.id).google_doc
+    doc_url = app_context.focalboard_client.get_custom_fields(card.id).google_doc
     if not doc_url:
         # should be handled by is_doc_missing
         return False, {}

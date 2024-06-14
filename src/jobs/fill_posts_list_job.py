@@ -26,7 +26,9 @@ class FillPostsListJob(BaseJob):
 
         registry_posts += FillPostsListJob._retrieve_cards_for_registry(
             trello_client=app_context.trello_client,
-            list_aliases=(TrelloListAlias.PROOFREADING, TrelloListAlias.DONE),
+            list_aliases=[
+                TrelloListAlias.PUBLISHED
+            ],
             all_rubrics=all_rubrics,
             errors=errors,
             show_due=True,

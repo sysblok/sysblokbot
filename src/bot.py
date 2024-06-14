@@ -26,7 +26,7 @@ from .jobs.utils import get_job_runnable
 from .tg import handlers, sender
 from .tg.handlers.utils import admin_only, direct_message_only, manager_only
 
-logging.addLevelName(USAGE_LOG_LEVEL, "USAGE")
+logging.addLevelName(USAGE_LOG_LEVEL, "NOTICE")
 
 
 def usage(self, message, *args, **kws):
@@ -87,6 +87,12 @@ class SysBlokBot:
             CommandCategories.SUMMARY,
             self.manager_reply_handler("trello_board_state_job"),
             "получить сводку о состоянии доски",
+        )
+        self.add_manager_handler(
+            "get_board_state",
+            CommandCategories.SUMMARY,
+            self.manager_reply_handler("board_state_job"),
+            "получить сводку о состоянии доски (focalboard)",
         )
         self.add_manager_handler(
             "get_editorial_board_stats",

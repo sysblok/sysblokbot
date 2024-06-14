@@ -16,11 +16,13 @@ COMMIT_URL = (
     f'https://github.com/sysblok/sysblokbot/commit/{os.environ.get("COMMIT_HASH")}'
 )
 COMMIT_HASH = os.environ.get("COMMIT_HASH_SHORT")
+UPTRACE_DSN = os.environ.get("UPTRACE_DSN")
 
 
 class AppSource(Enum):
     DEFAULT = "manual"
-    GITHUB = "github CI"
+    GITHUB = "prod"
+    GITHUB_DEV = "testing"
 
 
 APP_SOURCE = os.environ.get("APP_SOURCE", AppSource.DEFAULT.value)
@@ -86,6 +88,19 @@ class TrelloCardColor(Enum):
     UNKNOWN = "unknown"
 
 
+class BoardCardColor(Enum):
+    BLACK = "propColorGray"
+    BROWN = "propColorBrown"
+    ORANGE = "propColorOrange"
+    YELLOW = "propColorYellow"
+    GREEN = "propColorGreen"
+    BLUE = "propColorBlue"
+    PURPLE = "propColorPurple"
+    PINK = "propColorPink"
+    RED = "propColorRed"
+    UNKNOWN = "unknown"
+
+
 class TrelloListAlias(Enum):
     TOPIC_SUGGESTION = "trello_list_name__topic_suggestion"
     TOPIC_READY = "trello_list_name__topic_ready"
@@ -97,6 +112,7 @@ class TrelloListAlias(Enum):
     TO_CHIEF_EDITOR = "trello_list_name__to_chief_editor"
     PROOFREADING = "trello_list_name__proofreading"
     DONE = "trello_list_name__typesetting"
+    PUBLISHED = "trello_list_name__published"
     BACK_BURNER = "trello_list_name__back_burner"
 
 
