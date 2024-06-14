@@ -1,4 +1,5 @@
 import ast
+from datetime import datetime
 import json
 import logging
 from typing import List
@@ -279,6 +280,7 @@ class FocalboardClient(Singleton):
         list_prop = self._get_list_property(board_id)
         labels = self._get_labels()
         label_prop = self._get_label_property(board_id)
+        due_prop = self._get_due_property(board_id)
         member_prop = self._get_member_property(board_id)
         view_id = [card_dict for card_dict in data if card_dict["type"] == "view"][0][
             "id"
@@ -304,6 +306,14 @@ class FocalboardClient(Singleton):
                 for label in labels:
                     if label.id == label_id:
                         card.labels.append(label)
+            try:
+                due = card_dict["fields"]["properties"].get(due_prop, '{}')
+                due_ts = json.loads(due).get('to')
+                if due_ts:
+                    card.due = datetime.fromtimestamp(due_ts // 1000)
+            except Exception as e:
+                print(due)
+                print(e)
             # TODO: move this to app state
             for trello_list in lists:
                 if trello_list.id == card_dict["fields"]["properties"].get(
