@@ -263,7 +263,6 @@ class TrelloCard:
         try:
             card.id = data["id"]
             card.name = html.escape(data["title"])
-            # card.labels=[TrelloCardLabel.from_focalboard_dict(label) for label in data["labels"]]
         except Exception as e:
             card._ok = False
             logger.error(f"Bad card json {data}: {e}")

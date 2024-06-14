@@ -236,15 +236,15 @@ class FocalboardClient(Singleton):
 
         card_fields.authors = [
             author.strip()
-            for author in card_fields_dict.get("author", [])
+            for author in card_fields_dict.get("author", '').split(',')
         ]
         card_fields.editors = [
             editor.strip()
-            for editor in card_fields_dict.get("editor", [])
+            for editor in card_fields_dict.get("editor", '').split(',')
         ]
         card_fields.illustrators = [
             illustrator.strip()
-            for illustrator in card_fields_dict.get("illustrator", [])
+            for illustrator in card_fields_dict.get("illustrator", '').split(',')
         ]
         card_fields.cover = (
             card_fields_dict["cover"] if "cover" in card_fields_dict else None
@@ -277,6 +277,8 @@ class FocalboardClient(Singleton):
         members = self.get_members(board_id)
         lists = self.get_lists(board_id=board_id)
         list_prop = self._get_list_property(board_id)
+        labels = self._get_labels()
+        label_prop = self._get_label_property(board_id)
         member_prop = self._get_member_property(board_id)
         view_id = [card_dict for card_dict in data if card_dict["type"] == "view"][0][
             "id"
@@ -297,6 +299,11 @@ class FocalboardClient(Singleton):
         for card_dict in data:
             card = objects.TrelloCard.from_focalboard_dict(card_dict)
             card.url = urljoin(self.url, f"{board_id}/{view_id}/{card.id}")
+            card.labels = []
+            for label_id in card_dict["fields"]["properties"].get(label_prop, []):
+                for label in labels:
+                    if label.id == label_id:
+                        card.labels.append(label)
             # TODO: move this to app state
             for trello_list in lists:
                 if trello_list.id == card_dict["fields"]["properties"].get(

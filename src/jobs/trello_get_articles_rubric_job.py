@@ -52,7 +52,10 @@ class TrelloGetArticlesRubricJob(BaseJob):
 
     @staticmethod
     def _format_card(card: TrelloCard, app_context: AppContext) -> str:
-        card_fields = app_context.trello_client.get_custom_fields(card.id)
+        if not app_context.trello_client.deprecated:
+            card_fields = app_context.trello_client.get_custom_fields(card.id)
+        else:
+            card_fields = app_context.focalboard_client.get_custom_fields(card.id)
         return load(
             "rubric_report_job__card",
             date=card.due.strftime("%d.%m").lower() if card.due else "",
@@ -70,8 +73,12 @@ class TrelloGetArticlesRubricJob(BaseJob):
         rubric_alias: str,
         rubric_name: str,
     ) -> List[str]:
-        list_ids = trello_client.get_list_id_from_aliases([rubric_alias])
-        cards = trello_client.get_cards(list_ids)
+        if not trello_client.deprecated:
+            list_ids = trello_client.get_list_id_from_aliases([rubric_alias])
+            cards = trello_client.get_cards(list_ids)
+        else:
+            list_ids = app_context.focalboard_client.get_list_id_from_aliases([rubric_alias])
+            cards = app_context.focalboard_client.get_cards(list_ids)
         cards_filtered = []
         for card in cards:
             if rubric_name in [label.name for label in card.labels]:
