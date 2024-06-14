@@ -260,6 +260,21 @@ class FocalboardClient(Singleton):
         card_fields._data = card_labels
         return card_fields
 
+    def set_card_custom_field(self, card_id, field_alias, value):
+        board_id = self.board_id
+        field_id = self.custom_fields_config[field_alias]
+        data = {
+            "updatedFields": {
+                "properties": {
+                    field_id: value
+                }
+            }
+        }
+        code = self._make_patch_request(
+            f"api/v2/boards/{board_id}/blocks/{card_id}", payload=data
+        )
+        logger.debug(f"set_card_custom_field: {code}")
+
     def get_members(self, board_id) -> List[objects.TrelloMember]:
         _, data = self._make_request(f"api/v2/boards/{board_id}/members")
         members = []
@@ -371,6 +386,13 @@ class FocalboardClient(Singleton):
 
     def _make_request(self, uri, payload={}):
         response = requests.get(
+            urljoin(self.url, uri), params=payload, headers=self.headers
+        )
+        logger.debug(f"{response.url}")
+        return response.status_code, response.json()
+
+    def _make_patch_request(self, uri, payload={}):
+        response = requests.patch(
             urljoin(self.url, uri), params=payload, headers=self.headers
         )
         logger.debug(f"{response.url}")
