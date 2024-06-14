@@ -87,6 +87,17 @@ class TrelloCardColor(Enum):
     BLACK = "black"
     UNKNOWN = "unknown"
 
+class BoardCardColor(Enum):
+    BLACK = "propColorGray"
+    BROWN = "propColorBrown"
+    ORANGE = "propColorOrange"
+    YELLOW = "propColorYellow"
+    GREEN = "propColorGreen"
+    BLUE = "propColorBlue"
+    PURPLE = "propColorPurple"
+    PINK = "propColorPink"
+    RED = "propColorRed"
+    UNKNOWN = "unknown"
 
 class TrelloListAlias(Enum):
     TOPIC_SUGGESTION = "trello_list_name__topic_suggestion"

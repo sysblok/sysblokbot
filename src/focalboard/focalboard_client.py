@@ -41,7 +41,7 @@ class FocalboardClient(Singleton):
             for prop in [board for board in data if board["id"] == board_id][0][
                 "cardProperties"
             ]
-            if prop["name"] == "List"
+            if prop["name"] == "Колонка"
         ][0]
         lists_data = list_data["options"]
         lists = [
@@ -75,7 +75,7 @@ class FocalboardClient(Singleton):
             for prop in [board for board in data if board["id"] == board_id][0][
                 "cardProperties"
             ]
-            if prop["name"] == "List"
+            if prop["name"] == "Колонка"
         ][0]["options"]
         lst = [
             objects.TrelloList.from_focalboard_dict(trello_list, board_id)
@@ -85,7 +85,7 @@ class FocalboardClient(Singleton):
         logger.debug(f"get_list: {lst}")
         return lst
 
-    def get_labels(self, board_id=None):
+    def _get_labels(self, board_id=None):
         if board_id is None:
             # default board
             board_id = self.board_id
@@ -95,11 +95,11 @@ class FocalboardClient(Singleton):
             for prop in [board for board in data if board["id"] == board_id][0][
                 "cardProperties"
             ]
-            if prop["name"] == "Label"
+            if prop["name"] == "Рубрика"
         ][0]
         labels_data = label_data["options"]
         labels = [
-            objects.TrelloBoardLabel.from_focalboard_dict(label)
+            objects.TrelloCardLabel.from_focalboard_dict(label)
             for label in labels_data
         ]
         return labels
@@ -111,7 +111,7 @@ class FocalboardClient(Singleton):
             for prop in [board for board in data if board["id"] == board_id][0][
                 "cardProperties"
             ]
-            if prop["name"] == "List"
+            if prop["name"] == "Колонка"
         ][0]["id"]
 
     def _get_label_property(self, board_id=None):
@@ -124,7 +124,7 @@ class FocalboardClient(Singleton):
             for prop in [board for board in data if board["id"] == board_id][0][
                 "cardProperties"
             ]
-            if prop["name"] == "Label"
+            if prop["name"] == "Рубрика"
         ][0]["id"]
 
     def _get_due_property(self, board_id=None):
@@ -137,7 +137,7 @@ class FocalboardClient(Singleton):
             for prop in [board for board in data if board["id"] == board_id][0][
                 "cardProperties"
             ]
-            if prop["name"] == "Due"
+            if prop["name"] == "Дедлайн"
         ][0]["id"]
 
     def get_card_due(self, card_id: str):
@@ -159,7 +159,7 @@ class FocalboardClient(Singleton):
             for prop in [board for board in data if board["id"] == board_id][0][
                 "cardProperties"
             ]
-            if prop["name"] == "Assignee"
+            if prop["name"] == "Ответственный"
         ][0]["id"]
 
     def get_list_id_from_aliases(self, list_aliases):
@@ -212,7 +212,7 @@ class FocalboardClient(Singleton):
 
     def get_custom_fields(self, card_id: str) -> objects.CardCustomFields:
         card_fields = objects.CardCustomFields(card_id)
-        board_labels = self.get_labels()
+        board_labels = self._get_labels()
         card_fields_dict = {}
         card_labels_ids = []
         card_labels = []
