@@ -122,7 +122,7 @@ class CreateFoldersForIllustratorsJob(BaseJob):
                     )
                     if app_context.trello_client.deprecated:
                         app_context.focalboard_client.set_card_custom_field(
-                            card.id,
+                            card,
                             TrelloCustomFieldTypeAlias.COVER,
                             card_fields.cover,
                         )

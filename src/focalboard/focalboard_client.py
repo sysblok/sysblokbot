@@ -260,18 +260,17 @@ class FocalboardClient(Singleton):
         card_fields._data = card_labels
         return card_fields
 
-    def set_card_custom_field(self, card_id, field_alias, value):
+    def set_card_custom_field(self, card: objects.TrelloCard, field_alias, value):
         board_id = self.board_id
         field_id = self.custom_fields_config[field_alias]
         data = {
             "updatedFields": {
-                "properties": {
-                    field_id: value
-                }
+                "properties": card._fields_properties
             }
         }
+        data["updatedFields"]["properties"][field_id] = value
         code = self._make_patch_request(
-            f"api/v2/boards/{board_id}/blocks/{card_id}", payload=data
+            f"api/v2/boards/{board_id}/blocks/{card.id}", payload=data
         )
         logger.debug(f"set_card_custom_field: {code}")
 
@@ -317,12 +316,12 @@ class FocalboardClient(Singleton):
             card = objects.TrelloCard.from_focalboard_dict(card_dict)
             card.url = urljoin(self.url, f"{board_id}/{view_id}/{card.id}")
             card.labels = []
-            for label_id in card_dict["fields"]["properties"].get(label_prop, []):
+            for label_id in card._fields_properties.get(label_prop, []):
                 for label in labels:
                     if label.id == label_id:
                         card.labels.append(label)
             try:
-                due = card_dict["fields"]["properties"].get(due_prop, '{}')
+                due = card._fields_properties.get(due_prop, '{}')
                 due_ts = json.loads(due).get('to')
                 if due_ts:
                     card.due = datetime.fromtimestamp(due_ts // 1000)
@@ -331,7 +330,7 @@ class FocalboardClient(Singleton):
                 print(e)
             # TODO: move this to app state
             for trello_list in lists:
-                if trello_list.id == card_dict["fields"]["properties"].get(
+                if trello_list.id == card._fields_properties.get(
                     list_prop, ""
                 ):
                     card.lst = trello_list
@@ -339,9 +338,9 @@ class FocalboardClient(Singleton):
             else:
                 logger.error(f"List name not found for {card}")
             # TODO: move this to app state
-            if len(card_dict["fields"]["properties"].get(member_prop, [])) > 0:
+            if len(card._fields_properties.get(member_prop, [])) > 0:
                 for member in members:
-                    if member.id in card_dict["fields"]["properties"].get(
+                    if member.id in card._fields_properties.get(
                         member_prop, []
                     ):
                         card.members.append(member)
@@ -393,7 +392,7 @@ class FocalboardClient(Singleton):
 
     def _make_patch_request(self, uri, payload={}):
         response = requests.patch(
-            urljoin(self.url, uri), params=payload, headers=self.headers
+            urljoin(self.url, uri), json=payload, headers=self.headers
         )
         logger.debug(f"{response.url}")
         return response.status_code, response.json()
