@@ -1,4 +1,5 @@
 import ast
+from datetime import datetime
 import json
 import logging
 from typing import List
@@ -236,15 +237,15 @@ class FocalboardClient(Singleton):
 
         card_fields.authors = [
             author.strip()
-            for author in card_fields_dict.get("author", [])
+            for author in card_fields_dict.get("author", '').split(',')
         ]
         card_fields.editors = [
             editor.strip()
-            for editor in card_fields_dict.get("editor", [])
+            for editor in card_fields_dict.get("editor", '').split(',')
         ]
         card_fields.illustrators = [
             illustrator.strip()
-            for illustrator in card_fields_dict.get("illustrator", [])
+            for illustrator in card_fields_dict.get("illustrator", '').split(',')
         ]
         card_fields.cover = (
             card_fields_dict["cover"] if "cover" in card_fields_dict else None
@@ -258,6 +259,20 @@ class FocalboardClient(Singleton):
 
         card_fields._data = card_labels
         return card_fields
+
+    def set_card_custom_field(self, card: objects.TrelloCard, field_alias, value):
+        board_id = self.board_id
+        field_id = self.custom_fields_config[field_alias]
+        data = {
+            "updatedFields": {
+                "properties": card._fields_properties
+            }
+        }
+        data["updatedFields"]["properties"][field_id] = value
+        code = self._make_patch_request(
+            f"api/v2/boards/{board_id}/blocks/{card.id}", payload=data
+        )
+        logger.debug(f"set_card_custom_field: {code}")
 
     def get_members(self, board_id) -> List[objects.TrelloMember]:
         _, data = self._make_request(f"api/v2/boards/{board_id}/members")
@@ -277,6 +292,9 @@ class FocalboardClient(Singleton):
         members = self.get_members(board_id)
         lists = self.get_lists(board_id=board_id)
         list_prop = self._get_list_property(board_id)
+        labels = self._get_labels()
+        label_prop = self._get_label_property(board_id)
+        due_prop = self._get_due_property(board_id)
         member_prop = self._get_member_property(board_id)
         view_id = [card_dict for card_dict in data if card_dict["type"] == "view"][0][
             "id"
@@ -297,9 +315,22 @@ class FocalboardClient(Singleton):
         for card_dict in data:
             card = objects.TrelloCard.from_focalboard_dict(card_dict)
             card.url = urljoin(self.url, f"{board_id}/{view_id}/{card.id}")
+            card.labels = []
+            for label_id in card._fields_properties.get(label_prop, []):
+                for label in labels:
+                    if label.id == label_id:
+                        card.labels.append(label)
+            try:
+                due = card._fields_properties.get(due_prop, '{}')
+                due_ts = json.loads(due).get('to')
+                if due_ts:
+                    card.due = datetime.fromtimestamp(due_ts // 1000)
+            except Exception as e:
+                print(due)
+                print(e)
             # TODO: move this to app state
             for trello_list in lists:
-                if trello_list.id == card_dict["fields"]["properties"].get(
+                if trello_list.id == card._fields_properties.get(
                     list_prop, ""
                 ):
                     card.lst = trello_list
@@ -307,9 +338,9 @@ class FocalboardClient(Singleton):
             else:
                 logger.error(f"List name not found for {card}")
             # TODO: move this to app state
-            if len(card_dict["fields"]["properties"].get(member_prop, [])) > 0:
+            if len(card._fields_properties.get(member_prop, [])) > 0:
                 for member in members:
-                    if member.id in card_dict["fields"]["properties"].get(
+                    if member.id in card._fields_properties.get(
                         member_prop, []
                     ):
                         card.members.append(member)
@@ -355,6 +386,13 @@ class FocalboardClient(Singleton):
     def _make_request(self, uri, payload={}):
         response = requests.get(
             urljoin(self.url, uri), params=payload, headers=self.headers
+        )
+        logger.debug(f"{response.url}")
+        return response.status_code, response.json()
+
+    def _make_patch_request(self, uri, payload={}):
+        response = requests.patch(
+            urljoin(self.url, uri), json=payload, headers=self.headers
         )
         logger.debug(f"{response.url}")
         return response.status_code, response.json()

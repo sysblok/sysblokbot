@@ -4,7 +4,7 @@ from typing import Callable, List, Tuple
 from urllib.parse import urlparse
 
 from ..app_context import AppContext
-from ..consts import TrelloCardColor, TrelloCustomFieldTypeAlias, TrelloListAlias
+from ..consts import TrelloCardColor, TrelloCustomFieldTypeAlias, TrelloListAlias, BoardCardColor
 from ..strings import load
 from ..tg.sender import pretty_send
 from .base_job import BaseJob
@@ -58,8 +58,12 @@ class CreateFoldersForIllustratorsJob(BaseJob):
         list_aliases: List[TrelloListAlias],
     ) -> List[Tuple[IllustratorFolderState, str]]:
         logger.info("Started counting:")
-        list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
-        cards = app_context.trello_client.get_cards(list_ids)
+        if app_context.trello_client.deprecated:
+            list_ids = app_context.focalboard_client.get_list_id_from_aliases(list_aliases)
+            cards = app_context.focalboard_client.get_cards(list_ids)
+        else:
+            list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
+            cards = app_context.trello_client.get_cards(list_ids)
 
         parse_failure_counter = 0
         result = []
@@ -68,12 +72,15 @@ class CreateFoldersForIllustratorsJob(BaseJob):
                 parse_failure_counter += 1
                 continue
 
-            card_fields = app_context.trello_client.get_custom_fields(card.id)
+            if app_context.trello_client.deprecated:
+                card_fields = app_context.focalboard_client.get_custom_fields(card.id)
+            else:
+                card_fields = app_context.trello_client.get_custom_fields(card.id)
 
             label_names = [
                 label.name
                 for label in card.labels
-                if label.color != TrelloCardColor.BLACK
+                if label.color not in [TrelloCardColor.BLACK, BoardCardColor.BLACK]
             ]
             is_archive_card = load("common_trello_label__archive") in label_names
 
@@ -113,11 +120,18 @@ class CreateFoldersForIllustratorsJob(BaseJob):
                     logger.info(
                         f"Trying to put {card_fields.cover} as cover field for {card.url}"
                     )
-                    app_context.trello_client.set_card_custom_field(
-                        card.id,
-                        TrelloCustomFieldTypeAlias.COVER,
-                        card_fields.cover,
-                    )
+                    if app_context.trello_client.deprecated:
+                        app_context.focalboard_client.set_card_custom_field(
+                            card,
+                            TrelloCustomFieldTypeAlias.COVER,
+                            card_fields.cover,
+                        )
+                    else:
+                        app_context.trello_client.set_card_custom_field(
+                            card.id,
+                            TrelloCustomFieldTypeAlias.COVER,
+                            card_fields.cover,
+                        )
                     cover = load(
                         "create_folders_for_illustrators_job__cover",
                         url=card_fields.cover,

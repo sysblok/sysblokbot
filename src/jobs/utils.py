@@ -6,7 +6,7 @@ from typing import List
 
 from .. import jobs
 from ..app_context import AppContext
-from ..consts import TrelloCardColor, TrelloCardFieldErrorAlias
+from ..consts import TrelloCardColor, TrelloCardFieldErrorAlias, BoardCardColor
 from ..db.db_client import DBClient
 from ..db.db_objects import Curator
 from ..drive.drive_client import GoogleDriveClient
@@ -237,7 +237,8 @@ def check_trello_card(
     strict_archive_rules=False,
 ):
     label_names = [
-        label.name for label in card.labels if label.color != TrelloCardColor.BLACK
+        label.name for label in card.labels
+        if label.color not in [TrelloCardColor.BLACK, BoardCardColor.BLACK]
     ]
 
     is_archive_card = load("common_trello_label__archive") in label_names

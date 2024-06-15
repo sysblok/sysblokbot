@@ -223,6 +223,8 @@ class TrelloCard:
         # TODO: move this to app state
         self.lst = None
         self.members = []
+        # focalboard fields
+        self._fields_properties = None
 
         self._ok = True
 
@@ -263,7 +265,7 @@ class TrelloCard:
         try:
             card.id = data["id"]
             card.name = html.escape(data["title"])
-            # card.labels=[TrelloCardLabel.from_focalboard_dict(label) for label in data["labels"]]
+            card._fields_properties = data["fields"]["properties"]
         except Exception as e:
             card._ok = False
             logger.error(f"Bad card json {data}: {e}")

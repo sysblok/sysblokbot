@@ -3,11 +3,11 @@ import logging
 from typing import Callable, List
 
 from ..app_context import AppContext
-from ..consts import TrelloCardColor
+from ..consts import TrelloCardColor, BoardCardColor
 from ..strings import load
 from ..tg.sender import pretty_send
 from ..trello.trello_objects import TrelloCard
-from ..utils import card_checks
+from ..utils import card_checks, card_checks_focalboard
 from .base_job import BaseJob
 from .utils import get_cards_by_curator, retrieve_usernames
 
@@ -22,15 +22,19 @@ class TrelloBoardStateJob(BaseJob):
         paragraphs = [
             load("trello_board_state_job__intro")
         ]  # list of paragraph strings
-        curator_cards = get_cards_by_curator(app_context)
+        curator_cards = get_cards_by_curator(app_context, app_context.trello_client.deprecated)
         for curator, curator_cards in curator_cards.items():
             curator_name, _ = curator
             card_paragraphs = []
             curator_cards.sort(key=lambda c: c.due if c.due else datetime.datetime.min)
             for card in curator_cards:
+                if app_context.trello_client.deprecated:
+                    reasons = card_checks_focalboard.make_card_failure_reasons(card, app_context)
+                else:
+                    reasons = card_checks.make_card_failure_reasons(card, app_context)
                 card_paragraph = TrelloBoardStateJob._format_card(
                     card,
-                    card_checks.make_card_failure_reasons(card, app_context),
+                    reasons,
                     app_context,
                 )
                 if card_paragraph:
@@ -55,7 +59,7 @@ class TrelloBoardStateJob(BaseJob):
                     # We filter BLACK cards as this is an auxiliary label
                     label.name
                     for label in card.labels
-                    if label.color != TrelloCardColor.BLACK
+                    if label.color not in [TrelloCardColor.BLACK, BoardCardColor.BLACK]
                 ),
             )
             if card.labels
