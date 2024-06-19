@@ -13,8 +13,8 @@ from ..utils.singleton import Singleton
 from .facebook_objects import FacebookPage
 
 logger = logging.getLogger(__name__)
-BASE_URL = 'https://graph.facebook.com'
-API_VERSION = 'v19.0'
+BASE_URL = "https://graph.facebook.com"
+API_VERSION = "v19.0"
 
 
 class FacebookClient(Singleton):
@@ -36,19 +36,21 @@ class FacebookClient(Singleton):
         self._page_id = self._facebook_config["page_id"]
 
     def _make_graph_api_call(self, uri: str, params: dict) -> dict:
-        params['access_token'] = self._facebook_config["token"]
+        params["access_token"] = self._facebook_config["token"]
         response = requests.get(
-            '/'.join([BASE_URL, API_VERSION, uri]) + '?' +
-            '&'.join(f"{key}={value}" for key, value in params.items()))
+            "/".join([BASE_URL, API_VERSION, uri])
+            + "?"
+            + "&".join(f"{key}={value}" for key, value in params.items())
+        )
         return response.json()
 
     def get_page(self) -> FacebookPage:
         """
         Get facebook page
         """
-        page_dict = self._make_graph_api_call(str(self._page_id), {
-            'fields': 'link,name,followers_count,fan_count'
-        })
+        page_dict = self._make_graph_api_call(
+            str(self._page_id), {"fields": "link,name,followers_count,fan_count"}
+        )
         return FacebookPage.from_dict(page_dict)
 
     def get_new_posts_count(self, since: datetime, until: datetime) -> int:
@@ -56,13 +58,13 @@ class FacebookClient(Singleton):
         Get the number of new posts for the period.
         """
         result = self._make_graph_api_call(
-            str(self._page_id) + '/published_posts',
+            str(self._page_id) + "/published_posts",
             {
-                'summary': 'total_count',
-                'since': int(datetime.timestamp(since)),
-                'until': int(datetime.timestamp(until)),
-                'limit': 0,
-            }
+                "summary": "total_count",
+                "since": int(datetime.timestamp(since)),
+                "until": int(datetime.timestamp(until)),
+                "limit": 0,
+            },
         )
         return result["summary"]["total_count"]
 
@@ -139,12 +141,15 @@ class FacebookClient(Singleton):
         return result
 
     def _get_all_batches(
-        self, connection_name: str, since: datetime, until: datetime, **args
+        self, connection_name: str, since: datetime, until: datetime, **kwargs
     ) -> List[dict]:
         result = []
-        args["since"] = since
-        args["until"] = until
-        page = self._api_client.get_connections(self._page_id, connection_name, **args)
+        params = {
+            "since": int(datetime.timestamp(since)),
+            "until": int(datetime.timestamp(until)),
+        }
+        params.update(kwargs)
+        page = self._make_graph_api_call(f"{self._page_id}/{connection_name}", params)
         result += page["data"]
         # process next
         result += self._iterate_over_pages(connection_name, since, until, page, True)
@@ -157,19 +162,17 @@ class FacebookClient(Singleton):
         connection_name: str,
         since: datetime,
         until: datetime,
-        previous_page: str,
+        previous_page: dict,
         go_next: bool,
     ) -> List[dict]:
         result = []
         current_page = previous_page
         while True:
-            direction_tag = "previous"
-            if go_next:
-                direction_tag = "next"
-            next = current_page.get("paging", {}).get(direction_tag)
-            if not next:
+            direction_tag = "previous" if not go_next else "next"
+            next_url = current_page.get("paging", {}).get(direction_tag)
+            if not next_url:
                 break
-            args = parse_qs(urlparse(next).query)
+            args = parse_qs(urlparse(next_url).query)
             if go_next:
                 page_since = args.get("since")
                 if (
@@ -186,11 +189,17 @@ class FacebookClient(Singleton):
                     < since
                 ):
                     break
-            args.pop("access_token", None)
-            current_page = self._api_client.get_connections(
-                self._page_id, connection_name, **args
+            args = {
+                key: value[0] for key, value in args.items() if key != "access_token"
+            }
+            current_page = self._make_graph_api_call(
+                f"{self._page_id}/{connection_name}", args
             )
-            result += current_page["data"]
+            if "data" in current_page:
+                result += current_page["data"]
+            else:
+                logger.error(f"Error in pagination: {current_page}")
+                break
         return result
 
     @staticmethod
