@@ -105,8 +105,7 @@ class TelegramSender(Singleton):
                         )
 
             username = self.bot.get_chat(chat_id).username
-            error_logs_recipients = self._tg_config.get(
-                "error_logs_recipients")
+            error_logs_recipients = self._tg_config.get("error_logs_recipients")
             for error_logs_recipient in error_logs_recipients:
                 try:
                     # Try redirect unsended message to error_logs_recipients
