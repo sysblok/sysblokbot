@@ -80,7 +80,6 @@ class Test:
             "/get_editorial_report",
             "/get_illustrative_report_columns",
             "/get_illustrative_report_members",
-            "/get_publication_plans",
             "/get_tasks_report",
             "/get_trello_board_state",
         ),
