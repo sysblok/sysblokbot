@@ -101,12 +101,6 @@ class SysBlokBot:
             "рассылка сводки о публикуемых на неделе постах",
         )
         self.add_manager_handler(
-            "get_publication_plans",
-            CommandCategories.SUMMARY,
-            self.manager_reply_handler("publication_plans_job"),
-            "получить сводку о публикуемых на неделе постах",
-        )
-        self.add_manager_handler(
             "fill_posts_list",
             CommandCategories.REGISTRY,
             direct_message_only(self.manager_reply_handler("fill_posts_list_job")),

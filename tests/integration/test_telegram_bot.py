@@ -76,7 +76,6 @@ class Test:
         "command",
         (
             "/get_articles_rubric arts",
-            "/get_publication_plans",
             "/get_tasks_report",
             "/get_trello_board_state",
         ),
