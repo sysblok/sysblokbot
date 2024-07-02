@@ -13,9 +13,7 @@ from .db_fetch_authors_sheet_job import DBFetchAuthorsSheetJob
 from .db_fetch_curators_sheet_job import DBFetchCuratorsSheetJob
 from .db_fetch_strings_sheet_job import DBFetchStringsSheetJob
 from .db_fetch_team_sheet_job import DBFetchTeamSheetJob
-from .editorial_board_stats_job import EditorialBoardStatsJob
 from .editorial_board_visual_stats_job import EditorialBoardVisualStatsJob
-from .editorial_report_job import EditorialReportJob
 from .fb_analytics_report_job import FBAnalyticsReportJob
 from .fill_posts_list_focalboard_job import FillPostsListFocalboardJob
 from .fill_posts_list_job import FillPostsListJob
@@ -28,8 +26,6 @@ from .hr_check_trello_consistency_job import HRCheckTrelloConsistencyJob
 from .hr_get_members_without_telegram_job import HRGetMembersWithoutTelegramJob
 from .hr_status_job import HRStatusJob
 from .ig_analytics_report_job import IGAnalyticsReportJob
-from .illustrative_report_columns_job import IllustrativeReportColumnsJob
-from .illustrative_report_members_job import IllustrativeReportMembersJob
 from .publication_plans_job import PublicationPlansJob
 from .sample_job import SampleJob
 from .send_reminders_job import SendRemindersJob
@@ -39,6 +35,5 @@ from .site_health_check_job import SiteHealthCheckJob
 from .tg_analytics_report_job import TgAnalyticsReportJob
 from .trello_board_state_job import TrelloBoardStateJob
 from .trello_board_state_notifications_job import TrelloBoardStateNotificationsJob
-from .trello_get_articles_arts_job import TrelloGetArticlesArtsJob
 from .trello_get_articles_rubric_job import TrelloGetArticlesRubricJob
 from .vk_analytics_report_job import VkAnalyticsReportJob

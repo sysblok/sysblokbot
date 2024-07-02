@@ -36,20 +36,8 @@ from src.trello.trello_client import TrelloClient
         #         'Пожалуйста, заполни'
         #     ]
         # ),
-        # (
-        #     jobs.editorial_report_job.EditorialReportJob,
-        #     [
-        #         'Отредактировано и ожидает финальной проверки: 0',
-        #         'На доработке у автора: 0',
-        #         'На редактуре: 3',
-        #         'Ожидает редактуры: 3',
-        #     ]
-        # ),
         # # (
         # #     jobs.fill_posts_list_job.FillPostsListJob,
-        # # ),
-        # # (
-        # #     jobs.illustrative_report_job.IllustrativeReportJob,
         # # ),
         # (
         #     jobs.db_fetch_authors_sheet_job.DBFetchAuthorsSheetJob,
