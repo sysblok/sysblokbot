@@ -83,6 +83,29 @@ class TelegramSender(Singleton):
                 return True
             except telegram.TelegramError as e:
                 logger.error(f"Could not send a message to {chat_id}: {e}")
+
+                username = self.bot.get_chat(chat_id).username
+                for error_logs_recipient in self.error_logs_recipients:
+                    try:
+                        # Try redirect unsended message to error_logs_recipients
+                        pretty_send(
+                            [message_text.strip()],
+                            lambda msg: self.bot.send_message(
+                                text=f'Unsended message to '
+                                     f'{username} {chat_id}\n'
+                                     f'{msg}',
+                                chat_id=error_logs_recipient,
+                                disable_notification=self.is_silent,
+                                disable_web_page_preview=self.disable_web_page_preview,
+                                **kwargs,
+                            ),
+                        )
+                    except telegram.TelegramError as e:
+                        logger.error(
+                            "Could not redirect unsended message "
+                            f"to error_logs_recipients {error_logs_recipient}: {e}"
+                        )
+
                 # HTML parse error isn't a separate class in Telegram
                 # So we need to dig into the exception message
                 if "Can't parse entities" in e.message:
