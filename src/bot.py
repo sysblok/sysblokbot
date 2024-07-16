@@ -89,12 +89,6 @@ class SysBlokBot:
             "получить сводку о состоянии доски",
         )
         self.add_manager_handler(
-            "get_editorial_board_stats",
-            CommandCategories.STATS,
-            self.manager_reply_handler("editorial_board_stats_job"),
-            "получить статистику изменений за неделю",
-        )
-        self.add_manager_handler(
             "get_editorial_board_visual_stats",
             CommandCategories.STATS,
             self.manager_reply_handler("editorial_board_visual_stats_job"),
@@ -105,12 +99,6 @@ class SysBlokBot:
             CommandCategories.BROADCAST,
             self.admin_broadcast_handler("publication_plans_job"),
             "рассылка сводки о публикуемых на неделе постах",
-        )
-        self.add_manager_handler(
-            "get_publication_plans",
-            CommandCategories.SUMMARY,
-            self.manager_reply_handler("publication_plans_job"),
-            "получить сводку о публикуемых на неделе постах",
         )
         self.add_manager_handler(
             "fill_posts_list",
@@ -126,12 +114,6 @@ class SysBlokBot:
                 self.manager_reply_handler("fill_posts_list_focalboard_job")
             ),
             "заполнить реестр постов из Focalboard (пока не работает)",
-        )
-        self.add_admin_handler(
-            "send_editorial_report",
-            CommandCategories.BROADCAST,
-            self.admin_broadcast_handler("editorial_report_job"),
-            "рассылка сводки по результатам редакторского созвона",
         )
         self.add_admin_handler(
             "hr_acquisition",
@@ -158,28 +140,10 @@ class SysBlokBot:
             "разослать статус по работе hr (по новичкам и участинкам на испытательном)",
         )
         self.add_manager_handler(
-            "get_editorial_report",
-            CommandCategories.SUMMARY,
-            self.manager_reply_handler("editorial_report_job"),
-            "получить сводку по результатам редакторского созвона",
-        )
-        self.add_manager_handler(
             "create_folders_for_illustrators",
             CommandCategories.REGISTRY,
             self.manager_reply_handler("create_folders_for_illustrators_job"),
             "создать папки для иллюстраторов",
-        )
-        self.add_manager_handler(
-            "get_illustrative_report_members",
-            CommandCategories.SUMMARY,
-            self.manager_reply_handler("illustrative_report_members_job"),
-            "получить сводку с папками для иллюстраторов (группы по иллюстраторам)",
-        )
-        self.add_manager_handler(
-            "get_illustrative_report_columns",
-            CommandCategories.SUMMARY,
-            self.manager_reply_handler("illustrative_report_columns_job"),
-            "получить сводку с папками для иллюстраторов (группы по колонкам)",
         )
         self.add_manager_handler(
             "get_tasks_report",
@@ -198,12 +162,6 @@ class SysBlokBot:
             CommandCategories.SUMMARY,
             direct_message_only(handlers.get_tasks_report_focalboard),
             "получить список задач из Focalboard",
-        )
-        self.add_manager_handler(
-            "get_articles_arts",
-            CommandCategories.SUMMARY,
-            self.manager_reply_handler("trello_get_articles_arts_job"),
-            "получить карточки по тегу искусство",
         )
         self.add_manager_handler(
             "get_articles_rubric",

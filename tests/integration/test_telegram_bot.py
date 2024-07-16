@@ -75,12 +75,7 @@ class Test:
     @pytest.mark.parametrize(
         "command",
         (
-            "/get_articles_arts",
             "/get_articles_rubric arts",
-            "/get_editorial_report",
-            "/get_illustrative_report_columns",
-            "/get_illustrative_report_members",
-            "/get_publication_plans",
             "/get_tasks_report",
             "/get_trello_board_state",
         ),
@@ -95,7 +90,6 @@ class Test:
         (
             "/get_fb_analytics_report",
             "/get_ig_analytics_report",
-            "/get_editorial_board_stats",
             "/get_tg_analytics_report",
             "/get_vk_analytics_report",
         ),
