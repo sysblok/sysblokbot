@@ -139,8 +139,8 @@ jobs:
             touch ${{ env.ROOT_DIR }}/board_credentials.json
             touch ${{ env.ROOT_DIR }}/config_override.json
             touch ${{ env.ROOT_DIR }}/config_gs.json
-            echo ${{ env.CONFIG }} > ${{ env.ROOT_DIR }}/config_override.json
-            echo ${{ env.CONFIG_GS }} > ${{ env.ROOT_DIR }}/config_gs.json
+            echo '${{ env.CONFIG }}' > ${{ env.ROOT_DIR }}/config_override.json
+            echo '${{ env.CONFIG_GS }}' > ${{ env.ROOT_DIR }}/config_gs.json
             docker run -dit --name sysblokbot-testing \
               --env APP_SOURCE="testing" --restart unless-stopped \
               --env TELEGRAM_ERROR_CHAT_ID="${{ env.TELEGRAM_ERROR_CHAT_ID }}" \
