@@ -67,7 +67,7 @@ jobs:
   push:
     # Ensure test job passes before pushing image.
     needs: test
-
+    environment: testing
     runs-on: ubuntu-latest
 
     steps:
