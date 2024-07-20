@@ -69,7 +69,7 @@ jobs:
   push:
     # Ensure test job passes before pushing image.
     needs: test
-
+    environment: prod
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
 
@@ -121,13 +121,15 @@ jobs:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_PROD_TOKEN }}
           TELEGRAM_ERROR_CHAT_ID: ${{ secrets.TELEGRAM_ERROR_CHAT_ID }}
           UPTRACE_DSN: ${{ secrets.UPTRACE_DSN }}
+          CONFIG: ${{ secrets.CONFIG }}
+          CONFIG_GS: ${{ secrets.CONFIG_GS }}
         with:
           host: ${{ secrets.MASTER_HOST }}
           username: ${{ secrets.MASTER_DO_USER }}
           passphrase: ${{ secrets.MASTER_DO_SSH_KEY_PASSWORD }}
           key: ${{ secrets.MASTER_DO_SSH_KEY }}
           port: ${{ secrets.MASTER_PORT }}
-          envs: GITHUB_USERNAME, GITHUB_TOKEN, IMAGE_NAME, ROOT_DIR, TELEGRAM_TOKEN, TELEGRAM_ERROR_CHAT_ID, UPTRACE_DSN
+          envs: GITHUB_USERNAME, GITHUB_TOKEN, IMAGE_NAME, ROOT_DIR, TELEGRAM_TOKEN, TELEGRAM_ERROR_CHAT_ID, UPTRACE_DSN, CONFIG, CONFIG_GS
           script: |
             export CONTAINER_ID=$(docker ps -aq --filter name=prod)
             export IMAGE_ID=$(docker images -aq --filter reference='docker.pkg.github.com/sysblok/sysblokbot/sysblokbot:prod')
@@ -138,6 +140,10 @@ jobs:
             touch ${{ env.ROOT_DIR }}/sysblokbot.sqlite
             touch ${{ env.ROOT_DIR }}/strings.sqlite
             touch ${{ env.ROOT_DIR }}/board_credentials.json
+            touch ${{ env.ROOT_DIR }}/config_override.json
+            touch ${{ env.ROOT_DIR }}/config_gs.json
+            echo '${{ env.CONFIG }}' > ${{ env.ROOT_DIR }}/config_override.json
+            echo '${{ env.CONFIG_GS }}' > ${{ env.ROOT_DIR }}/config_gs.json
             docker run -dit --name sysblokbot-prod \
               --env APP_SOURCE="prod" --restart unless-stopped \
               --env TELEGRAM_ERROR_CHAT_ID="${{ env.TELEGRAM_ERROR_CHAT_ID }}" \
