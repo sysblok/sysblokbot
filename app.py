@@ -94,4 +94,5 @@ if __name__ == "__main__":
     try:
         get_bot().run()
     except BaseException as e:
+        print(e.with_traceback())
         report_critical_error(e)

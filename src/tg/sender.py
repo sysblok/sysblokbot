@@ -71,36 +71,35 @@ class TelegramSender(Singleton):
             try:
                 pretty_send(
                     [message_text.strip()],
-                    lambda msg: self.bot.send_message(
-                        text=msg,
-                        chat_id=chat_id,
-                        disable_notification=self.is_silent,
-                        disable_web_page_preview=self.disable_web_page_preview,
-                        parse_mode=telegram.ParseMode.HTML,
-                        **kwargs,
-                    ),
+                    self.bot,
+                    chat_id,
+                    disable_notification=self.is_silent,
+                    disable_web_page_preview=self.disable_web_page_preview,
+                    parse_mode=telegram.constants.ParseMode.HTML,
                 )
                 return True
-            except telegram.TelegramError as e:
+            except telegram.error.TelegramError as e:
                 logger.error(f"Could not send a message to {chat_id}: {e}")
 
                 username = self.bot.get_chat(chat_id).username
                 for error_logs_recipient in self.error_logs_recipients:
                     try:
+                        pass
                         # Try redirect unsended message to error_logs_recipients
-                        pretty_send(
-                            [message_text.strip()],
-                            lambda msg: self.bot.send_message(
-                                text=f'Unsended message to '
-                                     f'{username} {chat_id}\n'
-                                     f'{msg}',
-                                chat_id=error_logs_recipient,
-                                disable_notification=self.is_silent,
-                                disable_web_page_preview=self.disable_web_page_preview,
-                                **kwargs,
-                            ),
-                        )
-                    except telegram.TelegramError as e:
+                        # TODO(re-enable this)
+                        # pretty_send(
+                        #     [message_text.strip()],
+                        #     lambda msg: self.bot.send_message(
+                        #         text=f'Unsended message to '
+                        #              f'{username} {chat_id}\n'
+                        #              f'{msg}',
+                        #         chat_id=error_logs_recipient,
+                        #         disable_notification=self.is_silent,
+                        #         disable_web_page_preview=self.disable_web_page_preview,
+                        #         **kwargs,
+                        #     ),
+                        # )
+                    except telegram.error.TelegramError as e:
                         logger.error(
                             "Could not redirect unsended message "
                             f"to error_logs_recipients {error_logs_recipient}: {e}"
@@ -111,18 +110,20 @@ class TelegramSender(Singleton):
                 if "Can't parse entities" in e.message:
                     try:
                         # Try sending the plain-text version
-                        pretty_send(
-                            [message_text.strip()],
-                            lambda msg: self.bot.send_message(
-                                text=msg,
-                                chat_id=chat_id,
-                                disable_notification=self.is_silent,
-                                disable_web_page_preview=self.disable_web_page_preview,
-                                **kwargs,
-                            ),
-                        )
+                        pass
+                        # TODO: re-enable this
+                        # pretty_send(
+                        #     [message_text.strip()],
+                        #     lambda msg: self.bot.send_message(
+                        #         text=msg,
+                        #         chat_id=chat_id,
+                        #         disable_notification=self.is_silent,
+                        #         disable_web_page_preview=self.disable_web_page_preview,
+                        #         **kwargs,
+                        #     ),
+                        # )
                         return True
-                    except telegram.TelegramError as e:
+                    except telegram.error.TelegramError as e:
                         logger.error(
                             f"Could not send a plain-text message to {chat_id}: {e}"
                         )
@@ -159,7 +160,14 @@ class TelegramSender(Singleton):
         )
 
 
-def pretty_send(paragraphs: List[str], send: Callable[[str], None]) -> str:
+async def pretty_send(
+        paragraphs: List[str],
+        bot,
+        chat_id,
+        disable_notification: bool,
+        disable_web_page_preview: bool,
+        parse_mode: telegram.constants.ParseMode = telegram.constants.ParseMode.HTML,
+    ) -> str:
     """
     Send a bunch of paragraphs grouped into messages with adequate delays.
     Return the whole message for testing purposes.
@@ -172,13 +180,19 @@ def pretty_send(paragraphs: List[str], send: Callable[[str], None]) -> str:
             message = message + "</code>"
         elif message.endswith("</code>") and "<code>" not in message:
             message = "<code>" + message
-        send(message)
+        await bot.send_message(
+            text=message,
+            chat_id=chat_id,
+            disable_notification=disable_notification,
+            disable_web_page_preview=disable_web_page_preview,
+            parse_mode=parse_mode
+        )
     return "\n".join(messages)
 
 
 def paragraphs_to_messages(
     paragraphs: List[str],
-    char_limit=telegram.constants.MAX_MESSAGE_LENGTH,
+    char_limit=telegram.constants.MessageLimit.MAX_TEXT_LENGTH,
     delimiter="\n\n",
 ) -> List[str]:
     """

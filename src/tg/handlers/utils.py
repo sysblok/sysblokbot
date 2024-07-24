@@ -91,10 +91,11 @@ def is_group_chat(update) -> bool:
     return update.message.chat.type in ("group", "supergroup")
 
 
-def reply(message: str, tg_update, **kwargs):
-    return pretty_send(
+async def reply(message: str, tg_update, **kwargs):
+    return await pretty_send(
         [message],
-        lambda msg: TelegramSender().send_to_chat_id(
-            msg, get_chat_id(tg_update), **kwargs
-        ),
+        TelegramSender().bot,
+        get_chat_id(tg_update),
+        disable_notification=False,
+        disable_web_page_preview=False,
     )

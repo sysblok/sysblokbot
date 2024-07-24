@@ -4,14 +4,15 @@ from collections import defaultdict
 from typing import Callable
 
 from telegram.ext import (
+    ApplicationBuilder,
     CallbackQueryHandler,
     CommandHandler,
-    Filters,
+    filters,
     MessageHandler,
     PicklePersistence,
     Updater,
 )
-from telegram.ext.dispatcher import run_async
+# from telegram.ext.dispatcher import run_async
 
 from .app_context import AppContext
 from .config_manager import ConfigManager
@@ -46,15 +47,20 @@ class SysBlokBot:
     ):
         self.config_manager = config_manager
         tg_config = config_manager.get_telegram_config()
-        self.updater = Updater(
-            tg_config["token"],
-            use_context=True,
-            user_sig_handler=signal_handler,
-            persistence=PicklePersistence(filename="persistent_storage.pickle"),
+        self.application = (
+            ApplicationBuilder()
+            .persistence(PicklePersistence(filepath="persistent_storage.pickle"))
+            .token(tg_config["token"])
+            .build()
         )
-        self.dp = self.updater.dispatcher
+        # self.updater = Updater(
+        #     tg_config["token"],
+        #     use_context=True,
+        #     user_sig_handler=signal_handler,
+        #     persistence=PicklePersistence(filename="persistent_storage.pickle"),
+        # )
         self.telegram_sender = sender.TelegramSender(
-            bot=self.dp.bot, tg_config=tg_config
+            bot=self.application.bot, tg_config=tg_config
         )
         try:
             self.app_context = AppContext(config_manager, skip_db_update)
@@ -76,304 +82,306 @@ class SysBlokBot:
     def init_handlers(self):
         # all command handlers defined here
         # business logic cmds
-        self.add_admin_handler(
-            "send_trello_board_state",
-            CommandCategories.BROADCAST,
-            self.admin_broadcast_handler("trello_board_state_job"),
-            "рассылка сводки о состоянии доски",
-        )
-        self.add_manager_handler(
-            "get_trello_board_state",
-            CommandCategories.SUMMARY,
-            self.manager_reply_handler("trello_board_state_job"),
-            "получить сводку о состоянии доски",
-        )
-        self.add_manager_handler(
-            "get_editorial_board_visual_stats",
-            CommandCategories.STATS,
-            self.manager_reply_handler("editorial_board_visual_stats_job"),
-            "получить статистику изменений за неделю в виде картинки",
-        )
-        self.add_admin_handler(
-            "send_publication_plans",
-            CommandCategories.BROADCAST,
-            self.admin_broadcast_handler("publication_plans_job"),
-            "рассылка сводки о публикуемых на неделе постах",
-        )
-        self.add_manager_handler(
-            "fill_posts_list",
-            CommandCategories.REGISTRY,
-            direct_message_only(self.manager_reply_handler("fill_posts_list_job")),
-            "заполнить реестр постов",
-        )
 
-        self.add_manager_handler(
-            "fill_posts_list_focalboard",
-            CommandCategories.REGISTRY,
-            direct_message_only(
-                self.manager_reply_handler("fill_posts_list_focalboard_job")
-            ),
-            "заполнить реестр постов из Focalboard (пока не работает)",
-        )
-        self.add_admin_handler(
-            "hr_acquisition",
-            CommandCategories.HR,
-            self.manager_reply_handler("hr_acquisition_job"),
-            "обработать новые анкеты",
-        )
-        self.add_admin_handler(
-            "hr_acquisition_pt",
-            CommandCategories.HR,
-            self.manager_reply_handler("hr_acquisition_pt_job"),
-            "обработать новые анкеты Пишу Тебе",
-        )
-        self.add_manager_handler(
-            "get_hr_status",
-            CommandCategories.HR,
-            self.manager_reply_handler("hr_status_job"),
-            "получить статус по работе hr (по новичкам и участникам на испытательном)",
-        )
-        self.add_admin_handler(
-            "send_hr_status",
-            CommandCategories.BROADCAST,
-            self.admin_broadcast_handler("hr_status_job"),
-            "разослать статус по работе hr (по новичкам и участинкам на испытательном)",
-        )
-        self.add_manager_handler(
-            "create_folders_for_illustrators",
-            CommandCategories.REGISTRY,
-            self.manager_reply_handler("create_folders_for_illustrators_job"),
-            "создать папки для иллюстраторов",
-        )
-        self.add_manager_handler(
-            "get_tasks_report",
-            CommandCategories.SUMMARY,
-            direct_message_only(handlers.get_tasks_report),
-            "получить список задач из Trello",
-        )
-        self.add_manager_handler(
-            "get_tasks_report_advanced",
-            CommandCategories.SUMMARY,
-            direct_message_only(handlers.get_tasks_report_advanced),
-            "получить список задач из Trello (расширенный)",
-        )
-        self.add_manager_handler(
-            "get_tasks_report_focalboard",
-            CommandCategories.SUMMARY,
-            direct_message_only(handlers.get_tasks_report_focalboard),
-            "получить список задач из Focalboard",
-        )
-        self.add_manager_handler(
-            "get_articles_rubric",
-            CommandCategories.SUMMARY,
-            self.manager_reply_handler("trello_get_articles_rubric_job"),
-            "получить карточки по названию рубрики в трелло",
-        )
-        self.add_manager_handler(
-            "get_chat_id",
-            CommandCategories.REMINDERS,
-            handlers.get_chat_id,
-            "получить chat_id (свой или группы)",
-        )
-        self.add_manager_handler(
-            "manage_reminders",
-            CommandCategories.REMINDERS,
-            handlers.manage_reminders,
-            "настроить напоминания",
-        )
-        self.add_manager_handler(
-            "get_fb_analytics_report",
-            CommandCategories.STATS,
-            self.manager_reply_handler("fb_analytics_report_job"),
-            "получить статистику facebook страницы за неделю",
-        )
-        self.add_manager_handler(
-            "get_ig_analytics_report",
-            CommandCategories.STATS,
-            self.manager_reply_handler("ig_analytics_report_job"),
-            "получить статистику instagram страницы за неделю",
-        )
-        self.add_manager_handler(
-            "get_vk_analytics_report",
-            CommandCategories.STATS,
-            self.manager_reply_handler("vk_analytics_report_job"),
-            "получить статистику паблика VK за неделю",
-        )
-        self.add_manager_handler(
-            "get_tg_analytics_report",
-            CommandCategories.STATS,
-            self.manager_reply_handler("tg_analytics_report_job"),
-            "получить статистику telegram канала за неделю",
-        )
-        self.add_manager_handler(
-            "get_report_from_sheet",
-            CommandCategories.SUMMARY,
-            self.manager_reply_handler("sheet_report_job"),
-            "получить статистику по табличке (например, оцифровка открыток)",
-        )
-        # hidden from /help command for curator enrollment
-        self.add_handler("enroll_curator", handlers.enroll_curator)
+        # TODO: uncomment and migrate these handlers
+        # self.add_admin_handler(
+        #     "send_trello_board_state",
+        #     CommandCategories.BROADCAST,
+        #     self.admin_broadcast_handler("trello_board_state_job"),
+        #     "рассылка сводки о состоянии доски",
+        # )
+        # self.add_manager_handler(
+        #     "get_trello_board_state",
+        #     CommandCategories.SUMMARY,
+        #     self.manager_reply_handler("trello_board_state_job"),
+        #     "получить сводку о состоянии доски",
+        # )
+        # self.add_manager_handler(
+        #     "get_editorial_board_visual_stats",
+        #     CommandCategories.STATS,
+        #     self.manager_reply_handler("editorial_board_visual_stats_job"),
+        #     "получить статистику изменений за неделю в виде картинки",
+        # )
+        # self.add_admin_handler(
+        #     "send_publication_plans",
+        #     CommandCategories.BROADCAST,
+        #     self.admin_broadcast_handler("publication_plans_job"),
+        #     "рассылка сводки о публикуемых на неделе постах",
+        # )
+        # self.add_manager_handler(
+        #     "fill_posts_list",
+        #     CommandCategories.REGISTRY,
+        #     direct_message_only(self.manager_reply_handler("fill_posts_list_job")),
+        #     "заполнить реестр постов",
+        # )
 
-        # admin-only technical cmds
-        self.add_admin_handler(
-            "update_config",
-            CommandCategories.CONFIG,
-            self.admin_reply_handler("config_updater_job"),
-            "обновить конфиг вне расписания",
-        )
-        self.add_admin_handler(
-            "list_jobs",
-            CommandCategories.CONFIG,
-            handlers.list_jobs,
-            "показать статус асинхронных задач",
-        )
-        self.add_admin_handler(
-            "get_usage_list",
-            CommandCategories.CONFIG,
-            handlers.list_chats,
-            "показать места использование бота: пользователи и чаты",
-        )
-        self.add_admin_handler(
-            "set_log_level",
-            CommandCategories.LOGGING,
-            handlers.set_log_level,
-            "изменить уровень логирования (info / debug)",
-        )
-        self.add_admin_handler(
-            "mute_errors",
-            CommandCategories.LOGGING,
-            handlers.mute_errors,
-            "отключить логирование ошибок в телеграм",
-        )
-        self.add_admin_handler(
-            "unmute_errors",
-            CommandCategories.LOGGING,
-            handlers.unmute_errors,
-            "включить логирование ошибок в телеграм",
-        )
-        self.add_admin_handler(
-            "get_config",
-            CommandCategories.CONFIG,
-            handlers.get_config,
-            "получить текущий конфиг (частично или полностью)",
-        )
-        self.add_admin_handler(
-            "get_config_jobs",
-            CommandCategories.CONFIG,
-            handlers.get_config_jobs,
-            "получить текущий конфиг джобов (частично или полностью)",
-        )
-        self.add_admin_handler(
-            "reload_config_jobs",
-            CommandCategories.CONFIG,
-            handlers.reload_config_jobs,
-            "обновить конфиг джобов с Google-диска",
-        )
-        self.add_admin_handler(
-            "set_config",
-            CommandCategories.CONFIG,
-            handlers.set_config,
-            "установить новое значение в конфиге",
-        )
-        self.add_admin_handler(
-            "add_manager",
-            CommandCategories.MOST_USED,
-            handlers.add_manager,
-            "добавить менеджера в список",
-        )
-        self.add_admin_handler(
-            "change_board",
-            CommandCategories.CONFIG,
-            handlers.change_board,
-            "изменить Trello board_id",
-        )
-        self.add_admin_handler(
-            "send_reminders",
-            CommandCategories.BROADCAST,
-            self.admin_reply_handler("send_reminders_job"),
-            "отослать напоминания вне расписания",
-        )
-        self.add_admin_handler(
-            "send_trello_curator_notification",
-            CommandCategories.BROADCAST,
-            self.admin_reply_handler("trello_board_state_notifications_job"),
-            "разослать кураторам состояние их карточек вне расписания",
-        )
-        self.add_admin_handler(
-            "manage_all_reminders",
-            CommandCategories.MOST_USED,
-            handlers.manage_all_reminders,
-            "настроить все напоминания",
-        )
-        self.add_admin_handler(
-            "get_roles_for_member",
-            CommandCategories.HR,
-            handlers.get_roles_for_member,
-            "показать роли для участника",
-        )
-        self.add_admin_handler(
-            "get_members_for_role",
-            CommandCategories.HR,
-            handlers.get_members_for_role,
-            "показать участников для роли",
-        )
-        self.add_admin_handler(
-            "check_chat_consistency",
-            CommandCategories.HR,
-            self.admin_reply_handler("hr_check_chat_consistency_job"),
-            "консистентность чата редакции",
-        )
-        self.add_admin_handler(
-            "check_chat_consistency_frozen",
-            CommandCategories.HR,
-            self.admin_reply_handler("hr_check_chat_consistency_frozen_job"),
-            "консистентность чата редакции (замороженные участники)",
-        )
-        self.add_admin_handler(
-            "check_trello_consistency",
-            CommandCategories.HR,
-            self.admin_reply_handler("hr_check_trello_consistency_job"),
-            "консистентность Трелло редакции",
-        )
-        self.add_admin_handler(
-            "check_trello_consistency_frozen",
-            CommandCategories.HR,
-            self.admin_reply_handler("hr_check_trello_consistency_frozen_job"),
-            "консистентность Трелло редакции (замороженные участники)",
-        )
-        self.add_admin_handler(
-            "get_members_without_telegram",
-            CommandCategories.HR,
-            self.admin_reply_handler("hr_get_members_without_telegram_job"),
-            (
-                "активные участники без указанного телеграма"
-                "(телефон это 10+ цифр+-(), отсутствие включает #N/A и кириллицу)"
-            ),
-        )
-        self.add_admin_handler(
-            "check_site_health",
-            CommandCategories.DATA_SYNC,
-            self.admin_reply_handler("site_health_check_job"),
-            "проверка статуса сайта",
-        )
-        self.add_admin_handler(
-            "get_chat_data",
-            CommandCategories.DEBUG,
-            handlers.get_chat_data,
-            "get_chat_data",
-        )
-        self.add_admin_handler(
-            "clean_chat_data",
-            CommandCategories.DEBUG,
-            handlers.clean_chat_data,
-            "clean_chat_data",
-        )
-        self.add_admin_handler(
-            "get_managers",
-            CommandCategories.MOST_USED,
-            handlers.get_managers,
-            "get_managers",
-        )
+        # self.add_manager_handler(
+        #     "fill_posts_list_focalboard",
+        #     CommandCategories.REGISTRY,
+        #     direct_message_only(
+        #         self.manager_reply_handler("fill_posts_list_focalboard_job")
+        #     ),
+        #     "заполнить реестр постов из Focalboard (пока не работает)",
+        # )
+        # self.add_admin_handler(
+        #     "hr_acquisition",
+        #     CommandCategories.HR,
+        #     self.manager_reply_handler("hr_acquisition_job"),
+        #     "обработать новые анкеты",
+        # )
+        # self.add_admin_handler(
+        #     "hr_acquisition_pt",
+        #     CommandCategories.HR,
+        #     self.manager_reply_handler("hr_acquisition_pt_job"),
+        #     "обработать новые анкеты Пишу Тебе",
+        # )
+        # self.add_manager_handler(
+        #     "get_hr_status",
+        #     CommandCategories.HR,
+        #     self.manager_reply_handler("hr_status_job"),
+        #     "получить статус по работе hr (по новичкам и участникам на испытательном)",
+        # )
+        # self.add_admin_handler(
+        #     "send_hr_status",
+        #     CommandCategories.BROADCAST,
+        #     self.admin_broadcast_handler("hr_status_job"),
+        #     "разослать статус по работе hr (по новичкам и участинкам на испытательном)",
+        # )
+        # self.add_manager_handler(
+        #     "create_folders_for_illustrators",
+        #     CommandCategories.REGISTRY,
+        #     self.manager_reply_handler("create_folders_for_illustrators_job"),
+        #     "создать папки для иллюстраторов",
+        # )
+        # self.add_manager_handler(
+        #     "get_tasks_report",
+        #     CommandCategories.SUMMARY,
+        #     direct_message_only(handlers.get_tasks_report),
+        #     "получить список задач из Trello",
+        # )
+        # self.add_manager_handler(
+        #     "get_tasks_report_advanced",
+        #     CommandCategories.SUMMARY,
+        #     direct_message_only(handlers.get_tasks_report_advanced),
+        #     "получить список задач из Trello (расширенный)",
+        # )
+        # self.add_manager_handler(
+        #     "get_tasks_report_focalboard",
+        #     CommandCategories.SUMMARY,
+        #     direct_message_only(handlers.get_tasks_report_focalboard),
+        #     "получить список задач из Focalboard",
+        # )
+        # self.add_manager_handler(
+        #     "get_articles_rubric",
+        #     CommandCategories.SUMMARY,
+        #     self.manager_reply_handler("trello_get_articles_rubric_job"),
+        #     "получить карточки по названию рубрики в трелло",
+        # )
+        # self.add_manager_handler(
+        #     "get_chat_id",
+        #     CommandCategories.REMINDERS,
+        #     handlers.get_chat_id,
+        #     "получить chat_id (свой или группы)",
+        # )
+        # self.add_manager_handler(
+        #     "manage_reminders",
+        #     CommandCategories.REMINDERS,
+        #     handlers.manage_reminders,
+        #     "настроить напоминания",
+        # )
+        # self.add_manager_handler(
+        #     "get_fb_analytics_report",
+        #     CommandCategories.STATS,
+        #     self.manager_reply_handler("fb_analytics_report_job"),
+        #     "получить статистику facebook страницы за неделю",
+        # )
+        # self.add_manager_handler(
+        #     "get_ig_analytics_report",
+        #     CommandCategories.STATS,
+        #     self.manager_reply_handler("ig_analytics_report_job"),
+        #     "получить статистику instagram страницы за неделю",
+        # )
+        # self.add_manager_handler(
+        #     "get_vk_analytics_report",
+        #     CommandCategories.STATS,
+        #     self.manager_reply_handler("vk_analytics_report_job"),
+        #     "получить статистику паблика VK за неделю",
+        # )
+        # self.add_manager_handler(
+        #     "get_tg_analytics_report",
+        #     CommandCategories.STATS,
+        #     self.manager_reply_handler("tg_analytics_report_job"),
+        #     "получить статистику telegram канала за неделю",
+        # )
+        # self.add_manager_handler(
+        #     "get_report_from_sheet",
+        #     CommandCategories.SUMMARY,
+        #     self.manager_reply_handler("sheet_report_job"),
+        #     "получить статистику по табличке (например, оцифровка открыток)",
+        # )
+        # # hidden from /help command for curator enrollment
+        # self.add_handler("enroll_curator", handlers.enroll_curator)
+
+        # # admin-only technical cmds
+        # self.add_admin_handler(
+        #     "update_config",
+        #     CommandCategories.CONFIG,
+        #     self.admin_reply_handler("config_updater_job"),
+        #     "обновить конфиг вне расписания",
+        # )
+        # self.add_admin_handler(
+        #     "list_jobs",
+        #     CommandCategories.CONFIG,
+        #     handlers.list_jobs,
+        #     "показать статус асинхронных задач",
+        # )
+        # self.add_admin_handler(
+        #     "get_usage_list",
+        #     CommandCategories.CONFIG,
+        #     handlers.list_chats,
+        #     "показать места использование бота: пользователи и чаты",
+        # )
+        # self.add_admin_handler(
+        #     "set_log_level",
+        #     CommandCategories.LOGGING,
+        #     handlers.set_log_level,
+        #     "изменить уровень логирования (info / debug)",
+        # )
+        # self.add_admin_handler(
+        #     "mute_errors",
+        #     CommandCategories.LOGGING,
+        #     handlers.mute_errors,
+        #     "отключить логирование ошибок в телеграм",
+        # )
+        # self.add_admin_handler(
+        #     "unmute_errors",
+        #     CommandCategories.LOGGING,
+        #     handlers.unmute_errors,
+        #     "включить логирование ошибок в телеграм",
+        # )
+        # self.add_admin_handler(
+        #     "get_config",
+        #     CommandCategories.CONFIG,
+        #     handlers.get_config,
+        #     "получить текущий конфиг (частично или полностью)",
+        # )
+        # self.add_admin_handler(
+        #     "get_config_jobs",
+        #     CommandCategories.CONFIG,
+        #     handlers.get_config_jobs,
+        #     "получить текущий конфиг джобов (частично или полностью)",
+        # )
+        # self.add_admin_handler(
+        #     "reload_config_jobs",
+        #     CommandCategories.CONFIG,
+        #     handlers.reload_config_jobs,
+        #     "обновить конфиг джобов с Google-диска",
+        # )
+        # self.add_admin_handler(
+        #     "set_config",
+        #     CommandCategories.CONFIG,
+        #     handlers.set_config,
+        #     "установить новое значение в конфиге",
+        # )
+        # self.add_admin_handler(
+        #     "add_manager",
+        #     CommandCategories.MOST_USED,
+        #     handlers.add_manager,
+        #     "добавить менеджера в список",
+        # )
+        # self.add_admin_handler(
+        #     "change_board",
+        #     CommandCategories.CONFIG,
+        #     handlers.change_board,
+        #     "изменить Trello board_id",
+        # )
+        # self.add_admin_handler(
+        #     "send_reminders",
+        #     CommandCategories.BROADCAST,
+        #     self.admin_reply_handler("send_reminders_job"),
+        #     "отослать напоминания вне расписания",
+        # )
+        # self.add_admin_handler(
+        #     "send_trello_curator_notification",
+        #     CommandCategories.BROADCAST,
+        #     self.admin_reply_handler("trello_board_state_notifications_job"),
+        #     "разослать кураторам состояние их карточек вне расписания",
+        # )
+        # self.add_admin_handler(
+        #     "manage_all_reminders",
+        #     CommandCategories.MOST_USED,
+        #     handlers.manage_all_reminders,
+        #     "настроить все напоминания",
+        # )
+        # self.add_admin_handler(
+        #     "get_roles_for_member",
+        #     CommandCategories.HR,
+        #     handlers.get_roles_for_member,
+        #     "показать роли для участника",
+        # )
+        # self.add_admin_handler(
+        #     "get_members_for_role",
+        #     CommandCategories.HR,
+        #     handlers.get_members_for_role,
+        #     "показать участников для роли",
+        # )
+        # self.add_admin_handler(
+        #     "check_chat_consistency",
+        #     CommandCategories.HR,
+        #     self.admin_reply_handler("hr_check_chat_consistency_job"),
+        #     "консистентность чата редакции",
+        # )
+        # self.add_admin_handler(
+        #     "check_chat_consistency_frozen",
+        #     CommandCategories.HR,
+        #     self.admin_reply_handler("hr_check_chat_consistency_frozen_job"),
+        #     "консистентность чата редакции (замороженные участники)",
+        # )
+        # self.add_admin_handler(
+        #     "check_trello_consistency",
+        #     CommandCategories.HR,
+        #     self.admin_reply_handler("hr_check_trello_consistency_job"),
+        #     "консистентность Трелло редакции",
+        # )
+        # self.add_admin_handler(
+        #     "check_trello_consistency_frozen",
+        #     CommandCategories.HR,
+        #     self.admin_reply_handler("hr_check_trello_consistency_frozen_job"),
+        #     "консистентность Трелло редакции (замороженные участники)",
+        # )
+        # self.add_admin_handler(
+        #     "get_members_without_telegram",
+        #     CommandCategories.HR,
+        #     self.admin_reply_handler("hr_get_members_without_telegram_job"),
+        #     (
+        #         "активные участники без указанного телеграма"
+        #         "(телефон это 10+ цифр+-(), отсутствие включает #N/A и кириллицу)"
+        #     ),
+        # )
+        # self.add_admin_handler(
+        #     "check_site_health",
+        #     CommandCategories.DATA_SYNC,
+        #     self.admin_reply_handler("site_health_check_job"),
+        #     "проверка статуса сайта",
+        # )
+        # self.add_admin_handler(
+        #     "get_chat_data",
+        #     CommandCategories.DEBUG,
+        #     handlers.get_chat_data,
+        #     "get_chat_data",
+        # )
+        # self.add_admin_handler(
+        #     "clean_chat_data",
+        #     CommandCategories.DEBUG,
+        #     handlers.clean_chat_data,
+        #     "clean_chat_data",
+        # )
+        # self.add_admin_handler(
+        #     "get_managers",
+        #     CommandCategories.MOST_USED,
+        #     handlers.get_managers,
+        #     "get_managers",
+        # )
 
         # sample handler
         self.add_handler(
@@ -382,71 +390,66 @@ class SysBlokBot:
         )
 
         # db commands hidden from /help command
-        self.add_handler(
-            "db_fetch_authors_sheet",
-            self.admin_reply_handler("db_fetch_authors_sheet_job"),
-        )
-        self.add_handler(
-            "db_fetch_curators_sheet",
-            self.admin_reply_handler("db_fetch_curators_sheet_job"),
-        )
-        self.add_handler(
-            "db_fetch_team_sheet",
-            self.admin_reply_handler("db_fetch_team_sheet_job"),
-        )
-        self.add_handler(
-            "db_fetch_strings_sheet",
-            self.admin_reply_handler("db_fetch_strings_sheet_job"),
-        )
-        self.add_handler(
-            "db_fetch_all_team_members",
-            self.admin_reply_handler("db_fetch_all_team_members_job"),
-        )
+        # self.add_handler(
+        #     "db_fetch_authors_sheet",
+        #     self.admin_reply_handler("db_fetch_authors_sheet_job"),
+        # )
+        # self.add_handler(
+        #     "db_fetch_curators_sheet",
+        #     self.admin_reply_handler("db_fetch_curators_sheet_job"),
+        # )
+        # self.add_handler(
+        #     "db_fetch_team_sheet",
+        #     self.admin_reply_handler("db_fetch_team_sheet_job"),
+        # )
+        # self.add_handler(
+        #     "db_fetch_strings_sheet",
+        #     self.admin_reply_handler("db_fetch_strings_sheet_job"),
+        # )
+        # self.add_handler(
+        #     "db_fetch_all_team_members",
+        #     self.admin_reply_handler("db_fetch_all_team_members_job"),
+        # )
 
         # general purpose cmds
         self.add_admin_handler(
             "start", CommandCategories.MOST_USED, handlers.start, "начать чат с ботом"
         )
-        self.add_admin_handler(
-            "get_board_credentials",
-            CommandCategories.MOST_USED,
-            lambda update, context: handlers.get_board_credentials(update, context),
-            "получить пароль от Focalboard",
-        )
-        self.add_admin_handler(
-            "help",
-            CommandCategories.MOST_USED,
-            lambda update, context: handlers.help(update, context, self.handlers_info),
-            "получить список доступных команд",
-        )
-        self.add_admin_handler(
-            "shrug",
-            CommandCategories.MOST_USED,
-            self.admin_reply_handler("shrug_job"),
-            "¯\\_(ツ)_/¯",
-        )
+        # self.add_admin_handler(
+        #     "get_board_credentials",
+        #     CommandCategories.MOST_USED,
+        #     lambda update, context: handlers.get_board_credentials(update, context),
+        #     "получить пароль от Focalboard",
+        # )
+        # self.add_admin_handler(
+        #     "help",
+        #     CommandCategories.MOST_USED,
+        #     lambda update, context: handlers.help(update, context, self.handlers_info),
+        #     "получить список доступных команд",
+        # )
+        # self.add_admin_handler(
+        #     "shrug",
+        #     CommandCategories.MOST_USED,
+        #     self.admin_reply_handler("shrug_job"),
+        #     "¯\\_(ツ)_/¯",
+        # )
 
         # on non-command user message
-        self.dp.add_handler(MessageHandler(Filters.text, handlers.handle_user_message))
-        self.dp.add_handler(CallbackQueryHandler(handlers.handle_callback_query))
-        self.dp.add_handler(
-            MessageHandler(
-                Filters.status_update.new_chat_members, handlers.handle_new_members
-            )
-        )
+        # self.application.add_handler(MessageHandler(filters.TEXT, handlers.handle_user_message))
+        # self.application.add_handler(CallbackQueryHandler(handlers.handle_callback_query))
+        # self.application.add_handler(
+        #     MessageHandler(
+        #         filters.StatusUpdate.NEW_CHAT_MEMBERS, handlers.handle_new_members
+        #     )
+        # )
 
         # log all errors
-        self.dp.add_error_handler(handlers.error)
+        self.application.add_error_handler(handlers.error)
 
     def run(self):
         # Start the Bot
         logger.info("Starting polling...")
-        self.updater.start_polling()
-
-        # Run the bot until you press Ctrl-C or the process receives SIGINT,
-        # SIGTERM or SIGABRT. start_polling() is non-blocking and will
-        # stop the bot gracefully.
-        self.updater.idle()
+        self.application.run_polling()
 
     # Methods, adding command handlers and setting them to /help cmd for proper audience
     def add_handler(self, handler_cmd: str, handler_func: Callable):
@@ -461,8 +464,8 @@ class SysBlokBot:
 
             return wrapper
 
-        self.dp.add_handler(
-            CommandHandler(handler_cmd, run_async(add_usage_logging(handler_func)))
+        self.application.add_handler(
+            CommandHandler(handler_cmd, add_usage_logging(handler_func))
         )
 
     def add_admin_handler(
