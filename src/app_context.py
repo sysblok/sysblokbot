@@ -55,9 +55,9 @@ class AppContext(Singleton):
         self.trello_client = TrelloClient(
             trello_config=config_manager.get_trello_config()
         )
-        # self.focalboard_client = FocalboardClient(
-        #     focalboard_config=config_manager.get_focalboard_config()
-        # )
+        self.focalboard_client = FocalboardClient(
+            focalboard_config=config_manager.get_focalboard_config()
+        )
         self.facebook_client = FacebookClient(
             facebook_config=config_manager.get_facebook_config()
         )
