@@ -364,12 +364,12 @@ class SysBlokBot:
         #     self.admin_reply_handler("site_health_check_job"),
         #     "проверка статуса сайта",
         # )
-        # self.add_admin_handler(
-        #     "get_chat_data",
-        #     CommandCategories.DEBUG,
-        #     handlers.get_chat_data,
-        #     "get_chat_data",
-        # )
+        self.add_admin_handler(
+            "get_chat_data",
+            CommandCategories.DEBUG,
+            handlers.get_chat_data,
+            "get_chat_data",
+        )
         # self.add_admin_handler(
         #     "clean_chat_data",
         #     CommandCategories.DEBUG,
@@ -421,18 +421,18 @@ class SysBlokBot:
         #     lambda update, context: handlers.get_board_credentials(update, context),
         #     "получить пароль от Focalboard",
         # )
-        # self.add_admin_handler(
-        #     "help",
-        #     CommandCategories.MOST_USED,
-        #     lambda update, context: handlers.help(update, context, self.handlers_info),
-        #     "получить список доступных команд",
-        # )
-        # self.add_admin_handler(
-        #     "shrug",
-        #     CommandCategories.MOST_USED,
-        #     self.admin_reply_handler("shrug_job"),
-        #     "¯\\_(ツ)_/¯",
-        # )
+        self.add_admin_handler(
+            "help",
+            CommandCategories.MOST_USED,
+            lambda update, context: handlers.help(update, context, self.handlers_info),
+            "получить список доступных команд",
+        )
+        self.add_admin_handler(
+            "shrug",
+            CommandCategories.MOST_USED,
+            self.admin_reply_handler("shrug_job"),
+            "¯\\_(ツ)_/¯",
+        )
 
         # on non-command user message
         # self.application.add_handler(MessageHandler(filters.TEXT, handlers.handle_user_message))
