@@ -370,12 +370,12 @@ class SysBlokBot:
             handlers.get_chat_data,
             "get_chat_data",
         )
-        # self.add_admin_handler(
-        #     "clean_chat_data",
-        #     CommandCategories.DEBUG,
-        #     handlers.clean_chat_data,
-        #     "clean_chat_data",
-        # )
+        self.add_admin_handler(
+            "clean_chat_data",
+            CommandCategories.DEBUG,
+            handlers.clean_chat_data,
+            "clean_chat_data",
+        )
         # self.add_admin_handler(
         #     "get_managers",
         #     CommandCategories.MOST_USED,
