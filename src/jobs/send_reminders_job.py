@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 class SendRemindersJob(BaseJob):
     @staticmethod
     def _execute(
-        app_context: AppContext, send: Callable[[str], None], called_from_handler=False
-    ):
+        app_context: AppContext, send: Callable[[str], None], called_from_handler=False,
+    *args, **kwargs):
         sender = TelegramSender()
         reminders = app_context.db_client.get_reminders_to_send()
         for reminder in reminders:

@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class BaseJob:
     @classmethod
-    def execute(
+    async def execute(
         cls,
         app_context: AppContext,
         send: Callable[[str], None] = lambda msg: None,
@@ -28,7 +28,7 @@ class BaseJob:
 
         try:
             logging_func(f"Job {module} started...")
-            cls._execute(
+            await cls._execute(
                 app_context,
                 send,
                 called_from_handler,

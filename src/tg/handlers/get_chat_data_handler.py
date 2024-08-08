@@ -6,5 +6,5 @@ logger = logging.getLogger(__name__)
 
 
 @admin_only
-def get_chat_data(update, tg_context):
-    reply(str(tg_context.chat_data), update)
+async def get_chat_data(update, tg_context):
+    await reply(str(tg_context.chat_data), update)

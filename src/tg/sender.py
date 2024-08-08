@@ -3,7 +3,7 @@
 import logging
 import re
 import time
-from typing import Callable, List
+from typing import Any, Callable, Coroutine, List
 
 import telegram
 
@@ -31,7 +31,8 @@ class TelegramSender(Singleton):
         self._update_from_config()
         logger.info("TelegramSender successfully initialized")
 
-    def create_reply_send(self, update: telegram.Update) -> Callable[[str], None]:
+    def create_reply_send(self, update: telegram.Update) -> Callable[
+        [Any], Coroutine[Any, Any, bool]]:
         """
         Returns a function send(message_text), making reply to user.
         """
@@ -39,7 +40,8 @@ class TelegramSender(Singleton):
             logger.warning(f"Should be telegram.Update, found: {update}")
         return lambda message: self.send_to_chat_id(message, update.message.chat_id)
 
-    def create_chat_ids_send(self, chat_ids: List[int]) -> Callable[[str], None]:
+    def create_chat_ids_send(self, chat_ids: List[int]) -> Callable[
+        [Any], Coroutine[Any, Any, None]]:
         """
         Returns a function send(message_text), sending message to all chat_ids.
         """
@@ -47,29 +49,31 @@ class TelegramSender(Singleton):
             chat_ids = [chat_ids]
         return lambda message: self.send_to_chat_ids(message, chat_ids)
 
-    def send_to_chat_ids(self, message_text: str, chat_ids: List[int]):
+    async def send_to_chat_ids(self, message_text: str, chat_ids: List[int]):
         """
         Sends a message to list of chat ids.
         """
         for chat_id in chat_ids:
-            self.send_to_chat_id(message_text, chat_id)
+            await self.send_to_chat_id(message_text, chat_id)
 
-    def send_to_chat_id(self, message_text: str, chat_id: int, **kwargs) -> bool:
+    async def send_to_chat_id(self, message_text: str, chat_id: int, **kwargs) -> bool:
         """
         Sends a message to a single chat_id.
         """
         if ".png" in message_text:
             for pict in re.findall(r"\S*\.png", message_text):
-                self.bot.send_photo(
-                    photo=open(pict, "rb"),
-                    chat_id=chat_id,
-                    disable_notification=self.is_silent,
-                    **kwargs,
-                )
+                with open(pict, "rb") as photo:
+                    await self.bot.send_photo(
+                        photo=photo,
+                        chat_id=chat_id,
+                        disable_notification=self.is_silent,
+                        **kwargs,
+                    )
             message_text = re.sub(r"\S*\.png", "", message_text)
+
         if message_text != "":
             try:
-                pretty_send(
+                await pretty_send(
                     [message_text.strip()],
                     self.bot,
                     chat_id,
@@ -81,47 +85,23 @@ class TelegramSender(Singleton):
             except telegram.error.TelegramError as e:
                 logger.error(f"Could not send a message to {chat_id}: {e}")
 
-                username = self.bot.get_chat(chat_id).username
+                username = (await self.bot.get_chat(chat_id)).username
                 for error_logs_recipient in self.error_logs_recipients:
                     try:
+                        # Try redirect unsent message to error_logs_recipients
                         pass
-                        # Try redirect unsended message to error_logs_recipients
-                        # TODO(re-enable this)
-                        # pretty_send(
-                        #     [message_text.strip()],
-                        #     lambda msg: self.bot.send_message(
-                        #         text=f'Unsended message to '
-                        #              f'{username} {chat_id}\n'
-                        #              f'{msg}',
-                        #         chat_id=error_logs_recipient,
-                        #         disable_notification=self.is_silent,
-                        #         disable_web_page_preview=self.disable_web_page_preview,
-                        #         **kwargs,
-                        #     ),
-                        # )
+                        # TODO: re-enable this
                     except telegram.error.TelegramError as e:
                         logger.error(
-                            "Could not redirect unsended message "
+                            "Could not redirect unsent message "
                             f"to error_logs_recipients {error_logs_recipient}: {e}"
                         )
 
-                # HTML parse error isn't a separate class in Telegram
-                # So we need to dig into the exception message
-                if "Can't parse entities" in e.message:
+                if "Can't parse entities" in str(e):
                     try:
                         # Try sending the plain-text version
                         pass
                         # TODO: re-enable this
-                        # pretty_send(
-                        #     [message_text.strip()],
-                        #     lambda msg: self.bot.send_message(
-                        #         text=msg,
-                        #         chat_id=chat_id,
-                        #         disable_notification=self.is_silent,
-                        #         disable_web_page_preview=self.disable_web_page_preview,
-                        #         **kwargs,
-                        #     ),
-                        # )
                         return True
                     except telegram.error.TelegramError as e:
                         logger.error(
@@ -129,15 +109,15 @@ class TelegramSender(Singleton):
                         )
             return False
 
-    def send_error_log(self, error_log: str):
-        self.send_to_chat_ids(error_log, self.error_logs_recipients)
+    async def send_error_log(self, error_log: str):
+        await self.send_to_chat_ids(error_log, self.error_logs_recipients)
 
-    def send_usage_log(self, usage_log: str):
-        self.send_to_chat_ids(usage_log, self.usage_logs_recipients)
+    async def send_usage_log(self, usage_log: str):
+        await self.send_to_chat_ids(usage_log, self.usage_logs_recipients)
 
-    def send_important_event(self, event_text: str):
+    async def send_important_event(self, event_text: str):
         logger.info(f'Sending important event: "{event_text}"')
-        self.send_to_chat_ids(event_text, self.important_events_recipients)
+        await self.send_to_chat_ids(event_text, self.important_events_recipients)
 
     def update_config(self, new_tg_config):
         """
