@@ -31,8 +31,7 @@ class TelegramSender(Singleton):
         self._update_from_config()
         logger.info("TelegramSender successfully initialized")
 
-    def create_reply_send(self, update: telegram.Update) -> Callable[
-        [Any], Coroutine[Any, Any, bool]]:
+    def create_reply_send(self, update: telegram.Update) -> Callable[[str], None]:
         """
         Returns a function send(message_text), making reply to user.
         """
@@ -40,8 +39,7 @@ class TelegramSender(Singleton):
             logger.warning(f"Should be telegram.Update, found: {update}")
         return lambda message: self.send_to_chat_id(message, update.message.chat_id)
 
-    def create_chat_ids_send(self, chat_ids: List[int]) -> Callable[
-        [Any], Coroutine[Any, Any, None]]:
+    def create_chat_ids_send(self, chat_ids: List[int]) -> Callable[[str], None]:
         """
         Returns a function send(message_text), sending message to all chat_ids.
         """

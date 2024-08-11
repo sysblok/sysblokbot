@@ -6,7 +6,7 @@ from .utils import direct_message_only, is_sender_admin, is_sender_manager, repl
 logger = logging.getLogger(__name__)
 
 
-# @direct_message_only
+@direct_message_only
 async def help(update, tg_context, handlers_info: dict):
     message = ""
 
