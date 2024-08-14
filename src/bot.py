@@ -220,7 +220,7 @@ class SysBlokBot:
         #     "получить статистику по табличке (например, оцифровка открыток)",
         # )
         # # hidden from /help command for curator enrollment
-        # self.add_handler("enroll_curator", handlers.enroll_curator)
+        self.add_handler("enroll_curator", handlers.enroll_curator)
 
         # # admin-only technical cmds
         # self.add_admin_handler(
