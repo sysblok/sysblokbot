@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 @direct_message_only
-def help(update, tg_context, handlers_info: dict):
+async def help(update, tg_context, handlers_info: dict):
     message = ""
 
     for category_alias in sorted(handlers_info.keys()):
@@ -28,7 +28,7 @@ def help(update, tg_context, handlers_info: dict):
         message = load("help__no_commands")
     else:
         message = f'{load("help__commands_list")}\n\n{message}'
-    reply(message, update)
+    await reply(message, update)
 
 
 def _format_commands_block(category_alias: str, handlers: list):

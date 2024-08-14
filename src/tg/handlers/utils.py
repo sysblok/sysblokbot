@@ -47,9 +47,9 @@ def direct_message_only(func):
     Can be used along with other restriction decorators.
     """
 
-    def wrapper(update, tg_context, *args, **kwargs):
+    async def wrapper(update, tg_context, *args, **kwargs):
         if not is_group_chat(update):
-            return func(update, tg_context, *args, **kwargs)
+            return await func(update, tg_context, *args, **kwargs)
         logger.warning(
             f"DM-only handler {func.__name__} invoked by {get_sender_id(update)}"
         )
