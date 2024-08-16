@@ -313,12 +313,12 @@ class SysBlokBot:
         #     handlers.manage_all_reminders,
         #     "настроить все напоминания",
         # )
-        # self.add_admin_handler(
-        #     "get_roles_for_member",
-        #     CommandCategories.HR,
-        #     handlers.get_roles_for_member,
-        #     "показать роли для участника",
-        # )
+        self.add_admin_handler(
+            "get_roles_for_member",
+            CommandCategories.HR,
+            handlers.get_roles_for_member,
+            "показать роли для участника",
+        )
         # self.add_admin_handler(
         #     "get_members_for_role",
         #     CommandCategories.HR,
