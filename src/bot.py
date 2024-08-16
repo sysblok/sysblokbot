@@ -177,12 +177,12 @@ class SysBlokBot:
         #     self.manager_reply_handler("trello_get_articles_rubric_job"),
         #     "получить карточки по названию рубрики в трелло",
         # )
-        # self.add_manager_handler(
-        #     "get_chat_id",
-        #     CommandCategories.REMINDERS,
-        #     handlers.get_chat_id,
-        #     "получить chat_id (свой или группы)",
-        # )
+        self.add_manager_handler(
+            "get_chat_id",
+            CommandCategories.REMINDERS,
+            handlers.get_chat_id,
+            "получить chat_id (свой или группы)",
+        )
         # self.add_manager_handler(
         #     "manage_reminders",
         #     CommandCategories.REMINDERS,
