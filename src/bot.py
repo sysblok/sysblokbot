@@ -265,12 +265,12 @@ class SysBlokBot:
         #     handlers.get_config,
         #     "получить текущий конфиг (частично или полностью)",
         # )
-        # self.add_admin_handler(
-        #     "get_config_jobs",
-        #     CommandCategories.CONFIG,
-        #     handlers.get_config_jobs,
-        #     "получить текущий конфиг джобов (частично или полностью)",
-        # )
+        self.add_admin_handler(
+            "get_config_jobs",
+            CommandCategories.CONFIG,
+            handlers.get_config_jobs,
+            "получить текущий конфиг джобов (частично или полностью)",
+        )
         # self.add_admin_handler(
         #     "reload_config_jobs",
         #     CommandCategories.CONFIG,

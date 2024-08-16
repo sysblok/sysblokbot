@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 @admin_only
-def get_config(update, tg_context):
+async def get_config(update, tg_context):
     config = ConfigManager().get_latest_config()
     try:
         tokens = update.message.text.strip().split()
@@ -23,10 +23,10 @@ def get_config(update, tg_context):
             for config_item in config_path.split("."):
                 config = config[config_item]
     except Exception as e:
-        reply(load("access_config_handler__get_config_usage_example"), update)
+        await reply(load("access_config_handler__get_config_usage_example"), update)
         logger.warning(f"Failed to get config: {e}")
         return
-    reply(
+    await reply(
         load(
             "common__code_wrapper",
             arg=json.dumps(ConfigManager.redact(config), indent=2),
@@ -36,7 +36,7 @@ def get_config(update, tg_context):
 
 
 @admin_only
-def get_config_jobs(update, tg_context):
+async def get_config_jobs(update, tg_context):
     config_jobs = ConfigManager().get_latest_jobs_config()
     try:
         tokens = update.message.text.strip().split()
@@ -45,10 +45,10 @@ def get_config_jobs(update, tg_context):
             for config_item in config_path.split("."):
                 config_jobs = config_jobs[config_item]
     except Exception as e:
-        reply(load("access_config_handler__get_jobs_config_usage_example"), update)
+        await reply(load("access_config_handler__get_jobs_config_usage_example"), update)
         logger.warning(f"Failed to get jobs config: {e}")
         return
-    reply(
+    await reply(
         load(
             "common__code_wrapper",
             arg=json.dumps(ConfigManager.redact(config_jobs), indent=2),
