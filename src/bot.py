@@ -229,36 +229,36 @@ class SysBlokBot:
         #     self.admin_reply_handler("config_updater_job"),
         #     "обновить конфиг вне расписания",
         # )
-        # self.add_admin_handler(
-        #     "list_jobs",
-        #     CommandCategories.CONFIG,
-        #     handlers.list_jobs,
-        #     "показать статус асинхронных задач",
-        # )
+        self.add_admin_handler(
+            "list_jobs",
+            CommandCategories.CONFIG,
+            handlers.list_jobs,
+            "показать статус асинхронных задач",
+        )
         # self.add_admin_handler(
         #     "get_usage_list",
         #     CommandCategories.CONFIG,
         #     handlers.list_chats,
         #     "показать места использование бота: пользователи и чаты",
         # )
-        # self.add_admin_handler(
-        #     "set_log_level",
-        #     CommandCategories.LOGGING,
-        #     handlers.set_log_level,
-        #     "изменить уровень логирования (info / debug)",
-        # )
-        # self.add_admin_handler(
-        #     "mute_errors",
-        #     CommandCategories.LOGGING,
-        #     handlers.mute_errors,
-        #     "отключить логирование ошибок в телеграм",
-        # )
-        # self.add_admin_handler(
-        #     "unmute_errors",
-        #     CommandCategories.LOGGING,
-        #     handlers.unmute_errors,
-        #     "включить логирование ошибок в телеграм",
-        # )
+        self.add_admin_handler(
+            "set_log_level",
+            CommandCategories.LOGGING,
+            handlers.set_log_level,
+            "изменить уровень логирования (info / debug)",
+        )
+        self.add_admin_handler(
+            "mute_errors",
+            CommandCategories.LOGGING,
+            handlers.mute_errors,
+            "отключить логирование ошибок в телеграм",
+        )
+        self.add_admin_handler(
+            "unmute_errors",
+            CommandCategories.LOGGING,
+            handlers.unmute_errors,
+            "включить логирование ошибок в телеграм",
+        )
         # self.add_admin_handler(
         #     "get_config",
         #     CommandCategories.CONFIG,
@@ -376,12 +376,12 @@ class SysBlokBot:
             handlers.clean_chat_data,
             "clean_chat_data",
         )
-        # self.add_admin_handler(
-        #     "get_managers",
-        #     CommandCategories.MOST_USED,
-        #     handlers.get_managers,
-        #     "get_managers",
-        # )
+        self.add_admin_handler(
+            "get_managers",
+            CommandCategories.MOST_USED,
+            handlers.get_managers,
+            "get_managers",
+        )
 
         # sample handler
         self.add_handler(
