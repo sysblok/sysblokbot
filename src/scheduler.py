@@ -48,7 +48,7 @@ class JobScheduler(Singleton):
 
         class ScheduleThread(threading.Thread):
             @classmethod
-            def run(cls):
+            async def run(cls):
                 while not cease_continuous_run.is_set():
                     try:
                         schedule.run_pending()

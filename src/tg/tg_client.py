@@ -17,15 +17,21 @@ class TgClient(Singleton):
             return
 
         self._tg_config = tg_config
-        self._update_from_config()
+        # self._update_from_config()
         logger.info("TgClient successfully initialized")
+
+    @classmethod
+    async def create(cls, tg_config=None):
+        instance = cls(tg_config)
+        await instance._update_from_config()
+        return instance
 
     def update_config(self, new_tg_config: dict):
         """To be called after config automatic update"""
         self._tg_config = new_tg_config
         self._update_from_config()
 
-    def _update_from_config(self):
+    async def _update_from_config(self):
         self.api_client = TelegramClient(
             StringSession(self._tg_config["api_session"]),
             self._tg_config["api_id"],
@@ -34,7 +40,7 @@ class TgClient(Singleton):
         # we need this to properly reauth in case the tokens need to be updated
         # we need "with" to open and close the event loop
         with self.api_client as client:
-            client(functions.auth.ResetAuthorizationsRequest())
+            await client(functions.auth.ResetAuthorizationsRequest())
         self.sysblok_chats = self._tg_config["sysblok_chats"]
         self.channel = self._tg_config["channel"]
 
