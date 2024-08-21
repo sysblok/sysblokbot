@@ -398,10 +398,10 @@ class SysBlokBot:
             "db_fetch_curators_sheet",
             self.admin_reply_handler("db_fetch_curators_sheet_job"),
         )
-        # self.add_handler(
-        #     "db_fetch_team_sheet",
-        #     self.admin_reply_handler("db_fetch_team_sheet_job"),
-        # )
+        self.add_handler(
+            "db_fetch_team_sheet",
+            self.admin_reply_handler("db_fetch_team_sheet_job"),
+        )
         # self.add_handler(
         #     "db_fetch_strings_sheet",
         #     self.admin_reply_handler("db_fetch_strings_sheet_job"),
