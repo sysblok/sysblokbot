@@ -390,10 +390,10 @@ class SysBlokBot:
         )
 
         # db commands hidden from /help command
-        # self.add_handler(
-        #     "db_fetch_authors_sheet",
-        #     self.admin_reply_handler("db_fetch_authors_sheet_job"),
-        # )
+        self.add_handler(
+            "db_fetch_authors_sheet",
+            self.admin_reply_handler("db_fetch_authors_sheet_job"),
+        )
         # self.add_handler(
         #     "db_fetch_curators_sheet",
         #     self.admin_reply_handler("db_fetch_curators_sheet_job"),
