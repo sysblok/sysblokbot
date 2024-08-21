@@ -222,13 +222,13 @@ class SysBlokBot:
         # # hidden from /help command for curator enrollment
         # self.add_handler("enroll_curator", handlers.enroll_curator)
 
-        # # admin-only technical cmds
-        # self.add_admin_handler(
-        #     "update_config",
-        #     CommandCategories.CONFIG,
-        #     self.admin_reply_handler("config_updater_job"),
-        #     "обновить конфиг вне расписания",
-        # )
+        # admin-only technical cmds
+        self.add_admin_handler(
+            "update_config",
+            CommandCategories.CONFIG,
+            self.admin_reply_handler("config_updater_job"),
+            "обновить конфиг вне расписания",
+        )
         self.add_admin_handler(
             "list_jobs",
             CommandCategories.CONFIG,

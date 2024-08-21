@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class ConfigUpdaterJob(BaseJob):
     @staticmethod
-    def _execute(
+    async def _execute(
         app_context: AppContext, send: Callable[[str], None], called_from_handler=False
     ):
         """A very special job checking config for recent changes"""
@@ -42,7 +42,7 @@ class ConfigUpdaterJob(BaseJob):
                 diff = json.dumps(dict(diff), indent=2)
             except TypeError:
                 pass
-            TelegramSender().send_important_event(
+            await TelegramSender().send_important_event(
                 load("config_updater_job__config_diff", diff=html.escape(str(diff)))
             )
             try:
@@ -86,12 +86,12 @@ class ConfigUpdaterJob(BaseJob):
                 app_context.vk_client.update_config(
                     job_scheduler.config_manager.get_vk_config()
                 )
-                send(load("config_updater_job__config_changed"))
+                await send(load("config_updater_job__config_changed"))
             except Exception as e:
-                send(f"Failed to update config: {e}")
+                await send(f"Failed to update config: {e}")
         else:
             logger.info("No config changes detected")
-            send(load("config_updater_job__config_not_changed"))
+            await send(load("config_updater_job__config_not_changed"))
 
     @staticmethod
     def _usage_muted():
