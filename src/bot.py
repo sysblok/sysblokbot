@@ -402,10 +402,10 @@ class SysBlokBot:
             "db_fetch_team_sheet",
             self.admin_reply_handler("db_fetch_team_sheet_job"),
         )
-        # self.add_handler(
-        #     "db_fetch_strings_sheet",
-        #     self.admin_reply_handler("db_fetch_strings_sheet_job"),
-        # )
+        self.add_handler(
+            "db_fetch_strings_sheet",
+            self.admin_reply_handler("db_fetch_strings_sheet_job"),
+        )
         self.add_handler(
             "db_fetch_all_team_members",
             self.admin_reply_handler("db_fetch_all_team_members_job"),
