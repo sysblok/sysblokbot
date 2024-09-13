@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from ..app_context import AppContext
 from ..consts import KWARGS
 from ..strings import load
-from ..tg.sender import pretty_send
+from ..tg.sender import pretty_send, TelegramSender
 from .base_job import BaseJob
 
 logger = logging.getLogger(__name__)
@@ -31,7 +31,12 @@ class SiteHealthCheckJob(BaseJob):
             if len(args) == 0:
                 names = [schedule.get(KWARGS, {}).get("name") for schedule in schedules]
                 await pretty_send(
-                    [f"Usage: /check_site_health name\nAvailable names: {names}"], send
+                    [f"Usage: /check_site_health name\nAvailable names: {names}"],
+                    # send,
+                    TelegramSender().bot,
+                    kwargs['chat_id'],
+                    disable_notification=False,
+                    disable_web_page_preview=False,
                 )
                 return
             assert len(args) == 1

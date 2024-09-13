@@ -358,12 +358,12 @@ class SysBlokBot:
         #         "(телефон это 10+ цифр+-(), отсутствие включает #N/A и кириллицу)"
         #     ),
         # )
-        # self.add_admin_handler(
-        #     "check_site_health",
-        #     CommandCategories.DATA_SYNC,
-        #     self.admin_reply_handler("site_health_check_job"),
-        #     "проверка статуса сайта",
-        # )
+        self.add_admin_handler(
+            "check_site_health",
+            CommandCategories.DATA_SYNC,
+            self.admin_reply_handler("site_health_check_job"),
+            "проверка статуса сайта",
+        )
         self.add_admin_handler(
             "get_chat_data",
             CommandCategories.DEBUG,
@@ -555,6 +555,7 @@ class SysBlokBot:
             send=self.telegram_sender.create_reply_send(update),
             called_from_handler=True,
             args=update.message.text.split()[1:],
+            kwargs={'chat_id': update.message.chat.id}
         )
 
     def _create_broadcast_handler(self, job_name: str) -> Callable:
