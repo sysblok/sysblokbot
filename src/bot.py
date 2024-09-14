@@ -102,12 +102,12 @@ class SysBlokBot:
             self.manager_reply_handler("editorial_board_visual_stats_job"),
             "получить статистику изменений за неделю в виде картинки",
         )
-        # self.add_admin_handler(
-        #     "send_publication_plans",
-        #     CommandCategories.BROADCAST,
-        #     self.admin_broadcast_handler("publication_plans_job"),
-        #     "рассылка сводки о публикуемых на неделе постах",
-        # )
+        self.add_admin_handler(
+            "send_publication_plans",
+            CommandCategories.BROADCAST,
+            self.admin_broadcast_handler("publication_plans_job"),
+            "рассылка сводки о публикуемых на неделе постах",
+        )
         # self.add_manager_handler(
         #     "fill_posts_list",
         #     CommandCategories.REGISTRY,
@@ -563,7 +563,9 @@ class SysBlokBot:
             )
         )
 
-    def _create_broadcast_handler(self, job_name: str) -> Callable:
+    def _create_broadcast_handler(
+            self, job_name: str, *args, **kwargs
+    ) -> Callable:
         """
         Creates a handler that sends message to list of chat ids.
         """
@@ -572,4 +574,8 @@ class SysBlokBot:
             app_context=self.app_context,
             send=self.telegram_sender.create_chat_ids_send(chat_ids),
             called_from_handler=True,
+            kwargs=(
+                kwargs.update({'chat_id': update.message.chat.id})
+                if kwargs else {'chat_id': update.message.chat.id}
+            )
         )
