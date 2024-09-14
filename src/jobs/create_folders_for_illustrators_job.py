@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 from ..app_context import AppContext
 from ..consts import TrelloCardColor, TrelloCustomFieldTypeAlias, TrelloListAlias, BoardCardColor
 from ..strings import load
-from ..tg.sender import pretty_send
+from ..tg.sender import pretty_send, TelegramSender
 from .base_job import BaseJob
 
 logger = logging.getLogger(__name__)
@@ -20,8 +20,12 @@ class IllustratorFolderState(IntEnum):
 
 class CreateFoldersForIllustratorsJob(BaseJob):
     @staticmethod
-    def _execute(
-        app_context: AppContext, send: Callable[[str], None], called_from_handler=False
+    async def _execute(
+            app_context: AppContext,
+            send: Callable[[str], None],
+            called_from_handler=False,
+            *args,
+            **kwargs
     ):
         paragraphs = []  # list of paragraph strings
 
@@ -50,7 +54,14 @@ class CreateFoldersForIllustratorsJob(BaseJob):
                     current_state = card[0]
                 paragraphs.append(card[1])
 
-        pretty_send(paragraphs, send)
+        await pretty_send(
+            paragraphs,
+            # send
+            TelegramSender().bot,
+            kwargs['chat_id'],
+            disable_notification=False,
+            disable_web_page_preview=False,
+        )
 
     @staticmethod
     def _create_folders(

@@ -147,12 +147,12 @@ class SysBlokBot:
         #     self.admin_broadcast_handler("hr_status_job"),
         #     "разослать статус по работе hr (по новичкам и участинкам на испытательном)",
         # )
-        # self.add_manager_handler(
-        #     "create_folders_for_illustrators",
-        #     CommandCategories.REGISTRY,
-        #     self.manager_reply_handler("create_folders_for_illustrators_job"),
-        #     "создать папки для иллюстраторов",
-        # )
+        self.add_manager_handler(
+            "create_folders_for_illustrators",
+            CommandCategories.REGISTRY,
+            self.manager_reply_handler("create_folders_for_illustrators_job"),
+            "создать папки для иллюстраторов",
+        )
         # self.add_manager_handler(
         #     "get_tasks_report",
         #     CommandCategories.SUMMARY,
@@ -546,7 +546,9 @@ class SysBlokBot:
         """
         return self._create_reply_handler(job_name)
 
-    def _create_reply_handler(self, job_name: str) -> Callable:
+    def _create_reply_handler(
+            self, job_name: str, *args, **kwargs
+    ) -> (Callable):
         """
         Creates a handler that replies to a message of given user.
         """
@@ -555,7 +557,10 @@ class SysBlokBot:
             send=self.telegram_sender.create_reply_send(update),
             called_from_handler=True,
             args=update.message.text.split()[1:],
-            kwargs={'chat_id': update.message.chat.id}
+            kwargs=(
+                kwargs.update({'chat_id': update.message.chat.id})
+                if kwargs else {'chat_id': update.message.chat.id}
+            )
         )
 
     def _create_broadcast_handler(self, job_name: str) -> Callable:
