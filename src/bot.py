@@ -84,12 +84,12 @@ class SysBlokBot:
         # business logic cmds
 
         # TODO: uncomment and migrate these handlers
-        # self.add_admin_handler(
-        #     "send_trello_board_state",
-        #     CommandCategories.BROADCAST,
-        #     self.admin_broadcast_handler("trello_board_state_job"),
-        #     "рассылка сводки о состоянии доски",
-        # )
+        self.add_admin_handler(
+            "send_trello_board_state",
+            CommandCategories.BROADCAST,
+            self.admin_broadcast_handler("trello_board_state_job"),
+            "рассылка сводки о состоянии доски",
+        )
         # self.add_manager_handler(
         #     "get_trello_board_state",
         #     CommandCategories.SUMMARY,
@@ -171,12 +171,12 @@ class SysBlokBot:
         #     direct_message_only(handlers.get_tasks_report_focalboard),
         #     "получить список задач из Focalboard",
         # )
-        # self.add_manager_handler(
-        #     "get_articles_rubric",
-        #     CommandCategories.SUMMARY,
-        #     self.manager_reply_handler("trello_get_articles_rubric_job"),
-        #     "получить карточки по названию рубрики в трелло",
-        # )
+        self.add_manager_handler(
+            "get_articles_rubric",
+            CommandCategories.SUMMARY,
+            self.manager_reply_handler("trello_get_articles_rubric_job"),
+            "получить карточки по названию рубрики в трелло",
+        )
         self.add_manager_handler(
             "get_chat_id",
             CommandCategories.REMINDERS,

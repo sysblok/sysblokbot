@@ -3,7 +3,7 @@ from typing import Callable, List
 from ..app_context import AppContext
 from ..consts import TrelloListAlias
 from ..strings import load
-from ..tg.sender import pretty_send
+from ..tg.sender import pretty_send, TelegramSender
 from ..trello.trello_client import TrelloClient
 from ..trello.trello_objects import TrelloCard
 from . import utils
@@ -20,7 +20,7 @@ class TrelloGetArticlesRubricJob(BaseJob):
     """
 
     @staticmethod
-    def _execute(
+    async def _execute(
         app_context: AppContext,
         send: Callable[[str], None],
         called_from_handler=False,
@@ -30,7 +30,8 @@ class TrelloGetArticlesRubricJob(BaseJob):
         paragraphs = []
         if called_from_handler:
             if len(args) == 0:
-                send("Please type in rubric name after get_articles_rubric")
+                await send("Please type in rubric name after "
+                         "get_articles_rubric")
                 return
             else:
                 rubric_name = args[0]
@@ -48,7 +49,13 @@ class TrelloGetArticlesRubricJob(BaseJob):
                     rubric_name=rubric_name,
                 )
 
-        pretty_send(paragraphs, send)
+        await pretty_send(
+            paragraphs,
+            TelegramSender().bot,
+            kwargs['chat_id'],
+            disable_notification=False,
+            disable_web_page_preview=False,
+        )
 
     @staticmethod
     def _format_card(card: TrelloCard, app_context: AppContext) -> str:
