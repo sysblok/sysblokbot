@@ -123,12 +123,12 @@ class SysBlokBot:
         #     ),
         #     "заполнить реестр постов из Focalboard (пока не работает)",
         # )
-        # self.add_admin_handler(
-        #     "hr_acquisition",
-        #     CommandCategories.HR,
-        #     self.manager_reply_handler("hr_acquisition_job"),
-        #     "обработать новые анкеты",
-        # )
+        self.add_admin_handler(
+            "hr_acquisition",
+            CommandCategories.HR,
+            self.manager_reply_handler("hr_acquisition_job"),
+            "обработать новые анкеты",
+        )
         # self.add_admin_handler(
         #     "hr_acquisition_pt",
         #     CommandCategories.HR,
