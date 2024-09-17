@@ -129,12 +129,12 @@ class SysBlokBot:
             self.manager_reply_handler("hr_acquisition_job"),
             "обработать новые анкеты",
         )
-        # self.add_admin_handler(
-        #     "hr_acquisition_pt",
-        #     CommandCategories.HR,
-        #     self.manager_reply_handler("hr_acquisition_pt_job"),
-        #     "обработать новые анкеты Пишу Тебе",
-        # )
+        self.add_admin_handler(
+            "hr_acquisition_pt",
+            CommandCategories.HR,
+            self.manager_reply_handler("hr_acquisition_pt_job"),
+            "обработать новые анкеты Пишу Тебе",
+        )
         # self.add_manager_handler(
         #     "get_hr_status",
         #     CommandCategories.HR,
