@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import asyncio
 import locale
 import logging
 
@@ -57,24 +58,15 @@ def get_bot():
         raise ValueError("Could not load job config, can't go on")
 
     # Setting final logger and sending a message bot is up
-    tg_sender = TelegramSender()
-
     for handler in logging.getLogger().handlers:
         logging.getLogger().removeHandler(handler)
-    logging.getLogger().addHandler(ErrorBroadcastHandler(tg_sender))
+    logging.getLogger().addHandler(ErrorBroadcastHandler(TelegramSender()))
     if consts.UPTRACE_DSN:
         add_uptrace_logging(consts.UPTRACE_DSN)
 
     # Scheduler must be run after clients initialized
     scheduler.run()
     scheduler.init_jobs()
-
-    start_msg = f"[{consts.APP_SOURCE}] Bot successfully started"
-    if consts.COMMIT_HASH:
-        start_msg += (
-            f', revision <a href="{consts.COMMIT_URL}">{consts.COMMIT_HASH}</a>.'
-        )
-    tg_sender.send_important_event(start_msg)
 
     return bot
 
@@ -92,7 +84,18 @@ def report_critical_error(e: BaseException):
 
 if __name__ == "__main__":
     try:
-        get_bot().run()
+        bot = get_bot()
+        # report successful startup
+        start_msg = f"[{consts.APP_SOURCE}] Bot successfully started"
+        if consts.COMMIT_HASH:
+            start_msg += (
+                f', revision <a href="{consts.COMMIT_URL}">{consts.COMMIT_HASH}</a>.'
+            )
+        # workaround to prevent asyncio.run from closing the loop
+        # source: https://github.com/tornadoweb/tornado/issues/3092
+        asyncio.get_event_loop().run_until_complete(TelegramSender().send_important_event(start_msg))
+        # enter the main polling loop
+        bot.run()
     except BaseException as e:
         print(e.with_traceback())
         report_critical_error(e)
