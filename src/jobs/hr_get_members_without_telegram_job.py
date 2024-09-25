@@ -8,7 +8,7 @@ from sheetfu.modules.table import Item
 from ..app_context import AppContext
 from ..roles.roles import Roles
 from ..strings import load
-from ..tg.sender import pretty_send
+from ..tg.sender import pretty_send, TelegramSender
 from .base_job import BaseJob
 
 logger = logging.getLogger(__name__)
@@ -18,8 +18,12 @@ PHONE_REGEX = r"[\+\-\(\)0-9]{10}?"
 
 class HRGetMembersWithoutTelegramJob(BaseJob):
     @staticmethod
-    def _execute(
-        app_context: AppContext, send: Callable[[str], None], called_from_handler=False
+    async def _execute(
+        app_context: AppContext,
+        send: Callable[[str], None],
+        called_from_handler=False,
+        *args,
+        **kwargs
     ):
         # get Active members
         active_members = app_context.role_manager.get_members_for_role(
@@ -48,4 +52,10 @@ class HRGetMembersWithoutTelegramJob(BaseJob):
                 members_with_phone_number="\n".join(members_with_phone_number),
             ),
         ]
-        pretty_send(paragraphs, send)
+        await pretty_send(
+            paragraphs,
+            TelegramSender().bot,
+            kwargs['chat_id'],
+            disable_notification=False,
+            disable_web_page_preview=False,
+        )

@@ -5,7 +5,7 @@ from typing import Callable, List
 from ..app_context import AppContext
 from ..consts import TrelloCardColor, BoardCardColor
 from ..strings import load
-from ..tg.sender import pretty_send
+from ..tg.sender import pretty_send, TelegramSender
 from ..trello.trello_objects import TrelloCard
 from ..utils import card_checks, card_checks_focalboard
 from .base_job import BaseJob
@@ -16,8 +16,12 @@ logger = logging.getLogger(__name__)
 
 class TrelloBoardStateJob(BaseJob):
     @staticmethod
-    def _execute(
-        app_context: AppContext, send: Callable[[str], None], called_from_handler=False
+    async def _execute(
+            app_context: AppContext,
+            send: Callable[[str], None],
+            called_from_handler=False,
+            *args,
+            **kwargs
     ):
         paragraphs = [
             load("trello_board_state_job__intro")
@@ -42,7 +46,13 @@ class TrelloBoardStateJob(BaseJob):
             if card_paragraphs:
                 paragraphs.append(f"⭐️ <b>Куратор</b>: {curator_name}")
                 paragraphs += card_paragraphs
-        pretty_send(paragraphs, send)
+        await pretty_send(
+            paragraphs,
+            TelegramSender().bot,
+            kwargs['chat_id'],
+            disable_notification=False,
+            disable_web_page_preview=False,
+        )
 
     @staticmethod
     def _format_card(

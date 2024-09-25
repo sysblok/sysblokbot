@@ -22,7 +22,7 @@ DEFAULT_BAR_HEIGHT = 0.4
 
 class EditorialBoardVisualStatsJob(BaseJob):
     @staticmethod
-    def _execute(
+    async def _execute(
         app_context: AppContext,
         send: Callable[[str], None],
         called_from_handler: bool = False,
@@ -132,7 +132,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
         ax.legend(reversed(handles), reversed(labels))
 
         plt.savefig("foo.png", bbox_inches="tight")
-        send("foo.png")
+        await send("foo.png")
 
     @staticmethod
     def _card_deadline_is_next_week(card, app_context) -> bool:

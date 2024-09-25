@@ -10,7 +10,7 @@ from .utils import get_sender_id, get_sender_username, reply
 logger = logging.getLogger(__name__)
 
 
-def get_board_credentials(update: telegram.Update, tg_context):
+async def get_board_credentials(update: telegram.Update, tg_context):
     if update.message.chat_id < 0:
         return
     member = next((
@@ -21,7 +21,7 @@ def get_board_credentials(update: telegram.Update, tg_context):
         logger.usage(
             f'Focalboard not found for {get_sender_username(update)}, ID={get_sender_id(update)}'
         )
-        reply(load('get_board_credentials_handler__not_found'), update)
+        await reply(load('get_board_credentials_handler__not_found'), update)
         return
     try:
         with open('board_credentials.json', encoding="utf-8") as fin:
@@ -34,10 +34,10 @@ def get_board_credentials(update: telegram.Update, tg_context):
                     logger.usage(
                         f'Board creds not found for user {get_sender_username(update)}'
                     )
-                    reply(load('get_board_credentials_handler__not_found'), update)
+                    await reply(load('get_board_credentials_handler__not_found'), update)
                     return
                 logger.usage(f'Board creds found for username {get_sender_username(update)}')
-                reply(
+                await reply(
                     load(
                         'get_board_credentials_handler__found',
                         username=creds["focalboardUsername"][1:],

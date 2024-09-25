@@ -6,7 +6,7 @@ from sheetfu import Table
 from ..app_context import AppContext
 from ..sheets.sheets_objects import HRPersonPTProcessed, HRPersonPTRaw
 from ..strings import load
-from ..tg.sender import pretty_send
+from ..tg.sender import pretty_send, TelegramSender
 from .base_job import BaseJob
 
 logger = logging.getLogger(__name__)
@@ -14,8 +14,12 @@ logger = logging.getLogger(__name__)
 
 class HRAcquisitionPTJob(BaseJob):
     @staticmethod
-    def _execute(
-        app_context: AppContext, send: Callable[[str], None], called_from_handler=False
+    async def _execute(
+        app_context: AppContext,
+        send: Callable[[str], None],
+        called_from_handler=False,
+        *args,
+        **kwargs
     ):
         paragraphs = [load("hr_acquisition_job__hello")]  # list of paragraph strings
 
@@ -28,7 +32,13 @@ class HRAcquisitionPTJob(BaseJob):
             HRAcquisitionPTJob._get_new_person_paragraph(item) for item in new_people
         ]
 
-        pretty_send(paragraphs, send)
+        await pretty_send(
+            paragraphs,
+            TelegramSender().bot,
+            kwargs['chat_id'],
+            disable_notification=False,
+            disable_web_page_preview=False,
+        )
 
     @staticmethod
     def _process_new_people(

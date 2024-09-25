@@ -69,7 +69,8 @@ class AppContext(Singleton):
         self.instagram_analytics = ApiInstagramAnalytics(self.instagram_client)
         self.vk_analytics = ApiVkAnalytics(self.vk_client)
 
-        self.tg_client = TgClient(tg_config=config_manager.get_telegram_config())
+        self.tg_client = TgClient.create(tg_config=config_manager.get_telegram_config())
+        # self.tg_client = TgClient(tg_config=config_manager.get_telegram_config())
 
         # TODO: move that to db
         tg_config = config_manager.get_telegram_config()

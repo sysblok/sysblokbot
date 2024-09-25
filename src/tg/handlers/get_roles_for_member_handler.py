@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 @admin_only
-def get_roles_for_member(update, tg_context):
+async def get_roles_for_member(update, tg_context):
     app_context = AppContext()
     # a hacky way of stripping the cmd from text
     member_name = " ".join(update.message.text.strip().split(" ")[1:])
@@ -23,4 +23,4 @@ def get_roles_for_member(update, tg_context):
         message = load(
             "role_manager__member_roles", username=member.name, roles=", ".join(roles)
         )
-    reply(message, update)
+    await reply(message, update)

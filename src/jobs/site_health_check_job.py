@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from ..app_context import AppContext
 from ..consts import KWARGS
 from ..strings import load
-from ..tg.sender import pretty_send
+from ..tg.sender import pretty_send, TelegramSender
 from .base_job import BaseJob
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class SiteHealthCheckJob(BaseJob):
     @staticmethod
-    def _execute(
+    async def _execute(
         app_context: AppContext,
         send: Callable[[str], None],
         called_from_handler=False,
@@ -30,8 +30,13 @@ class SiteHealthCheckJob(BaseJob):
             )
             if len(args) == 0:
                 names = [schedule.get(KWARGS, {}).get("name") for schedule in schedules]
-                pretty_send(
-                    [f"Usage: /check_site_health name\nAvailable names: {names}"], send
+                await pretty_send(
+                    [f"Usage: /check_site_health name\nAvailable names: {names}"],
+                    # send,
+                    TelegramSender().bot,
+                    kwargs['chat_id'],
+                    disable_notification=False,
+                    disable_web_page_preview=False,
                 )
                 return
             assert len(args) == 1
@@ -44,7 +49,7 @@ class SiteHealthCheckJob(BaseJob):
         try:
             page = requests.get(url)
         except Exception as e:
-            send(
+            await send(
                 load(
                     "site_health_check_job__connection_error",
                     url=url,
@@ -54,7 +59,7 @@ class SiteHealthCheckJob(BaseJob):
             return
 
         if page.status_code != 200:
-            send(
+            await send(
                 load(
                     "site_health_check_job__wrong_status_code",
                     status_code=page.status_code,
@@ -69,7 +74,7 @@ class SiteHealthCheckJob(BaseJob):
         body_substring = kwargs.get("body_substring")
         body_contents = soup.find("body").get_text()
         if body_substring not in body_contents:
-            send(
+            await send(
                 load(
                     "site_health_check_job__wrong_body",
                     substring=body_substring,
@@ -81,7 +86,7 @@ class SiteHealthCheckJob(BaseJob):
             return
         logger.debug("Site content looks healthy")
         if called_from_handler:
-            send(
+            await send(
                 load(
                     "site_health_check_job__ok",
                     url=url,

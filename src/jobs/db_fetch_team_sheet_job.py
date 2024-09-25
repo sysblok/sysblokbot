@@ -10,11 +10,12 @@ logger = logging.getLogger(__name__)
 
 class DBFetchTeamSheetJob(BaseJob):
     @staticmethod
-    def _execute(
+    async def _execute(
         app_context: AppContext, send: Callable[[str], None], called_from_handler=False
     ):
         team_size = app_context.db_client.fetch_team_sheet(app_context.sheets_client)
         # after we fetch the team, we need to recalculate the roles
         app_context.role_manager.calculate_db_roles()
         logger.info(f"Fetched {team_size} team members")
-        send(load("db_fetch_team_sheet_job__success", team_size=team_size))
+        await send(load("db_fetch_team_sheet_job__success",
+                       team_size=team_size))

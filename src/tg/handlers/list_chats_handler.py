@@ -8,7 +8,7 @@ from .utils import admin_only, direct_message_only, reply
 
 @admin_only
 @direct_message_only
-def list_chats(update, tg_context):
+async def list_chats(update, tg_context):
     chats = DBClient().get_all_chats()
     app_context = AppContext()
     admins = app_context.admin_chat_ids
@@ -32,7 +32,7 @@ def list_chats(update, tg_context):
             ]
         ),
     )
-    reply(text, update)
+    await reply(text, update)
 
 
 def _format_tg_usernames(usernames: Iterable[str]) -> str:

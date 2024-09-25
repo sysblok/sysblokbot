@@ -84,30 +84,30 @@ class SysBlokBot:
         # business logic cmds
 
         # TODO: uncomment and migrate these handlers
-        # self.add_admin_handler(
-        #     "send_trello_board_state",
-        #     CommandCategories.BROADCAST,
-        #     self.admin_broadcast_handler("trello_board_state_job"),
-        #     "рассылка сводки о состоянии доски",
-        # )
+        self.add_admin_handler(
+            "send_trello_board_state",
+            CommandCategories.BROADCAST,
+            self.admin_broadcast_handler("trello_board_state_job"),
+            "рассылка сводки о состоянии доски",
+        )
         # self.add_manager_handler(
         #     "get_trello_board_state",
         #     CommandCategories.SUMMARY,
         #     self.manager_reply_handler("trello_board_state_job"),
         #     "получить сводку о состоянии доски",
         # )
-        # self.add_manager_handler(
-        #     "get_editorial_board_visual_stats",
-        #     CommandCategories.STATS,
-        #     self.manager_reply_handler("editorial_board_visual_stats_job"),
-        #     "получить статистику изменений за неделю в виде картинки",
-        # )
-        # self.add_admin_handler(
-        #     "send_publication_plans",
-        #     CommandCategories.BROADCAST,
-        #     self.admin_broadcast_handler("publication_plans_job"),
-        #     "рассылка сводки о публикуемых на неделе постах",
-        # )
+        self.add_manager_handler(
+            "get_editorial_board_visual_stats",
+            CommandCategories.STATS,
+            self.manager_reply_handler("editorial_board_visual_stats_job"),
+            "получить статистику изменений за неделю в виде картинки",
+        )
+        self.add_admin_handler(
+            "send_publication_plans",
+            CommandCategories.BROADCAST,
+            self.admin_broadcast_handler("publication_plans_job"),
+            "рассылка сводки о публикуемых на неделе постах",
+        )
         # self.add_manager_handler(
         #     "fill_posts_list",
         #     CommandCategories.REGISTRY,
@@ -123,18 +123,18 @@ class SysBlokBot:
         #     ),
         #     "заполнить реестр постов из Focalboard (пока не работает)",
         # )
-        # self.add_admin_handler(
-        #     "hr_acquisition",
-        #     CommandCategories.HR,
-        #     self.manager_reply_handler("hr_acquisition_job"),
-        #     "обработать новые анкеты",
-        # )
-        # self.add_admin_handler(
-        #     "hr_acquisition_pt",
-        #     CommandCategories.HR,
-        #     self.manager_reply_handler("hr_acquisition_pt_job"),
-        #     "обработать новые анкеты Пишу Тебе",
-        # )
+        self.add_admin_handler(
+            "hr_acquisition",
+            CommandCategories.HR,
+            self.manager_reply_handler("hr_acquisition_job"),
+            "обработать новые анкеты",
+        )
+        self.add_admin_handler(
+            "hr_acquisition_pt",
+            CommandCategories.HR,
+            self.manager_reply_handler("hr_acquisition_pt_job"),
+            "обработать новые анкеты Пишу Тебе",
+        )
         # self.add_manager_handler(
         #     "get_hr_status",
         #     CommandCategories.HR,
@@ -147,12 +147,12 @@ class SysBlokBot:
         #     self.admin_broadcast_handler("hr_status_job"),
         #     "разослать статус по работе hr (по новичкам и участинкам на испытательном)",
         # )
-        # self.add_manager_handler(
-        #     "create_folders_for_illustrators",
-        #     CommandCategories.REGISTRY,
-        #     self.manager_reply_handler("create_folders_for_illustrators_job"),
-        #     "создать папки для иллюстраторов",
-        # )
+        self.add_manager_handler(
+            "create_folders_for_illustrators",
+            CommandCategories.REGISTRY,
+            self.manager_reply_handler("create_folders_for_illustrators_job"),
+            "создать папки для иллюстраторов",
+        )
         # self.add_manager_handler(
         #     "get_tasks_report",
         #     CommandCategories.SUMMARY,
@@ -171,18 +171,18 @@ class SysBlokBot:
         #     direct_message_only(handlers.get_tasks_report_focalboard),
         #     "получить список задач из Focalboard",
         # )
-        # self.add_manager_handler(
-        #     "get_articles_rubric",
-        #     CommandCategories.SUMMARY,
-        #     self.manager_reply_handler("trello_get_articles_rubric_job"),
-        #     "получить карточки по названию рубрики в трелло",
-        # )
-        # self.add_manager_handler(
-        #     "get_chat_id",
-        #     CommandCategories.REMINDERS,
-        #     handlers.get_chat_id,
-        #     "получить chat_id (свой или группы)",
-        # )
+        self.add_manager_handler(
+            "get_articles_rubric",
+            CommandCategories.SUMMARY,
+            self.manager_reply_handler("trello_get_articles_rubric_job"),
+            "получить карточки по названию рубрики в трелло",
+        )
+        self.add_manager_handler(
+            "get_chat_id",
+            CommandCategories.REMINDERS,
+            handlers.get_chat_id,
+            "получить chat_id (свой или группы)",
+        )
         # self.add_manager_handler(
         #     "manage_reminders",
         #     CommandCategories.REMINDERS,
@@ -219,58 +219,58 @@ class SysBlokBot:
         #     self.manager_reply_handler("sheet_report_job"),
         #     "получить статистику по табличке (например, оцифровка открыток)",
         # )
-        # # hidden from /help command for curator enrollment
+        # hidden from /help command for curator enrollment
         self.add_handler("enroll_curator", handlers.enroll_curator)
 
-        # # admin-only technical cmds
-        # self.add_admin_handler(
-        #     "update_config",
-        #     CommandCategories.CONFIG,
-        #     self.admin_reply_handler("config_updater_job"),
-        #     "обновить конфиг вне расписания",
-        # )
-        # self.add_admin_handler(
-        #     "list_jobs",
-        #     CommandCategories.CONFIG,
-        #     handlers.list_jobs,
-        #     "показать статус асинхронных задач",
-        # )
-        # self.add_admin_handler(
-        #     "get_usage_list",
-        #     CommandCategories.CONFIG,
-        #     handlers.list_chats,
-        #     "показать места использование бота: пользователи и чаты",
-        # )
-        # self.add_admin_handler(
-        #     "set_log_level",
-        #     CommandCategories.LOGGING,
-        #     handlers.set_log_level,
-        #     "изменить уровень логирования (info / debug)",
-        # )
-        # self.add_admin_handler(
-        #     "mute_errors",
-        #     CommandCategories.LOGGING,
-        #     handlers.mute_errors,
-        #     "отключить логирование ошибок в телеграм",
-        # )
-        # self.add_admin_handler(
-        #     "unmute_errors",
-        #     CommandCategories.LOGGING,
-        #     handlers.unmute_errors,
-        #     "включить логирование ошибок в телеграм",
-        # )
+        # admin-only technical cmds
+        self.add_admin_handler(
+            "update_config",
+            CommandCategories.CONFIG,
+            self.admin_reply_handler("config_updater_job"),
+            "обновить конфиг вне расписания",
+        )
+        self.add_admin_handler(
+            "list_jobs",
+            CommandCategories.CONFIG,
+            handlers.list_jobs,
+            "показать статус асинхронных задач",
+        )
+        self.add_admin_handler(
+            "get_usage_list",
+            CommandCategories.CONFIG,
+            handlers.list_chats,
+            "показать места использование бота: пользователи и чаты",
+        )
+        self.add_admin_handler(
+            "set_log_level",
+            CommandCategories.LOGGING,
+            handlers.set_log_level,
+            "изменить уровень логирования (info / debug)",
+        )
+        self.add_admin_handler(
+            "mute_errors",
+            CommandCategories.LOGGING,
+            handlers.mute_errors,
+            "отключить логирование ошибок в телеграм",
+        )
+        self.add_admin_handler(
+            "unmute_errors",
+            CommandCategories.LOGGING,
+            handlers.unmute_errors,
+            "включить логирование ошибок в телеграм",
+        )
         # self.add_admin_handler(
         #     "get_config",
         #     CommandCategories.CONFIG,
         #     handlers.get_config,
         #     "получить текущий конфиг (частично или полностью)",
         # )
-        # self.add_admin_handler(
-        #     "get_config_jobs",
-        #     CommandCategories.CONFIG,
-        #     handlers.get_config_jobs,
-        #     "получить текущий конфиг джобов (частично или полностью)",
-        # )
+        self.add_admin_handler(
+            "get_config_jobs",
+            CommandCategories.CONFIG,
+            handlers.get_config_jobs,
+            "получить текущий конфиг джобов (частично или полностью)",
+        )
         # self.add_admin_handler(
         #     "reload_config_jobs",
         #     CommandCategories.CONFIG,
@@ -313,18 +313,18 @@ class SysBlokBot:
         #     handlers.manage_all_reminders,
         #     "настроить все напоминания",
         # )
-        # self.add_admin_handler(
-        #     "get_roles_for_member",
-        #     CommandCategories.HR,
-        #     handlers.get_roles_for_member,
-        #     "показать роли для участника",
-        # )
-        # self.add_admin_handler(
-        #     "get_members_for_role",
-        #     CommandCategories.HR,
-        #     handlers.get_members_for_role,
-        #     "показать участников для роли",
-        # )
+        self.add_admin_handler(
+            "get_roles_for_member",
+            CommandCategories.HR,
+            handlers.get_roles_for_member,
+            "показать роли для участника",
+        )
+        self.add_admin_handler(
+            "get_members_for_role",
+            CommandCategories.HR,
+            handlers.get_members_for_role,
+            "показать участников для роли",
+        )
         # self.add_admin_handler(
         #     "check_chat_consistency",
         #     CommandCategories.HR,
@@ -349,21 +349,21 @@ class SysBlokBot:
         #     self.admin_reply_handler("hr_check_trello_consistency_frozen_job"),
         #     "консистентность Трелло редакции (замороженные участники)",
         # )
-        # self.add_admin_handler(
-        #     "get_members_without_telegram",
-        #     CommandCategories.HR,
-        #     self.admin_reply_handler("hr_get_members_without_telegram_job"),
-        #     (
-        #         "активные участники без указанного телеграма"
-        #         "(телефон это 10+ цифр+-(), отсутствие включает #N/A и кириллицу)"
-        #     ),
-        # )
-        # self.add_admin_handler(
-        #     "check_site_health",
-        #     CommandCategories.DATA_SYNC,
-        #     self.admin_reply_handler("site_health_check_job"),
-        #     "проверка статуса сайта",
-        # )
+        self.add_admin_handler(
+            "get_members_without_telegram",
+            CommandCategories.HR,
+            self.admin_reply_handler("hr_get_members_without_telegram_job"),
+            (
+                "активные участники без указанного телеграма"
+                "(телефон это 10+ цифр+-(), отсутствие включает #N/A и кириллицу)"
+            ),
+        )
+        self.add_admin_handler(
+            "check_site_health",
+            CommandCategories.DATA_SYNC,
+            self.admin_reply_handler("site_health_check_job"),
+            "проверка статуса сайта",
+        )
         self.add_admin_handler(
             "get_chat_data",
             CommandCategories.DEBUG,
@@ -376,12 +376,12 @@ class SysBlokBot:
             handlers.clean_chat_data,
             "clean_chat_data",
         )
-        # self.add_admin_handler(
-        #     "get_managers",
-        #     CommandCategories.MOST_USED,
-        #     handlers.get_managers,
-        #     "get_managers",
-        # )
+        self.add_admin_handler(
+            "get_managers",
+            CommandCategories.MOST_USED,
+            handlers.get_managers,
+            "get_managers",
+        )
 
         # sample handler
         self.add_handler(
@@ -390,37 +390,37 @@ class SysBlokBot:
         )
 
         # db commands hidden from /help command
-        # self.add_handler(
-        #     "db_fetch_authors_sheet",
-        #     self.admin_reply_handler("db_fetch_authors_sheet_job"),
-        # )
-        # self.add_handler(
-        #     "db_fetch_curators_sheet",
-        #     self.admin_reply_handler("db_fetch_curators_sheet_job"),
-        # )
-        # self.add_handler(
-        #     "db_fetch_team_sheet",
-        #     self.admin_reply_handler("db_fetch_team_sheet_job"),
-        # )
-        # self.add_handler(
-        #     "db_fetch_strings_sheet",
-        #     self.admin_reply_handler("db_fetch_strings_sheet_job"),
-        # )
-        # self.add_handler(
-        #     "db_fetch_all_team_members",
-        #     self.admin_reply_handler("db_fetch_all_team_members_job"),
-        # )
+        self.add_handler(
+            "db_fetch_authors_sheet",
+            self.admin_reply_handler("db_fetch_authors_sheet_job"),
+        )
+        self.add_handler(
+            "db_fetch_curators_sheet",
+            self.admin_reply_handler("db_fetch_curators_sheet_job"),
+        )
+        self.add_handler(
+            "db_fetch_team_sheet",
+            self.admin_reply_handler("db_fetch_team_sheet_job"),
+        )
+        self.add_handler(
+            "db_fetch_strings_sheet",
+            self.admin_reply_handler("db_fetch_strings_sheet_job"),
+        )
+        self.add_handler(
+            "db_fetch_all_team_members",
+            self.admin_reply_handler("db_fetch_all_team_members_job"),
+        )
 
         # general purpose cmds
         self.add_admin_handler(
             "start", CommandCategories.MOST_USED, handlers.start, "начать чат с ботом"
         )
-        # self.add_admin_handler(
-        #     "get_board_credentials",
-        #     CommandCategories.MOST_USED,
-        #     lambda update, context: handlers.get_board_credentials(update, context),
-        #     "получить пароль от Focalboard",
-        # )
+        self.add_admin_handler(
+            "get_board_credentials",
+            CommandCategories.MOST_USED,
+            lambda update, context: handlers.get_board_credentials(update, context),
+            "получить пароль от Focalboard",
+        )
         self.add_admin_handler(
             "help",
             CommandCategories.MOST_USED,
@@ -546,7 +546,9 @@ class SysBlokBot:
         """
         return self._create_reply_handler(job_name)
 
-    def _create_reply_handler(self, job_name: str) -> Callable:
+    def _create_reply_handler(
+            self, job_name: str, *args, **kwargs
+    ) -> (Callable):
         """
         Creates a handler that replies to a message of given user.
         """
@@ -555,9 +557,15 @@ class SysBlokBot:
             send=self.telegram_sender.create_reply_send(update),
             called_from_handler=True,
             args=update.message.text.split()[1:],
+            kwargs=(
+                kwargs.update({'chat_id': update.message.chat.id})
+                if kwargs else {'chat_id': update.message.chat.id}
+            )
         )
 
-    def _create_broadcast_handler(self, job_name: str) -> Callable:
+    def _create_broadcast_handler(
+            self, job_name: str, *args, **kwargs
+    ) -> Callable:
         """
         Creates a handler that sends message to list of chat ids.
         """
@@ -566,4 +574,8 @@ class SysBlokBot:
             app_context=self.app_context,
             send=self.telegram_sender.create_chat_ids_send(chat_ids),
             called_from_handler=True,
+            kwargs=(
+                kwargs.update({'chat_id': update.message.chat.id})
+                if kwargs else {'chat_id': update.message.chat.id}
+            )
         )
