@@ -1,5 +1,6 @@
 """Sends messages"""
 
+import asyncio
 import logging
 import re
 import time
@@ -69,17 +70,25 @@ class TelegramSender(Singleton):
             message_text = re.sub(r"\S*\.png", "", message_text)
         if message_text != "":
             try:
-                pretty_send(
-                    [message_text.strip()],
-                    lambda msg: self.bot.send_message(
-                        text=msg,
-                        chat_id=chat_id,
-                        disable_notification=self.is_silent,
-                        disable_web_page_preview=self.disable_web_page_preview,
-                        parse_mode=telegram.ParseMode.HTML,
-                        **kwargs,
-                    ),
-                )
+                messages = paragraphs_to_messages([message_text.strip()])
+                for i, message in enumerate(messages):
+                    if i > 0:
+                        time.sleep(MESSAGE_DELAY_SEC)
+                    if message.startswith("<code>") and "</code>" not in message:
+                        message = message + "</code>"
+                    elif message.endswith("</code>") and "<code>" not in message:
+                        message = "<code>" + message
+                    loop = asyncio.get_event_loop()
+                    loop.run_until_complete(
+                        self.bot.send_message(
+                            text=message,
+                            chat_id=chat_id,
+                            disable_notification=self.is_silent,
+                            disable_web_page_preview=self.disable_web_page_preview,
+                            parse_mode=telegram.constants.ParseMode.HTML,
+                            **kwargs,
+                        )
+                    )
                 return True
             except telegram.TelegramError as e:
                 logger.error(f"Could not send a message to {chat_id}: {e}")
@@ -178,7 +187,7 @@ def pretty_send(paragraphs: List[str], send: Callable[[str], None]) -> str:
 
 def paragraphs_to_messages(
     paragraphs: List[str],
-    char_limit=telegram.constants.MAX_MESSAGE_LENGTH,
+    char_limit=telegram.constants.MessageLimit.MAX_TEXT_LENGTH,
     delimiter="\n\n",
 ) -> List[str]:
     """
