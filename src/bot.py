@@ -54,7 +54,8 @@ class SysBlokBot:
             ApplicationBuilder()
             .persistence(PicklePersistence(filepath="persistent_storage.pickle"))
             .token(tg_config["token"])
-            .post_shutdown(signal_handler)
+            # .post_shutdown(signal_handler)
+            .concurrent_updates(True)
             .build()
         )
         self.telegram_sender = sender.TelegramSender(
