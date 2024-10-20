@@ -4,14 +4,14 @@ from collections import defaultdict
 from typing import Callable
 
 from telegram.ext import (
+    ApplicationBuilder,
     CallbackQueryHandler,
     CommandHandler,
-    Filters,
+    filters,
     MessageHandler,
     PicklePersistence,
     Updater,
 )
-from telegram.ext.dispatcher import run_async
 
 from .app_context import AppContext
 from .config_manager import ConfigManager
@@ -37,6 +37,10 @@ logging.Logger.usage = usage
 logger = logging.getLogger(__name__)
 
 
+async def async_wrap(f: Callable, *args, **kwargs):
+    return f(*args, **kwargs)
+
+
 class SysBlokBot:
     def __init__(
         self,
@@ -46,15 +50,16 @@ class SysBlokBot:
     ):
         self.config_manager = config_manager
         tg_config = config_manager.get_telegram_config()
-        self.updater = Updater(
-            tg_config["token"],
-            use_context=True,
-            user_sig_handler=signal_handler,
-            persistence=PicklePersistence(filename="persistent_storage.pickle"),
+        self.application = (
+            ApplicationBuilder()
+            .persistence(PicklePersistence(filepath="persistent_storage.pickle"))
+            .token(tg_config["token"])
+            # .post_shutdown(signal_handler)
+            .concurrent_updates(True)
+            .build()
         )
-        self.dp = self.updater.dispatcher
         self.telegram_sender = sender.TelegramSender(
-            bot=self.dp.bot, tg_config=tg_config
+            bot=self.application.bot, tg_config=tg_config
         )
         try:
             self.app_context = AppContext(config_manager, skip_db_update)
@@ -330,18 +335,6 @@ class SysBlokBot:
             "консистентность чата редакции (замороженные участники)",
         )
         self.add_admin_handler(
-            "check_trello_consistency",
-            CommandCategories.HR,
-            self.admin_reply_handler("hr_check_trello_consistency_job"),
-            "консистентность Трелло редакции",
-        )
-        self.add_admin_handler(
-            "check_trello_consistency_frozen",
-            CommandCategories.HR,
-            self.admin_reply_handler("hr_check_trello_consistency_frozen_job"),
-            "консистентность Трелло редакции (замороженные участники)",
-        )
-        self.add_admin_handler(
             "get_members_without_telegram",
             CommandCategories.HR,
             self.admin_reply_handler("hr_get_members_without_telegram_job"),
@@ -427,33 +420,41 @@ class SysBlokBot:
         )
 
         # on non-command user message
-        self.dp.add_handler(MessageHandler(Filters.text, handlers.handle_user_message))
-        self.dp.add_handler(CallbackQueryHandler(handlers.handle_callback_query))
-        self.dp.add_handler(
+
+        def asyncify(func):
+            async def wrapper(*args, **kwargs):
+                results = func(*args, **kwargs)
+                return results
+
+            return wrapper
+
+        self.application.add_handler(
+            MessageHandler(filters.TEXT, asyncify(handlers.handle_user_message))
+        )
+        self.application.add_handler(
+            CallbackQueryHandler(asyncify(handlers.handle_callback_query))
+        )
+        self.application.add_handler(
             MessageHandler(
-                Filters.status_update.new_chat_members, handlers.handle_new_members
+                filters.StatusUpdate.NEW_CHAT_MEMBERS, asyncify(handlers.handle_new_members)
             )
         )
 
         # log all errors
-        self.dp.add_error_handler(handlers.error)
+        self.application.add_error_handler(async_wrap(handlers.error))
 
     def run(self):
         # Start the Bot
         logger.info("Starting polling...")
-        self.updater.start_polling()
-
-        # Run the bot until you press Ctrl-C or the process receives SIGINT,
-        # SIGTERM or SIGABRT. start_polling() is non-blocking and will
-        # stop the bot gracefully.
-        self.updater.idle()
+        # TODO add non-blocking runtime (graceful termination for SIGTERM etc)
+        self.application.run_polling()
 
     # Methods, adding command handlers and setting them to /help cmd for proper audience
     def add_handler(self, handler_cmd: str, handler_func: Callable):
         """Adds handler silently. Noone will see it in /help output"""
 
         def add_usage_logging(func):
-            def wrapper(*args, **kwargs):
+            async def wrapper(*args, **kwargs):
                 logger.usage(f"Handler {handler_cmd} was called...")
                 results = func(*args, **kwargs)
                 logger.usage(f"Handler {handler_cmd} finished")
@@ -461,8 +462,8 @@ class SysBlokBot:
 
             return wrapper
 
-        self.dp.add_handler(
-            CommandHandler(handler_cmd, run_async(add_usage_logging(handler_func)))
+        self.application.add_handler(
+            CommandHandler(handler_cmd, add_usage_logging(handler_func))
         )
 
     def add_admin_handler(

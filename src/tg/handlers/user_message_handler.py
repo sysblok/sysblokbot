@@ -99,7 +99,7 @@ def handle_user_message(
                 trello_lists = trello_client.get_lists(board_id)
                 trello_lists = trello_lists[::-1]
         except Exception as e:
-            logger.warning(e)
+            logger.warning(e, exc_info=e)
             reply(
                 load(
                     "get_tasks_report_handler__enter_the_number",
