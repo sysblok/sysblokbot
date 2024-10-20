@@ -59,7 +59,7 @@ class GoogleSheetsClient(Singleton):
         return self._fetch_table(self.hr_sheet_key, "Анкеты")
 
     def fetch_hr_pt_forms_raw(self) -> Table:
-        return self._fetch_table(self.hr_pt_sheet_key, "Ответы Главный сайт")
+        return self._fetch_table(self.hr_pt_sheet_key, "Ответы на форму")
 
     def fetch_hr_pt_forms_processed(self) -> Table:
         return self._fetch_table(self.hr_pt_sheet_key, "Анкеты")
