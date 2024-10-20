@@ -428,8 +428,12 @@ class SysBlokBot:
 
             return wrapper
 
-        self.application.add_handler(MessageHandler(filters.TEXT, asyncify(handlers.handle_user_message)))
-        self.application.add_handler(CallbackQueryHandler(asyncify(handlers.handle_callback_query)))
+        self.application.add_handler(
+            MessageHandler(filters.TEXT, asyncify(handlers.handle_user_message))
+        )
+        self.application.add_handler(
+            CallbackQueryHandler(asyncify(handlers.handle_callback_query))
+        )
         self.application.add_handler(
             MessageHandler(
                 filters.StatusUpdate.NEW_CHAT_MEMBERS, asyncify(handlers.handle_new_members)
