@@ -90,7 +90,7 @@ class TelegramSender(Singleton):
                         )
                     )
                 return True
-            except telegram.TelegramError as e:
+            except telegram.error.TelegramError as e:
                 logger.error(f"Could not send a message to {chat_id}: {e}")
 
                 username = self.bot.get_chat(chat_id).username
@@ -109,7 +109,7 @@ class TelegramSender(Singleton):
                                 **kwargs,
                             ),
                         )
-                    except telegram.TelegramError as e:
+                    except telegram.error.TelegramError as e:
                         logger.error(
                             "Could not redirect unsended message "
                             f"to error_logs_recipients {error_logs_recipient}: {e}"
@@ -131,7 +131,7 @@ class TelegramSender(Singleton):
                             ),
                         )
                         return True
-                    except telegram.TelegramError as e:
+                    except telegram.error.TelegramError as e:
                         logger.error(
                             f"Could not send a plain-text message to {chat_id}: {e}"
                         )
