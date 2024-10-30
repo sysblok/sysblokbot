@@ -391,9 +391,11 @@ class SysBlokBot:
             "db_fetch_strings_sheet",
             self.admin_reply_handler("db_fetch_strings_sheet_job"),
         )
-        self.add_handler(
+        self.add_admin_handler(
             "db_fetch_all_team_members",
+            CommandCategories.DATA_SYNC,
             self.admin_reply_handler("db_fetch_all_team_members_job"),
+            "db_fetch_all_team_members",
         )
 
         # general purpose cmds
