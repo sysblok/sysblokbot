@@ -92,8 +92,10 @@ class TelegramSender(Singleton):
                 return True
             except telegram.error.TelegramError as e:
                 logger.error(f"Could not send a message to {chat_id}: {e}")
-
-                username = self.bot.get_chat(chat_id).username
+                loop = asyncio.get_event_loop()
+                username = loop.run_until_complete(
+                    self.bot.get_chat(chat_id)
+                ).username
                 for error_logs_recipient in self.error_logs_recipients:
                     try:
                         # Try redirect unsended message to error_logs_recipients
