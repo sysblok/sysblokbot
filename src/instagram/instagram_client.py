@@ -5,7 +5,6 @@ from typing import List, Tuple
 from urllib.parse import parse_qs, urlparse
 
 import dateutil.parser as dateparser
-import facebook
 import requests
 
 from ..consts import ReportPeriod
@@ -33,7 +32,6 @@ class InstagramClient(Singleton):
         self._update_from_config()
 
     def _update_from_config(self):
-        self._api_client = facebook.GraphAPI(self._facebook_config["token"], 10.0)
         self._page_id = self._facebook_config.get("ig_page_id")
 
     def _make_graph_api_call(self, uri: str, params: dict) -> dict:
