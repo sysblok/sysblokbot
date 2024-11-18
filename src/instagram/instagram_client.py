@@ -6,12 +6,16 @@ from urllib.parse import parse_qs, urlparse
 
 import dateutil.parser as dateparser
 import facebook
+import requests
 
 from ..consts import ReportPeriod
 from ..utils.singleton import Singleton
 from .instagram_objects import InstagramMedia, InstagramPage
 
 logger = logging.getLogger(__name__)
+
+BASE_URL = "https://graph.facebook.com"
+API_VERSION = "v19.0"
 
 
 class InstagramClient(Singleton):
@@ -32,20 +36,32 @@ class InstagramClient(Singleton):
         self._api_client = facebook.GraphAPI(self._facebook_config["token"], 10.0)
         self._page_id = self._facebook_config.get("ig_page_id")
 
+    def _make_graph_api_call(self, uri: str, params: dict) -> dict:
+        params["access_token"] = self._facebook_config["token"]
+        response = requests.get(
+            "/".join([BASE_URL, API_VERSION, uri])
+            + "?"
+            + "&".join(f"{key}={value}" for key, value in params.items())
+        )
+        return response.json()
+
     def get_page(self) -> InstagramPage:
         """
         Get the Instagram page
         """
-        page_dict = self._api_client.get_object(self._page_id, fields="username,name")
+        page_dict = self._make_graph_api_call(
+            str(self._page_id), {"fields": "username, name"}
+        )
         return InstagramPage.from_dict(page_dict)
 
     def _get_all_posts(self) -> List[InstagramMedia]:
         """
         Get all media (posts, stories, IGTV etc) on the page
         """
-        media_dicts = self._api_client.get_all_connections(
-            self._page_id,
-            "media",
+        media_dicts = self._get_all_batches(
+            connection_name="media",
+            since=datetime(2016, 1, 1),
+            until=datetime.now(),
             fields=(
                 "id,ig_id,media_url,timestamp,media_type,like_count,comments_count"
             ),
@@ -73,7 +89,9 @@ class InstagramClient(Singleton):
         """
         Get the total number of subscribers.
         """
-        return self._api_client.get_object(self._page_id, fields="followers_count")[
+        return self._make_graph_api_call(
+            str(self._page_id), {"fields": "followers_count"}
+        )[
             "followers_count"
         ]
 
@@ -81,9 +99,8 @@ class InstagramClient(Singleton):
         """
         Get the number of new subscribers for the period.
         """
-        new_followers = self._api_client.get_connections(
-            self._page_id,
-            "insights",
+        new_followers = self._get_all_batches(
+            connection_name="insights",
             since=since,
             until=until,
             metric="follower_count",
@@ -95,9 +112,8 @@ class InstagramClient(Singleton):
         """
         Get the total reach for the period.
         """
-        return self._api_client.get_connections(
-            self._page_id,
-            "insights",
+        return self._get_all_batches(
+            connection_name="insights",
             since=since,
             until=until,
             metric="reach",
@@ -148,18 +164,21 @@ class InstagramClient(Singleton):
         Get all insights for the post.
         https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights
         """
-        return self._api_client.get_connections(
-            post_id, "insights", metric="engagement,impressions,reach,saved"
+        return self._get_all_batches(
+            connection_name="insights",
+            metric="engagement,impressions,reach,saved",
         )
 
     def _get_all_batches(
-        self, connection_name: str, since: datetime, until: datetime, **args
+        self, connection_name: str, since: datetime, until: datetime, **kwargs
     ) -> List[dict]:
         result = []
-        args["since"] = since
-        args["until"] = until
-        page = self._api_client.get_connections(self._page_id, connection_name, **args)
-        result += page["data"]
+        params = {
+            "since": int(datetime.timestamp(since)),
+            "until": int(datetime.timestamp(until)),
+        }
+        params.update(kwargs)
+        page = self._make_graph_api_call(f"{self._page_id}/{connection_name}", params)
         # process next
         result += self._iterate_over_pages(connection_name, since, until, page, True)
         # process previous
@@ -201,10 +220,14 @@ class InstagramClient(Singleton):
                 ):
                     break
             args.pop("access_token", None)
-            current_page = self._api_client.get_connections(
-                self._page_id, connection_name, **args
+            current_page = self._make_graph_api_call(
+                f"{self._page_id}/{connection_name}", args
             )
-            result += current_page["data"]
+            if "data" in current_page:
+                result += current_page["data"]
+            else:
+                logger.error(f"Error in pagination: {current_page}")
+                break
         return result
 
     @staticmethod
