@@ -20,7 +20,6 @@ deepdiff==4.3.2
 Deprecated==1.2.14
 distlib==0.3.6
 distro==1.4.0
--e git+https://github.com/mobolic/facebook-sdk.git@ffd9980700be48964d6a6a61144edb1c3ea29cff#egg=facebook_sdk
 filelock==3.9.0
 fonttools==4.38.0
 freezegun==0.3.15
