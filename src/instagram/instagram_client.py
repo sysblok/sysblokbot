@@ -58,8 +58,6 @@ class InstagramClient(Singleton):
         """
         media_dicts = self._get_all_batches(
             connection_name="media",
-            since=datetime(2016, 1, 1),
-            until=datetime.now(),
             fields=(
                 "id,ig_id,media_url,timestamp,media_type,like_count,comments_count"
             ),
@@ -89,34 +87,33 @@ class InstagramClient(Singleton):
         """
         return self._make_graph_api_call(
             str(self._page_id), {"fields": "followers_count"}
-        )[
-            "followers_count"
-        ]
+        )["followers_count"]
 
     def get_new_subscribers(self, since: datetime, until: datetime) -> dict:
         """
         Get the number of new subscribers for the period.
         """
-        new_followers = self._get_all_batches(
+        batches = self._get_all_batches(
             connection_name="insights",
             since=since,
             until=until,
             metric="follower_count",
             period="day",
         )
-        return new_followers
+        return self._get_values_from_batches(batches, since, until)
 
     def get_reach(self, since: datetime, until: datetime) -> dict:
         """
         Get the total reach for the period.
         """
-        return self._get_all_batches(
+        batches = self._get_all_batches(
             connection_name="insights",
             since=since,
             until=until,
             metric="reach",
             period="day",
         )
+        return self._get_values_from_batches(batches, since, until)
 
     def get_likes_count(self, since: datetime, until: datetime) -> int:
         """
@@ -168,15 +165,17 @@ class InstagramClient(Singleton):
         )
 
     def _get_all_batches(
-        self, connection_name: str, since: datetime, until: datetime, **kwargs
+        self, connection_name: str, since: datetime = None, until: datetime = None, **kwargs
     ) -> List[dict]:
         result = []
-        params = {
-            "since": int(datetime.timestamp(since)),
-            "until": int(datetime.timestamp(until)),
-        }
+        params = {}
+        if since:
+            params["since"] = int(datetime.timestamp(since))
+        if until:
+            params["until"] = int(datetime.timestamp(until))
         params.update(kwargs)
         page = self._make_graph_api_call(f"{self._page_id}/{connection_name}", params)
+        result += page["data"]
         # process next
         result += self._iterate_over_pages(connection_name, since, until, page, True)
         # process previous

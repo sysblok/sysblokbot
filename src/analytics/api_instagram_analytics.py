@@ -17,15 +17,11 @@ class ApiInstagramAnalytics(BaseAnalytics):
 
     def get_new_subscribers_count(self, since: datetime, until: datetime) -> int:
         new_subscribers = self._ig_client.get_new_subscribers(since, until)
-        if not new_subscribers:
-            return 0
-        return sum(map(lambda day: day["value"], new_subscribers["data"][0]["values"]))
+        return sum(map(lambda day: day[1], new_subscribers))
 
     def get_reach(self, since: datetime, until: datetime) -> int:
-        new_subscribers = self._ig_client.get_reach(since, until)
-        if not new_subscribers:
-            return 0
-        return sum(map(lambda day: day["value"], new_subscribers["data"][0]["values"]))
+        reach = self._ig_client.get_reach(since, until)
+        return sum(map(lambda day: day[1], reach))
 
     def get_interactions_count(self, since: datetime, until: datetime) -> int:
         likes_count = self._ig_client.get_likes_count(since, until)
