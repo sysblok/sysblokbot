@@ -37,10 +37,6 @@ logging.Logger.usage = usage
 logger = logging.getLogger(__name__)
 
 
-async def async_wrap(f: Callable, *args, **kwargs):
-    return f(*args, **kwargs)
-
-
 class SysBlokBot:
     def __init__(
         self,
@@ -443,7 +439,7 @@ class SysBlokBot:
         )
 
         # log all errors
-        self.application.add_error_handler(async_wrap(handlers.error))
+        self.application.add_error_handler(asyncify(handlers.error))
 
     def run(self):
         # Start the Bot
