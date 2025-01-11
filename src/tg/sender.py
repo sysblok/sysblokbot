@@ -46,7 +46,10 @@ class TelegramSender(Singleton):
         """
         if isinstance(chat_ids, int):
             chat_ids = [chat_ids]
-        return lambda message: self.send_to_chat_ids(message, chat_ids)
+        sender = lambda message: self.send_to_chat_ids(message, chat_ids)
+        # add destination info
+        sender.chat_ids = chat_ids
+        return sender
 
     def send_to_chat_ids(self, message_text: str, chat_ids: List[int]):
         """

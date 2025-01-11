@@ -9,8 +9,9 @@ import telegram
 
 from .app_context import AppContext
 from .config_manager import ConfigManager
-from .consts import AT, CONFIG_RELOAD_MINUTES, EVERY, KWARGS, SEND_TO
+from .consts import AT, CONFIG_RELOAD_MINUTES, EVERY, KWARGS, SEND_TO, WEEKDAYS_SHORT
 from .jobs.utils import get_job_runnable
+from .strings import load
 from .tg.sender import TelegramSender
 from .utils.singleton import Singleton
 
@@ -107,8 +108,53 @@ class JobScheduler(Singleton):
         logger.info("Finished setting jobs")
 
     @staticmethod
+    def _describe_job(job: schedule.Job) -> str:
+        # copied from schedule module
+        if hasattr(job.job_func, "__name__"):
+            job_func_name = job.job_func.__name__  # type: ignore
+        else:
+            job_func_name = repr(job.job_func)
+
+        send_func = job.job_func.keywords.get("send", None)
+        recipients = ', '.join(
+            f'<a href="https://web.telegram.org/a/#{chat_id}">{chat_id}</a>'
+            for chat_id in send_func.chat_ids
+        ) if send_func else None
+
+        if job_func_name == 'SendRemindersJob':
+            reminders = AppContext().db_client.get_reminders_by_user_id(None)
+            reminder_descriptions = [
+                load(
+                    'jobs__reminder_job_reminder',
+                    reminder_title=reminder.name,
+                    reminder_interval=WEEKDAYS_SHORT[int(reminder.weekday)],
+                    reminder_time=reminder.time,
+                    recipients=f'<a href="https://web.telegram.org/a/#{chat.id}">{chat.title}</a>'
+                ) for (reminder, chat) in reminders
+            ]
+            return load(
+                'jobs__reminder_job_description',
+                job_name=job_func_name,
+                reminders_list='\n'.join(reminder_descriptions)
+            )
+        
+        if job_func_name == 'SheetReportJob':
+            job_func_name = f'{job_func_name} {job.job_func.keywords.get(KWARGS, {}).get("name")}'
+
+        if job_func_name == 'TrelloBoardStateNotificationsJob':
+            recipients = 'curators'
+
+        return load(
+            "jobs__job_description",
+            job_name=job_func_name,
+            job_time=job.at_time,
+            job_interval=job.start_day or f'{job.interval} {job.unit}',
+            recipients=recipients,
+        )
+
+    @staticmethod
     def list_jobs() -> List[str]:
-        return [html.escape(str(job)) for job in schedule.jobs]
+        return [JobScheduler._describe_job(job) for job in schedule.jobs]
 
     def reschedule_jobs(self):
         logger.info("Clearing all scheduled jobs...")
