@@ -137,7 +137,7 @@ class JobScheduler(Singleton):
                 job_name=job_func_name,
                 reminders_list='\n'.join(reminder_descriptions)
             )
-        
+
         if job_func_name == 'SheetReportJob':
             job_func_name = f'{job_func_name} {job.job_func.keywords.get(KWARGS, {}).get("name")}'
 
