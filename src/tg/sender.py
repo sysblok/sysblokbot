@@ -75,6 +75,7 @@ class TelegramSender(Singleton):
         if message_text != "":
             try:
                 messages = paragraphs_to_messages([message_text.strip()])
+                loop = asyncio.get_event_loop()
                 for i, message in enumerate(messages):
                     if i > 0:
                         time.sleep(MESSAGE_DELAY_SEC)
@@ -82,7 +83,6 @@ class TelegramSender(Singleton):
                         message = message + "</code>"
                     elif message.endswith("</code>") and "<code>" not in message:
                         message = "<code>" + message
-                    loop = asyncio.get_event_loop()
                     loop.run_until_complete(
                         self.bot.send_message(
                             text=message,
@@ -97,23 +97,24 @@ class TelegramSender(Singleton):
             except telegram.error.TelegramError as e:
                 logger.error(f"Could not send a message to {chat_id}: {e}")
                 loop = asyncio.get_event_loop()
-                username = loop.run_until_complete(
+                chat = loop.run_until_complete(
                     self.bot.get_chat(chat_id)
-                ).username
+                )
+                chat_name = chat.title or chat.username or str(chat_id)
                 for error_logs_recipient in self.error_logs_recipients:
                     try:
                         # Try redirect unsended message to error_logs_recipients
-                        pretty_send(
-                            [message_text.strip()],
-                            lambda msg: self.bot.send_message(
-                                text=f'Unsended message to '
-                                     f'{username} {chat_id}\n'
-                                     f'{msg}',
+                        loop.run_until_complete(
+                            self.bot.send_message(
+                                text=f'Unsended message to {chat_name} {chat_id}\n{message}'[
+                                    :telegram.constants.MessageLimit.MAX_TEXT_LENGTH
+                                ],
                                 chat_id=error_logs_recipient,
                                 disable_notification=self.is_silent,
                                 disable_web_page_preview=self.disable_web_page_preview,
+                                parse_mode=telegram.constants.ParseMode.HTML,
                                 **kwargs,
-                            ),
+                            )
                         )
                     except telegram.error.TelegramError as e:
                         logger.error(
@@ -126,15 +127,16 @@ class TelegramSender(Singleton):
                 if "Can't parse entities" in e.message:
                     try:
                         # Try sending the plain-text version
-                        pretty_send(
-                            [message_text.strip()],
-                            lambda msg: self.bot.send_message(
-                                text=msg,
-                                chat_id=chat_id,
+                        loop.run_until_complete(
+                            self.bot.send_message(
+                                text=f'Unsended message to {chat_name} {chat_id}\n{message}'[
+                                    :telegram.constants.MessageLimit.MAX_TEXT_LENGTH
+                                ],
+                                chat_id=error_logs_recipient,
                                 disable_notification=self.is_silent,
                                 disable_web_page_preview=self.disable_web_page_preview,
                                 **kwargs,
-                            ),
+                            )
                         )
                         return True
                     except telegram.error.TelegramError as e:
