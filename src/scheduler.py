@@ -125,7 +125,7 @@ class JobScheduler(Singleton):
                     chat = loop.run_until_complete(
                         bot.get_chat(chat_id)
                     )
-                    chat_name = chat.title or str(chat_id)
+                    chat_name = chat.title or chat.username or str(chat_id)
                     recipient_links.append(
                         f'<a href="https://web.telegram.org/a/#{chat_id}">{chat_name}</a>'
                     )
