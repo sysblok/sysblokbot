@@ -1,3 +1,4 @@
+import asyncio
 import html
 import logging
 import threading
@@ -108,7 +109,7 @@ class JobScheduler(Singleton):
         logger.info("Finished setting jobs")
 
     @staticmethod
-    def _describe_job(job: schedule.Job) -> str:
+    def _describe_job(job: schedule.Job, bot) -> str:
         # copied from schedule module
         if hasattr(job.job_func, "__name__"):
             job_func_name = job.job_func.__name__  # type: ignore
@@ -116,10 +117,24 @@ class JobScheduler(Singleton):
             job_func_name = repr(job.job_func)
 
         send_func = job.job_func.keywords.get("send", None)
-        recipients = ', '.join(
-            f'<a href="https://web.telegram.org/a/#{chat_id}">{chat_id}</a>'
-            for chat_id in send_func.chat_ids
-        ) if send_func else None
+        loop = asyncio.get_event_loop()
+        recipient_links = []
+        if send_func:
+            for chat_id in send_func.chat_ids:
+                try:
+                    chat = loop.run_until_complete(
+                        bot.get_chat(chat_id)
+                    )
+                    chat_name = chat.title or str(chat_id)
+                    recipient_links.append(
+                        f'<a href="https://web.telegram.org/a/#{chat_id}">{chat_name}</a>'
+                    )
+                except telegram.error.BadRequest:
+                    recipient_links.append(
+                        f'<a href="https://web.telegram.org/a/#{chat_id}">{chat_id} (bad ID!)</a>'
+                    )
+
+        recipients = ', '.join(recipient_links)
 
         if job_func_name == 'SendRemindersJob':
             reminders = AppContext().db_client.get_reminders_by_user_id(None)
@@ -153,8 +168,8 @@ class JobScheduler(Singleton):
         )
 
     @staticmethod
-    def list_jobs() -> List[str]:
-        return [JobScheduler._describe_job(job) for job in schedule.jobs]
+    def list_jobs(bot) -> List[str]:
+        return [JobScheduler._describe_job(job, bot) for job in schedule.jobs]
 
     def reschedule_jobs(self):
         logger.info("Clearing all scheduled jobs...")
