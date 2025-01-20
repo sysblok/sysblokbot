@@ -1,6 +1,7 @@
 import asyncio
 import html
 import logging
+import nest_asyncio
 import threading
 import time
 from typing import List
@@ -118,6 +119,7 @@ class JobScheduler(Singleton):
 
         send_func = job.job_func.keywords.get("send", None)
         loop = asyncio.get_event_loop()
+        nest_asyncio.apply(loop)
         recipient_links = []
         if send_func:
             for chat_id in send_func.chat_ids:

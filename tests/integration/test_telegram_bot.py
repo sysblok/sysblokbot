@@ -1,4 +1,5 @@
 import asyncio
+import nest_asyncio
 import os
 import time
 from typing import List
@@ -34,6 +35,7 @@ async def _test_command(report_state, conversation, command: str, timeout=120):
 class Test:
     report_state = PytestReport()
     loop = asyncio.get_event_loop()
+    nest_asyncio.apply(loop)
 
     @pytest.mark.parametrize("command", ("/mute_errors",))
     def test_mute(self, conversation, command: str):

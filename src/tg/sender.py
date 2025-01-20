@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import nest_asyncio
 import re
 import time
 from typing import Callable, List
@@ -76,6 +77,7 @@ class TelegramSender(Singleton):
             try:
                 messages = paragraphs_to_messages([message_text.strip()])
                 loop = asyncio.get_event_loop()
+                nest_asyncio.apply(loop)
                 for i, message in enumerate(messages):
                     if i > 0:
                         time.sleep(MESSAGE_DELAY_SEC)
@@ -97,6 +99,7 @@ class TelegramSender(Singleton):
             except telegram.error.TelegramError as e:
                 logger.error(f"Could not send a message to {chat_id}: {e}")
                 loop = asyncio.get_event_loop()
+                nest_asyncio.apply(loop)
                 chat = loop.run_until_complete(
                     self.bot.get_chat(chat_id)
                 )
