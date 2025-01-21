@@ -19,7 +19,7 @@ class VkGroup:
             group.url = f'https://vk.com/{data["screen_name"]}'
             group.members_count = data["members_count"]
         except Exception as e:
-            logger.error(f"Bad VK group json {data}: {e}")
+            logger.error(f"Bad VK group json {data}", exc_info=e)
         return group
 
 
@@ -41,7 +41,7 @@ class VkGroupStats:
             stats.views = data["visitors"]["views"]
             stats.visitors = data["visitors"]["visitors"]
         except Exception as e:
-            logger.error(f"Bad VK stats json {data}: {e}")
+            logger.error(f"Bad VK stats json {data}", exc_info=e)
         finally:
             return stats
 
@@ -76,7 +76,7 @@ class VkPost:
             post.likes = data["likes"]["count"]
             post.reposts = data["reposts"]["count"]
         except Exception as e:
-            logger.error(f"Bad VK post json {data}: {e}")
+            logger.error(f"Bad VK post json {data}", exc_info=e)
         finally:
             return post
 
@@ -126,6 +126,6 @@ class VkPostStats:
             stats.unsubscribed = data["unsubscribe"]
             stats.links = data["links"]
         except Exception as e:
-            logger.error(f"Bad VK stats json {data}: {e}")
+            logger.error(f"Bad VK stats json {data}", exc_info=e)
         finally:
             return stats

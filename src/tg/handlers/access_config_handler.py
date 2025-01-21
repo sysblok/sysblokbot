@@ -24,7 +24,7 @@ def get_config(update, tg_context):
                 config = config[config_item]
     except Exception as e:
         reply(load("access_config_handler__get_config_usage_example"), update)
-        logger.warning(f"Failed to get config: {e}")
+        logger.warning(f"Failed to get config", exc_info=e)
         return
     reply(
         load(
@@ -46,7 +46,7 @@ def get_config_jobs(update, tg_context):
                 config_jobs = config_jobs[config_item]
     except Exception as e:
         reply(load("access_config_handler__get_jobs_config_usage_example"), update)
-        logger.warning(f"Failed to get jobs config: {e}")
+        logger.warning(f"Failed to get jobs config", exc_info=e)
         return
     reply(
         load(
@@ -75,7 +75,7 @@ def reload_config_jobs(update, tg_context):
         return
     except Exception as e:
         reply(load("access_config_handler__reload_config_jobs_usage_example"), update)
-        logger.warning(f"Failed to reload jobs config: {e}")
+        logger.warning(f"Failed to reload jobs config", exc_info=e)
         return
     num_strings = 0
     try:
@@ -84,7 +84,7 @@ def reload_config_jobs(update, tg_context):
         )
     except Exception as e:
         reply(load("access_config_handler__reload_config_jobs_usage_example"), update)
-        logger.warning(f"Failed to reload jobs config when fetching strings: {e}")
+        logger.warning(f"Failed to reload jobs config when fetching strings", exc_info=e)
     reply(
         load(
             "common__code_wrapper",
@@ -108,7 +108,7 @@ def set_config(update, tg_context):
         _set_config(update, config_path, new_value, ConfigManager())
     except Exception as e:
         reply(load("access_config_handler__set_config_usage_example"), update)
-        logger.warning(f"Failed to set config: {e}")
+        logger.warning(f"Failed to set config", exc_info=e)
         return
 
 
@@ -143,7 +143,7 @@ def add_manager(update, tg_context):
             reply(load("access_config_handler__set_config_no_update"), update)
     except Exception as e:
         reply(load("access_config_handler__add_manager_usage_example"), update)
-        logger.warning(f"Failed to add manager: {e}")
+        logger.warning(f"Failed to add manager", exc_info=e)
         return
 
 
@@ -161,7 +161,7 @@ def change_board(update, tg_context):
         )
     except Exception as e:
         reply(load("access_config_handler__change_board_usage_example"), update)
-        logger.warning(f"Failed to change boards: {e}")
+        logger.warning(f"Failed to change boards", exc_info=e)
         return
 
 

@@ -68,7 +68,7 @@ class DBClient(Singleton):
                 session.add(author)
             session.commit()
         except Exception as e:
-            logger.warning(f"Failed to update authors table from sheet: {e}")
+            logger.warning(f"Failed to update authors table from sheet", exc_info=e)
             session.rollback()
             return 0
         return len(authors)
@@ -85,7 +85,7 @@ class DBClient(Singleton):
                 session.add(curator)
             session.commit()
         except Exception as e:
-            logger.warning(f"Failed to update curators table from sheet: {e}")
+            logger.warning(f"Failed to update curators table from sheet", exc_info=e)
             session.rollback()
             return 0
         return len(curators)
@@ -102,7 +102,7 @@ class DBClient(Singleton):
                 session.add(member)
             session.commit()
         except Exception as e:
-            logger.warning(f"Failed to update team table from sheet: {e}")
+            logger.warning(f"Failed to update team table from sheet", exc_info=e)
             session.rollback()
             return 0
         return len(team)
@@ -121,7 +121,7 @@ class DBClient(Singleton):
                 session.add(rubric)
             session.commit()
         except Exception as e:
-            logger.warning(f"Failed to update rubric table from sheet: {e}")
+            logger.warning(f"Failed to update rubric table from sheet", exc_info=e)
             session.rollback()
             return 0
         return len(rubrics)
@@ -377,7 +377,7 @@ class DBClient(Singleton):
             session.add(statistic)
             session.commit()
         except Exception as e:
-            logger.warning(f"Failed to add statistic: {e}")
+            logger.warning(f"Failed to add statistic", exc_info=e)
             session.rollback()
 
     def get_latest_trello_analytics(self) -> TrelloAnalytics:

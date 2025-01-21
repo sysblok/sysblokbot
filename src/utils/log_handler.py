@@ -38,9 +38,9 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
                         level=ERROR,
                         pathname=None,
                         lineno=-1,
-                        msg=f"Could not send error to telegram: {e}",
+                        msg=f"Could not send error to telegram",
                         args=None,
-                        exc_info=None,
+                        exc_info=e,
                     )
                 )
         if record.levelno >= ERROR and not self.is_muted:
@@ -59,9 +59,9 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
                         level=ERROR,
                         pathname=None,
                         lineno=-1,
-                        msg=f"Could not send error to telegram: {e}",
+                        msg=f"Could not send error to telegram",
                         args=None,
-                        exc_info=None,
+                        exc_info=e,
                     )
                 )
 

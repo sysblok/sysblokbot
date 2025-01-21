@@ -97,7 +97,7 @@ class GoogleDriveClient(Singleton):
             while done is False:
                 status, done = downloader.next_chunk()
         except Exception as e:
-            logger.error(f"Failed to download {file_id} from Google drive: {e}")
+            logger.error(f"Failed to download {file_id} from Google drive", exc_info=e)
             return None
         return file.getvalue()
 
@@ -114,7 +114,7 @@ class GoogleDriveClient(Singleton):
             )
         except Exception as e:
             logger.error(
-                f"Failed to create a folder for {description} in Google drive: {e}"
+                f"Failed to create a folder for {description} in Google drive", exc_info=e
             )
             return None
         return file.get("id")
@@ -135,7 +135,7 @@ class GoogleDriveClient(Singleton):
             )
         except Exception as e:
             logger.error(
-                f"Failed to query Google drive for existing folder {name}: {e}"
+                f"Failed to query Google drive for existing folder {name}", exc_info=e
             )
             return None
         items = results.get("files", [])
@@ -159,7 +159,8 @@ class GoogleDriveClient(Singleton):
             )
         except Exception as e:
             logger.warning(
-                f"Failed to query Google drive for existing parent url {parent_url}: {e}"
+                f"Failed to query Google drive for existing parent url {parent_url}",
+                exc_info=e
             )
             return None
         items = results.get("files", [])

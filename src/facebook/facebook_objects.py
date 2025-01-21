@@ -25,7 +25,7 @@ class FacebookPage:
 
         except Exception as e:
             page._ok = False
-            logger.error(f"Bad Facebook page json {data}: {e}")
+            logger.error(f"Bad Facebook page json {data}", exc_info=e)
         return page
 
     def to_dict(self):

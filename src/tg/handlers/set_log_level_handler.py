@@ -15,7 +15,7 @@ def set_log_level(update, tg_context):
         elif level == "INFO":
             logging.getLogger().setLevel(logging.INFO)
     except Exception as e:
-        logger.error(f"Failed to update log level to {level}: {e}")
+        logger.error(f"Failed to update log level to {level}", exc_info=e)
     reply(
         load("set_log_level_handler__set_level", level=logging.getLogger().level),
         update,

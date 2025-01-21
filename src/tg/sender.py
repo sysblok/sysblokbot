@@ -97,7 +97,7 @@ class TelegramSender(Singleton):
                     )
                 return True
             except telegram.error.TelegramError as e:
-                logger.error(f"Could not send a message to {chat_id}: {e}")
+                logger.error(f"Could not send a message to {chat_id}", exc_info=e)
                 loop = asyncio.get_event_loop()
                 nest_asyncio.apply(loop)
                 chat = loop.run_until_complete(
@@ -122,7 +122,8 @@ class TelegramSender(Singleton):
                     except telegram.error.TelegramError as e:
                         logger.error(
                             "Could not redirect unsended message "
-                            f"to error_logs_recipients {error_logs_recipient}: {e}"
+                            f"to error_logs_recipients {error_logs_recipient}",
+                            exc_info=e
                         )
 
                 # HTML parse error isn't a separate class in Telegram
@@ -144,7 +145,7 @@ class TelegramSender(Singleton):
                         return True
                     except telegram.error.TelegramError as e:
                         logger.error(
-                            f"Could not send a plain-text message to {chat_id}: {e}"
+                            f"Could not send a plain-text message to {chat_id}", exc_info=e
                         )
             return False
 
