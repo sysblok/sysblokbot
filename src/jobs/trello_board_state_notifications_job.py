@@ -54,7 +54,7 @@ class TrelloBoardStateNotificationsJob(BaseJob):
                     curator_tg = curator_tg[1:]
                 try:
                     chat = app_context.db_client.get_chat_by_name(curator_tg)
-                    if chat: # and chat.is_curator: TMP fix
+                    if chat:  # and chat.is_curator: TMP fix
                         pretty_send(
                             paragraphs, lambda msg: sender.send_to_chat_id(msg, chat.id)
                         )
