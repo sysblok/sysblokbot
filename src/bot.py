@@ -141,7 +141,8 @@ class SysBlokBot:
         )
         self.add_manager_handler(
             "get_tasks_report_focalboard",
-            CommandCategories.SUMMARY,
+            CommandCategories.MOST_USED,
+            # CommandCategories.SUMMARY,
             direct_message_only(handlers.get_tasks_report_focalboard),
             "получить список задач из Focalboard",
         )
@@ -153,13 +154,13 @@ class SysBlokBot:
         )
         self.add_manager_handler(
             "get_chat_id",
-            CommandCategories.REMINDERS,
+            CommandCategories.MOST_USED,
             handlers.get_chat_id,
             "получить chat_id (свой или группы)",
         )
         self.add_manager_handler(
             "manage_reminders",
-            CommandCategories.REMINDERS,
+            CommandCategories.MOST_USED,
             handlers.manage_reminders,
             "настроить напоминания",
         )
@@ -372,7 +373,7 @@ class SysBlokBot:
         )
         self.add_admin_handler(
             "db_fetch_all_team_members",
-            CommandCategories.DATA_SYNC,
+            CommandCategories.MOST_USED,
             self.admin_reply_handler("db_fetch_all_team_members_job"),
             "db_fetch_all_team_members",
         )
