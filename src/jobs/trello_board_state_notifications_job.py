@@ -59,7 +59,7 @@ class TrelloBoardStateNotificationsJob(BaseJob):
                             paragraphs, lambda msg: sender.send_to_chat_id(msg, chat.id)
                         )
                         if called_from_handler:
-                            pretty_send(f'curator report sent to {chat.title}', send)
+                            pretty_send([f'curator report sent to {chat.title}'], send)
                     else:
                         logger.error(
                             f"Curator {curator_name} is not enrolled, could not send notifications"
