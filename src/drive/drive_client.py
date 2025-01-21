@@ -43,7 +43,7 @@ class GoogleDriveClient(Singleton):
             self._drive_config["api_key_path"], scopes=SCOPES
         )
         # https://developers.google.com/drive/api/v3/quickstart/python
-        self.service = build("drive", "v3", credentials=self._credentials)
+        self.service = build("drive", "v3", credentials=self._credentials, cache_discovery=False)
 
     def create_folder_for_card(self, trello_card: TrelloCard) -> str:
         existing = self._lookup_file_by_name(trello_card.name)
