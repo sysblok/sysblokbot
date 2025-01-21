@@ -1,9 +1,10 @@
 from ...db.db_client import DBClient
 from ...strings import load
-from .utils import direct_message_only, get_chat_id, get_chat_name, reply
+from .utils import direct_message_only, manager_only, get_chat_id, get_chat_name, reply
 
 
 @direct_message_only
+@manager_only
 def enroll_curator(update, tg_context):
     chat_id = get_chat_id(update)
     telegram_login = get_chat_name(update)
