@@ -10,6 +10,7 @@ from typing import Callable, List
 
 import telegram
 
+from ..app_context import AppContext
 from ..consts import MESSAGE_DELAY_SEC
 from ..utils.singleton import Singleton
 
@@ -77,8 +78,6 @@ class TelegramSender(Singleton):
         if message_text != "":
             try:
                 messages = paragraphs_to_messages([message_text.strip()])
-                loop = asyncio.get_event_loop()
-                nest_asyncio.apply(loop)
                 for i, message in enumerate(messages):
                     if i > 0:
                         time.sleep(MESSAGE_DELAY_SEC)
@@ -102,10 +101,7 @@ class TelegramSender(Singleton):
                 logger.error(f"Could not send a message to {chat_id}", exc_info=e)
                 loop = asyncio.get_event_loop()
                 nest_asyncio.apply(loop)
-                chat = loop.run_until_complete(
-                    self.bot.get_chat(chat_id)
-                )
-                chat_name = chat.title or chat.username or str(chat_id)
+                chat_name = AppContext().db_client.get_chat_name(chat_id)
                 for error_logs_recipient in self.error_logs_recipients:
                     try:
                         # Try redirect unsended message to error_logs_recipients
