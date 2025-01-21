@@ -89,12 +89,6 @@ class SysBlokBot:
             self.manager_reply_handler("trello_board_state_job"),
             "получить сводку о состоянии доски",
         )
-        self.add_manager_handler(
-            "get_editorial_board_visual_stats",
-            CommandCategories.STATS,
-            self.manager_reply_handler("editorial_board_visual_stats_job"),
-            "получить статистику изменений за неделю в виде картинки",
-        )
         self.add_admin_handler(
             "send_publication_plans",
             CommandCategories.BROADCAST,
@@ -103,14 +97,13 @@ class SysBlokBot:
         )
         self.add_manager_handler(
             "fill_posts_list",
-            CommandCategories.REGISTRY,
+            CommandCategories.DEBUG,
             direct_message_only(self.manager_reply_handler("fill_posts_list_job")),
-            "заполнить реестр постов",
+            "заполнить реестр постов (пока не работает)",
         )
-
         self.add_manager_handler(
             "fill_posts_list_focalboard",
-            CommandCategories.REGISTRY,
+            CommandCategories.DEBUG,
             direct_message_only(
                 self.manager_reply_handler("fill_posts_list_focalboard_job")
             ),
@@ -145,18 +138,6 @@ class SysBlokBot:
             CommandCategories.REGISTRY,
             self.manager_reply_handler("create_folders_for_illustrators_job"),
             "создать папки для иллюстраторов",
-        )
-        self.add_manager_handler(
-            "get_tasks_report",
-            CommandCategories.SUMMARY,
-            direct_message_only(handlers.get_tasks_report),
-            "получить список задач из Trello",
-        )
-        self.add_manager_handler(
-            "get_tasks_report_advanced",
-            CommandCategories.SUMMARY,
-            direct_message_only(handlers.get_tasks_report_advanced),
-            "получить список задач из Trello (расширенный)",
         )
         self.add_manager_handler(
             "get_tasks_report_focalboard",
@@ -308,13 +289,15 @@ class SysBlokBot:
         )
         self.add_admin_handler(
             "get_roles_for_member",
-            CommandCategories.HR,
+            # CommandCategories.HR,
+            CommandCategories.DEBUG,
             handlers.get_roles_for_member,
             "показать роли для участника",
         )
         self.add_admin_handler(
             "get_members_for_role",
-            CommandCategories.HR,
+            # CommandCategories.HR,
+            CommandCategories.DEBUG,
             handlers.get_members_for_role,
             "показать участников для роли",
         )
@@ -396,23 +379,26 @@ class SysBlokBot:
 
         # general purpose cmds
         self.add_admin_handler(
-            "start", CommandCategories.MOST_USED, handlers.start, "начать чат с ботом"
+            "start", CommandCategories.DEBUG, handlers.start, "начать чат с ботом"
         )
         self.add_admin_handler(
             "get_board_credentials",
-            CommandCategories.MOST_USED,
+            CommandCategories.DEBUG,
+            # CommandCategories.MOST_USED,
             lambda update, context: handlers.get_board_credentials(update, context),
             "получить пароль от Focalboard",
         )
         self.add_admin_handler(
             "help",
-            CommandCategories.MOST_USED,
+            CommandCategories.DEBUG,
+            # CommandCategories.MOST_USED,
             lambda update, context: handlers.help(update, context, self.handlers_info),
             "получить список доступных команд",
         )
         self.add_admin_handler(
             "shrug",
-            CommandCategories.MOST_USED,
+            CommandCategories.DEBUG,
+            # CommandCategories.MOST_USED,
             self.admin_reply_handler("shrug_job"),
             "¯\\_(ツ)_/¯",
         )
@@ -477,7 +463,7 @@ class SysBlokBot:
         See tg.utils#admin_only
         """
         self.add_handler(handler_cmd, handler_func)
-        self.handlers_info[handler_category.value]["admin"][
+        self.handlers_info[handler_category]["admin"][
             f"/{handler_cmd}"
         ] = description
 
@@ -494,7 +480,7 @@ class SysBlokBot:
         See tg.utils#manager_only
         """
         self.add_handler(handler_cmd, handler_func)
-        self.handlers_info[handler_category.value]["manager"][
+        self.handlers_info[handler_category]["manager"][
             f"/{handler_cmd}"
         ] = description
 
@@ -507,7 +493,7 @@ class SysBlokBot:
     ):
         """Adds handler. It will be listed in /help for everybody"""
         self.add_handler(handler_cmd, handler_func)
-        self.handlers_info[handler_category.value]["user"][
+        self.handlers_info[handler_category]["user"][
             f"/{handler_cmd}"
         ] = description
 

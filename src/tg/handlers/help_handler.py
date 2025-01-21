@@ -1,5 +1,6 @@
 import logging
 
+from ...consts import CommandCategories
 from ...strings import load
 from .utils import direct_message_only, is_sender_admin, is_sender_manager, reply
 
@@ -10,7 +11,15 @@ logger = logging.getLogger(__name__)
 def help(update, tg_context, handlers_info: dict):
     message = ""
 
-    for category_alias in sorted(handlers_info.keys()):
+    for category_alias in sorted(handlers_info.keys(), key=lambda cat: cat.value):
+        print(category_alias)
+        if category_alias in [
+            CommandCategories.DATA_SYNC,
+            CommandCategories.CONFIG,
+            CommandCategories.LOGGING,
+            CommandCategories.DEBUG,
+        ]:
+            continue
         handlers = handlers_info[category_alias]
         listed_handlers = []
         if is_sender_admin(update):
@@ -31,12 +40,12 @@ def help(update, tg_context, handlers_info: dict):
     reply(message, update)
 
 
-def _format_commands_block(category_alias: str, handlers: list):
+def _format_commands_block(category_alias: CommandCategories, handlers: list):
     lines = []
     for command, description in handlers:
         lines.append(f"{command} - {description}" if description else command)
     lines.sort()
-    category = load(category_alias)
+    category = load(category_alias.value)
     if category:
         lines = [category, ""] + lines
     return "\n".join(lines) + "\n\n"
