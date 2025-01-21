@@ -1,7 +1,5 @@
-import asyncio
 import html
 import logging
-import nest_asyncio
 import threading
 import time
 from typing import List
@@ -118,20 +116,16 @@ class JobScheduler(Singleton):
             job_func_name = repr(job.job_func)
 
         send_func = job.job_func.keywords.get("send", None)
-        loop = asyncio.get_event_loop()
-        nest_asyncio.apply(loop)
         recipient_links = []
+        app_context = AppContext()
         if send_func:
             for chat_id in send_func.chat_ids:
                 try:
-                    chat = loop.run_until_complete(
-                        bot.get_chat(chat_id)
-                    )
-                    chat_name = chat.title or chat.username or str(chat_id)
+                    chat_name = app_context.db_client.get_chat_name(chat_id)
                     recipient_links.append(
                         f'<a href="https://web.telegram.org/a/#{chat_id}">{chat_name}</a>'
                     )
-                except telegram.error.BadRequest:
+                except ValueError:
                     recipient_links.append(
                         f'<a href="https://web.telegram.org/a/#{chat_id}">{chat_id} (bad ID!)</a>'
                     )

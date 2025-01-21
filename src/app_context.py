@@ -12,7 +12,6 @@ from .instagram.instagram_client import InstagramClient
 from .roles.role_manager import RoleManager
 from .sheets.sheets_client import GoogleSheetsClient
 from .strings import StringsDBClient
-from .tg.sender import TelegramSender
 from .tg.tg_client import TgClient
 from .trello.trello_client import TrelloClient
 from .focalboard.focalboard_client import FocalboardClient

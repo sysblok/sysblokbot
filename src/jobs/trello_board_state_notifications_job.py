@@ -39,15 +39,17 @@ class TrelloBoardStateNotificationsJob(BaseJob):
                 if card_paragraph:
                     card_paragraphs.append(card_paragraph)
             if card_paragraphs:
+                paragraphs = [
+                    load("trello_board_state_notifications_job__intro")
+                ] + card_paragraphs
+                if called_from_handler:
+                    pretty_send(paragraphs, send)
+
                 if curator_tg is None:
                     logger.error(
                         f"Telegram for {curator_name} not found, could not send notification!"
                     )
                     continue
-
-                paragraphs = [
-                    load("trello_board_state_notifications_job__intro")
-                ] + card_paragraphs
                 if curator_tg.startswith("@"):
                     curator_tg = curator_tg[1:]
                 try:
@@ -56,9 +58,14 @@ class TrelloBoardStateNotificationsJob(BaseJob):
                         pretty_send(
                             paragraphs, lambda msg: sender.send_to_chat_id(msg, chat.id)
                         )
+                        if called_from_handler:
+                            pretty_send(f'curator report sent to {chat.title}', send)
                     else:
-                        logger.warning(
+                        logger.error(
                             f"Curator {curator_name} is not enrolled, could not send notifications"
+                        )
+                        pretty_send(
+                            paragraphs, lambda msg: sender.send_error_log(msg)
                         )
                 except ValueError as e:
                     logger.error(f"Could not send to {curator_name}:", exc_info=e)
