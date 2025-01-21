@@ -68,7 +68,7 @@ class SysBlokBot:
                 app_context_broken_msg += (
                     f', revision <a href="{COMMIT_URL}">{COMMIT_HASH}</a>.'
                 )
-            app_context_broken_msg += f"\n{e}"
+            app_context_broken_msg += f"\n{str(e)}"
             self.telegram_sender.send_error_log(app_context_broken_msg)
             raise
         self.handlers_info = defaultdict(lambda: defaultdict(dict))

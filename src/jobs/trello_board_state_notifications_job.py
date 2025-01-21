@@ -61,8 +61,7 @@ class TrelloBoardStateNotificationsJob(BaseJob):
                             f"Curator {curator_name} is not enrolled, could not send notifications"
                         )
                 except ValueError as e:
-                    logger.error(f"Could not send to {curator_name}:")
-                    logger.error(e)
+                    logger.error(f"Could not send to {curator_name}:", exc_info=e)
 
     @staticmethod
     def _format_card(
