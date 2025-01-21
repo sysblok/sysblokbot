@@ -46,6 +46,6 @@ def get_board_credentials(update: telegram.Update, tg_context):
                     update
                 )
             except json.JSONDecodeError as e:
-                logger.error(e)
+                logger.error(exc_info=e)
     except IOError:
         logger.warning(f"Board passwords file not found", exc_info=e)

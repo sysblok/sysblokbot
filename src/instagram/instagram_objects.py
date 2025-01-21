@@ -25,7 +25,7 @@ class InstagramPage:
             page.username = data["username"]
         except Exception as e:
             page._ok = False
-            logger.error(f"Bad Instagram page json {data}: {e}")
+            logger.error(f"Bad Instagram page json {data}", exc_info=e)
         return page
 
     def to_dict(self):
@@ -66,7 +66,7 @@ class InstagramMedia:
             page.comments_count = data["comments_count"]
         except Exception as e:
             page._ok = False
-            logger.error(f"Bad Instagram media json {data}: {e}")
+            logger.error(f"Bad Instagram media json {data}", exc_info=e)
         return page
 
     def to_dict(self):

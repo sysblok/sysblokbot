@@ -84,7 +84,7 @@ class GoogleSheetsClient(Singleton):
                 new_posts.append(entry.title)
             table.commit()
         except Exception as e:
-            logger.error(f"Failed to update post registry: {e}")
+            logger.error(f"Failed to update post registry", exc_info=e)
         return new_posts
 
     def fetch_sheet(self, sheet_key: str, sheet_name: Optional[str] = None) -> Sheet:
@@ -106,5 +106,5 @@ class GoogleSheetsClient(Singleton):
         try:
             return self.client.open_by_id(sheet_key)
         except Exception as e:
-            logger.error(f"Failed to access sheet {sheet_key}: {e}")
+            logger.error(f"Failed to access sheet {sheet_key}", exc_info=e)
             raise

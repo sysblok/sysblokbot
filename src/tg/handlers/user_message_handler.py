@@ -99,7 +99,7 @@ def handle_user_message(
                 trello_lists = trello_client.get_lists(board_id)
                 trello_lists = trello_lists[::-1]
         except Exception as e:
-            logger.warning(e, exc_info=e)
+            logger.warning("Failed to parse board number", exc_info=e)
             reply(
                 load(
                     "get_tasks_report_handler__enter_the_number",
@@ -139,7 +139,7 @@ def handle_user_message(
             assert 0 > list_idx >= -len(trello_lists)
             list_id = trello_lists[list_idx]["id"]
         except Exception as e:
-            logger.warning(e)
+            logger.warning("Failed to parse list number", exc_info=e)
             reply(
                 load(
                     "get_tasks_report_handler__enter_the_number",
@@ -418,7 +418,7 @@ def handle_user_message(
             chat_title = DBClient().get_chat_name(chat_id)
         except Exception as e:
             reply(load("manage_reminders_handler__bad_chat_id"), update)
-            logger.info(e)
+            logger.info("Failed to parse chat id", exc_info=e)
             return
         command_data[consts.ManageRemindersData.GROUP_CHAT_ID] = chat_id
         action = command_data[consts.ManageRemindersData.ACTION_TYPE]

@@ -4,6 +4,7 @@ import asyncio
 import logging
 import nest_asyncio
 import re
+import requests
 import time
 from typing import Callable, List
 
@@ -85,19 +86,20 @@ class TelegramSender(Singleton):
                         message = message + "</code>"
                     elif message.endswith("</code>") and "<code>" not in message:
                         message = "<code>" + message
-                    loop.run_until_complete(
-                        self.bot.send_message(
-                            text=message,
-                            chat_id=chat_id,
-                            disable_notification=self.is_silent,
-                            disable_web_page_preview=self.disable_web_page_preview,
-                            parse_mode=telegram.constants.ParseMode.HTML,
-                            **kwargs,
-                        )
+                    resp = requests.get(
+                        url=f"https://api.telegram.org/bot{self._tg_config['token']}/sendMessage",
+                        json={
+                            "text": message,
+                            "chat_id": chat_id,
+                            "silent": self.is_silent,
+                            "no_webpage": self.disable_web_page_preview,
+                            "parse_mode": "html",
+                        },
                     )
+                    resp.raise_for_status()
                 return True
             except telegram.error.TelegramError as e:
-                logger.error(f"Could not send a message to {chat_id}: {e}")
+                logger.error(f"Could not send a message to {chat_id}", exc_info=e)
                 loop = asyncio.get_event_loop()
                 nest_asyncio.apply(loop)
                 chat = loop.run_until_complete(
@@ -122,7 +124,8 @@ class TelegramSender(Singleton):
                     except telegram.error.TelegramError as e:
                         logger.error(
                             "Could not redirect unsended message "
-                            f"to error_logs_recipients {error_logs_recipient}: {e}"
+                            f"to error_logs_recipients {error_logs_recipient}",
+                            exc_info=e
                         )
 
                 # HTML parse error isn't a separate class in Telegram
@@ -144,7 +147,7 @@ class TelegramSender(Singleton):
                         return True
                     except telegram.error.TelegramError as e:
                         logger.error(
-                            f"Could not send a plain-text message to {chat_id}: {e}"
+                            f"Could not send a plain-text message to {chat_id}", exc_info=e
                         )
             return False
 

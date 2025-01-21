@@ -35,7 +35,7 @@ class TrelloBoard:
             board.url = data["shortUrl"]
         except Exception as e:
             board._ok = False
-            logger.error(f"Bad board json {data}: {e}")
+            logger.error(f"Bad board json {data}", exc_info=e)
         return board
 
     @classmethod
@@ -47,7 +47,7 @@ class TrelloBoard:
             # board.url = data["shortUrl"]
         except Exception as e:
             board._ok = False
-            logger.error(f"Bad board json {data}: {e}")
+            logger.error(f"Bad board json {data}", exc_info=e)
         return board
 
     def to_dict(self):
@@ -84,7 +84,7 @@ class TrelloBoardLabel:
             label.color = data["color"]
         except Exception as e:
             label._ok = False
-            logger.error(f"Bad board label json {data}: {e}")
+            logger.error(f"Bad board label json {data}", exc_info=e)
         return label
 
     @classmethod
@@ -96,7 +96,7 @@ class TrelloBoardLabel:
             label.color = data["color"]
         except Exception as e:
             label._ok = False
-            logger.error(f"Bad board label json {data}: {e}")
+            logger.error(f"Bad board label json {data}", exc_info=e)
         return label
 
     def to_dict(self):
@@ -133,7 +133,7 @@ class TrelloList:
             trello_list.board_id = data["idBoard"]
         except Exception as e:
             trello_list._ok = False
-            logger.error(f"Bad list json {data}: {e}")
+            logger.error(f"Bad list json {data}", exc_info=e)
         return trello_list
 
     @classmethod
@@ -145,7 +145,7 @@ class TrelloList:
             trello_list.board_id = board_id
         except Exception as e:
             trello_list._ok = False
-            logger.error(f"Bad list json {data}: {e}")
+            logger.error(f"Bad list json {data}", exc_info=e)
         return trello_list
 
     def to_dict(self):
@@ -186,7 +186,7 @@ class TrelloCardLabel:
                 label.color = TrelloCardColor(TrelloCardColor.UNKNOWN)
         except Exception as e:
             label._ok = False
-            logger.error(f"Bad card label json {data}: {e}")
+            logger.error(f"Bad card label json {data}", exc_info=e)
         return label
 
     @classmethod
@@ -202,7 +202,7 @@ class TrelloCardLabel:
                 label.color = BoardCardColor(BoardCardColor.UNKNOWN)
         except Exception as e:
             label._ok = False
-            logger.error(f"Bad card label json {data}: {e}")
+            logger.error(f"Bad card label json {data}", exc_info=e)
         return label
 
     def to_dict(self):
@@ -256,7 +256,7 @@ class TrelloCard:
             )
         except Exception as e:
             card._ok = False
-            logger.error(f"Bad card json {data}: {e}")
+            logger.error(f"Bad card json {data}", exc_info=e)
         return card
 
     @classmethod
@@ -268,7 +268,7 @@ class TrelloCard:
             card._fields_properties = data["fields"]["properties"]
         except Exception as e:
             card._ok = False
-            logger.error(f"Bad card json {data}: {e}")
+            logger.error(f"Bad card json {data}", exc_info=e)
         return card
 
     def to_dict(self):
@@ -314,7 +314,7 @@ class TrelloCustomFieldType:
                 }
         except Exception as e:
             field_type._ok = False
-            logger.error(f"Bad field type json {data}: {e}")
+            logger.error(f"Bad field type json {data}", exc_info=e)
         return field_type
 
     @classmethod
@@ -330,7 +330,7 @@ class TrelloCustomFieldType:
                 }
         except Exception as e:
             field_type._ok = False
-            logger.error(f"Bad field type json {data}: {e}")
+            logger.error(f"Bad field type json {data}", exc_info=e)
         return field_type
 
     def to_dict(self):
@@ -380,7 +380,7 @@ class TrelloCustomField:
                 custom_field.value = html.escape(data["value"]["text"])
         except Exception as e:
             custom_field._ok = False
-            logger.error(f"Bad custom field json {data}: {e}")
+            logger.error(f"Bad custom field json {data}", exc_info=e)
         return custom_field
 
     def to_dict(self):
@@ -431,7 +431,7 @@ class TrelloActionCreateCard:
                 action.list_name = data["data"]["list"].get("name")
         except Exception as e:
             action._ok = False
-            logger.error(f"Bad createCard action json {data}: {e}")
+            logger.error(f"Bad createCard action json {data}", exc_info=e)
         return action
 
     def to_dict(self):
@@ -492,7 +492,7 @@ class TrelloActionUpdateCard:
                 action.list_after_name = data["data"]["listAfter"]["name"]
         except Exception as e:
             action._ok = False
-            logger.error(f"Bad updateCard action json {data}: {e}")
+            logger.error(f"Bad updateCard action json {data}", exc_info=e)
         return action
 
     def to_dict(self):

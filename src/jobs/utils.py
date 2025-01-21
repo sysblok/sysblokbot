@@ -28,7 +28,7 @@ def retrieve_username(trello_member: TrelloMember, db_client: DBClient):
     try:
         tg_id = db_client.find_author_telegram_by_trello("@" + trello_id)
     except Exception as e:
-        logger.error(f'Failed to retrieve tg id for "{trello_id}": {e}')
+        logger.error(f'Failed to retrieve tg id for "{trello_id}"', exc_info=e)
 
     if tg_id and tg_id.startswith("@"):  # otherwise can be phone number
         return f"{trello_member.full_name} ({tg_id})"
@@ -60,7 +60,7 @@ def retrieve_curator_names_by_author(
         else:
             curators = db_client.find_curators_by_author_trello(trello_id)
     except Exception as e:
-        logger.error(f"Could not retrieve curators by author: {e}")
+        logger.error(f"Could not retrieve curators by author", exc_info=e)
         return
     if not curators:
         return []
@@ -79,7 +79,7 @@ def retrieve_curator_names_by_categories(labels: List[str], db_client: DBClient)
                 set(db_client.find_curators_by_trello_label(label.name))
             )
     except Exception as e:
-        logger.error(f"Could not retrieve curators by category: {e}")
+        logger.error(f"Could not retrieve curators by category", exc_info=e)
         return
     if not curators:
         return []
@@ -105,7 +105,7 @@ def get_job_runnable(job_id: str):
     try:
         job_module = getattr(jobs, job_id)
     except Exception as e:
-        logger.error(f'Job "{job_id}" not found: {e}')
+        logger.error(f'Job "{job_id}" not found', exc_info=e)
         return
 
     for name, obj in inspect.getmembers(job_module):
@@ -199,7 +199,7 @@ def retrieve_last_trello_analytics(db_client: DBClient) -> dict:
     try:
         return db_client.get_latest_trello_analytics()
     except Exception as e:
-        logger.error(f"Failed to retrieve statistic: {e}")
+        logger.error(f"Failed to retrieve statistic", exc_info=e)
 
 
 def retrieve_last_trello_analytics_date(db_client: DBClient) -> datetime.datetime:
@@ -210,7 +210,7 @@ def retrieve_last_trello_analytics_date(db_client: DBClient) -> datetime.datetim
             db_client.get_latest_trello_analytics().date, "%Y-%m-%d"
         )
     except Exception as e:
-        logger.error(f"Failed to retrieve latest statistic date: {e}")
+        logger.error(f"Failed to retrieve latest statistic date", exc_info=e)
 
 
 def get_no_access_marker(file_url: str, drive_client: GoogleDriveClient) -> str:

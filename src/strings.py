@@ -72,7 +72,7 @@ class StringsDBClient(Singleton):
                 session.add(string)
             session.commit()
         except Exception as e:
-            logger.warning(f"Failed to update string table from sheet: {e}")
+            logger.warning(f"Failed to update string table from sheet", exc_info=e)
             session.rollback()
             return 0
         return len(strings)

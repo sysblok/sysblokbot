@@ -56,7 +56,7 @@ class JobScheduler(Singleton):
                     try:
                         schedule.run_pending()
                     except Exception as e:
-                        logger.error(f"Error while running scheduled jobs: {e}")
+                        logger.error(f"Error while running scheduled jobs:", exc_info=e)
                     time.sleep(1)
                 return cease_continuous_run
 
@@ -105,7 +105,7 @@ class JobScheduler(Singleton):
                     ).tag(CUSTOM_JOB_TAG)
                 except Exception as e:
                     logger.error(
-                        f"Failed to schedule job {job_id} with params {schedule_dict}: {e}"
+                        f"Failed to schedule job {job_id} with params {schedule_dict}", exc_info=e
                     )
         logger.info("Finished setting jobs")
 
