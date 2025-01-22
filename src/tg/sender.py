@@ -76,6 +76,8 @@ class TelegramSender(Singleton):
             message_text = re.sub(r"\S*\.png", "", message_text)
         if message_text != "":
             try:
+                loop = asyncio.get_event_loop()
+                nest_asyncio.apply(loop)
                 messages = paragraphs_to_messages([message_text.strip()])
                 for i, message in enumerate(messages):
                     if i > 0:
