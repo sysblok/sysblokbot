@@ -1,4 +1,5 @@
 config_override.json
+config_override_integration_tests.json
 src/sheets/sysblokbot.json
 persistent_storage.pickle
 *.sqlite-journal

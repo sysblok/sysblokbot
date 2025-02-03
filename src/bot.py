@@ -440,7 +440,12 @@ class SysBlokBot:
 
         def add_usage_logging(func):
             async def wrapper(*args, **kwargs):
-                logger.usage(f"Handler {handler_cmd} was called...")
+                try:
+                    update = args[0]
+                    username = update.message.from_user.username or update.message.from_user.id
+                    logger.usage(f"Handler {handler_cmd} was called by {username}...")
+                except BaseException:
+                    logger.usage(f"Handler {handler_cmd} was called...")
                 results = func(*args, **kwargs)
                 logger.usage(f"Handler {handler_cmd} finished")
                 return results
