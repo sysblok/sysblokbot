@@ -95,7 +95,7 @@ class GoogleDriveClient(Singleton):
             downloader = MediaIoBaseDownload(file, request)
             done = False
             while done is False:
-                status, done = downloader.next_chunk()
+                status, done = downloader.next_chunk(num_retries=3)
         except Exception as e:
             logger.error(f"Failed to download {file_id} from Google drive", exc_info=e)
             return None
