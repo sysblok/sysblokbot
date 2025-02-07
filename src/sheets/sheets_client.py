@@ -10,6 +10,8 @@ from ..utils.singleton import Singleton
 logger = logging.getLogger(__name__)
 
 
+MAX_RETRIES = 5
+
 class GoogleSheetsClient(Singleton):
     def __init__(self, sheets_config: dict):
         if self.was_initialized():
@@ -104,7 +106,14 @@ class GoogleSheetsClient(Singleton):
 
     def _open_by_key(self, sheet_key: str):
         try:
-            return self.client.open_by_id(sheet_key)
+            attempts = 0
+            while attempts < MAX_RETRIES:
+                try:
+                    return self.client.open_by_id(sheet_key)
+                except ConnectionError:
+                    attempts += 1
+                    if attempts >= MAX_RETRIES:
+                        raise
         except Exception as e:
             logger.error(f"Failed to access sheet {sheet_key}", exc_info=e)
             raise
