@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 MAX_RETRIES = 5
 
+
 class GoogleSheetsClient(Singleton):
     def __init__(self, sheets_config: dict):
         if self.was_initialized():
