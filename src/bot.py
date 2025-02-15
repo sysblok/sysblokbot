@@ -183,12 +183,6 @@ class SysBlokBot:
             "получить статистику instagram страницы за неделю",
         )
         self.add_manager_handler(
-            "get_vk_analytics_report",
-            CommandCategories.STATS,
-            self.manager_reply_handler("vk_analytics_report_job"),
-            "получить статистику паблика VK за неделю",
-        )
-        self.add_manager_handler(
             "get_tg_analytics_report",
             CommandCategories.STATS,
             self.manager_reply_handler("tg_analytics_report_job"),
