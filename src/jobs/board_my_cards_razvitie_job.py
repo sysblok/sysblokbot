@@ -9,10 +9,13 @@ from ..tg.handlers.get_tasks_report_handler import _make_cards_text
 
 logger = logging.getLogger(__name__)
 
+
 class BoardMyCardsRazvitieJob(BaseJob):
     @staticmethod
     def _execute(
-        app_context: AppContext, send: Callable[[str], None], called_from_handler=False, *args, **kwargs,
+        app_context: AppContext, send: Callable[[str], None], called_from_handler=False,
+        *args,
+        **kwargs,
     ):
         """Job returning my card on Razvitie board"""
         # TODO sort out @ in the beginning of the username
@@ -27,7 +30,7 @@ class BoardMyCardsRazvitieJob(BaseJob):
         ][0]
         board_all_lists = app_context.focalboard_client.get_lists(board_id, sorted=True)
         # filter board lists between 'Список задач' and 'Разделитель'
-        board_list_names = list(map(lambda l: l.name, board_all_lists))
+        board_list_names = list(map(lambda lst: lst.name, board_all_lists))
         index_of_first_list = board_list_names.index('Список задач')
         index_of_last_list = board_list_names.index('Разделитель')
         board_lists = board_all_lists[index_of_first_list + 1: index_of_last_list]
