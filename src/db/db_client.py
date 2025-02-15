@@ -134,6 +134,17 @@ class DBClient(Singleton):
             session.query(TeamMember).filter(TeamMember.id == member_id).update(update)
         session.commit()
 
+    def find_focalboard_username_by_telegram_username(self, telegram_username: str):
+        # TODO: make batch queries
+        session = self.Session()
+        author = session.query(Author).filter(
+            (Author.telegram == telegram_username)
+        ).first()
+        if author is None:
+            logger.warning(f"Focalboard id not found for telegram {telegram_username}")
+            return None
+        return author.focalboard
+
     def find_author_telegram_by_trello(self, trello_id: str):
         # TODO: make batch queries
         session = self.Session()

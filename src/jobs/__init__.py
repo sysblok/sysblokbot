@@ -6,6 +6,7 @@ Jobs can be ran from scheduler or from anywhere else for a one-off action.
 """
 
 
+from .board_my_cards_razvitie_job import BoardMyCardsRazvitieJob
 from .config_updater_job import ConfigUpdaterJob
 from .create_folders_for_illustrators_job import CreateFoldersForIllustratorsJob
 from .db_fetch_all_team_members_job import DBFetchAllTeamMembersJob
