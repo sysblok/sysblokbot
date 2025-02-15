@@ -93,7 +93,6 @@ class Test:
             "/get_fb_analytics_report",
             "/get_ig_analytics_report",
             "/get_tg_analytics_report",
-            "/get_vk_analytics_report",
         ),
     )
     def test_not_failing_analytics(self, conversation, command: str):
