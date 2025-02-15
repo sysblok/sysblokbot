@@ -22,26 +22,37 @@ class BoardMyCardsRazvitieJob(BaseJob):
     ):
         """Job returning my card on Razvitie board"""
         # TODO sort out @ in the beginning of the username
-        focalboard_username = app_context.db_client.find_focalboard_username_by_telegram_username(f"@{kwargs.get('called_from_chat_username')}")
+        focalboard_username = app_context.db_client.find_focalboard_username_by_telegram_username(
+            f"@{kwargs.get('called_from_chat_username')}"
+        )
         # curren
         focalboard_username = focalboard_username[1:]
-        board_id = [board.id for board in app_context.focalboard_client.get_boards_for_user() if "Развитие" in board.name][0]
+        board_id = [
+            board.id for board in app_context.focalboard_client.get_boards_for_user()
+            if "Развитие" in board.name
+        ][0]
         board_all_lists = app_context.focalboard_client.get_lists(board_id, sorted=True)
         # filter board lists between 'Список задач' and 'Разделитель'
         board_list_names = list(map(lambda l: l.name, board_all_lists))
-        index_of_first_list = board_list_names.index('Список задач') + 1
+        index_of_first_list = board_list_names.index('Список задач')
         index_of_last_list = board_list_names.index('Разделитель')
-        board_lists = board_all_lists[index_of_first_list : index_of_last_list]
+        board_lists = board_all_lists[index_of_first_list + 1: index_of_last_list]
         paragraphs = []
         for board_list in board_lists:
-            cards: list[TrelloCard] = app_context.focalboard_client.get_cards(board_list.id, board_id)
-            my_cards = [card for card in cards if focalboard_username in [member.username for member in card.members]]
+            cards: list[TrelloCard] = app_context.focalboard_client.get_cards(
+                board_list.id, board_id
+            )
+            my_cards = [
+                card for card in cards if focalboard_username in [
+                    member.username for member in card.members
+                ]
+            ]
             if my_cards:
                 list_report = BoardMyCardsRazvitieJob._create_paragraphs_from_cards(
                     my_cards, f'📜 <b>{board_list.name}</b>', True, app_context
                 )
                 paragraphs += list_report
-                paragraphs.append('\n')
+                paragraphs.append('')  # hotfix for separating lists
 
         send(load('focalboard__my_cards_razvitie_job__text', data='\n'.join(paragraphs)))
 
