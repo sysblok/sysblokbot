@@ -1,17 +1,11 @@
-import html
-import json
 import logging
 from typing import Callable, Iterable
 
-from deepdiff import DeepDiff
-
 from ..app_context import AppContext
-from ..scheduler import JobScheduler
 from ..strings import load
-from ..tg.sender import TelegramSender
 from .base_job import BaseJob
 from ..trello.trello_objects import TrelloCard
-from ..tg.handlers.get_tasks_report_handler import _get_members, _make_member_text, _make_cards_text
+from ..tg.handlers.get_tasks_report_handler import _make_cards_text
 
 logger = logging.getLogger(__name__)
 
