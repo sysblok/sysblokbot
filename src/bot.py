@@ -96,6 +96,12 @@ class SysBlokBot:
             "рассылка сводки о публикуемых на неделе постах",
         )
         self.add_manager_handler(
+            "get_manager_status",
+            CommandCategories.SUMMARY,
+            direct_message_only(self.manager_reply_handler("board_my_cards_razvitie_job")),
+            "получить мои карточки из доски Развитие",
+        )
+        self.add_manager_handler(
             "fill_posts_list",
             CommandCategories.DEBUG,
             direct_message_only(self.manager_reply_handler("fill_posts_list_job")),
@@ -543,6 +549,7 @@ class SysBlokBot:
             send=self.telegram_sender.create_reply_send(update),
             called_from_handler=True,
             args=update.message.text.split()[1:],
+            kwargs={'called_from_chat_username': update.message.chat.username},
         )
 
     def _create_broadcast_handler(self, job_name: str) -> Callable:
