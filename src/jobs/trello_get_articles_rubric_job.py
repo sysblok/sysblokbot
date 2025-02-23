@@ -39,7 +39,7 @@ class TrelloGetArticlesRubricJob(BaseJob):
         paragraphs.append(load("rubric_report_job__intro", rubric=rubric_name))
 
         for alias in TrelloListAlias:
-            if alias is not TrelloListAlias.BACK_BURNER:
+            if alias is not [TrelloListAlias.BACK_BURNER, TrelloListAlias.DONE]:
                 paragraphs += TrelloGetArticlesRubricJob._get_rubric_paragraphs(
                     app_context=app_context,
                     trello_client=app_context.trello_client,
