@@ -17,7 +17,9 @@ logger = logging.getLogger(__name__)
 class TrelloBoardStateNotificationsJob(BaseJob):
     @staticmethod
     def _execute(
-        app_context: AppContext, send: Callable[[str], None], called_from_handler=False
+        app_context: AppContext, send: Callable[[str], None], called_from_handler=False,
+        *args,
+        **kwargs,
     ):
         sender = TelegramSender()
 
@@ -57,6 +59,9 @@ class TrelloBoardStateNotificationsJob(BaseJob):
                     if chat:  # and chat.is_curator: TMP fix
                         pretty_send(
                             paragraphs, lambda msg: sender.send_to_chat_id(msg, chat.id)
+                        )
+                        logger.error(
+                            f"not an error: Sent board report to {curator_name}"
                         )
                         if called_from_handler:
                             pretty_send([f'curator report sent to {chat.title}'], send)
