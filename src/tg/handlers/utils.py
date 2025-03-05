@@ -34,7 +34,7 @@ def manager_only(func):
     def wrapper(update, tg_context, *args, **kwargs):
         if is_sender_manager(update) or is_sender_admin(update):
             return func(update, tg_context, *args, **kwargs)
-        logger.warning(
+        logger.usage(
             f"Manager-only handler {func.__name__} invoked by {get_sender_id(update)}"
         )
 
@@ -63,8 +63,9 @@ def is_sender_admin(update) -> bool:
 
 
 def is_sender_manager(update) -> bool:
-    chats = AppContext().manager_chat_ids
-    return get_sender_id(update) in chats or get_sender_username(update) in chats
+    telegram_login = get_chat_name(update)
+    curator = AppContext().db_client.get_curator_by_telegram(telegram_login)
+    return curator is not None
 
 
 def get_sender_id(update) -> int:
