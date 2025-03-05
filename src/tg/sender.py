@@ -4,6 +4,7 @@ import asyncio
 import logging
 import nest_asyncio
 import re
+import requests
 import time
 from typing import Callable, List
 
@@ -86,16 +87,20 @@ class TelegramSender(Singleton):
                         message = message + "</code>"
                     elif message.endswith("</code>") and "<code>" not in message:
                         message = "<code>" + message
-                    loop.run_until_complete(
-                        self.bot.send_message(
-                            text=message,
-                            chat_id=chat_id,
-                            disable_notification=self.is_silent,
-                            disable_web_page_preview=self.disable_web_page_preview,
-                            parse_mode=telegram.constants.ParseMode.HTML,
-                            **kwargs,
-                        )
+                    payload = {
+                        "text": message,
+                        "chat_id": chat_id,
+                        "silent": self.is_silent,
+                        "no_webpage": self.disable_web_page_preview,
+                        "parse_mode": "html",
+                    }
+                    if 'reply_markup' in kwargs:
+                        payload['reply_markup'] = kwargs['reply_markup'].to_json()
+                    resp = requests.get(
+                        url=f"https://api.telegram.org/bot{self._tg_config['token']}/sendMessage",
+                        json=payload
                     )
+                    resp.raise_for_status()
                 return True
             except telegram.error.TelegramError as e:
                 logger.error(f"Could not send a message to {chat_id}", exc_info=e)
