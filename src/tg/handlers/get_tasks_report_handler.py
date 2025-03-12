@@ -52,6 +52,7 @@ def _get_task_report_base(
         boards_list = app_context.focalboard_client.get_boards_for_user()
     else:
         boards_list = app_context.trello_client.get_boards_for_user()
+    boards_list = sorted(boards_list, key=lambda board: board.name)
     boards_list_formatted = "\n".join(
         [f"{i + 1}) {brd.name}" for i, brd in enumerate(boards_list)]
     )
