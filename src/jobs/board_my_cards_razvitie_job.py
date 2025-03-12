@@ -18,9 +18,10 @@ class BoardMyCardsRazvitieJob(BaseJob):
         **kwargs,
     ):
         """Job returning my card on Razvitie board"""
+        assert called_from_handler, "This job should be called from handler"
         # TODO sort out @ in the beginning of the username
         focalboard_username = app_context.db_client.find_focalboard_username_by_telegram_username(
-            f"@{kwargs.get('called_from_chat_username')}"
+            f"@{send.update.message.chat.username}"
         )
         # curren
         focalboard_username = focalboard_username[1:]

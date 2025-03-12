@@ -543,7 +543,6 @@ class SysBlokBot:
             send=self.telegram_sender.create_reply_send(update),
             called_from_handler=True,
             args=update.message.text.split()[1:],
-            kwargs={'called_from_chat_username': update.message.chat.username},
         )
 
     def _create_broadcast_handler(self, job_name: str) -> Callable:
