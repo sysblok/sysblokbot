@@ -41,6 +41,7 @@ class TelegramSender(Singleton):
         """
         if not isinstance(update, telegram.Update):
             logger.warning(f"Should be telegram.Update, found: {update}")
+
         def sender(message): self.send_to_chat_id(message, update.message.chat_id)
         # add destination info
         sender.update = update
