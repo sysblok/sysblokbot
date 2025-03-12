@@ -41,7 +41,10 @@ class TelegramSender(Singleton):
         """
         if not isinstance(update, telegram.Update):
             logger.warning(f"Should be telegram.Update, found: {update}")
-        return lambda message: self.send_to_chat_id(message, update.message.chat_id)
+        def sender(message): self.send_to_chat_id(message, update.message.chat_id)
+        # add destination info
+        sender.update = update
+        return sender
 
     def create_chat_ids_send(self, chat_ids: List[int]) -> Callable[[str], None]:
         """
