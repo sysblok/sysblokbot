@@ -321,6 +321,7 @@ class DBClient(Singleton):
         weekday_num: int,
         time: str,
         frequency_days: int = 7,
+        send_poll: bool = False,
     ):
         session = self.Session()
         next_reminder = self._make_next_reminder_ts(weekday_num, time)
@@ -336,6 +337,7 @@ class DBClient(Singleton):
                 next_reminder_datetime=next_reminder,
                 frequency_days=frequency_days,
                 is_active=True,
+                send_poll=send_poll,
             )
         )
         session.commit()
@@ -350,6 +352,8 @@ class DBClient(Singleton):
             kwargs["next_reminder_datetime"] = self._make_next_reminder_ts(
                 kwargs["weekday"], kwargs["time"]
             )
+        if "send_poll" in kwargs:
+            kwargs["send_poll"] = bool(kwargs["send_poll"])
         session.query(Reminder).filter(Reminder.id == reminder_id).update(kwargs)
         session.commit()
 

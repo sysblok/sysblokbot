@@ -312,6 +312,18 @@ def handle_user_message(
                         callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__RESUME.value,
                     )
                 ],
+                [
+                    telegram.InlineKeyboardButton(
+                        load("manage_reminders_handler__edit_poll_active_btn"),
+                        callback_data=ButtonValues.MANAGE_REMINDERS__DISABLE_POLL.value,
+                    )
+                    if reminder.send_poll
+                    else telegram.InlineKeyboardButton(
+                        load("manage_reminders_handler__edit_poll_inactive_btn"),
+                        callback_data=ButtonValues.MANAGE_REMINDERS__ENABLE_POLL.value,
+                    )
+                    
+                ],
             ]
             reply_markup = telegram.InlineKeyboardMarkup(button_list)
             weekday_str = (
@@ -397,6 +409,53 @@ def handle_user_message(
                 update,
             )
             set_next_action(command_data, None)
+        elif button == ButtonValues.MANAGE_REMINDERS__DISABLE_POLL:
+            button_no = telegram.InlineKeyboardButton(
+                load("manage_reminders_handler__disable_poll_btn"),
+                callback_data=consts.ButtonValues.MANAGE_REMINDERS__DISABLE_POLL__YES.value,
+            )
+            keyboard = [[button_no]]
+            reply(
+                load("manage_reminders_handler__disable_poll_question"), update, reply_markup=telegram.InlineKeyboardMarkup(keyboard),
+            )          
+            set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__DISABLE_POLL)
+            return
+        elif button == ButtonValues.MANAGE_REMINDERS__ENABLE_POLL:
+            button_yes = telegram.InlineKeyboardButton(
+                load("manage_reminders_handler__enable_poll_btn"),
+                callback_data=consts.ButtonValues.MANAGE_REMINDERS__ENABLE_POLL__YES.value,
+            )
+            keyboard = [[button_yes]]
+            reply(
+                load("manage_reminders_handler__enable_poll_question"), update, reply_markup=telegram.InlineKeyboardMarkup(keyboard),
+            )          
+            set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__ENABLE_POLL)
+            return
+    elif next_action == PlainTextUserAction.MANAGE_REMINDERS__ENABLE_POLL:
+        if button == consts.ButtonValues.MANAGE_REMINDERS__ENABLE_POLL__YES:
+            db_client = DBClient()
+            reminder_id = int(command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID])
+            reminder = db_client.get_reminder_by_id(reminder_id)
+            db_client.update_reminder(reminder_id, send_poll=True)
+            reply(
+                    load(
+                        "manage_reminders_handler__poll_was_enabled"
+                    ),
+                    update,
+                )
+            return
+    elif next_action == PlainTextUserAction.MANAGE_REMINDERS__DISABLE_POLL:
+        if button == consts.ButtonValues.MANAGE_REMINDERS__DISABLE_POLL__YES:
+            db_client = DBClient()
+            reminder_id = int(command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID])
+            reminder = db_client.get_reminder_by_id(reminder_id)
+            db_client.update_reminder(reminder_id, send_poll=False)
+            reply(
+                    load(
+                        "manage_reminders_handler__poll_was_disabled"   
+                    ),
+                    update,
+                )
             return
     elif next_action == PlainTextUserAction.MANAGE_REMINDERS__DELETE_REQUEST:
         if button is None:
@@ -508,16 +567,54 @@ def handle_user_message(
             reply(load("manage_reminders_handler__time_bad"), update)
             return
         command_data[consts.ManageRemindersData.TIME] = user_input
+        action = command_data[consts.ManageRemindersData.ACTION_TYPE]
 
+        if action == ButtonValues.MANAGE_REMINDERS__ACTIONS__EDIT:
+            reminder_id = int(
+                command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID]
+            )
+            DBClient().update_reminder(reminder_id, weekday=weekday_num, time=time)
+            set_next_action(command_data, None)
+        button_yes = telegram.InlineKeyboardButton(
+                load("manage_reminders_handler__poll_yes_btn"),
+                callback_data=consts.ButtonValues.MANAGE_REMINDERS__POLL__YES.value,
+            )
+        button_no = telegram.InlineKeyboardButton(
+            load("manage_reminders_handler__poll_no_btn"),
+            callback_data=consts.ButtonValues.MANAGE_REMINDERS__POLL__NO.value,
+        )
+        buttons = [button_yes, button_no]
+        reply(load("manage_reminders_handler__poll_question"),update,reply_markup=telegram.InlineKeyboardMarkup([buttons]),)
+        set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__TOGGLE_POLL)
+        return
+    elif next_action == PlainTextUserAction.MANAGE_REMINDERS__TOGGLE_POLL:
+        if button == ButtonValues.MANAGE_REMINDERS__POLL__YES:
+            poll_options = {
+                "question" : load("manage_reminders_handler__poll_question"),
+                "options" : [load("manage_reminders_handler__poll_option_yes_btn"), load("manage_reminders_handler__poll_option_no_btn")],
+                "is_anonymous": False,
+            }
+            button_yes = telegram.InlineKeyboardButton(
+                load("manage_reminders_handler__toggle_poll_yes_btn"),
+                callback_data=consts.ButtonValues.MANAGE_REMINDERS__TOGGLE_POLL__YES.value,
+            )
+            button_no = telegram.InlineKeyboardButton(
+                load("manage_reminders_handler__toggle_poll_no_btn"),
+                callback_data=consts.ButtonValues.MANAGE_REMINDERS__TOGGLE_POLL__NO.value,
+            )
+            buttons = [button_yes, button_no]
+            reply("", update, poll_options=poll_options)
+            reply("Добавить?", update, reply_markup=telegram.InlineKeyboardMarkup([buttons]),)
+        set_next_action(command_data, consts.PlainTextUserAction.MANAGE_REMINDERS__SUCCESS)
+        return
+    elif next_action == PlainTextUserAction.MANAGE_REMINDERS__SUCCESS:
+        text = command_data[consts.ManageRemindersData.REMINDER_TEXT]
+        group_chat_id = command_data[consts.ManageRemindersData.GROUP_CHAT_ID]
+        name = command_data[consts.ManageRemindersData.REMINDER_NAME]
         weekday_num = command_data[consts.ManageRemindersData.WEEKDAY_NUM]
         weekday_name = command_data[consts.ManageRemindersData.WEEKDAY_NAME]
         time = command_data[consts.ManageRemindersData.TIME]
-        action = command_data[consts.ManageRemindersData.ACTION_TYPE]
-
-        if action == ButtonValues.MANAGE_REMINDERS__ACTIONS__NEW:
-            name = command_data[consts.ManageRemindersData.REMINDER_NAME]
-            text = command_data[consts.ManageRemindersData.REMINDER_TEXT]
-            group_chat_id = command_data[consts.ManageRemindersData.GROUP_CHAT_ID]
+        if button == consts.ButtonValues.MANAGE_REMINDERS__TOGGLE_POLL__YES:
             DBClient().add_reminder(
                 creator_chat_id=get_sender_id(update),
                 group_chat_id=group_chat_id,
@@ -525,13 +622,20 @@ def handle_user_message(
                 text=text,
                 weekday_num=weekday_num,
                 time=time,
+                send_poll=True,
             )
-        elif action == ButtonValues.MANAGE_REMINDERS__ACTIONS__EDIT:
-            reminder_id = int(
-                command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID]
+        else:
+            DBClient().add_reminder(
+                creator_chat_id=get_sender_id(update),
+                group_chat_id=group_chat_id,
+                name=name,
+                text=text,
+                weekday_num=weekday_num,
+                time=time,
+                send_poll=False,
             )
-            DBClient().update_reminder(reminder_id, weekday=weekday_num, time=time)
-        set_next_action(command_data, None)
+        weekday_name = command_data[consts.ManageRemindersData.WEEKDAY_NAME]
+        time = command_data[consts.ManageRemindersData.TIME]
         reply(
             load(
                 "manage_reminders_handler__success_time",
@@ -540,6 +644,8 @@ def handle_user_message(
             ),
             update,
         )
+        set_next_action(command_data, None)               
+        return
     else:
         logger.error(f"Unknown user action: {next_action}")
 

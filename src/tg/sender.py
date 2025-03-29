@@ -6,6 +6,7 @@ import nest_asyncio
 import re
 import requests
 import time
+import json
 from typing import Callable, List
 
 import telegram
@@ -54,7 +55,7 @@ class TelegramSender(Singleton):
         if isinstance(chat_ids, int):
             chat_ids = [chat_ids]
 
-        def sender(message): self.send_to_chat_ids(message, chat_ids)
+        def sender(message, **kwargs): self.send_to_chat_ids(message, chat_ids, **kwargs)
         # add destination info
         sender.chat_ids = chat_ids
         return sender
@@ -70,6 +71,20 @@ class TelegramSender(Singleton):
         """
         Sends a message to a single chat_id.
         """
+        if "poll_options" in kwargs:
+            # Handle poll sending
+            poll_options = kwargs["poll_options"]
+            resp = requests.get(
+                url=f"https://api.telegram.org/bot{self._tg_config['token']}/sendPoll",
+                params={
+                    "chat_id": chat_id,
+                    "question": poll_options["question"],
+                    "options": json.dumps(poll_options["options"]),
+                    "is_anonymous": poll_options["is_anonymous"]
+                },
+            )
+            resp.raise_for_status()
+            return True
         if ".png" in message_text:
             for pict in re.findall(r"\S*\.png", message_text):
                 self.bot.send_photo(
@@ -104,7 +119,6 @@ class TelegramSender(Singleton):
                         url=f"https://api.telegram.org/bot{self._tg_config['token']}/sendMessage",
                         json=payload
                     )
-                    resp.raise_for_status()
                 return True
             except telegram.error.TelegramError as e:
                 logger.error(f"Could not send a message to {chat_id}", exc_info=e)
