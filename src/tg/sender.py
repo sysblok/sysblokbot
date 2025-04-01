@@ -43,7 +43,9 @@ class TelegramSender(Singleton):
         if not isinstance(update, telegram.Update):
             logger.warning(f"Should be telegram.Update, found: {update}")
 
-        def sender(message): self.send_to_chat_id(message, update.message.chat_id)
+        def sender(message):
+            self.send_to_chat_id(message, update.message.chat_id)
+
         # add destination info
         sender.update = update
         return sender
@@ -55,7 +57,9 @@ class TelegramSender(Singleton):
         if isinstance(chat_ids, int):
             chat_ids = [chat_ids]
 
-        def sender(message, **kwargs): self.send_to_chat_ids(message, chat_ids, **kwargs)
+        def sender(message, **kwargs):
+            self.send_to_chat_ids(message, chat_ids, **kwargs)
+
         # add destination info
         sender.chat_ids = chat_ids
         return sender
@@ -80,7 +84,7 @@ class TelegramSender(Singleton):
                     "chat_id": chat_id,
                     "question": poll_options["question"],
                     "options": json.dumps(poll_options["options"]),
-                    "is_anonymous": poll_options["is_anonymous"]
+                    "is_anonymous": poll_options["is_anonymous"],
                 },
             )
             resp.raise_for_status()
@@ -113,12 +117,13 @@ class TelegramSender(Singleton):
                         "no_webpage": self.disable_web_page_preview,
                         "parse_mode": "html",
                     }
-                    if 'reply_markup' in kwargs:
-                        payload['reply_markup'] = kwargs['reply_markup'].to_json()
+                    if "reply_markup" in kwargs:
+                        payload["reply_markup"] = kwargs["reply_markup"].to_json()
                     resp = requests.get(
                         url=f"https://api.telegram.org/bot{self._tg_config['token']}/sendMessage",
-                        json=payload
+                        json=payload,
                     )
+                    resp.raise_for_status()
                 return True
             except telegram.error.TelegramError as e:
                 logger.error(f"Could not send a message to {chat_id}", exc_info=e)
@@ -130,8 +135,8 @@ class TelegramSender(Singleton):
                         # Try redirect unsended message to error_logs_recipients
                         loop.run_until_complete(
                             self.bot.send_message(
-                                text=f'Unsended message to {chat_name} {chat_id}\n{message}'[
-                                    :telegram.constants.MessageLimit.MAX_TEXT_LENGTH
+                                text=f"Unsended message to {chat_name} {chat_id}\n{message}"[
+                                    : telegram.constants.MessageLimit.MAX_TEXT_LENGTH
                                 ],
                                 chat_id=error_logs_recipient,
                                 disable_notification=self.is_silent,
@@ -144,7 +149,7 @@ class TelegramSender(Singleton):
                         logger.error(
                             "Could not redirect unsended message "
                             f"to error_logs_recipients {error_logs_recipient}",
-                            exc_info=e
+                            exc_info=e,
                         )
 
                 # HTML parse error isn't a separate class in Telegram
@@ -154,8 +159,8 @@ class TelegramSender(Singleton):
                         # Try sending the plain-text version
                         loop.run_until_complete(
                             self.bot.send_message(
-                                text=f'Unsended message to {chat_name} {chat_id}\n{message}'[
-                                    :telegram.constants.MessageLimit.MAX_TEXT_LENGTH
+                                text=f"Unsended message to {chat_name} {chat_id}\n{message}"[
+                                    : telegram.constants.MessageLimit.MAX_TEXT_LENGTH
                                 ],
                                 chat_id=error_logs_recipient,
                                 disable_notification=self.is_silent,
@@ -166,7 +171,8 @@ class TelegramSender(Singleton):
                         return True
                     except telegram.error.TelegramError as e:
                         logger.error(
-                            f"Could not send a plain-text message to {chat_id}", exc_info=e
+                            f"Could not send a plain-text message to {chat_id}",
+                            exc_info=e,
                         )
             return False
 
