@@ -581,6 +581,8 @@ def handle_user_message(
             return
         command_data[consts.ManageRemindersData.TIME] = user_input
         action = command_data[consts.ManageRemindersData.ACTION_TYPE]
+        weekday_num = command_data[consts.ManageRemindersData.WEEKDAY_NUM]
+        time = command_data[consts.ManageRemindersData.TIME]
 
         if action == ButtonValues.MANAGE_REMINDERS__ACTIONS__EDIT:
             reminder_id = int(
