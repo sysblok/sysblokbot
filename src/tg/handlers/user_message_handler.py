@@ -636,22 +636,29 @@ def handle_user_message(
         )
         return
     elif next_action == PlainTextUserAction.MANAGE_REMINDERS__SUCCESS:
-        text = command_data[consts.ManageRemindersData.REMINDER_TEXT]
-        group_chat_id = command_data[consts.ManageRemindersData.GROUP_CHAT_ID]
-        name = command_data[consts.ManageRemindersData.REMINDER_NAME]
+        print(command_data)
+        text = command_data.get(consts.ManageRemindersData.REMINDER_TEXT)
+        group_chat_id = command_data.get(consts.ManageRemindersData.GROUP_CHAT_ID)
+        name = command_data.get(consts.ManageRemindersData.REMINDER_NAME)
         weekday_num = command_data[consts.ManageRemindersData.WEEKDAY_NUM]
         weekday_name = command_data[consts.ManageRemindersData.WEEKDAY_NAME]
         time = command_data[consts.ManageRemindersData.TIME]
         if button == consts.ButtonValues.MANAGE_REMINDERS__TOGGLE_POLL__YES:
-            DBClient().add_reminder(
-                creator_chat_id=get_sender_id(update),
-                group_chat_id=group_chat_id,
-                name=name,
-                text=text,
-                weekday_num=weekday_num,
-                time=time,
-                send_poll=True,
-            )
+            if text == None:
+                reminder_id = int(
+                    command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID]
+                )
+                DBClient().update_reminder(reminder_id, weekday = weekday_num, time = time)
+            else:
+                DBClient().add_reminder(
+                    creator_chat_id=get_sender_id(update),
+                    group_chat_id=group_chat_id,
+                    name=name,
+                    text=text,
+                    weekday_num=weekday_num,
+                    time=time,
+                    send_poll=True,
+                )
         else:
             DBClient().add_reminder(
                 creator_chat_id=get_sender_id(update),
