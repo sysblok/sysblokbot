@@ -604,36 +604,7 @@ def handle_user_message(
             update,
             reply_markup=telegram.InlineKeyboardMarkup([buttons]),
         )
-        set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__TOGGLE_POLL)
-        return
-    elif next_action == PlainTextUserAction.MANAGE_REMINDERS__TOGGLE_POLL:
-        if button == ButtonValues.MANAGE_REMINDERS__POLL__YES:
-            poll_options = {
-                "question": load("manage_reminders_handler__poll_question"),
-                "options": [
-                    load("manage_reminders_handler__poll_option_yes_btn"),
-                    load("manage_reminders_handler__poll_option_no_btn"),
-                ],
-                "is_anonymous": False,
-            }
-            button_yes = telegram.InlineKeyboardButton(
-                load("manage_reminders_handler__toggle_poll_yes_btn"),
-                callback_data=consts.ButtonValues.MANAGE_REMINDERS__TOGGLE_POLL__YES.value,
-            )
-            button_no = telegram.InlineKeyboardButton(
-                load("manage_reminders_handler__toggle_poll_no_btn"),
-                callback_data=consts.ButtonValues.MANAGE_REMINDERS__TOGGLE_POLL__NO.value,
-            )
-            buttons = [button_yes, button_no]
-            reply("", update, poll_options=poll_options)
-            reply(
-                "Добавить?",
-                update,
-                reply_markup=telegram.InlineKeyboardMarkup([buttons]),
-            )
-        set_next_action(
-            command_data, consts.PlainTextUserAction.MANAGE_REMINDERS__SUCCESS
-        )
+        set_next_action(command_data, PlainTextUserAction.MANAGE_REMINDERS__SUCCESS)
         return
     elif next_action == PlainTextUserAction.MANAGE_REMINDERS__SUCCESS:
         text = command_data.get(consts.ManageRemindersData.REMINDER_TEXT)
