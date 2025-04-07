@@ -636,7 +636,6 @@ def handle_user_message(
         )
         return
     elif next_action == PlainTextUserAction.MANAGE_REMINDERS__SUCCESS:
-        print(command_data)
         text = command_data.get(consts.ManageRemindersData.REMINDER_TEXT)
         group_chat_id = command_data.get(consts.ManageRemindersData.GROUP_CHAT_ID)
         name = command_data.get(consts.ManageRemindersData.REMINDER_NAME)
