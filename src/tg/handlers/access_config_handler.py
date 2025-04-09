@@ -84,7 +84,9 @@ def reload_config_jobs(update, tg_context):
         )
     except Exception as e:
         reply(load("access_config_handler__reload_config_jobs_usage_example"), update)
-        logger.warning(f"Failed to reload jobs config when fetching strings", exc_info=e)
+        logger.warning(
+            f"Failed to reload jobs config when fetching strings", exc_info=e
+        )
     reply(
         load(
             "common__code_wrapper",

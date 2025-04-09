@@ -77,7 +77,9 @@ class TrelloGetArticlesRubricJob(BaseJob):
             list_ids = trello_client.get_list_id_from_aliases([rubric_alias])
             cards = trello_client.get_cards(list_ids)
         else:
-            list_ids = app_context.focalboard_client.get_list_id_from_aliases([rubric_alias])
+            list_ids = app_context.focalboard_client.get_list_id_from_aliases(
+                [rubric_alias]
+            )
             cards = app_context.focalboard_client.get_cards(list_ids)
         cards_filtered = []
         for card in cards:

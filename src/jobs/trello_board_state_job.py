@@ -3,7 +3,7 @@ import logging
 from typing import Callable, List
 
 from ..app_context import AppContext
-from ..consts import TrelloCardColor, BoardCardColor
+from ..consts import BoardCardColor, TrelloCardColor
 from ..strings import load
 from ..tg.sender import pretty_send
 from ..trello.trello_objects import TrelloCard
@@ -22,14 +22,18 @@ class TrelloBoardStateJob(BaseJob):
         paragraphs = [
             load("trello_board_state_job__intro")
         ]  # list of paragraph strings
-        curator_cards = get_cards_by_curator(app_context, app_context.trello_client.deprecated)
+        curator_cards = get_cards_by_curator(
+            app_context, app_context.trello_client.deprecated
+        )
         for curator, curator_cards in curator_cards.items():
             curator_name, _ = curator
             card_paragraphs = []
             curator_cards.sort(key=lambda c: c.due if c.due else datetime.datetime.min)
             for card in curator_cards:
                 if app_context.trello_client.deprecated:
-                    reasons = card_checks_focalboard.make_card_failure_reasons(card, app_context)
+                    reasons = card_checks_focalboard.make_card_failure_reasons(
+                        card, app_context
+                    )
                 else:
                     reasons = card_checks.make_card_failure_reasons(card, app_context)
                 card_paragraph = TrelloBoardStateJob._format_card(

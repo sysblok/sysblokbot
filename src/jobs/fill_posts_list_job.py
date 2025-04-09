@@ -4,7 +4,7 @@ import time
 from typing import Callable, List
 
 from ..app_context import AppContext
-from ..consts import TrelloCardColor, TrelloListAlias, BoardCardColor
+from ..consts import BoardCardColor, TrelloCardColor, TrelloListAlias
 from ..sheets.sheets_objects import RegistryPost
 from ..strings import load
 from ..tg.sender import pretty_send
@@ -26,9 +26,7 @@ class FillPostsListJob(BaseJob):
 
         registry_posts += FillPostsListJob._retrieve_cards_for_registry(
             trello_client=app_context.trello_client,
-            list_aliases=[
-                TrelloListAlias.PUBLISHED
-            ],
+            list_aliases=[TrelloListAlias.PUBLISHED],
             all_rubrics=all_rubrics,
             errors=errors,
             show_due=True,
@@ -107,7 +105,8 @@ class FillPostsListJob(BaseJob):
                     [
                         label
                         for label in card.labels
-                        if label.color not in [TrelloCardColor.BLACK, BoardCardColor.BLACK]
+                        if label.color
+                        not in [TrelloCardColor.BLACK, BoardCardColor.BLACK]
                     ]
                 )
                 == 0,

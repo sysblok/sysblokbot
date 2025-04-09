@@ -69,7 +69,10 @@ def is_sender_manager(update) -> bool:
 
 
 def get_sender_id(update) -> int:
-    return update.message.from_user.id
+    if update.message:
+        return update.message.from_user.id
+    elif update.callback_query:
+        return update.callback_query.from_user.id
 
 
 def get_chat_id(update) -> int:

@@ -4,7 +4,7 @@ import time
 from typing import Callable, List
 
 from ..app_context import AppContext
-from ..consts import TrelloCardColor, TrelloListAlias, BoardCardColor
+from ..consts import BoardCardColor, TrelloCardColor, TrelloListAlias
 from ..strings import load
 from ..tg.sender import pretty_send
 from ..trello.trello_client import TrelloClient

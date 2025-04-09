@@ -185,6 +185,9 @@ class Reminder(Base):
     next_reminder_datetime = Column(DateTime)  # Moscow timezone
     frequency_days = Column(Integer)
     is_active = Column(Boolean, default=True)
+    send_poll = Column(
+        Boolean, default=False
+    )  # New field to indicate if a poll should be sent
 
     def __repr__(self):
         return f"Reminder {self.name} group_chat_id={self.group_chat_id}"
