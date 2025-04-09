@@ -7,10 +7,10 @@ import telegram
 from ... import consts
 from ...consts import ButtonValues, PlainTextUserAction
 from ...db.db_client import DBClient
+from ...focalboard.focalboard_client import FocalboardClient
 from ...strings import load
 from ...tg.handlers import get_tasks_report_handler
 from ...trello.trello_client import TrelloClient
-from ...focalboard.focalboard_client import FocalboardClient
 from .utils import get_chat_id, get_chat_name, get_sender_id, reply
 
 logger = logging.getLogger(__name__)
@@ -614,11 +614,11 @@ def handle_user_message(
         weekday_name = command_data[consts.ManageRemindersData.WEEKDAY_NAME]
         time = command_data[consts.ManageRemindersData.TIME]
         if button == consts.ButtonValues.MANAGE_REMINDERS__TOGGLE_POLL__YES:
-            if text == None:
+            if text is None:
                 reminder_id = int(
                     command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID]
                 )
-                DBClient().update_reminder(reminder_id, weekday = weekday_num, time = time)
+                DBClient().update_reminder(reminder_id, weekday=weekday_num, time=time)
             else:
                 DBClient().add_reminder(
                     creator_chat_id=get_sender_id(update),

@@ -1,14 +1,14 @@
 """Sends messages"""
 
 import asyncio
-import logging
-import nest_asyncio
-import re
-import requests
-import time
 import json
+import logging
+import re
+import time
 from typing import Callable, List
 
+import nest_asyncio
+import requests
 import telegram
 
 from ..app_context import AppContext

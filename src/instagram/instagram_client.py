@@ -165,7 +165,11 @@ class InstagramClient(Singleton):
         )
 
     def _get_all_batches(
-        self, connection_name: str, since: datetime = None, until: datetime = None, **kwargs
+        self,
+        connection_name: str,
+        since: datetime = None,
+        until: datetime = None,
+        **kwargs,
     ) -> List[dict]:
         result = []
         params = {}

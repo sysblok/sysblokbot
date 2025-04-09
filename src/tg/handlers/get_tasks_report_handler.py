@@ -25,7 +25,9 @@ def get_tasks_report(update: telegram.Update, tg_context: telegram.ext.CallbackC
 
 
 @manager_only
-def get_tasks_report_focalboard(update: telegram.Update, tg_context: telegram.ext.CallbackContext):
+def get_tasks_report_focalboard(
+    update: telegram.Update, tg_context: telegram.ext.CallbackContext
+):
     _get_task_report_base(update, tg_context, advanced=False, use_focalboard=True)
 
     return
@@ -44,7 +46,7 @@ def _get_task_report_base(
     update: telegram.Update,
     tg_context: telegram.ext.CallbackContext,
     advanced: bool,
-    use_focalboard: bool = False
+    use_focalboard: bool = False,
 ):
     app_context = AppContext()
 
@@ -75,7 +77,11 @@ def _get_task_report_base(
 
 
 def generate_report_messages(
-    board_id: str, list_id: str, introduction: str, add_labels: bool, use_focalboard: bool
+    board_id: str,
+    list_id: str,
+    introduction: str,
+    add_labels: bool,
+    use_focalboard: bool,
 ) -> List[str]:
     app_context = AppContext()
     paragraphs = []  # list of paragraph strings

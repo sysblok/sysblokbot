@@ -43,7 +43,9 @@ class GoogleDriveClient(Singleton):
             self._drive_config["api_key_path"], scopes=SCOPES
         )
         # https://developers.google.com/drive/api/v3/quickstart/python
-        self.service = build("drive", "v3", credentials=self._credentials, cache_discovery=False)
+        self.service = build(
+            "drive", "v3", credentials=self._credentials, cache_discovery=False
+        )
 
     def create_folder_for_card(self, trello_card: TrelloCard) -> str:
         existing = self._lookup_file_by_name(trello_card.name)
@@ -114,7 +116,8 @@ class GoogleDriveClient(Singleton):
             )
         except Exception as e:
             logger.error(
-                f"Failed to create a folder for {description} in Google drive", exc_info=e
+                f"Failed to create a folder for {description} in Google drive",
+                exc_info=e,
             )
             return None
         return file.get("id")
@@ -160,7 +163,7 @@ class GoogleDriveClient(Singleton):
         except Exception as e:
             logger.warning(
                 f"Failed to query Google drive for existing parent url {parent_url}",
-                exc_info=e
+                exc_info=e,
             )
             return None
         items = results.get("files", [])

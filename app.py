@@ -4,6 +4,7 @@ import argparse
 import locale
 import logging
 
+import nest_asyncio
 import requests
 
 from src import consts
@@ -14,7 +15,6 @@ from src.tg.sender import TelegramSender
 from src.utils.log_handler import ErrorBroadcastHandler
 from src.utils.uptrace_logger import add_uptrace_logging
 
-import nest_asyncio
 nest_asyncio.apply()
 
 locale.setlocale(locale.LC_TIME, "ru_RU.UTF-8")
