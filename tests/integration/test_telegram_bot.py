@@ -47,15 +47,10 @@ class Test:
         "command",
         (
             "/start",
-            "/check_site_health prod",
             "/help",
-            "/get_config",
-            "/get_config_jobs",
-            "/list_jobs",
-            "/get_chat_id",
         ),
     )
-    def test_not_failing_health(self, conversation, command: str):
+    def test_start_help(self, conversation, command: str):
         Test.loop.run_until_complete(
             _test_command(Test.report_state, conversation, command)
         )
@@ -63,23 +58,8 @@ class Test:
     @pytest.mark.parametrize(
         "command",
         (
-            "/db_fetch_authors_sheet",
-            "/db_fetch_curators_sheet",
-            "/db_fetch_strings_sheet",
-            "/db_fetch_team_sheet",
-        ),
-    )
-    def test_not_failing_db_update(self, conversation, command: str):
-        Test.loop.run_until_complete(
-            _test_command(Test.report_state, conversation, command)
-        )
-
-    @pytest.mark.parametrize(
-        "command",
-        (
-            "/get_articles_rubric arts",
-            "/get_tasks_report",
-            "/get_trello_board_state",
+            "/get_sheets_report",
+            "/get_tasks_report_focalboard",
         ),
     )
     def test_not_failing_reports(self, conversation, command: str):
@@ -89,11 +69,7 @@ class Test:
 
     @pytest.mark.parametrize(
         "command",
-        (
-            "/get_fb_analytics_report",
-            "/get_ig_analytics_report",
-            "/get_tg_analytics_report",
-        ),
+        ("/get_tg_analytics_report",),
     )
     def test_not_failing_analytics(self, conversation, command: str):
         Test.loop.run_until_complete(
@@ -103,54 +79,11 @@ class Test:
     @pytest.mark.parametrize(
         "command",
         (
-            "/create_folders_for_illustrators",
-            "/fill_posts_list",
+            "/manage_reminders",
+            "/manage_all_reminders",
         ),
     )
-    def test_not_failing_fill_registers(self, conversation, command: str):
-        Test.loop.run_until_complete(
-            _test_command(Test.report_state, conversation, command)
-        )
-
-    @pytest.mark.parametrize(
-        "command",
-        (
-            "/check_chat_consistency",
-            "/check_chat_consistency_frozen",
-            "/check_trello_consistency",
-            "/check_trello_consistency_frozen",
-            "/get_hr_status",
-        ),
-    )
-    def test_not_failing_hr(self, conversation, command: str):
-        Test.loop.run_until_complete(
-            _test_command(Test.report_state, conversation, command, timeout=180)
-        )
-
-    @pytest.mark.parametrize(
-        "command",
-        (
-            "/get_chat_data",
-            "/clean_chat_data",
-        ),
-    )
-    def test_clean_chat_data(self, conversation, command: str):
-        Test.loop.run_until_complete(
-            _test_command(Test.report_state, conversation, command, timeout=120)
-        )
-
-    @pytest.mark.xfail
-    @pytest.mark.parametrize("command", ("/bad_cmd",))
-    def test_failing(self, conversation, command: str):
-        try:
-            Test.loop.run_until_complete(
-                _test_command(Test.report_state, conversation, command, timeout=10)
-            )
-        except BaseException as e:
-            print(f"Swallowed {str(e.__class__)}: {str(e)} on xfail test")
-
-    @pytest.mark.parametrize("command", ("/unmute_errors",))
-    def test_unmute(self, conversation, command: str):
+    def test_reminder(self, conversation, command: str):
         Test.loop.run_until_complete(
             _test_command(Test.report_state, conversation, command)
         )
