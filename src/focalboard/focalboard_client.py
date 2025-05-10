@@ -62,6 +62,8 @@ class FocalboardClient(Singleton):
                 sorted_lists = []
                 for list_id in order:
                     this_list = [lst for lst in lists if lst.id == list_id]
+                    # this is needed to fix a strange bug, sometimes Focalboard returns ID in visibleOptionIds
+                    # but not in a full list
                     if this_list:
                         sorted_lists.append(this_list[0])
                 lists = sorted_lists
