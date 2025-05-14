@@ -1,5 +1,6 @@
 import logging
 import os
+import pickle
 from collections import defaultdict
 from typing import Callable
 
@@ -46,6 +47,14 @@ class SysBlokBot:
     ):
         self.config_manager = config_manager
         tg_config = config_manager.get_telegram_config()
+
+        if (
+            not os.path.exists("persistent_storage.pickle")
+            or os.path.getsize("persistent_storage.pickle") == 0
+        ):
+            with open("persistent_storage.pickle", "wb") as f:
+                pickle.dump({}, f)
+
         self.application = (
             ApplicationBuilder()
             .persistence(PicklePersistence(filepath="persistent_storage.pickle"))
