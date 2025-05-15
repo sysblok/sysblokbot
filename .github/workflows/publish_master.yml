@@ -142,6 +142,7 @@ jobs:
             touch ${{ env.ROOT_DIR }}/board_credentials.json
             touch ${{ env.ROOT_DIR }}/config_override.json
             touch ${{ env.ROOT_DIR }}/config_gs.json
+            touch ${{ env.ROOT_DIR }}/persistent_storage.pickle
             echo '${{ env.CONFIG }}' > ${{ env.ROOT_DIR }}/config_override.json
             echo '${{ env.CONFIG_GS }}' > ${{ env.ROOT_DIR }}/config_gs.json
             docker run -dit --name sysblokbot-prod \

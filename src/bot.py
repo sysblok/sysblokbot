@@ -53,7 +53,15 @@ class SysBlokBot:
             or os.path.getsize("persistent_storage.pickle") == 0
         ):
             with open("persistent_storage.pickle", "wb") as f:
-                pickle.dump({}, f)
+                pickle.dump(
+                    {
+                        "user_data": {},
+                        "chat_data": {},
+                        "bot_data": {},
+                        "conversations": {},
+                    },
+                    f,
+                )
 
         self.application = (
             ApplicationBuilder()
