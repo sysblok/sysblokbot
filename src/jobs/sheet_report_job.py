@@ -4,6 +4,8 @@ import time
 from datetime import datetime
 from typing import Callable
 
+from sheetfu.exceptions import SheetNameNoMatchError
+
 from ..app_context import AppContext
 from ..consts import KWARGS
 from ..strings import load
@@ -52,7 +54,10 @@ class SheetReportJob(BaseJob):
             date=datetime.now().strftime("%d.%m.%Y"),
             url=f"https://docs.google.com/spreadsheets/d/{spreadsheet_key}",
         )
-        sheet = app_context.sheets_client.fetch_sheet(spreadsheet_key, sheet_name)
+        try:
+            sheet = app_context.sheets_client.fetch_sheet(spreadsheet_key, sheet_name)
+        except SheetNameNoMatchError:
+            send(f"Sheet {sheet_name} not found")
         message_template_substituted = message_template
         # looking for all placeholders in format [[A1]] and substituting them
         for element in re.findall(r"(\[\[[a-zA-Z]+[0-9]+\]\])", message_template):
