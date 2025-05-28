@@ -5,15 +5,151 @@ from datetime import datetime
 import telegram
 
 from ... import consts
-from ...consts import ButtonValues, PlainTextUserAction
+from ...app_context import AppContext
+from ...consts import (
+    LAST_ACTIONABLE_COMMAND,
+    NEXT_ACTION,
+    ButtonValues,
+    GetTasksReportData,
+    PlainTextUserAction,
+)
 from ...db.db_client import DBClient
+from ...focalboard.focalboard_client import FocalboardClient
 from ...strings import load
 from ...tg.handlers import get_tasks_report_handler
 from ...trello.trello_client import TrelloClient
-from ...focalboard.focalboard_client import FocalboardClient
+from .get_rubrics_handler import TASK_NAME  # = "get_rubrics"
 from .utils import get_chat_id, get_chat_name, get_sender_id, reply
 
 logger = logging.getLogger(__name__)
+
+
+def _generate_rubric_summary(update, rubric_name: str) -> None:
+    try:
+        app_context = AppContext()
+        fc = app_context.focalboard_client
+        labels = fc._get_labels()
+        rubric_label = next(
+            (
+                lbl
+                for lbl in labels
+                if lbl.name.strip().lower() == rubric_name.strip().lower()
+            ),
+            None,
+        )
+        if not rubric_label:
+            logger.warning(
+                f"_generate_rubric_summary: Рубрика не найдена: {rubric_name}"
+            )
+            reply(f"Рубрика «{rubric_name}» не найдена.", update)
+            return
+
+        # Get all lists
+        try:
+            lists = fc.get_lists(board_id=fc.board_id, sorted=False)
+        except Exception as e:
+            logger.error(
+                f"_generate_rubric_summary: не удалось получить lists: {e}",
+                exc_info=True,
+            )
+            reply("Не удалось получить списки с доски. Попробуй позже.", update)
+            return
+
+        sections = [
+            ("Идеи для статей", "Идеи для статей:"),
+            ("Готовая тема", "Готовая тема - автор, бери!:"),
+            ("Уже пишу", "Уже пишу (не забудь указать дату и автора!):", True),
+            ("Передано на редактуру", "Передано на редактуру:"),
+            ("Проверка качества SEO", "Проверка качества SEO директором по SEO:"),
+            ("На редактуре", "На редактуре (не забудь тег рубрики!):"),
+            ("Отредактировано", "Отредактировано:"),
+            (
+                "Отобрано на финальную проверку",
+                "Отобрано на финальную проверку (Главреду):",
+            ),
+            (
+                "Отобрано для публикации",
+                "Отобрано для публикации на неделю (Корректору):",
+            ),
+            ("Готово для вёрстки", "Готово для вёрстки (Выпускающему):"),
+        ]
+
+        message_parts = [f"Привет! Сводка по карточкам рубрики «{rubric_name}»\n"]
+
+        had_errors = False
+
+        for column_name, heading, *meta_flag in sections:
+            need_meta = bool(meta_flag and meta_flag[0])
+
+            # Find column
+            target_list = next(
+                (lst for lst in lists if lst.name.strip().startswith(column_name)), None
+            )
+            if not target_list:
+                message_parts.append(f"<b>{heading}</b> (0)")
+                message_parts.append("")
+                continue
+
+            try:
+                cards = fc.get_cards(list_ids=[target_list.id], board_id=fc.board_id)
+            except Exception:
+                had_errors = True
+                message_parts.append(f"<b>{heading}</b> (0)")
+                message_parts.append("")
+                continue
+
+            filtered = [
+                card
+                for card in cards
+                if any(lbl.id == rubric_label.id for lbl in card.labels)
+            ]
+
+            filtered.sort(key=lambda c: c.due or datetime.max)
+
+            # Жирный заголовок + количество
+            count = len(filtered)
+            message_parts.append(f"<b>{heading}</b> ({count})")
+
+            if not filtered:
+
+                message_parts.append("(пусто)")
+            else:
+                for card in filtered:
+
+                    link = f'<a href="{card.url}">{card.name}</a>'
+                    if need_meta:
+
+                        due_str = (
+                            card.due.strftime("%d.%m.%Y") if card.due else "без срока"
+                        )
+                        try:
+                            fields = fc.get_custom_fields(card.id)
+                            authors = (
+                                ", ".join(fields.authors)
+                                if fields.authors
+                                else "неизвестно"
+                            )
+                        except Exception:
+                            authors = "неизвестно"
+                            message_parts.append(f"- {link}")
+                            message_parts.append(f"  • Дедлайн: {due_str}")
+                            message_parts.append(f"  • Автор: {authors}")
+                    else:
+
+                        message_parts.append(f"- {link}")
+
+            message_parts.append("")
+
+        if had_errors:
+            message_parts.append(
+                "⚠️ Не удалось получить часть данных. Попробуйте позже."
+            )
+
+        reply("\n".join(message_parts), update, parse_mode="HTML")
+
+    except Exception:
+
+        reply("Не удалось сформировать сводку. Попробуй позже.", update)
 
 
 def handle_callback_query(
@@ -26,26 +162,73 @@ def handle_callback_query(
     handle_user_message(update, tg_context, ButtonValues(update.callback_query.data))
 
 
+# def handle_user_message(update, tg_context, button=None):
+#     text = update.message.text.strip() if update.message else None
+
+#     cmd_id = tg_context.chat_data.get(LAST_ACTIONABLE_COMMAND)
+#     if not cmd_id:
+#         return
+#     cmd_data = tg_context.chat_data.get(cmd_id, {})
+#     next_raw = cmd_data.get(NEXT_ACTION)
+#     next_act = PlainTextUserAction(next_raw)
+
+#     if next_act == PlainTextUserAction.GET_RUBRICS__CHOOSE_RUBRIC:
+#         try:
+#             idx = int(text) - 1
+#             rubrics = cmd_data.get(
+#                 GetTasksReportData.LISTS
+#             ) or tg_context.chat_data.get("available_rubrics", [])
+#             if not (0 <= idx < len(rubrics)):
+#                 raise ValueError
+#         except Exception:
+#             reply(f"Номер неправилен. Введите 1–{len(rubrics)}.", update)
+#             return
+
+#         selected = rubrics[idx]
+
+#         _generate_rubric_summary(update, selected)
+
+#         tg_context.chat_data.pop(LAST_ACTIONABLE_COMMAND, None)
+#         tg_context.chat_data.pop(cmd_id, None)
+
+#         return
+
+
 def handle_user_message(
     update: telegram.Update,
     tg_context: telegram.ext.CallbackContext,
     button: ButtonValues = None,
 ):
-    """
-    Determines the last command for the user, its current state and responds accordingly
-    """
     command_id = tg_context.chat_data.get(consts.LAST_ACTIONABLE_COMMAND)
     if not command_id:
         return
     command_data = tg_context.chat_data.get(command_id, {})
     tg_context.chat_data[command_id] = command_data
-    # to understand what kind of data currently expected from user
     next_action = command_data.get(consts.NEXT_ACTION)
     if not next_action:
-        # last action for a command was successfully executed and nothing left to do
         return
     next_action = PlainTextUserAction(next_action)
     user_input = update.message.text.strip() if update.message is not None else None
+
+    # ------ ТВОЙ КОД: Обработка выбора рубрики ------
+    if next_action == PlainTextUserAction.GET_RUBRICS__CHOOSE_RUBRIC:
+        try:
+            idx = int(user_input) - 1
+            rubrics = command_data.get(
+                GetTasksReportData.LISTS
+            ) or tg_context.chat_data.get("available_rubrics", [])
+            if not (0 <= idx < len(rubrics)):
+                raise ValueError
+        except Exception:
+            reply(f"Номер неправилен. Введите 1–{len(rubrics)}.", update)
+            return
+
+        selected = rubrics[idx]
+        _generate_rubric_summary(update, selected)
+
+        tg_context.chat_data.pop(consts.LAST_ACTIONABLE_COMMAND, None)
+        tg_context.chat_data.pop(command_id, None)
+        return
 
     # Below comes a long switch of possible next_action.
     # Following conventions are used:
@@ -88,7 +271,9 @@ def handle_user_message(
         focalboard_client = FocalboardClient()
         try:
             board_list = tg_context.chat_data[consts.GetTasksReportData.LISTS]
-            use_focalboard = tg_context.chat_data[consts.GetTasksReportData.USE_FOCALBOARD]
+            use_focalboard = tg_context.chat_data[
+                consts.GetTasksReportData.USE_FOCALBOARD
+            ]
             list_idx = int(user_input) - 1
             assert 0 <= list_idx < len(board_list)
             board_id = board_list[list_idx]["id"]
