@@ -50,7 +50,7 @@ class SiteHealthCheckJob(BaseJob):
                     url=url,
                 )
             )
-            logger.error(f"Connection error for {url}")
+            logger.error(f"Connection error for {url}", exc_info=e)
             return
 
         if page.status_code != 200:

@@ -1,4 +1,5 @@
 """App-level constants"""
+
 import os
 from datetime import timedelta, timezone
 from enum import Enum
@@ -179,6 +180,10 @@ class PlainTextUserAction(Enum):
     MANAGE_REMINDERS__ENTER_REMINDER_NUMBER = "manage_reminders__reminder_number"
     MANAGE_REMINDERS__DELETE_REQUEST = "manage_reminders__delete"
     MANAGE_REMINDERS__CHOOSE_EDIT_ACTION = "manage_reminders__edit_action"
+    MANAGE_REMINDERS__TOGGLE_POLL = "manage_reminders__toggle_poll"
+    MANAGE_REMINDERS__SUCCESS = "manage_reminders__success"
+    MANAGE_REMINDERS__ENABLE_POLL = "manage_reminders__enable_poll"
+    MANAGE_REMINDERS__DISABLE_POLL = "manage_reminders__disable_poll"
 
 
 class GetTasksReportData:
@@ -236,6 +241,16 @@ class ButtonValues(Enum):
     MANAGE_REMINDERS__EDIT__CHAT = "manage_reminders__edit__chat"
     MANAGE_REMINDERS__EDIT__SUSPEND = "manage_reminders__edit__suspend"
     MANAGE_REMINDERS__EDIT__RESUME = "manage_reminders__edit__resume"
+    MANAGE_REMINDERS__POLL__YES = "manage_reminders__handler_poll__yes_btn"
+    MANAGE_REMINDERS__POLL__NO = "manage_reminders__handler_poll__no_btn"
+    MANAGE_REMINDERS__TOGGLE_POLL__YES = "manage_reminders_handler__toggle_poll_yes_btn"
+    MANAGE_REMINDERS__TOGGLE_POLL__NO = "manage_reminders_handler__toggle_poll_yes_btn"
+    MANAGE_REMINDERS__DISABLE_POLL = "manage_reminders_handler__disable_poll"
+    MANAGE_REMINDERS__DISABLE_POLL__YES = (
+        "manage_reminders_handler__disable_poll_yes_btn"
+    )
+    MANAGE_REMINDERS__ENABLE_POLL = "manage_reminders_handler__enable_poll_btn"
+    MANAGE_REMINDERS__ENABLE_POLL__YES = "manage_reminders_handler__enable_poll_yes_btn"
 
 
 WEEKDAYS_SHORT = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"]

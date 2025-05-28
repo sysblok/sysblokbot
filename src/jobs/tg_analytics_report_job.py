@@ -21,14 +21,10 @@ class TgAnalyticsReportJob(BaseJob):
             app_context.tg_client.api_client.connect()
         )
         stats = app_context.tg_client.api_client.loop.run_until_complete(
-            app_context.tg_client.api_client.get_stats(
-                app_context.tg_client.channel
-            )
+            app_context.tg_client.api_client.get_stats(app_context.tg_client.channel)
         )
         entity = app_context.tg_client.api_client.loop.run_until_complete(
-            app_context.tg_client.api_client.get_entity(
-                app_context.tg_client.channel
-            )
+            app_context.tg_client.api_client.get_entity(app_context.tg_client.channel)
         )
         app_context.tg_client.api_client.disconnect()
         new_posts_count = len(stats.recent_message_interactions)

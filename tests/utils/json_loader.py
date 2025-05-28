@@ -10,7 +10,7 @@ class JsonLoader:
         self.base_path = base_path
 
     def load_json(self, filename: str) -> Dict:
-        with open(os.path.join(self.base_path, filename), "r", encoding='utf-8') as fin:
+        with open(os.path.join(self.base_path, filename), "r", encoding="utf-8") as fin:
             return json.loads(fin.read())
 
     def assert_equal(self, response: object, expected_filename: str):

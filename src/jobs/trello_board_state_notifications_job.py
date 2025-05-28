@@ -3,7 +3,7 @@ import logging
 from typing import Callable, List
 
 from ..app_context import AppContext
-from ..consts import TrelloCardColor, BoardCardColor
+from ..consts import BoardCardColor, TrelloCardColor
 from ..strings import load
 from ..tg.sender import TelegramSender, pretty_send
 from ..trello.trello_objects import TrelloCard
@@ -17,20 +17,26 @@ logger = logging.getLogger(__name__)
 class TrelloBoardStateNotificationsJob(BaseJob):
     @staticmethod
     def _execute(
-        app_context: AppContext, send: Callable[[str], None], called_from_handler=False,
+        app_context: AppContext,
+        send: Callable[[str], None],
+        called_from_handler=False,
         *args,
         **kwargs,
     ):
         sender = TelegramSender()
 
-        curator_cards = get_cards_by_curator(app_context, app_context.trello_client.deprecated)
+        curator_cards = get_cards_by_curator(
+            app_context, app_context.trello_client.deprecated
+        )
         for curator, curator_cards in curator_cards.items():
             curator_name, curator_tg = curator
             card_paragraphs = []
             curator_cards.sort(key=lambda c: c.due if c.due else datetime.datetime.min)
             for card in curator_cards:
                 if app_context.trello_client.deprecated:
-                    reasons = card_checks_focalboard.make_card_failure_reasons(card, app_context)
+                    reasons = card_checks_focalboard.make_card_failure_reasons(
+                        card, app_context
+                    )
                 else:
                     reasons = card_checks.make_card_failure_reasons(card, app_context)
                 card_paragraph = TrelloBoardStateNotificationsJob._format_card(
@@ -64,14 +70,12 @@ class TrelloBoardStateNotificationsJob(BaseJob):
                             f"not an error: Sent board report to {curator_name}"
                         )
                         if called_from_handler:
-                            pretty_send([f'curator report sent to {chat.title}'], send)
+                            pretty_send([f"curator report sent to {chat.title}"], send)
                     else:
                         logger.error(
                             f"Curator {curator_name} is not enrolled, could not send notifications"
                         )
-                        pretty_send(
-                            paragraphs, lambda msg: sender.send_error_log(msg)
-                        )
+                        pretty_send(paragraphs, lambda msg: sender.send_error_log(msg))
                 except ValueError as e:
                     logger.error(f"Could not send to {curator_name}:", exc_info=e)
 

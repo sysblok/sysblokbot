@@ -7,13 +7,13 @@ from .consts import TRELLO_CONFIG
 from .db.db_client import DBClient
 from .drive.drive_client import GoogleDriveClient
 from .facebook.facebook_client import FacebookClient
+from .focalboard.focalboard_client import FocalboardClient
 from .instagram.instagram_client import InstagramClient
 from .roles.role_manager import RoleManager
 from .sheets.sheets_client import GoogleSheetsClient
 from .strings import StringsDBClient
 from .tg.tg_client import TgClient
 from .trello.trello_client import TrelloClient
-from .focalboard.focalboard_client import FocalboardClient
 from .utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
