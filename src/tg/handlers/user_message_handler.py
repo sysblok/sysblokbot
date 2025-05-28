@@ -18,7 +18,7 @@ from ...focalboard.focalboard_client import FocalboardClient
 from ...strings import load
 from ...tg.handlers import get_tasks_report_handler
 from ...trello.trello_client import TrelloClient
-from .get_rubrics_handler import TASK_NAME  # = "get_rubrics"
+from .get_rubrics_handler import TASK_NAME
 from .utils import get_chat_id, get_chat_name, get_sender_id, reply
 
 logger = logging.getLogger(__name__)
@@ -106,7 +106,6 @@ def _generate_rubric_summary(update, rubric_name: str) -> None:
 
             filtered.sort(key=lambda c: c.due or datetime.max)
 
-            # Жирный заголовок + количество
             count = len(filtered)
             message_parts.append(f"<b>{heading}</b> ({count})")
 
@@ -162,38 +161,6 @@ def handle_callback_query(
     handle_user_message(update, tg_context, ButtonValues(update.callback_query.data))
 
 
-# def handle_user_message(update, tg_context, button=None):
-#     text = update.message.text.strip() if update.message else None
-
-#     cmd_id = tg_context.chat_data.get(LAST_ACTIONABLE_COMMAND)
-#     if not cmd_id:
-#         return
-#     cmd_data = tg_context.chat_data.get(cmd_id, {})
-#     next_raw = cmd_data.get(NEXT_ACTION)
-#     next_act = PlainTextUserAction(next_raw)
-
-#     if next_act == PlainTextUserAction.GET_RUBRICS__CHOOSE_RUBRIC:
-#         try:
-#             idx = int(text) - 1
-#             rubrics = cmd_data.get(
-#                 GetTasksReportData.LISTS
-#             ) or tg_context.chat_data.get("available_rubrics", [])
-#             if not (0 <= idx < len(rubrics)):
-#                 raise ValueError
-#         except Exception:
-#             reply(f"Номер неправилен. Введите 1–{len(rubrics)}.", update)
-#             return
-
-#         selected = rubrics[idx]
-
-#         _generate_rubric_summary(update, selected)
-
-#         tg_context.chat_data.pop(LAST_ACTIONABLE_COMMAND, None)
-#         tg_context.chat_data.pop(cmd_id, None)
-
-#         return
-
-
 def handle_user_message(
     update: telegram.Update,
     tg_context: telegram.ext.CallbackContext,
@@ -210,7 +177,6 @@ def handle_user_message(
     next_action = PlainTextUserAction(next_action)
     user_input = update.message.text.strip() if update.message is not None else None
 
-    # ------ ТВОЙ КОД: Обработка выбора рубрики ------
     if next_action == PlainTextUserAction.GET_RUBRICS__CHOOSE_RUBRIC:
         try:
             idx = int(user_input) - 1
