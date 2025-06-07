@@ -23,6 +23,19 @@ from .utils import get_chat_id, get_chat_name, get_sender_id, reply
 
 logger = logging.getLogger(__name__)
 
+SECTIONS = [
+    ("Идеи для статей", "trello_list_name__topic_suggestion"),
+    ("Готовая тема", "trello_list_name__topic_suggestion"),
+    ("Уже пишу", "trello_list_name__in_progress", True),
+    ("Передано на редактуру", "trello_list_name__in_progress"),
+    ("Проверка качества SEO", "trello_list_name__to_seo_editor"),
+    ("На редактуре", "common_report__section_title_editorial_board"),
+    ("Отредактировано", "trello_list_name__edited_sometimes"),
+    ("Отобрано на финальную проверку", "trello_list_name__to_chief_editor"),
+    ("Отобрано для публикации", "trello_list_name__proofreading"),
+    ("Готово для вёрстки", "trello_list_name__typesetting"),
+]
+
 
 def _generate_rubric_summary(update, rubric_name: str) -> None:
     try:
@@ -52,39 +65,21 @@ def _generate_rubric_summary(update, rubric_name: str) -> None:
                 f"_generate_rubric_summary: не удалось получить lists: {e}",
                 exc_info=True,
             )
-            reply("Не удалось получить списки с доски. Попробуй позже.", update)
+            reply(load("failed_get_board_lists"), update)
             return
-
-        sections = [
-            ("Идеи для статей", "Идеи для статей:"),
-            ("Готовая тема", "Готовая тема - автор, бери!:"),
-            ("Уже пишу", "Уже пишу (не забудь указать дату и автора!):", True),
-            ("Передано на редактуру", "Передано на редактуру:"),
-            ("Проверка качества SEO", "Проверка качества SEO директором по SEO:"),
-            ("На редактуре", "На редактуре (не забудь тег рубрики!):"),
-            ("Отредактировано", "Отредактировано:"),
-            (
-                "Отобрано на финальную проверку",
-                "Отобрано на финальную проверку (Главреду):",
-            ),
-            (
-                "Отобрано для публикации",
-                "Отобрано для публикации на неделю (Корректору):",
-            ),
-            ("Готово для вёрстки", "Готово для вёрстки (Выпускающему):"),
-        ]
 
         message_parts = [f"Привет! Сводка по карточкам рубрики «{rubric_name}»\n"]
 
         had_errors = False
 
-        for column_name, heading, *meta_flag in sections:
+        for column_name, heading, *meta_flag in SECTIONS:
             need_meta = bool(meta_flag and meta_flag[0])
 
             # Find column
             target_list = next(
                 (lst for lst in lists if lst.name.strip().startswith(column_name)), None
             )
+
             if not target_list:
                 message_parts.append(f"<b>{heading}</b> (0)")
                 message_parts.append("")
@@ -140,15 +135,13 @@ def _generate_rubric_summary(update, rubric_name: str) -> None:
             message_parts.append("")
 
         if had_errors:
-            message_parts.append(
-                "⚠️ Не удалось получить часть данных. Попробуйте позже."
-            )
+            message_parts.append(load("partial_data_error "))
 
         reply("\n".join(message_parts), update, parse_mode="HTML")
 
     except Exception:
 
-        reply("Не удалось сформировать сводку. Попробуй позже.", update)
+        reply(load("failed_try_later"), update)
 
 
 def handle_callback_query(
