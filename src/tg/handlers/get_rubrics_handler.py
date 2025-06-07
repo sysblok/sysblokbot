@@ -5,6 +5,8 @@ import telegram
 from telegram import Update
 from telegram.ext import CallbackContext
 
+from src.strings import load
+
 from ... import consts
 from ...app_context import AppContext
 from ...consts import PlainTextUserAction
@@ -53,13 +55,10 @@ def get_rubrics(update: Update, tg_context: CallbackContext) -> None:
 
         # Show list
         rubric_list = "\n".join(f"{i + 1}) {name}" for i, name in enumerate(filtered))
-        reply(
-            "Пожалуйста, пришли номер рубрики, с которой хочешь работать:\n\n"
-            + rubric_list,
-            update,
-        )
+        message = load("get_rubric_number") + "\n" + rubric_list
+        reply(message, update)
         logger.info("get_rubrics: sent rubric list to user")
 
     except Exception as e:
         logger.error("get_rubrics: error %s", e, exc_info=True)
-        reply("Не удалось получить список рубрик. Попробуй позже.", update)
+        reply(load("failed_get_rubrics_list"), update)
