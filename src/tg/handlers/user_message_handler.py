@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 SECTIONS = [
     ("Идеи для статей", "trello_list_name__topic_suggestion"),
-    ("Готовая тема", "trello_list_name__topic_suggestion"),
+    ("Готовая тема", "trello_list_name__topic_ready"),
     ("Уже пишу", "trello_list_name__in_progress", True),
     ("Передано на редактуру", "trello_list_name__in_progress"),
     ("Проверка качества SEO", "trello_list_name__to_seo_editor"),
@@ -72,9 +72,9 @@ def _generate_rubric_summary(update, rubric_name: str) -> None:
 
         had_errors = False
 
-        for column_name, heading, *meta_flag in SECTIONS:
+        for column_name, load_key, *meta_flag in SECTIONS:
             need_meta = bool(meta_flag and meta_flag[0])
-
+            heading = load(load_key)
             # Find column
             target_list = next(
                 (lst for lst in lists if lst.name.strip().startswith(column_name)), None
@@ -180,7 +180,7 @@ def handle_user_message(
             if not (0 <= idx < len(rubrics)):
                 raise ValueError
         except Exception:
-            reply(f"Номер неправилен. Введите 1–{len(rubrics)}.", update)
+            reply(load("invalid_rubric_number").format(max=len(rubrics)), update)
             return
 
         selected = rubrics[idx]
