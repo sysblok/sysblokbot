@@ -173,6 +173,7 @@ def handle_user_message(
     tg_context.chat_data[command_id] = command_data
     next_action = command_data.get(consts.NEXT_ACTION)
     if not next_action:
+        # last action for a command was successfully executed and nothing left to do
         return
     next_action = PlainTextUserAction(next_action)
     user_input = update.message.text.strip() if update.message is not None else None
