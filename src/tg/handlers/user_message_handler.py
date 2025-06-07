@@ -241,9 +241,6 @@ def handle_user_message(
             use_focalboard = tg_context.chat_data[
                 consts.GetTasksReportData.USE_FOCALBOARD
             ]
-            use_focalboard = tg_context.chat_data[
-                consts.GetTasksReportData.USE_FOCALBOARD
-            ]
             list_idx = int(user_input) - 1
             assert 0 <= list_idx < len(board_list)
             board_id = board_list[list_idx]["id"]
