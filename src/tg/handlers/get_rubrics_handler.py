@@ -14,12 +14,19 @@ from .utils import manager_only, reply
 
 logger = logging.getLogger(__name__)
 
-EXCLUDED_RUBRICS = {
-    "возвращено на доработку",
-    "есть иллюстрация",
-    "предложено на иллюстрацию",
-    "телеграм",
-}
+# EXCLUDED_RUBRICS = {
+#     load("common_report__section_title_proofreading"),
+#     load("common_report_illustration"),
+#     load("common_report_proposed_illustration"),
+#     load("common_report_telegram"),
+# }
+
+EXCLUDED_LOAD_KEYS = [
+    "common_report__section_title_proofreading",
+    "common_report_illustration",
+    "common_report_proposed_illustration",
+    "common_report_telegram",
+]
 
 TASK_NAME = "get_rubrics"
 
@@ -29,12 +36,13 @@ def get_rubrics(update: Update, tg_context: CallbackContext) -> None:
     logger.info("get_rubrics: start")
     app_context = AppContext()
 
+    excluded_rubrics = {load(key) for key in EXCLUDED_LOAD_KEYS}
     try:
         labels = app_context.focalboard_client._get_labels()
         filtered = [
             lbl.name
             for lbl in labels
-            if lbl.name and lbl.name.lower() not in EXCLUDED_RUBRICS
+            if lbl.name and lbl.name.lower() not in excluded_rubrics
         ]
         filtered.sort()
         logger.info("get_rubrics: %d rubrics after filter", len(filtered))
