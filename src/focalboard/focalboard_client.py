@@ -333,7 +333,7 @@ class FocalboardClient(Singleton):
                     if member.id in card._fields_properties.get(member_prop, []):
                         card.members.append(member)
                 if len(card.members) == 0:
-                    logger.debug(f"Member username not found for {card}")
+                    logger.error(f"Member username not found for {card}")
             cards.append(card)
         logger.debug(f"get_cards: {cards}")
         return cards
