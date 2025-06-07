@@ -90,12 +90,10 @@ requests-oauthlib==1.3.0
 retrying==1.3.3
 rope==0.17.0
 rsa==4.0
--e git+https://github.com/dbader/schedule.git@3eac646a8d2658929587d7454bd2c85696df254e#egg=schedule
 sheetfu==1.5.3
 six==1.14.0
 soupsieve==2.3.2.post1
 SQLAlchemy==1.3.17
--e git+https://github.com/alexeyqu/Telethon.git@7cd20d1e5c0082450c53dbf242fb35145e448260#egg=Telethon
 toml==0.10.0
 tomli==2.0.1
 tornado==6.0.4
