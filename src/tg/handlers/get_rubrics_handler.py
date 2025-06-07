@@ -40,7 +40,7 @@ def get_rubrics(update: Update, tg_context: CallbackContext) -> None:
         logger.info("get_rubrics: %d rubrics after filter", len(filtered))
 
         if not filtered:
-            reply("Рубрики не найдены.", update)
+            reply(load("rubrics_not_found"), update)
             return
 
         cmd_data = {
