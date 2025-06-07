@@ -14,13 +14,6 @@ from .utils import manager_only, reply
 
 logger = logging.getLogger(__name__)
 
-# EXCLUDED_RUBRICS = {
-#     load("common_report__section_title_proofreading"),
-#     load("common_report_illustration"),
-#     load("common_report_proposed_illustration"),
-#     load("common_report_telegram"),
-# }
-
 EXCLUDED_LOAD_KEYS = [
     "common_report__section_title_proofreading",
     "common_report_illustration",
