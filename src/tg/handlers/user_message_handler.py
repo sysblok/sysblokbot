@@ -54,7 +54,7 @@ def _generate_rubric_summary(update, rubric_name: str) -> None:
             logger.warning(
                 f"_generate_rubric_summary: Рубрика не найдена: {rubric_name}"
             )
-            reply(f"Рубрика «{rubric_name}» не найдена.", update)
+            reply(load("rubric_not_found").format(rubric_name=rubric_name), update)
             return
 
         # Get all lists
