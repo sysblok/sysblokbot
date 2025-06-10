@@ -12,6 +12,7 @@ from ...consts import (
     ButtonValues,
     GetTasksReportData,
     PlainTextUserAction,
+    TrelloListAlias,
 )
 from ...db.db_client import DBClient
 from ...focalboard.focalboard_client import FocalboardClient
@@ -24,16 +25,16 @@ from .utils import get_chat_id, get_chat_name, get_sender_id, reply
 logger = logging.getLogger(__name__)
 
 SECTIONS = [
-    ("Идеи для статей", "trello_list_name__topic_suggestion"),
-    ("Готовая тема", "trello_list_name__topic_ready"),
-    ("Уже пишу", "trello_list_name__in_progress", True),
-    ("Передано на редактуру", "trello_list_name__in_progress"),
-    ("Проверка качества SEO", "trello_list_name__to_seo_editor"),
-    ("На редактуре", "common_report__section_title_editorial_board"),
-    ("Отредактировано", "trello_list_name__edited_sometimes"),
-    ("Отобрано на финальную проверку", "trello_list_name__to_chief_editor"),
-    ("Отобрано для публикации", "trello_list_name__proofreading"),
-    ("Готово для вёрстки", "trello_list_name__typesetting"),
+    ("Идеи для статей", TrelloListAlias.TOPIC_SUGGESTION),
+    ("Готовая тема", TrelloListAlias.TOPIC_READY),
+    ("Уже пишу", TrelloListAlias.IN_PROGRESS, True),
+    ("Передано на редактуру", TrelloListAlias.IN_PROGRESS),
+    ("Проверка качества SEO", TrelloListAlias.TO_SEO_EDITOR),
+    ("На редактуре", TrelloListAlias.TO_EDITOR),
+    ("Отредактировано", TrelloListAlias.EDITED_SOMETIMES),
+    ("Отобрано на финальную проверку", TrelloListAlias.TO_CHIEF_EDITOR),
+    ("Отобрано для публикации", TrelloListAlias.PROOFREADING),
+    ("Готово для вёрстки", TrelloListAlias.DONE),
 ]
 
 
@@ -72,9 +73,9 @@ def _generate_rubric_summary(update, rubric_name: str) -> None:
 
         had_errors = False
 
-        for column_name, load_key, *meta_flag in SECTIONS:
+        for column_name, alias, *meta_flag in SECTIONS:
             need_meta = bool(meta_flag and meta_flag[0])
-            heading = load(load_key)
+            heading = load(alias.value)
             # Find column
             target_list = next(
                 (lst for lst in lists if lst.name.strip().startswith(column_name)), None
