@@ -159,6 +159,9 @@ def handle_user_message(
     tg_context: telegram.ext.CallbackContext,
     button: ButtonValues = None,
 ):
+    """
+    Determines the last command for the user, its current state and responds accordingly
+    """
     command_id = tg_context.chat_data.get(consts.LAST_ACTIONABLE_COMMAND)
     if not command_id:
         return
