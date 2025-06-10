@@ -68,7 +68,7 @@ def _generate_rubric_summary(update, rubric_name: str) -> None:
             reply(load("failed_get_board_lists"), update)
             return
 
-        message_parts = [f"Привет! Сводка по карточкам рубрики «{rubric_name}»\n"]
+        message_parts = [load("rubric_report_job__intro").format(rubric=rubric_name)]
 
         had_errors = False
 
