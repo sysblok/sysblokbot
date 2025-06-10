@@ -163,6 +163,7 @@ def handle_user_message(
     Determines the last command for the user, its current state and responds accordingly
     """
     command_id = tg_context.chat_data.get(consts.LAST_ACTIONABLE_COMMAND)
+    # to understand what kind of data currently expected from user
     if not command_id:
         return
     command_data = tg_context.chat_data.get(command_id, {})
