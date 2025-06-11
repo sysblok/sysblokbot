@@ -55,7 +55,12 @@ def _generate_rubric_summary(update, rubric_name: str) -> None:
             logger.warning(
                 f"_generate_rubric_summary: Рубрика не найдена: {rubric_name}"
             )
-            reply(load("rubric_not_found").format(rubric_name=rubric_name), update)
+            reply(
+                load(
+                    "rubric_not_found",
+                    rubric_name=rubric_name,
+                ),
+            )
             return
 
         # Get all lists
@@ -69,7 +74,12 @@ def _generate_rubric_summary(update, rubric_name: str) -> None:
             reply(load("failed_get_board_lists"), update)
             return
 
-        message_parts = [load("rubric_report_job__intro").format(rubric=rubric_name)]
+        message_parts = [
+            load(
+                "rubric_report_job__intro",
+                rubric=rubric_name,
+            )
+        ]
 
         had_errors = False
 
@@ -185,7 +195,13 @@ def handle_user_message(
             if not (0 <= idx < len(rubrics)):
                 raise ValueError
         except Exception:
-            reply(load("invalid_rubric_number").format(max=len(rubrics)), update)
+            reply(
+                load(
+                    "invalid_rubric_number",
+                    max=len(rubrics),
+                ),
+                update,
+            )
             return
 
         selected = rubrics[idx]
