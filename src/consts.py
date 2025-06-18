@@ -168,6 +168,8 @@ class PlainTextUserAction(Enum):
     GET_TASKS_REPORT__ENTER_LIST_NUMBER = "get_tasks_report__list_number"
     GET_TASKS_REPORT__ENTER_INTRO = "get_tasks_report__introduction"
     GET_TASKS_REPORT__CHOOSE_IF_FILL_LABELS = "get_tasks_report__fill_labels"
+    GET_RUBRICS__CHOOSE_RUBRIC = "GET_RUBRICS__CHOOSE_RUBRIC"
+
     # /manage_reminders items
     MANAGE_REMINDERS__CHOOSE_ACTION = "manage_reminders__action"
     MANAGE_REMINDERS__ENTER_CHAT_ID = "manage_reminders__chat_id"

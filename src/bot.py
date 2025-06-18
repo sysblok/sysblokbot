@@ -171,6 +171,14 @@ class SysBlokBot:
             direct_message_only(handlers.get_tasks_report_focalboard),
             "получить список задач из Focalboard",
         )
+
+        self.add_manager_handler(
+            "get_rubrics",
+            CommandCategories.SUMMARY,
+            handlers.get_rubrics,
+            "получить рубрики из доски Редакция",
+        )
+
         self.add_manager_handler(
             "get_articles_rubric",
             CommandCategories.SUMMARY,

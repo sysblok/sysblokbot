@@ -25,6 +25,7 @@ from .get_members_for_role_handler import get_members_for_role
 
 # Admin (developer) handlers
 from .get_roles_for_member_handler import get_roles_for_member
+from .get_rubrics_handler import get_rubrics
 from .get_tasks_report_handler import (
     get_tasks_report,
     get_tasks_report_advanced,
