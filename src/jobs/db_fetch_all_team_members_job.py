@@ -25,9 +25,7 @@ class DBFetchAllTeamMembersJob(BaseJob):
         logger.info(f"Fetched {num_curators} curators")
         send(load("db_fetch_curators_sheet_job__success", num_curators=num_curators))
 
-        team_size = app_context.db_client.fetch_team_sheet(
-            app_context.sheets_client
-        )
+        team_size = app_context.db_client.fetch_team_sheet(app_context.sheets_client)
         # after we fetch the team, we need to recalculate the roles
         app_context.role_manager.calculate_db_roles()
         logger.info(f"Fetched {team_size} team members")

@@ -1,5 +1,6 @@
 import logging
 import os
+import pickle
 from collections import defaultdict
 from typing import Callable
 
@@ -7,10 +8,10 @@ from telegram.ext import (
     ApplicationBuilder,
     CallbackQueryHandler,
     CommandHandler,
-    filters,
     MessageHandler,
     PicklePersistence,
     Updater,
+    filters,
 )
 
 from .app_context import AppContext
@@ -46,6 +47,22 @@ class SysBlokBot:
     ):
         self.config_manager = config_manager
         tg_config = config_manager.get_telegram_config()
+
+        if (
+            not os.path.exists("persistent_storage.pickle")
+            or os.path.getsize("persistent_storage.pickle") == 0
+        ):
+            with open("persistent_storage.pickle", "wb") as f:
+                pickle.dump(
+                    {
+                        "user_data": {},
+                        "chat_data": {},
+                        "bot_data": {},
+                        "conversations": {},
+                    },
+                    f,
+                )
+
         self.application = (
             ApplicationBuilder()
             .persistence(PicklePersistence(filepath="persistent_storage.pickle"))
@@ -98,7 +115,9 @@ class SysBlokBot:
         self.add_manager_handler(
             "get_manager_status",
             CommandCategories.SUMMARY,
-            direct_message_only(self.manager_reply_handler("board_my_cards_razvitie_job")),
+            direct_message_only(
+                self.manager_reply_handler("board_my_cards_razvitie_job")
+            ),
             "получить мои карточки из доски Развитие",
         )
         self.add_manager_handler(
@@ -152,6 +171,14 @@ class SysBlokBot:
             direct_message_only(handlers.get_tasks_report_focalboard),
             "получить список задач из Focalboard",
         )
+
+        self.add_manager_handler(
+            "get_rubrics",
+            CommandCategories.SUMMARY,
+            handlers.get_rubrics,
+            "получить рубрики из доски Редакция",
+        )
+
         self.add_manager_handler(
             "get_articles_rubric",
             CommandCategories.SUMMARY,
@@ -195,7 +222,9 @@ class SysBlokBot:
             "получить статистику по табличке (например, оцифровка открыток)",
         )
         # hidden from /help command for curator enrollment
-        self.add_manager_handler("enroll_curator", CommandCategories.HR, handlers.enroll_curator)
+        self.add_manager_handler(
+            "enroll_curator", CommandCategories.HR, handlers.enroll_curator
+        )
 
         # admin-only technical cmds
         self.add_admin_handler(
@@ -383,13 +412,6 @@ class SysBlokBot:
             "start", CommandCategories.DEBUG, handlers.start, "начать чат с ботом"
         )
         self.add_admin_handler(
-            "get_board_credentials",
-            CommandCategories.DEBUG,
-            # CommandCategories.MOST_USED,
-            lambda update, context: handlers.get_board_credentials(update, context),
-            "получить пароль от Focalboard",
-        )
-        self.add_admin_handler(
             "help",
             CommandCategories.DEBUG,
             # CommandCategories.MOST_USED,
@@ -421,7 +443,8 @@ class SysBlokBot:
         )
         self.application.add_handler(
             MessageHandler(
-                filters.StatusUpdate.NEW_CHAT_MEMBERS, asyncify(handlers.handle_new_members)
+                filters.StatusUpdate.NEW_CHAT_MEMBERS,
+                asyncify(handlers.handle_new_members),
             )
         )
 
@@ -442,7 +465,9 @@ class SysBlokBot:
             async def wrapper(*args, **kwargs):
                 try:
                     update = args[0]
-                    username = update.message.from_user.username or update.message.from_user.id
+                    username = (
+                        update.message.from_user.username or update.message.from_user.id
+                    )
                     logger.usage(f"Handler {handler_cmd} was called by {username}...")
                 except BaseException:
                     logger.usage(f"Handler {handler_cmd} was called...")
@@ -469,9 +494,7 @@ class SysBlokBot:
         See tg.utils#admin_only
         """
         self.add_handler(handler_cmd, handler_func)
-        self.handlers_info[handler_category]["admin"][
-            f"/{handler_cmd}"
-        ] = description
+        self.handlers_info[handler_category]["admin"][f"/{handler_cmd}"] = description
 
     def add_manager_handler(
         self,
@@ -486,9 +509,7 @@ class SysBlokBot:
         See tg.utils#manager_only
         """
         self.add_handler(handler_cmd, handler_func)
-        self.handlers_info[handler_category]["manager"][
-            f"/{handler_cmd}"
-        ] = description
+        self.handlers_info[handler_category]["manager"][f"/{handler_cmd}"] = description
 
     def add_user_handler(
         self,
@@ -499,9 +520,7 @@ class SysBlokBot:
     ):
         """Adds handler. It will be listed in /help for everybody"""
         self.add_handler(handler_cmd, handler_func)
-        self.handlers_info[handler_category]["user"][
-            f"/{handler_cmd}"
-        ] = description
+        self.handlers_info[handler_category]["user"][f"/{handler_cmd}"] = description
 
     # Methods, creating handlers from jobs with proper invocation restrictions
     def admin_broadcast_handler(self, job_name: str) -> Callable:

@@ -4,7 +4,12 @@ from typing import Callable, List, Tuple
 from urllib.parse import urlparse
 
 from ..app_context import AppContext
-from ..consts import TrelloCardColor, TrelloCustomFieldTypeAlias, TrelloListAlias, BoardCardColor
+from ..consts import (
+    BoardCardColor,
+    TrelloCardColor,
+    TrelloCustomFieldTypeAlias,
+    TrelloListAlias,
+)
 from ..strings import load
 from ..tg.sender import pretty_send
 from .base_job import BaseJob
@@ -32,6 +37,10 @@ class CreateFoldersForIllustratorsJob(BaseJob):
                 TrelloListAlias.EDITED_SOMETIMES,
                 TrelloListAlias.EDITED_NEXT_WEEK,
                 TrelloListAlias.TO_SEO_EDITOR,
+                TrelloListAlias.IN_PROGRESS,
+                TrelloListAlias.TO_EDITOR,
+                TrelloListAlias.PROOFREADING,
+                TrelloListAlias.DONE,
             ),
         )
 
@@ -59,7 +68,9 @@ class CreateFoldersForIllustratorsJob(BaseJob):
     ) -> List[Tuple[IllustratorFolderState, str]]:
         logger.info("Started counting:")
         if app_context.trello_client.deprecated:
-            list_ids = app_context.focalboard_client.get_list_id_from_aliases(list_aliases)
+            list_ids = app_context.focalboard_client.get_list_id_from_aliases(
+                list_aliases
+            )
             cards = app_context.focalboard_client.get_cards(list_ids)
         else:
             list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)

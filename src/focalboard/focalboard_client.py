@@ -1,7 +1,7 @@
 import ast
-from datetime import datetime
 import json
 import logging
+from datetime import datetime
 from typing import List
 from urllib.parse import quote, urljoin
 
@@ -62,7 +62,7 @@ class FocalboardClient(Singleton):
                 sorted_lists = []
                 for list_id in order:
                     this_list = [lst for lst in lists if lst.id == list_id]
-                    # this is needed to fix a strange bug 
+                    # this is needed to fix a strange bug
                     # sometimes Focalboard returns ID in visibleOptionIds but not in a full list
                     if this_list:
                         sorted_lists.append(this_list[0])
@@ -103,8 +103,7 @@ class FocalboardClient(Singleton):
         ][0]
         labels_data = label_data["options"]
         labels = [
-            objects.TrelloCardLabel.from_focalboard_dict(label)
-            for label in labels_data
+            objects.TrelloCardLabel.from_focalboard_dict(label) for label in labels_data
         ]
         return labels
 
@@ -239,16 +238,14 @@ class FocalboardClient(Singleton):
                     card_labels.append(board_label)
 
         card_fields.authors = [
-            author.strip()
-            for author in card_fields_dict.get("author", '').split(',')
+            author.strip() for author in card_fields_dict.get("author", "").split(",")
         ]
         card_fields.editors = [
-            editor.strip()
-            for editor in card_fields_dict.get("editor", '').split(',')
+            editor.strip() for editor in card_fields_dict.get("editor", "").split(",")
         ]
         card_fields.illustrators = [
             illustrator.strip()
-            for illustrator in card_fields_dict.get("illustrator", '').split(',')
+            for illustrator in card_fields_dict.get("illustrator", "").split(",")
         ]
         card_fields.cover = (
             card_fields_dict["cover"] if "cover" in card_fields_dict else None
@@ -266,11 +263,7 @@ class FocalboardClient(Singleton):
     def set_card_custom_field(self, card: objects.TrelloCard, field_alias, value):
         board_id = self.board_id
         field_id = self.custom_fields_config[field_alias]
-        data = {
-            "updatedFields": {
-                "properties": card._fields_properties
-            }
-        }
+        data = {"updatedFields": {"properties": card._fields_properties}}
         data["updatedFields"]["properties"][field_id] = value
         code = self._make_patch_request(
             f"api/v2/boards/{board_id}/blocks/{card.id}", payload=data
@@ -310,11 +303,7 @@ class FocalboardClient(Singleton):
                 and card_dict["fields"]["properties"].get(list_prop, "") in list_ids
             ]
         else:
-            data = [
-                card_dict
-                for card_dict in data
-                if card_dict["type"] == "card"
-            ]
+            data = [card_dict for card_dict in data if card_dict["type"] == "card"]
         for card_dict in data:
             card = objects.TrelloCard.from_focalboard_dict(card_dict)
             card.url = urljoin(self.url, f"{board_id}/{view_id}/{card.id}")
@@ -324,8 +313,8 @@ class FocalboardClient(Singleton):
                     if label.id == label_id:
                         card.labels.append(label)
             try:
-                due = card._fields_properties.get(due_prop, '{}')
-                due_ts = json.loads(due).get('to')
+                due = card._fields_properties.get(due_prop, "{}")
+                due_ts = json.loads(due).get("to")
                 if due_ts:
                     card.due = datetime.fromtimestamp(due_ts // 1000)
             except Exception as e:
@@ -333,9 +322,7 @@ class FocalboardClient(Singleton):
                 print(e)
             # TODO: move this to app state
             for trello_list in lists:
-                if trello_list.id == card._fields_properties.get(
-                    list_prop, ""
-                ):
+                if trello_list.id == card._fields_properties.get(list_prop, ""):
                     card.lst = trello_list
                     break
             else:
@@ -343,9 +330,7 @@ class FocalboardClient(Singleton):
             # TODO: move this to app state
             if len(card._fields_properties.get(member_prop, [])) > 0:
                 for member in members:
-                    if member.id in card._fields_properties.get(
-                        member_prop, []
-                    ):
+                    if member.id in card._fields_properties.get(member_prop, []):
                         card.members.append(member)
                 if len(card.members) == 0:
                     logger.error(f"Member username not found for {card}")
