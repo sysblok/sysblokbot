@@ -24,8 +24,6 @@ from .utils import get_chat_id, get_chat_name, get_sender_id, reply
 
 logger = logging.getLogger(__name__)
 
-logger = logging.getLogger(__name__)
-
 SECTIONS = [
     ("Идеи для статей", TrelloListAlias.TOPIC_SUGGESTION),
     ("Готовая тема", TrelloListAlias.TOPIC_READY),
