@@ -15,6 +15,7 @@ from ...consts import (
     TrelloListAlias,
 )
 from ...db.db_client import DBClient
+from ...db.db_objects import Reminder
 from ...focalboard.focalboard_client import FocalboardClient
 from ...strings import load
 from ...tg.handlers import get_tasks_report_handler
