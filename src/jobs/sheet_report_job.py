@@ -57,7 +57,7 @@ class SheetReportJob(BaseJob):
         try:
             sheet = app_context.sheets_client.fetch_sheet(spreadsheet_key, sheet_name)
         except SheetNameNoMatchError:
-            send(f"Sheet {sheet_name} not found")
+            raise KeyError({sheet_name})
         message_template_substituted = message_template
         # looking for all placeholders in format [[A1]] and substituting them
         for element in re.findall(r"(\[\[[a-zA-Z]+[0-9]+\]\])", message_template):
