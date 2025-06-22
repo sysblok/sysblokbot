@@ -28,7 +28,7 @@ class FillPostsListFocalboardJob(BaseJob):
 
         registry_posts += FillPostsListFocalboardJob._retrieve_cards_for_registry(
             focalboard_client=app_context.focalboard_client,
-            list_aliases=(TrelloListAlias.PROOFREADING, TrelloListAlias.DONE),
+            list_aliases=(TrelloListAlias.PUBLISHED,),
             all_rubrics=all_rubrics,
             errors=errors,
         )

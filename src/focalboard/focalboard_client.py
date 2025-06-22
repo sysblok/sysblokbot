@@ -144,16 +144,39 @@ class FocalboardClient(Singleton):
         ][0]["id"]
 
     def get_card_due(self, card_id: str):
+        # _, data = self._make_request(f"api/v2/cards/{card_id}")
+        # due_id = self._get_due_property()
+        # due_value = None
+
+        # fields = data["properties"]
+        # for type_id, value in fields.items():
+        #     if type_id == due_id:
+        #         due_value = value
+        # due_value_dict = ast.literal_eval(due_value)
+        # return due_value_dict.get("from", [])
         _, data = self._make_request(f"api/v2/cards/{card_id}")
         due_id = self._get_due_property()
-        due_value = None
 
-        fields = data["properties"]
-        for type_id, value in fields.items():
-            if type_id == due_id:
-                due_value = value
-        due_value_dict = ast.literal_eval(due_value)
-        return due_value_dict.get("from", [])
+        # Сначала вытащим raw-значение
+        fields = data.get("properties", {})
+        due_value = fields.get(due_id)
+
+        # Если его нет или он пустой — сразу возвращаем None
+        if not due_value:
+            logger.debug(f"No due_value for card {card_id}, skipping literal_eval")
+            return None
+
+        # Попытка распарсить строку в dict
+        try:
+            due_value_dict = ast.literal_eval(due_value)
+        except (ValueError, SyntaxError) as e:
+            logger.error(
+                f"Malformed due_value for card {card_id}: {due_value!r}", exc_info=e
+            )
+            return None
+
+        # Вернём поле "from" (timestamp в мс)
+        return due_value_dict.get("from", None)
 
     def _get_member_property(self, board_id):
         _, data = self._make_request("api/v2/teams/0/boards")
