@@ -143,30 +143,15 @@ class FocalboardClient(Singleton):
             if prop["name"] == "Дедлайн"
         ][0]["id"]
 
-    # def get_card_due(self, card_id: str):
-    #     _, data = self._make_request(f"api/v2/cards/{card_id}")
-    #     due_id = self._get_due_property()
-    #     due_value = None
-
-    #     fields = data["properties"]
-    #     for type_id, value in fields.items():
-    #         if type_id == due_id:
-    #             due_value = value
-    #     due_value_dict = ast.literal_eval(due_value)
-    #     return due_value_dict.get("from", [])
     def get_card_due(self, card_id: str, board_id: str) -> Optional[datetime]:
-        # 1) Получаем всю карточку
-        _, data = self._make_request(f"api/v2/cards/{card_id}")
 
-        # 2) Определяем ID свойства due-даты, передав board_id
+        _, data = self._make_request(f"api/v2/cards/{card_id}")
         due_id = self._get_due_property(board_id)
 
-        # 3) Извлекаем «сырое» значение поля
         raw = data["properties"].get(due_id)
         if not raw:
             return None
 
-        # 4) Парсим JSON и берём «to» (конец диапазона)
         try:
             payload = json.loads(raw)
         except json.JSONDecodeError:
@@ -175,12 +160,10 @@ class FocalboardClient(Singleton):
 
         ts_ms = payload.get("to")
         if not ts_ms:
-            # можно попробовать брать начало диапазона:
             ts_ms = payload.get("from")
             if not ts_ms:
                 return None
 
-        # 5) Приводим миллисекунды к datetime
         return datetime.fromtimestamp(ts_ms / 1000)
 
     def _get_member_property(self, board_id):
