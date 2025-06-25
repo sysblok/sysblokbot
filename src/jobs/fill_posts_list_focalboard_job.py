@@ -84,11 +84,10 @@ class FillPostsListFocalboardJob(BaseJob):
             is_main_post = load("common_trello_label__main_post") in label_names
             is_archive_post = load("common_trello_label__archive") in label_names
 
-            card_due = focalboard_client.get_card_due(card.id)
-            card.due = (
-                datetime.datetime.fromtimestamp(card_due / 1000) if card_due else None
+            # card_due = focalboard_client.get_card_due(card.id)
+            card.due = focalboard_client.get_card_due(
+                card.id, focalboard_client.board_id
             )
-
             card_is_ok = check_trello_card(
                 card,
                 errors,
