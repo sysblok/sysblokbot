@@ -26,4 +26,15 @@ jobs:
           pip install pre-commit
 
       - name: Run pre-commit
+        id: precommit
+        continue-on-error: true
         run: pre-commit run --all-files
+
+      - name: Show instructions if pre-commit failed
+        if: steps.precommit.outcome == 'failure'
+        run: |
+          echo "❌ Pre-commit checks failed!"
+          echo "💡 Please run 'pre-commit install' locally and fix the issues by running:"
+          echo "    pre-commit run --all-files"
+          echo "✅ Then commit the changes and push again."
+          exit 1
