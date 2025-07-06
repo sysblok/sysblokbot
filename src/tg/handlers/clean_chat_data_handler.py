@@ -1,6 +1,5 @@
 import logging
 
-from ...strings import load
 from .utils import admin_only, reply
 
 logger = logging.getLogger(__name__)

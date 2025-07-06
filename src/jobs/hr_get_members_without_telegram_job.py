@@ -1,9 +1,7 @@
 import logging
 import re
-from typing import Callable, List
+from typing import Callable
 
-from sheetfu import Table
-from sheetfu.modules.table import Item
 
 from ..app_context import AppContext
 from ..roles.roles import Roles

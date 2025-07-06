@@ -25,7 +25,7 @@ class TrelloGetArticlesRubricJob(BaseJob):
         send: Callable[[str], None],
         called_from_handler=False,
         *args,
-        **kwargs
+        **kwargs,
     ):
         paragraphs = []
         if called_from_handler:

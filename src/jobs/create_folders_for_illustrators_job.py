@@ -37,6 +37,10 @@ class CreateFoldersForIllustratorsJob(BaseJob):
                 TrelloListAlias.EDITED_SOMETIMES,
                 TrelloListAlias.EDITED_NEXT_WEEK,
                 TrelloListAlias.TO_SEO_EDITOR,
+                TrelloListAlias.IN_PROGRESS,
+                TrelloListAlias.TO_EDITOR,
+                TrelloListAlias.PROOFREADING,
+                TrelloListAlias.DONE,
             ),
         )
 

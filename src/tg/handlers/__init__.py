@@ -18,7 +18,6 @@ from .enroll_curator_handler import enroll_curator
 
 # Error handler
 from .error_handler import error
-from .get_board_credentials_handler import get_board_credentials
 from .get_chat_data_handler import get_chat_data
 from .get_chat_id_handler import get_chat_id_handler as get_chat_id
 from .get_managers_handler import get_managers
@@ -26,6 +25,7 @@ from .get_members_for_role_handler import get_members_for_role
 
 # Admin (developer) handlers
 from .get_roles_for_member_handler import get_roles_for_member
+from .get_rubrics_handler import get_rubrics
 from .get_tasks_report_handler import (
     get_tasks_report,
     get_tasks_report_advanced,

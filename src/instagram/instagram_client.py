@@ -1,13 +1,11 @@
 import logging
 from datetime import datetime
-from enum import Enum
 from typing import List, Tuple
 from urllib.parse import parse_qs, urlparse
 
 import dateutil.parser as dateparser
 import requests
 
-from ..consts import ReportPeriod
 from ..utils.singleton import Singleton
 from .instagram_objects import InstagramMedia, InstagramPage
 

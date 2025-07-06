@@ -38,7 +38,7 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
                         level=ERROR,
                         pathname=None,
                         lineno=-1,
-                        msg=f"Could not send error to telegram",
+                        msg="Could not send error to telegram",
                         args=None,
                         exc_info=e,
                     )
@@ -59,7 +59,7 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
                         level=ERROR,
                         pathname=None,
                         lineno=-1,
-                        msg=f"Could not send error to telegram",
+                        msg="Could not send error to telegram",
                         args=None,
                         exc_info=e,
                     )
