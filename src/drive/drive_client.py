@@ -3,7 +3,7 @@ import json
 import logging
 import re
 from typing import List
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin
 
 # https://developers.google.com/analytics/devguides/config/mgmt/v3/quickstart/service-py
 from apiclient.discovery import build

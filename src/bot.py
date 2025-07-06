@@ -10,7 +10,6 @@ from telegram.ext import (
     CommandHandler,
     MessageHandler,
     PicklePersistence,
-    Updater,
     filters,
 )
 

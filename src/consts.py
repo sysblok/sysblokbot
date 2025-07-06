@@ -14,7 +14,7 @@ USAGE_LOG_LEVEL = (WARNING + INFO) / 2
 MESSAGE_DELAY_SEC = 0.1
 
 COMMIT_URL = (
-    f'https://github.com/sysblok/sysblokbot/commit/{os.environ.get("COMMIT_HASH")}'
+    f"https://github.com/sysblok/sysblokbot/commit/{os.environ.get('COMMIT_HASH')}"
 )
 COMMIT_HASH = os.environ.get("COMMIT_HASH_SHORT")
 UPTRACE_DSN = os.environ.get("UPTRACE_DSN")

@@ -1,14 +1,9 @@
-from typing import List
-
 import pytest
 from freezegun import freeze_time
 
 from src import jobs
 from src.app_context import AppContext
-from src.config_manager import ConfigManager
 from src.strings import load
-from src.tg.sender import TelegramSender
-from src.trello.trello_client import TrelloClient
 
 
 @freeze_time("2020-05-01 11:59:00")

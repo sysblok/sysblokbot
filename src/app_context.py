@@ -3,7 +3,6 @@ import logging
 from .analytics.api_facebook_analytics import ApiFacebookAnalytics
 from .analytics.api_instagram_analytics import ApiInstagramAnalytics
 from .config_manager import ConfigManager
-from .consts import TRELLO_CONFIG
 from .db.db_client import DBClient
 from .drive.drive_client import GoogleDriveClient
 from .facebook.facebook_client import FacebookClient

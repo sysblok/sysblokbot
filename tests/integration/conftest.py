@@ -1,8 +1,6 @@
 import asyncio
 import json
 import os
-import re
-from typing import List
 
 import pytest
 from pytest_report import PytestReport, PytestTestStatus
@@ -71,8 +69,8 @@ async def report_test_result(passed: bool):
                 message = "\n".join(
                     [f"{telegram_bot_mention} разломан.", "Сломались команды:"]
                     + [
-                        f'{test["cmd"]}{telegram_bot_mention}\n'
-                        f'{test["exception_class"]}\n{test["exception_message"]}'
+                        f"{test['cmd']}{telegram_bot_mention}\n"
+                        f"{test['exception_class']}\n{test['exception_message']}"
                         for test in PytestReport().data["tests"]
                         if test["status"] == PytestTestStatus.FAILED
                     ]
