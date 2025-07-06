@@ -173,14 +173,14 @@ class SysBlokBot:
 
         self.add_manager_handler(
             "get_rubrics",
-            CommandCategories.SUMMARY,
-            handlers.get_rubrics,
+            CommandCategories.MOST_USED,
+            direct_message_only(handlers.get_rubrics),
             "получить рубрики из доски Редакция",
         )
 
         self.add_manager_handler(
             "get_articles_rubric",
-            CommandCategories.SUMMARY,
+            CommandCategories.DEBUG,  # used to be SUMMARY but hiding for now
             self.manager_reply_handler("trello_get_articles_rubric_job"),
             "получить карточки по названию рубрики в трелло",
         )

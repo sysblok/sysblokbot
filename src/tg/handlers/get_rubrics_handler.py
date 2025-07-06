@@ -8,7 +8,7 @@ from src.strings import load
 from ... import consts
 from ...app_context import AppContext
 from ...consts import PlainTextUserAction
-from .utils import manager_only, reply
+from .utils import manager_only, direct_message_only, reply
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +23,7 @@ TASK_NAME = "get_rubrics"
 
 
 @manager_only
+@direct_message_only
 def get_rubrics(update: Update, tg_context: CallbackContext) -> None:
     logger.info("get_rubrics: start")
     app_context = AppContext()
