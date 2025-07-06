@@ -60,7 +60,7 @@ def retrieve_curator_names_by_author(
         else:
             curators = db_client.find_curators_by_author_trello(trello_id)
     except Exception as e:
-        logger.error(f"Could not retrieve curators by author", exc_info=e)
+        logger.error("Could not retrieve curators by author", exc_info=e)
         return
     if not curators:
         return []
@@ -79,7 +79,7 @@ def retrieve_curator_names_by_categories(labels: List[str], db_client: DBClient)
                 set(db_client.find_curators_by_trello_label(label.name))
             )
     except Exception as e:
-        logger.error(f"Could not retrieve curators by category", exc_info=e)
+        logger.error("Could not retrieve curators by category", exc_info=e)
         return
     if not curators:
         return []
@@ -199,7 +199,7 @@ def retrieve_last_trello_analytics(db_client: DBClient) -> dict:
     try:
         return db_client.get_latest_trello_analytics()
     except Exception as e:
-        logger.error(f"Failed to retrieve statistic", exc_info=e)
+        logger.error("Failed to retrieve statistic", exc_info=e)
 
 
 def retrieve_last_trello_analytics_date(db_client: DBClient) -> datetime.datetime:
@@ -210,7 +210,7 @@ def retrieve_last_trello_analytics_date(db_client: DBClient) -> datetime.datetim
             db_client.get_latest_trello_analytics().date, "%Y-%m-%d"
         )
     except Exception as e:
-        logger.error(f"Failed to retrieve latest statistic date", exc_info=e)
+        logger.error("Failed to retrieve latest statistic date", exc_info=e)
 
 
 def get_no_access_marker(file_url: str, drive_client: GoogleDriveClient) -> str:

@@ -30,7 +30,7 @@ class SheetReportJob(BaseJob):
         *args,
         **kwargs,
     ):
-        logger.info(f'Getting sheet report for: {kwargs.get("name")}')
+        logger.info(f"Getting sheet report for: {kwargs.get('name')}")
         if called_from_handler:
             # TODO: refactor and move it to helper
             schedules = app_context.config_manager.get_jobs_config(

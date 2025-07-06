@@ -1,11 +1,9 @@
-import html
 import logging
 import threading
 import time
 from typing import List
 
 import schedule
-import telegram
 
 from .app_context import AppContext
 from .config_manager import ConfigManager
@@ -54,7 +52,7 @@ class JobScheduler(Singleton):
                     try:
                         schedule.run_pending()
                     except Exception as e:
-                        logger.error(f"Error while running scheduled jobs:", exc_info=e)
+                        logger.error("Error while running scheduled jobs:", exc_info=e)
                     time.sleep(1)
                 return cease_continuous_run
 
@@ -153,7 +151,7 @@ class JobScheduler(Singleton):
 
         if job_func_name == "SheetReportJob":
             job_func_name = (
-                f'{job_func_name} {job.job_func.keywords.get(KWARGS, {}).get("name")}'
+                f"{job_func_name} {job.job_func.keywords.get(KWARGS, {}).get('name')}"
             )
 
         if job_func_name == "TrelloBoardStateNotificationsJob":
@@ -181,7 +179,7 @@ class JobScheduler(Singleton):
     def stop_running(self):
         """Set a stopping event so we can finish last job gracefully"""
         logger.info(
-            ("Scheduler received a signal. " "Will terminate after ongoing jobs end")
+            ("Scheduler received a signal. Will terminate after ongoing jobs end")
         )
         self.stop_run_event.set()
 
