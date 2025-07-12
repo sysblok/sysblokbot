@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_init(mock_db_client):
     pass
 

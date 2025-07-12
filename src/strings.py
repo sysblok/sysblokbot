@@ -1,12 +1,10 @@
 import logging
 from collections import defaultdict
-from typing import List, Tuple
 
 from sqlalchemy import Column, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from . import consts
 from .sheets.sheets_client import GoogleSheetsClient
 from .utils.singleton import Singleton
 
@@ -72,7 +70,7 @@ class StringsDBClient(Singleton):
                 session.add(string)
             session.commit()
         except Exception as e:
-            logger.warning(f"Failed to update string table from sheet", exc_info=e)
+            logger.warning("Failed to update string table from sheet", exc_info=e)
             session.rollback()
             return 0
         return len(strings)
