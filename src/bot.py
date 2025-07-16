@@ -10,7 +10,6 @@ from telegram.ext import (
     CommandHandler,
     MessageHandler,
     PicklePersistence,
-    Updater,
     filters,
 )
 
@@ -171,6 +170,14 @@ class SysBlokBot:
             direct_message_only(handlers.get_tasks_report_focalboard),
             "получить список задач из Focalboard",
         )
+
+        self.add_manager_handler(
+            "get_rubrics",
+            CommandCategories.SUMMARY,
+            handlers.get_rubrics,
+            "получить рубрики из доски Редакция",
+        )
+
         self.add_manager_handler(
             "get_articles_rubric",
             CommandCategories.SUMMARY,
@@ -402,13 +409,6 @@ class SysBlokBot:
         # general purpose cmds
         self.add_admin_handler(
             "start", CommandCategories.DEBUG, handlers.start, "начать чат с ботом"
-        )
-        self.add_admin_handler(
-            "get_board_credentials",
-            CommandCategories.DEBUG,
-            # CommandCategories.MOST_USED,
-            lambda update, context: handlers.get_board_credentials(update, context),
-            "получить пароль от Focalboard",
         )
         self.add_admin_handler(
             "help",

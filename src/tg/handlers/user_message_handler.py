@@ -5,8 +5,15 @@ from datetime import datetime
 import telegram
 
 from ... import consts
-from ...consts import ButtonValues, PlainTextUserAction
+from ...app_context import AppContext
+from ...consts import (
+    ButtonValues,
+    GetTasksReportData,
+    PlainTextUserAction,
+    TrelloListAlias,
+)
 from ...db.db_client import DBClient
+from ...db.db_objects import Reminder
 from ...focalboard.focalboard_client import FocalboardClient
 from ...strings import load
 from ...tg.handlers import get_tasks_report_handler
@@ -14,6 +21,131 @@ from ...trello.trello_client import TrelloClient
 from .utils import get_chat_id, get_chat_name, get_sender_id, reply
 
 logger = logging.getLogger(__name__)
+
+SECTIONS = [
+    ("Идеи для статей", TrelloListAlias.TOPIC_SUGGESTION),
+    ("Готовая тема", TrelloListAlias.TOPIC_READY),
+    ("Уже пишу", TrelloListAlias.IN_PROGRESS, True),
+    ("Передано на редактуру", TrelloListAlias.IN_PROGRESS),
+    ("Проверка качества SEO", TrelloListAlias.TO_SEO_EDITOR),
+    ("На редактуре", TrelloListAlias.TO_EDITOR),
+    ("Отредактировано", TrelloListAlias.EDITED_SOMETIMES),
+    ("Отобрано на финальную проверку", TrelloListAlias.TO_CHIEF_EDITOR),
+    ("Отобрано для публикации", TrelloListAlias.PROOFREADING),
+    ("Готово для вёрстки", TrelloListAlias.DONE),
+]
+
+
+def _generate_rubric_summary(update, rubric_name: str) -> None:
+    try:
+        app_context = AppContext()
+        fc = app_context.focalboard_client
+        labels = fc._get_labels()
+        rubric_label = next(
+            (
+                lbl
+                for lbl in labels
+                if lbl.name.strip().lower() == rubric_name.strip().lower()
+            ),
+            None,
+        )
+        if not rubric_label:
+            logger.warning(
+                f"_generate_rubric_summary: Рубрика не найдена: {rubric_name}"
+            )
+            reply(
+                load(
+                    "rubric_not_found",
+                    rubric_name=rubric_name,
+                ),
+            )
+            return
+
+        # Get all lists
+        try:
+            lists = fc.get_lists(board_id=fc.board_id, sorted=False)
+        except Exception as e:
+            logger.error(
+                f"_generate_rubric_summary: не удалось получить lists: {e}",
+                exc_info=True,
+            )
+            reply(load("failed_get_board_lists"), update)
+            return
+
+        message_parts = [
+            load(
+                "rubric_report_job__intro",
+                rubric=rubric_name,
+            )
+        ]
+
+        had_errors = False
+
+        for column_name, alias, *meta_flag in SECTIONS:
+            need_meta = bool(meta_flag and meta_flag[0])
+            heading = load(alias.value)
+            # Find column
+            target_list = next(
+                (lst for lst in lists if lst.name.strip().startswith(column_name)), None
+            )
+
+            if not target_list:
+                message_parts.append(f"<b>{heading}</b> (0)")
+                message_parts.append("")
+                continue
+
+            try:
+                cards = fc.get_cards(list_ids=[target_list.id], board_id=fc.board_id)
+            except Exception:
+                had_errors = True
+                message_parts.append(f"<b>{heading}</b> (0)")
+                message_parts.append("")
+                continue
+
+            filtered = [
+                card
+                for card in cards
+                if any(lbl.id == rubric_label.id for lbl in card.labels)
+            ]
+
+            filtered.sort(key=lambda c: c.due or datetime.max)
+
+            count = len(filtered)
+            message_parts.append(f"<b>{heading}</b> ({count})")
+
+            if not filtered:
+                message_parts.append("(пусто)")
+            else:
+                for card in filtered:
+                    link = f'<a href="{card.url}">{card.name}</a>'
+                    if need_meta:
+                        due_str = (
+                            card.due.strftime("%d.%m.%Y") if card.due else "без срока"
+                        )
+                        try:
+                            fields = fc.get_custom_fields(card.id)
+                            authors = (
+                                ", ".join(fields.authors)
+                                if fields.authors
+                                else "неизвестно"
+                            )
+                        except Exception:
+                            authors = "неизвестно"
+                            message_parts.append(f"- {link}")
+                            message_parts.append(f"  • Дедлайн: {due_str}")
+                            message_parts.append(f"  • Автор: {authors}")
+                    else:
+                        message_parts.append(f"- {link}")
+
+            message_parts.append("")
+
+        if had_errors:
+            message_parts.append(load("partial_data_error "))
+
+        reply("\n".join(message_parts), update, parse_mode="HTML")
+
+    except Exception:
+        reply(load("failed_try_later"), update)
 
 
 def handle_callback_query(
@@ -26,6 +158,85 @@ def handle_callback_query(
     handle_user_message(update, tg_context, ButtonValues(update.callback_query.data))
 
 
+# helper to avoid code duplication
+def _show_reminder_edit_options(
+    reminder: Reminder, update: telegram.Update, command_data: dict
+):
+    """
+    Shows the menu with options to edit a specific reminder.
+    """
+    # keyboard for edit
+    button_list = [
+        [
+            telegram.InlineKeyboardButton(
+                load("manage_reminders_handler__edit_text_btn"),
+                callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__TEXT.value,
+            )
+        ],
+        [
+            telegram.InlineKeyboardButton(
+                load("manage_reminders_handler__edit_datetime_btn"),
+                callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__DATETIME.value,
+            )
+        ],
+        [
+            telegram.InlineKeyboardButton(
+                load("manage_reminders_handler__edit_title_btn"),
+                callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__TITLE.value,
+            )
+        ],
+        [
+            telegram.InlineKeyboardButton(
+                load("manage_reminders_handler__edit_chat_btn"),
+                callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__CHAT.value,
+            )
+        ],
+        [
+            (
+                telegram.InlineKeyboardButton(
+                    load("manage_reminders_handler__edit_suspend_btn"),
+                    callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__SUSPEND.value,
+                )
+                if reminder.is_active
+                else telegram.InlineKeyboardButton(
+                    load("manage_reminders_handler__edit_resume_btn"),
+                    callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__RESUME.value,
+                )
+            )
+        ],
+        [
+            (
+                telegram.InlineKeyboardButton(
+                    load("manage_reminders_handler__edit_poll_active_btn"),
+                    callback_data=ButtonValues.MANAGE_REMINDERS__DISABLE_POLL.value,
+                )
+                if reminder.send_poll
+                else telegram.InlineKeyboardButton(
+                    load("manage_reminders_handler__edit_poll_inactive_btn"),
+                    callback_data=ButtonValues.MANAGE_REMINDERS__ENABLE_POLL.value,
+                )
+            )
+        ],
+    ]
+    reply_markup = telegram.InlineKeyboardMarkup(button_list)
+    weekday_str = (
+        calendar.TextCalendar().formatweekday(int(reminder.weekday), 15).strip()
+    )
+    reply(
+        load(
+            "manage_reminders_handler__weekly_reminder",
+            weekday=weekday_str,
+            time=reminder.time,
+            text=reminder.text,
+        ),
+        update,
+        reply_markup=reply_markup,
+    )
+    set_next_action(
+        command_data, PlainTextUserAction.MANAGE_REMINDERS__CHOOSE_EDIT_ACTION
+    )
+
+
 def handle_user_message(
     update: telegram.Update,
     tg_context: telegram.ext.CallbackContext,
@@ -35,17 +246,42 @@ def handle_user_message(
     Determines the last command for the user, its current state and responds accordingly
     """
     command_id = tg_context.chat_data.get(consts.LAST_ACTIONABLE_COMMAND)
+    # to understand what kind of data currently expected from user
     if not command_id:
         return
     command_data = tg_context.chat_data.get(command_id, {})
     tg_context.chat_data[command_id] = command_data
-    # to understand what kind of data currently expected from user
     next_action = command_data.get(consts.NEXT_ACTION)
     if not next_action:
         # last action for a command was successfully executed and nothing left to do
         return
     next_action = PlainTextUserAction(next_action)
     user_input = update.message.text.strip() if update.message is not None else None
+
+    if next_action == PlainTextUserAction.GET_RUBRICS__CHOOSE_RUBRIC:
+        try:
+            idx = int(user_input) - 1
+            rubrics = command_data.get(
+                GetTasksReportData.LISTS
+            ) or tg_context.chat_data.get("available_rubrics", [])
+            if not (0 <= idx < len(rubrics)):
+                raise ValueError
+        except Exception:
+            reply(
+                load(
+                    "invalid_rubric_number",
+                    max=len(rubrics),
+                ),
+                update,
+            )
+            return
+
+        selected = rubrics[idx]
+        _generate_rubric_summary(update, selected)
+
+        tg_context.chat_data.pop(consts.LAST_ACTIONABLE_COMMAND, None)
+        tg_context.chat_data.pop(command_id, None)
+        return
 
     # Below comes a long switch of possible next_action.
     # Following conventions are used:
@@ -210,9 +446,30 @@ def handle_user_message(
         add_labels = button == ButtonValues.GET_TASKS_REPORT__LABELS__YES
         handle_task_report(command_data, add_labels, update)
     elif next_action == PlainTextUserAction.MANAGE_REMINDERS__CHOOSE_ACTION:
+        # If user sends a number, interpret it as a shortcut to edit that reminder
+        if user_input and user_input.isdigit():
+            reminder_ids = command_data.get(
+                consts.ManageRemindersData.EXISTING_REMINDERS, []
+            )
+            try:
+                assert 0 < int(user_input) <= len(reminder_ids)
+                reminder_id, _, _ = reminder_ids[int(user_input) - 1]
+            except Exception:
+                reply(load("manage_reminders_handler__reminder_number_bad"), update)
+                return
+
+            command_data[consts.ManageRemindersData.ACTION_TYPE] = (
+                ButtonValues.MANAGE_REMINDERS__ACTIONS__EDIT
+            )
+            command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID] = reminder_id
+            reminder = DBClient().get_reminder_by_id(reminder_id)
+            _show_reminder_edit_options(reminder, update, command_data)
+            return
+
         if button is None:
             reply(load("user_message_handler__press_button_please"), update)
             return
+
         if button == ButtonValues.MANAGE_REMINDERS__ACTIONS__NEW:
             reply(load("manager_reminders_handler__enter_chat_id"), update)
             set_next_action(
@@ -277,76 +534,7 @@ def handle_user_message(
             )
         elif action == ButtonValues.MANAGE_REMINDERS__ACTIONS__EDIT:
             reminder = DBClient().get_reminder_by_id(reminder_id)
-            # keyboard for edit
-            button_list = [
-                [
-                    telegram.InlineKeyboardButton(
-                        load("manage_reminders_handler__edit_text_btn"),
-                        callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__TEXT.value,
-                    )
-                ],
-                [
-                    telegram.InlineKeyboardButton(
-                        load("manage_reminders_handler__edit_datetime_btn"),
-                        callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__DATETIME.value,
-                    )
-                ],
-                [
-                    telegram.InlineKeyboardButton(
-                        load("manage_reminders_handler__edit_title_btn"),
-                        callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__TITLE.value,
-                    )
-                ],
-                [
-                    telegram.InlineKeyboardButton(
-                        load("manage_reminders_handler__edit_chat_btn"),
-                        callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__CHAT.value,
-                    )
-                ],
-                [
-                    (
-                        telegram.InlineKeyboardButton(
-                            load("manage_reminders_handler__edit_suspend_btn"),
-                            callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__SUSPEND.value,
-                        )
-                        if reminder.is_active
-                        else telegram.InlineKeyboardButton(
-                            load("manage_reminders_handler__edit_resume_btn"),
-                            callback_data=ButtonValues.MANAGE_REMINDERS__EDIT__RESUME.value,
-                        )
-                    )
-                ],
-                [
-                    (
-                        telegram.InlineKeyboardButton(
-                            load("manage_reminders_handler__edit_poll_active_btn"),
-                            callback_data=ButtonValues.MANAGE_REMINDERS__DISABLE_POLL.value,
-                        )
-                        if reminder.send_poll
-                        else telegram.InlineKeyboardButton(
-                            load("manage_reminders_handler__edit_poll_inactive_btn"),
-                            callback_data=ButtonValues.MANAGE_REMINDERS__ENABLE_POLL.value,
-                        )
-                    )
-                ],
-            ]
-            reply_markup = telegram.InlineKeyboardMarkup(button_list)
-            weekday_str = (
-                calendar.TextCalendar().formatweekday(int(reminder.weekday), 15).strip()
-            )
-            reply(
-                load(
-                    "manage_reminders_handler__weekly_reminder",
-                    weekday=weekday_str,
-                    time=reminder.time,
-                    text=reminder.text,
-                ),
-                update,
-                reply_markup=reply_markup,
-            )
-            set_next_action(
-                command_data, PlainTextUserAction.MANAGE_REMINDERS__CHOOSE_EDIT_ACTION
-            )
+            _show_reminder_edit_options(reminder, update, command_data)
         else:
             logger.error(f'Bad reminder action "{action}"')
     elif next_action == PlainTextUserAction.MANAGE_REMINDERS__CHOOSE_EDIT_ACTION:

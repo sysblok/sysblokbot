@@ -1,4 +1,4 @@
-﻿import datetime
+import datetime
 import logging
 from typing import Callable, Tuple
 

@@ -36,7 +36,7 @@ def help(update, tg_context, handlers_info: dict):
     if not message.strip():
         message = load("help__no_commands")
     else:
-        message = f'{load("help__commands_list")}\n\n{message}'
+        message = f"{load('help__commands_list')}\n\n{message}"
     reply(message, update)
 
 
