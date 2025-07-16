@@ -1,9 +1,7 @@
 import calendar
 import logging
-from datetime import datetime
-
 import telegram
-
+from datetime import datetime
 from ... import consts
 from ...app_context import AppContext
 from ...consts import (
@@ -26,7 +24,7 @@ SECTIONS = [
     ("Идеи для статей", TrelloListAlias.TOPIC_SUGGESTION),
     ("Готовая тема", TrelloListAlias.TOPIC_READY),
     ("Уже пишу", TrelloListAlias.IN_PROGRESS, True),
-    ("Передано на редактуру", TrelloListAlias.IN_PROGRESS),
+    ("Передано на редактуру", TrelloListAlias.EDITED_NEXT_WEEK),
     ("Проверка качества SEO", TrelloListAlias.TO_SEO_EDITOR),
     ("На редактуре", TrelloListAlias.TO_EDITOR),
     ("Отредактировано", TrelloListAlias.EDITED_SOMETIMES),
