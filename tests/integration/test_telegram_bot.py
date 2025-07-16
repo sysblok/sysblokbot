@@ -1,13 +1,9 @@
 import asyncio
-import os
 import time
-from typing import List
 
 import nest_asyncio
 import pytest
-from conftest import telegram_bot_name
 from pytest_report import PytestReport, PytestTestStatus
-from telethon import TelegramClient
 from telethon.tl.custom.message import Message
 
 

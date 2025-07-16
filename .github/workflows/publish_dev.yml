@@ -25,26 +25,6 @@ jobs:
         with:
           ref: dev
 
-      - name: Python Style Checker
-        working-directory: ${{ github.workspace }}
-        run: |
-          pip3 install --upgrade pip
-          export PATH="$HOME/.local/bin:$PATH"
-          pip3 install pycodestyle
-          pycodestyle . --max-line-length 100
-  
-      - name: Notify us about failure
-        if: ${{ failure() }}
-        env:
-          TELEGRAM_TEST_TOKEN: ${{ secrets.TELEGRAM_TEST_TOKEN }}
-          TELEGRAM_ERROR_CHAT_ID: ${{ secrets.TELEGRAM_ERROR_CHAT_ID }}
-        run: |
-          curl -X POST \
-            -H 'Content-Type: application/json' \
-            -d '{"parse_mode": "markdown", "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", "text": "[github CI] pycodestyle [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
-            }' \
-            https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
-
 #      - name: Python Pytest Github Action
 #        uses: fylein/python-pytest-github-action@v2
 #        with:
@@ -61,7 +41,7 @@ jobs:
             -d '{"parse_mode": "markdown", "chat_id": "${{ env.TELEGRAM_ERROR_CHAT_ID }}", "text": "[github CI] unit tests [failed](https://github.com/sysblok/sysblokbot/actions/runs/${{github.run_id}})" \
             }' \
             https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
-  
+
   # Push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
   push:

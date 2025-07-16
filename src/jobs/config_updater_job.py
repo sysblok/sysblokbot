@@ -84,7 +84,7 @@ class ConfigUpdaterJob(BaseJob):
                 )
                 send(load("config_updater_job__config_changed"))
             except Exception as e:
-                send(f"Failed to update config", exc_info=e)
+                send("Failed to update config", exc_info=e)
         else:
             logger.info("No config changes detected")
             send(load("config_updater_job__config_not_changed"))

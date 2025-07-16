@@ -3,7 +3,7 @@ import json
 import logging
 from datetime import datetime
 from typing import List
-from urllib.parse import quote, urljoin
+from urllib.parse import urljoin
 
 import requests
 

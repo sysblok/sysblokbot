@@ -2,7 +2,7 @@ import datetime
 from typing import Tuple
 
 from ..app_context import AppContext
-from ..consts import TrelloCardColor, TrelloListAlias
+from ..consts import TrelloListAlias
 from ..strings import load
 from ..trello.trello_objects import TrelloCard
 

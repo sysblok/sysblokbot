@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import Callable, Iterable, List
+from typing import Iterable, List
 
 import telegram
 
@@ -140,7 +140,7 @@ def _format_card(card: TrelloCard, need_label: bool) -> str:
     labels_text = ""
     if need_label and card.labels:
         labels = [f'"{label.name}"' for label in card.labels]
-        labels_text = f'({", ".join(labels)})'
+        labels_text = f"({', '.join(labels)})"
     return (
         load(
             "get_tasks_report_handler__card",

@@ -1,7 +1,4 @@
 import logging
-from typing import List
-
-import telegram
 from telegram import Update
 from telegram.ext import CallbackContext
 
