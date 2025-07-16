@@ -1,9 +1,7 @@
 import calendar
 import logging
-from datetime import datetime
-
 import telegram
-
+from datetime import datetime
 from ... import consts
 from ...app_context import AppContext
 from ...consts import (
@@ -18,7 +16,6 @@ from ...focalboard.focalboard_client import FocalboardClient
 from ...strings import load
 from ...tg.handlers import get_tasks_report_handler
 from ...trello.trello_client import TrelloClient
-from .get_rubrics_handler import TASK_NAME
 from .utils import get_chat_id, get_chat_name, get_sender_id, reply
 
 logger = logging.getLogger(__name__)
@@ -120,7 +117,6 @@ def _generate_rubric_summary(update, rubric_name: str) -> None:
                 for card in filtered:
                     link = f'<a href="{card.url}">{card.name}</a>'
                     if need_meta:
-
                         due_str = (
                             card.due.strftime("%d.%m.%Y") if card.due else "без срока"
                         )
@@ -137,7 +133,6 @@ def _generate_rubric_summary(update, rubric_name: str) -> None:
                             message_parts.append(f"  • Дедлайн: {due_str}")
                             message_parts.append(f"  • Автор: {authors}")
                     else:
-
                         message_parts.append(f"- {link}")
 
             message_parts.append("")
@@ -148,7 +143,6 @@ def _generate_rubric_summary(update, rubric_name: str) -> None:
         reply("\n".join(message_parts), update, parse_mode="HTML")
 
     except Exception:
-
         reply(load("failed_try_later"), update)
 
 
