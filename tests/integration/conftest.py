@@ -1,19 +1,21 @@
 import asyncio
 import json
 import os
+import logging
 
 import pytest
 from pytest_report import PytestReport, PytestTestStatus
 from telethon import TelegramClient
 from telethon.sessions import StringSession
 
-from src.utils.singleton import Singleton
+from src.config_manager import ConfigManager
 
-if os.path.exists("config_override_integration_tests.json"):
-    with open("config_override_integration_tests.json") as config_override:
-        config = json.load(config_override)["telegram"]
-else:
-    config = json.loads(os.environ["CONFIG_OVERRIDE"])["telegram"]
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+config_manager = ConfigManager("./config.json", "./config_override_integration_tests.json")
+config_manager.load_config_with_override()
+config = config_manager.get_telegram_config()
 
 api_id = int(config["api_id"])
 api_hash = config["api_hash"]
@@ -21,66 +23,67 @@ api_session = config["api_session"]
 telegram_chat_id = int(config["error_logs_recipients"][0])
 telegram_bot_name = config.get("handle", "")
 
-
-class WrappedTelegramClientAsync(Singleton):
-    def __init__(self):
-        self.client = TelegramClient(
-            StringSession(api_session), api_id, api_hash, sequential_updates=True
-        )
-
-    async def __aenter__(self):
-        await self.client.connect()
-        await self.client.get_me()
-        return self.client
-
-    async def __aexit__(self, exc_t, exc_v, exc_tb):
-        await self.client.disconnect()
-        await self.client.disconnected
-
-
-@pytest.fixture(scope="session")
-async def telegram_client() -> TelegramClient:
-    async with WrappedTelegramClientAsync() as client:
-        yield client
-
-
-@pytest.fixture(scope="session")
-async def conversation(telegram_client):
-    async with telegram_client.conversation(telegram_bot_name) as conv:
-        yield conv
-
+@pytest.fixture(scope="function")
+async def conversation():
+    """
+    Provides a completely fresh Telegram client and conversation for each test function.
+    """
+    client = TelegramClient(StringSession(api_session), api_id, api_hash, sequential_updates=True)
+    await client.connect()
+    try:
+        bot_entity = await client.get_entity(telegram_bot_name)
+        async with client.conversation(bot_entity, timeout=10) as conv:
+            yield conv
+    finally:
+        await client.disconnect()
 
 def pytest_sessionfinish(session, exitstatus):
-    passed = exitstatus == pytest.ExitCode.OK
-    print("\nrun status code:", exitstatus)
+    passed = exitstatus == 0
+    logger.info(f"Pytest session finished with status code: {exitstatus}")
     PytestReport().mark_finish()
-    asyncio.run(report_test_result(passed))
+    try:
+        asyncio.run(report_test_result(passed))
+    except Exception:
+        logger.error("FATAL: Could not send test report to Telegram.", exc_info=True)
 
 
 async def report_test_result(passed: bool):
-    async with WrappedTelegramClientAsync() as client:
-        async with client.conversation(telegram_chat_id, timeout=30) as conv:
-            telegram_bot_mention = (
-                f"@{telegram_bot_name}" if telegram_bot_name else "Бот"
+    """
+    Sends the test report using a new, completely isolated client.
+    """
+    report_client = TelegramClient(StringSession(api_session), api_id, api_hash)
+    try:
+        await report_client.connect()
+        report_chat_entity = await report_client.get_entity(telegram_chat_id)
+        
+        telegram_bot_mention = f"@{telegram_bot_name}"
+        
+        report_path = "./integration_test_report.txt"
+        with open(report_path, "w", encoding="utf-8") as f:
+            json.dump(PytestReport().data, f, indent=4, ensure_ascii=False)
+
+        if passed:
+            caption = f"{telegram_bot_mention} протестирован. Все тесты пройдены успешно."
+            await report_client.send_file(report_chat_entity, report_path, caption=caption)
+        else:
+            caption = f"{telegram_bot_mention} разломан. Подробности в файле и в сообщении ниже."
+            
+            failure_details = "\n".join(
+                ["Сломались тесты:"]
+                + [
+                    f'\n--- FAIL: {test["cmd"]}\n'
+                    f'-> {test["exception_class"]}\n'
+                    f'-> {test["exception_message"]}'
+                    for test in PytestReport().data.get("tests", [])
+                    if test.get("status") == PytestTestStatus.FAILED
+                ]
             )
-            if passed:
-                message = f"{telegram_bot_mention} протестирован."
-            else:
-                message = "\n".join(
-                    [f"{telegram_bot_mention} разломан.", "Сломались команды:"]
-                    + [
-                        f"{test['cmd']}{telegram_bot_mention}\n"
-                        f"{test['exception_class']}\n{test['exception_message']}"
-                        for test in PytestReport().data["tests"]
-                        if test["status"] == PytestTestStatus.FAILED
-                    ]
-                )
-            with open("./integration_test_report.txt", "w") as integration_test_report:
-                json.dump(
-                    PytestReport().data,
-                    integration_test_report,
-                    indent=4,
-                    sort_keys=True,
-                    ensure_ascii=False,
-                )
-            await conv.send_file("./integration_test_report.txt", caption=message)
+            if not failure_details.strip() or len(PytestReport().data.get("tests", [])) == 0:
+                 failure_details = "Детали в логах. Вероятно, тесты не были собраны, или ошибка произошла в фикстуре."
+
+            await report_client.send_file(report_chat_entity, report_path, caption=caption)
+            if failure_details:
+                await report_client.send_message(report_chat_entity, failure_details)
+    finally:
+        if report_client.is_connected():
+            await report_client.disconnect()
