@@ -21,7 +21,6 @@ from .utils import get_chat_id, get_chat_name, get_sender_id, reply
 logger = logging.getLogger(__name__)
 
 SECTIONS = [
-
     ("Идеи для статей", BoardListAlias.TOPIC_SUGGESTION_1),
     ("Готовая тема", BoardListAlias.TOPIC_READY_2),
     ("Уже пишу", BoardListAlias.DRAFT_N_PROGRESS_3, True),
@@ -32,7 +31,6 @@ SECTIONS = [
     ("Отобрано на финальную проверку", BoardListAlias.PENDING_CHIEF_EDITOR_8),
     ("Отобрано для публикации", BoardListAlias.PUBLISH_BACKLOG_9),
     ("Готово для вёрстки", BoardListAlias.PUBLISH_IN_PROGRESS_10),
-
 ]
 
 
