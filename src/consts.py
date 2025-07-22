@@ -101,21 +101,6 @@ class BoardCardColor(Enum):
     UNKNOWN = "unknown"
 
 
-class TrelloListAlias(Enum):
-    TOPIC_SUGGESTION = "trello_list_name__topic_suggestion"
-    TOPIC_READY = "trello_list_name__topic_ready"
-    IN_PROGRESS = "trello_list_name__in_progress"
-    TO_EDITOR = "trello_list_name__to_editor"
-    TO_SEO_EDITOR = "trello_list_name__to_seo_editor"
-    EDITED_NEXT_WEEK = "trello_list_name__edited_next_week"
-    EDITED_SOMETIMES = "trello_list_name__edited_sometimes"
-    TO_CHIEF_EDITOR = "trello_list_name__to_chief_editor"
-    PROOFREADING = "trello_list_name__proofreading"
-    DONE = "trello_list_name__typesetting"
-    PUBLISHED = "trello_list_name__published"
-    BACK_BURNER = "trello_list_name__back_burner"
-
-
 class BoardListAlias(Enum):
     TOPIC_SUGGESTION_1 = "board_list_name__topic_suggestion_1"
     TOPIC_READY_2 = "board_list_name__topic_ready_2"

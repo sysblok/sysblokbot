@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from ..app_context import AppContext
-from ..consts import TrelloListAlias
+from ..consts import BoardListAlias
 from ..db.db_objects import TrelloAnalytics
 from ..strings import load
 from ..utils import card_checks
@@ -35,10 +35,10 @@ class EditorialBoardVisualStatsJob(BaseJob):
                 new_analytics=new_analytics,
                 title=load("editorial_board_stats_job__title_ready_to_issue"),
                 list_aliases=(
-                    TrelloListAlias.EDITED_SOMETIMES,
-                    TrelloListAlias.TO_CHIEF_EDITOR,
-                    TrelloListAlias.PROOFREADING,
-                    TrelloListAlias.DONE,
+                    BoardListAlias.APPROVED_EDITOR_7,
+                    BoardListAlias.PENDING_CHIEF_EDITOR_8,
+                    BoardListAlias.PUBLISH_BACKLOG_9,
+                    BoardListAlias.PUBLISH_IN_PROGRESS_10,
                 ),
                 column_name="ready_to_issue",
             ),
@@ -47,8 +47,8 @@ class EditorialBoardVisualStatsJob(BaseJob):
                 new_analytics=new_analytics,
                 title=load("editorial_board_stats_job__title_editors_check"),
                 list_aliases=(
-                    TrelloListAlias.TO_SEO_EDITOR,
-                    TrelloListAlias.EDITED_NEXT_WEEK,
+                    BoardListAlias.PENDING_SEO_EDITOR_6,
+                    BoardListAlias.PENDING_EDITOR_5,
                 ),
                 column_name="editors_check",
             ),
@@ -56,14 +56,14 @@ class EditorialBoardVisualStatsJob(BaseJob):
                 app_context=app_context,
                 new_analytics=new_analytics,
                 title=load("editorial_board_stats_job__title_waiting_for_editors"),
-                list_aliases=(TrelloListAlias.TO_EDITOR,),
+                list_aliases=(BoardListAlias.DRAFT_COMPLETED_4,),
                 column_name="waiting_for_editors",
             ),
             EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
                 title=load("editorial_board_stats_job__title_expect_this_week"),
-                list_aliases=(TrelloListAlias.IN_PROGRESS,),
+                list_aliases=(BoardListAlias.DRAFT_N_PROGRESS_3,),
                 filter_func=(
                     lambda card: EditorialBoardVisualStatsJob._card_deadline_is_next_week(
                         card, app_context
@@ -75,7 +75,7 @@ class EditorialBoardVisualStatsJob(BaseJob):
                 app_context=app_context,
                 new_analytics=new_analytics,
                 title=load("editorial_board_stats_job__title_deadline_missed"),
-                list_aliases=(TrelloListAlias.IN_PROGRESS,),
+                list_aliases=(BoardListAlias.DRAFT_N_PROGRESS_3,),
                 column_name="deadline_missed",
                 filter_func=lambda card: card_checks.is_deadline_missed(
                     card, app_context
@@ -85,21 +85,21 @@ class EditorialBoardVisualStatsJob(BaseJob):
                 app_context=app_context,
                 new_analytics=new_analytics,
                 title=load("editorial_board_stats_job__title_in_work"),
-                list_aliases=(TrelloListAlias.IN_PROGRESS,),
+                list_aliases=(BoardListAlias.DRAFT_N_PROGRESS_3,),
                 column_name="in_progress",
             ),
             EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
                 title=load("editorial_board_stats_job__title_author_search"),
-                list_aliases=(TrelloListAlias.TOPIC_READY,),
+                list_aliases=(BoardListAlias.TOPIC_READY_2,),
                 column_name="topic_ready",
             ),
             EditorialBoardVisualStatsJob._make_dict_for_category(
                 app_context=app_context,
                 new_analytics=new_analytics,
                 title=load("editorial_board_stats_job__title_pending_approval"),
-                list_aliases=(TrelloListAlias.TOPIC_SUGGESTION,),
+                list_aliases=(BoardListAlias.TOPIC_SUGGESTION_1,),
                 column_name="topic_suggestion",
             ),
         ]

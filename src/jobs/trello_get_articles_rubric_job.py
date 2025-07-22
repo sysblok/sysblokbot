@@ -1,7 +1,7 @@
 from typing import Callable, List
 
 from ..app_context import AppContext
-from ..consts import TrelloListAlias
+from ..consts import BoardListAlias
 from ..strings import load
 from ..tg.sender import pretty_send
 from ..trello.trello_client import TrelloClient
@@ -38,8 +38,11 @@ class TrelloGetArticlesRubricJob(BaseJob):
             rubric_name = kwargs["rubric_name"]
         paragraphs.append(load("rubric_report_job__intro", rubric=rubric_name))
 
-        for alias in TrelloListAlias:
-            if alias not in [TrelloListAlias.BACK_BURNER, TrelloListAlias.PUBLISHED]:
+        for alias in BoardListAlias:
+            if alias not in [
+                BoardListAlias.BACK_BURNER,
+                BoardListAlias.PUBLISH_DONE_11,
+            ]:
                 paragraphs += TrelloGetArticlesRubricJob._get_rubric_paragraphs(
                     app_context=app_context,
                     trello_client=app_context.trello_client,
