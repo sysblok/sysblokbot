@@ -1,6 +1,7 @@
 import ast
 import json
 import logging
+import sqlite3
 from datetime import datetime
 from typing import List
 from urllib.parse import quote, urljoin
@@ -13,6 +14,14 @@ from ..trello import trello_objects as objects
 from ..utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)-8s %(name)s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+# и явно понижает уровень для нужного модуля:
+logging.getLogger("src.focalboard.focalboard_client").setLevel(logging.DEBUG)
 
 
 class FocalboardClient(Singleton):
@@ -384,3 +393,71 @@ class FocalboardClient(Singleton):
         )
         logger.debug(f"{response.url}")
         return response.status_code, response.json()
+
+    def get_boards_for_telegram_user(
+        self, telegram_username: str, db_path: str = "sysblokbot.sqlite"
+    ) -> List[objects.TrelloBoard]:
+        # 0) Normalize incoming username
+        telegram_norm = telegram_username.strip().lstrip("@").lower()
+        logger.debug(f"Normalized incoming telegram_username = {telegram_norm!r}")
+
+        # 1) Try to fetch focalboard‑username from DB
+        try:
+            with sqlite3.connect(db_path) as conn:
+                cur = conn.cursor()
+                cur.execute(
+                    """
+                    SELECT focalboard
+                      FROM team
+                     WHERE lower(trim(replace(telegram, '@', ''))) = ?
+                    """,
+                    (telegram_norm,),
+                )
+                row = cur.fetchone()
+                logger.debug(f"DB lookup for '{telegram_norm}': {row!r}")
+        except sqlite3.Error as e:
+            logger.error("SQLite error fetching team record", exc_info=e)
+            row = None
+
+        # 1.1) Fallback to telegram_norm if no valid DB record
+        raw_focal = (row[0] or "").strip() if row else ""
+        if raw_focal:
+            focal_username = raw_focal.lstrip("@").lower()
+            logger.debug(f"Normalized focalboard username from DB = {focal_username!r}")
+        else:
+            focal_username = telegram_norm
+            logger.warning(
+                f"No team record for telegram={telegram_norm!r}, "
+                f"falling back to telegram username"
+            )
+
+        # 2) Fetch all boards
+        all_boards = self.get_boards_for_user()
+        logger.debug(f"Fetched total {len(all_boards)} boards from Focalboard API")
+
+        # 3) Filter by membership
+        accessible = []
+        for board in all_boards:
+            try:
+                members = self.get_members(board.id)
+            except Exception as e:
+                logger.error(f"Error fetching members for board {board.id}", exc_info=e)
+                continue
+
+            for m in members:
+                candidate = m.username.strip().lstrip("@").lower()
+                logger.debug(
+                    f"Comparing member.username {candidate!r} to focal_username {focal_username!r}"
+                )
+                if candidate == focal_username:
+                    logger.debug(
+                        f"→ matched on board {board.id} (member {m.username!r})"
+                    )
+                    accessible.append(board)
+                    break
+
+        logger.info(
+            f"Accessible boards for '{telegram_norm}' (as '{focal_username}'): "
+            f"{len(accessible)}/{len(all_boards)}"
+        )
+        return accessible

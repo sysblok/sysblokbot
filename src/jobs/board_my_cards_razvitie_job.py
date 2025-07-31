@@ -28,10 +28,13 @@ class BoardMyCardsRazvitieJob(BaseJob):
             )
         )
         # curren
-        focalboard_username = focalboard_username[1:]
+        telegram_username = app_context.current_user.telegram_username
+
         board_id = [
             board.id
-            for board in app_context.focalboard_client.get_boards_for_user()
+            for board in app_context.focalboard_client.get_boards_for_telegram_user(
+                telegram_username
+            )
             if "Развитие" in board.name
         ][0]
         board_all_lists = app_context.focalboard_client.get_lists(board_id, sorted=True)
@@ -39,7 +42,7 @@ class BoardMyCardsRazvitieJob(BaseJob):
         board_list_names = list(map(lambda lst: lst.name, board_all_lists))
         index_of_first_list = board_list_names.index("Список задач")
         index_of_last_list = board_list_names.index("Разделитель")
-        board_lists = board_all_lists[index_of_first_list + 1:index_of_last_list]
+        board_lists = board_all_lists[index_of_first_list + 1 : index_of_last_list]
         paragraphs = []
         for board_list in board_lists:
             cards: list[TrelloCard] = app_context.focalboard_client.get_cards(
