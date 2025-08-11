@@ -28,7 +28,7 @@ class BoardMyCardsRazvitieJob(BaseJob):
             )
         )
         # curren
-        telegram_username = app_context.current_user.telegram_username
+        telegram_username = send.update.message.chat.username
 
         board_id = [
             board.id

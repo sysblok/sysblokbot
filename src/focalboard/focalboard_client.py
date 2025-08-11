@@ -15,14 +15,6 @@ from ..utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)-8s %(name)s %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-# и явно понижает уровень для нужного модуля:
-logging.getLogger("src.focalboard.focalboard_client").setLevel(logging.DEBUG)
-
 
 class FocalboardClient(Singleton):
     def __init__(self, focalboard_config=None):
