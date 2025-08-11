@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 
 import requests
-from sqlalchemy import create_engine, desc
+from sqlalchemy import create_engine, desc, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -402,3 +402,31 @@ class DBClient(Singleton):
         return (
             session.query(TrelloAnalytics).order_by(desc(TrelloAnalytics.date)).first()
         )
+
+    def find_focalboard_username_in_team_by_telegram(
+        self, telegram_username: str
+    ) -> Optional[str]:
+
+        session = self.Session()
+
+        norm = telegram_username.strip().lstrip("@").lower()
+
+        member = (
+            session.query(TeamMember)
+            .filter(
+                func.lower(func.trim(func.replace(TeamMember.telegram, "@", "")))
+                == norm
+            )
+            .first()
+        )
+
+        if member:
+            logger.debug(
+                f"Нашли focalboard username '{member.focalboard}' для Telegram '{telegram_username}'"
+            )
+            return member.focalboard
+        else:
+            logger.warning(
+                f"Не найден focalboard username для Telegram '{telegram_username}' в team"
+            )
+            return None

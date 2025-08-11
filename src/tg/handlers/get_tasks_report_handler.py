@@ -53,7 +53,7 @@ def _get_task_report_base(
     if use_focalboard:
         tg_user = update.effective_message.from_user.username
         boards_list = app_context.focalboard_client.get_boards_for_telegram_user(
-            tg_user
+            tg_user, db_client=app_context.db_client
         )
     else:
         boards_list = app_context.trello_client.get_boards_for_user()
