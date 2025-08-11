@@ -47,8 +47,8 @@ class EditorialBoardVisualStatsJob(BaseJob):
                 new_analytics=new_analytics,
                 title=load("editorial_board_stats_job__title_editors_check"),
                 list_aliases=(
-                    BoardListAlias.PENDING_SEO_EDITOR_6,
                     BoardListAlias.PENDING_EDITOR_5,
+                    BoardListAlias.PENDING_SEO_EDITOR_6,
                 ),
                 column_name="editors_check",
             ),
