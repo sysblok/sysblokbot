@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from enum import Enum
 from typing import List, Tuple
 from urllib.parse import parse_qs, urlparse
 

@@ -1,0 +1,3 @@
+[lint.per-file-ignores]
+"src/jobs/__init__.py" = ["F401"]
+"src/tg/handlers/__init__.py" = ["F401"]

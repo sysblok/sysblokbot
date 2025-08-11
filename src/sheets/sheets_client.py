@@ -1,6 +1,5 @@
 import logging
-from pprint import pprint
-from typing import Dict, List, Optional
+from typing import Optional
 
 from sheetfu import SpreadsheetApp, Table
 from sheetfu.model import Sheet
@@ -87,7 +86,7 @@ class GoogleSheetsClient(Singleton):
                 new_posts.append(entry.title)
             table.commit()
         except Exception as e:
-            logger.error(f"Failed to update post registry", exc_info=e)
+            logger.error("Failed to update post registry", exc_info=e)
         return new_posts
 
     def fetch_sheet(self, sheet_key: str, sheet_name: Optional[str] = None) -> Sheet:

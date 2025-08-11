@@ -3,7 +3,7 @@ import json
 import logging
 import sqlite3
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from urllib.parse import quote, urljoin
 
 import requests
@@ -145,17 +145,28 @@ class FocalboardClient(Singleton):
             if prop["name"] == "Дедлайн"
         ][0]["id"]
 
-    def get_card_due(self, card_id: str):
-        _, data = self._make_request(f"api/v2/cards/{card_id}")
-        due_id = self._get_due_property()
-        due_value = None
+    def get_card_due(self, card_id: str, board_id: str) -> Optional[datetime]:
 
-        fields = data["properties"]
-        for type_id, value in fields.items():
-            if type_id == due_id:
-                due_value = value
-        due_value_dict = ast.literal_eval(due_value)
-        return due_value_dict.get("from", [])
+        _, data = self._make_request(f"api/v2/cards/{card_id}")
+        due_id = self._get_due_property(board_id)
+
+        raw = data["properties"].get(due_id)
+        if not raw:
+            return None
+
+        try:
+            payload = json.loads(raw)
+        except json.JSONDecodeError:
+            logger.error(f"Cannot parse due field for card {card_id}: {raw}")
+            return None
+
+        ts_ms = payload.get("to")
+        if not ts_ms:
+            ts_ms = payload.get("from")
+            if not ts_ms:
+                return None
+
+        return datetime.fromtimestamp(ts_ms / 1000)
 
     def _get_member_property(self, board_id):
         _, data = self._make_request("api/v2/teams/0/boards")

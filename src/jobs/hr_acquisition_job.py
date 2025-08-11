@@ -43,7 +43,7 @@ class HRAcquisitionJob(BaseJob):
             forms_raw.commit()
             forms_processed.commit()
         except Exception as e:
-            logger.error(f"failed to export data", exc_info=e)
+            logger.error("failed to export data", exc_info=e)
 
         return new_items
 

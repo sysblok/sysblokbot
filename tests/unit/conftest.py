@@ -1,9 +1,7 @@
-import json
 import os
 from typing import Dict, List
 
 import pytest
-from deepdiff import DeepDiff
 from utils.json_loader import JsonLoader
 
 from src.config_manager import ConfigManager
@@ -39,7 +37,6 @@ def mock_config_jobs_manager(monkeypatch):
 @pytest.fixture
 def mock_trello(monkeypatch, mock_config_manager):
     def _make_request(_, uri: str, payload={}) -> (int, Dict):
-
         load_json = JsonLoader(TRELLO_TEST_DIR).load_json
 
         if uri.startswith("boards"):
