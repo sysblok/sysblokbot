@@ -23,7 +23,7 @@ api_session = config["api_session"]
 telegram_chat_id = int(config["error_logs_recipients"][0])
 telegram_bot_name = config.get("handle", "")
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 async def conversation():
     """
     Provides a completely fresh Telegram client and conversation for each test function.
