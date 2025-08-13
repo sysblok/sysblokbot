@@ -7,7 +7,7 @@ from urllib.parse import quote, urljoin
 
 import requests
 
-from ..consts import TrelloCustomFieldTypeAlias, TrelloCustomFieldTypes, TrelloListAlias
+from ..consts import TrelloCustomFieldTypeAlias, TrelloCustomFieldTypes, BoardListAlias
 from ..strings import load
 from ..trello import trello_objects as objects
 from ..utils.singleton import Singleton
@@ -367,7 +367,7 @@ class FocalboardClient(Singleton):
         }
         try:
             lists = self.get_lists()
-            self.lists_config = self._fill_alias_id_map(lists, TrelloListAlias)
+            self.lists_config = self._fill_alias_id_map(lists, BoardListAlias)
             custom_field_types = self.get_board_custom_field_types()
             self.custom_fields_type_config = self._fill_id_type_map(
                 custom_field_types, TrelloCustomFieldTypes

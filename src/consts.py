@@ -101,19 +101,20 @@ class BoardCardColor(Enum):
     UNKNOWN = "unknown"
 
 
-class TrelloListAlias(Enum):
-    TOPIC_SUGGESTION = "trello_list_name__topic_suggestion"
-    TOPIC_READY = "trello_list_name__topic_ready"
-    IN_PROGRESS = "trello_list_name__in_progress"
-    TO_EDITOR = "trello_list_name__to_editor"
-    TO_SEO_EDITOR = "trello_list_name__to_seo_editor"
-    EDITED_NEXT_WEEK = "trello_list_name__edited_next_week"
-    EDITED_SOMETIMES = "trello_list_name__edited_sometimes"
-    TO_CHIEF_EDITOR = "trello_list_name__to_chief_editor"
-    PROOFREADING = "trello_list_name__proofreading"
-    DONE = "trello_list_name__typesetting"
-    PUBLISHED = "trello_list_name__published"
+class BoardListAlias(Enum):
+    TOPIC_SUGGESTION_1 = "board_list_name__topic_suggestion_1"
+    TOPIC_READY_2 = "board_list_name__topic_ready_2"
+    DRAFT_N_PROGRESS_3 = "board_list_name__draft_n_progress_3"
+    DRAFT_COMPLETED_4 = "board_list_name__draft_completed_4"
+    PENDING_SEO_EDITOR_6 = "board_list_name__pending_seo_editor_6"
+    PENDING_EDITOR_5 = "board_list_name__pending_editor_5"
+    APPROVED_EDITOR_7 = "board_list_name__approved_editor_7"
+    PENDING_CHIEF_EDITOR_8 = "board_list_name__pending_chief_editor_8"
+    PUBLISH_BACKLOG_9 = "board_list_name__publish_backlog_9"
+    PUBLISH_IN_PROGRESS_10 = "board_list_name__publish_in_progress_10"
+    PUBLISH_DONE_11 = "board_list_name__publish_done_11"
     BACK_BURNER = "trello_list_name__back_burner"
+    BACK_BURNER_PUBLISHED = "board_list_name__back_burner_published"
 
 
 class TrelloCustomFieldTypeAlias(Enum):

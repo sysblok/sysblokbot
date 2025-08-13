@@ -3,7 +3,7 @@ import logging
 from typing import Callable, List
 
 from ..app_context import AppContext
-from ..consts import BoardCardColor, TrelloCardColor, TrelloListAlias
+from ..consts import BoardCardColor, TrelloCardColor, BoardListAlias
 from ..sheets.sheets_objects import RegistryPost
 from ..strings import load
 from ..tg.sender import pretty_send
@@ -25,7 +25,7 @@ class FillPostsListJob(BaseJob):
 
         registry_posts += FillPostsListJob._retrieve_cards_for_registry(
             trello_client=app_context.trello_client,
-            list_aliases=[TrelloListAlias.PUBLISHED],
+            list_aliases=[BoardListAlias.PUBLISH_DONE_11],
             all_rubrics=all_rubrics,
             errors=errors,
             show_due=True,
@@ -88,7 +88,7 @@ class FillPostsListJob(BaseJob):
                 is_bad_title=(
                     card_fields.title is None
                     and card.lst.id
-                    != trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK]
+                    != trello_client.lists_config[BoardListAlias.PENDING_EDITOR_5]
                 ),
                 is_bad_google_doc=card_fields.google_doc is None,
                 is_bad_authors=len(card_fields.authors) == 0,

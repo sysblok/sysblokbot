@@ -8,7 +8,7 @@ from ...consts import (
     ButtonValues,
     GetTasksReportData,
     PlainTextUserAction,
-    TrelloListAlias,
+    BoardListAlias,
 )
 from ...db.db_client import DBClient
 from ...db.db_objects import Reminder
@@ -21,16 +21,16 @@ from .utils import get_chat_id, get_chat_name, get_sender_id, reply
 logger = logging.getLogger(__name__)
 
 SECTIONS = [
-    ("Идеи для статей", TrelloListAlias.TOPIC_SUGGESTION),
-    ("Готовая тема", TrelloListAlias.TOPIC_READY),
-    ("Уже пишу", TrelloListAlias.IN_PROGRESS, True),
-    ("Передано на редактуру", TrelloListAlias.EDITED_NEXT_WEEK),
-    ("Проверка качества SEO", TrelloListAlias.TO_SEO_EDITOR),
-    ("На редактуре", TrelloListAlias.TO_EDITOR),
-    ("Отредактировано", TrelloListAlias.EDITED_SOMETIMES),
-    ("Отобрано на финальную проверку", TrelloListAlias.TO_CHIEF_EDITOR),
-    ("Отобрано для публикации", TrelloListAlias.PROOFREADING),
-    ("Готово для вёрстки", TrelloListAlias.DONE),
+    ("Идеи для статей", BoardListAlias.TOPIC_SUGGESTION_1),
+    ("Готовая тема", BoardListAlias.TOPIC_READY_2),
+    ("Уже пишу", BoardListAlias.DRAFT_N_PROGRESS_3, True),
+    ("Передано на редактуру", BoardListAlias.DRAFT_COMPLETED_4),
+    ("На редактуре", BoardListAlias.PENDING_EDITOR_5),
+    ("Проверка качества SEO", BoardListAlias.PENDING_SEO_EDITOR_6),
+    ("Отредактировано", BoardListAlias.APPROVED_EDITOR_7),
+    ("Отобрано на финальную проверку", BoardListAlias.PENDING_CHIEF_EDITOR_8),
+    ("Отобрано для публикации", BoardListAlias.PUBLISH_BACKLOG_9),
+    ("Готово для вёрстки", BoardListAlias.PUBLISH_IN_PROGRESS_10),
 ]
 
 

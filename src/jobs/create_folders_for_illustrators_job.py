@@ -8,7 +8,7 @@ from ..consts import (
     BoardCardColor,
     TrelloCardColor,
     TrelloCustomFieldTypeAlias,
-    TrelloListAlias,
+    BoardListAlias,
 )
 from ..strings import load
 from ..tg.sender import pretty_send
@@ -33,14 +33,14 @@ class CreateFoldersForIllustratorsJob(BaseJob):
         result = CreateFoldersForIllustratorsJob._create_folders(
             app_context=app_context,
             list_aliases=(
-                TrelloListAlias.TO_CHIEF_EDITOR,
-                TrelloListAlias.EDITED_SOMETIMES,
-                TrelloListAlias.EDITED_NEXT_WEEK,
-                TrelloListAlias.TO_SEO_EDITOR,
-                TrelloListAlias.IN_PROGRESS,
-                TrelloListAlias.TO_EDITOR,
-                TrelloListAlias.PROOFREADING,
-                TrelloListAlias.DONE,
+                BoardListAlias.DRAFT_N_PROGRESS_3,
+                BoardListAlias.DRAFT_COMPLETED_4,
+                BoardListAlias.PENDING_EDITOR_5,
+                BoardListAlias.PENDING_SEO_EDITOR_6,
+                BoardListAlias.APPROVED_EDITOR_7,
+                BoardListAlias.PENDING_CHIEF_EDITOR_8,
+                BoardListAlias.PUBLISH_BACKLOG_9,
+                BoardListAlias.PUBLISH_IN_PROGRESS_10,
             ),
         )
 
@@ -64,7 +64,7 @@ class CreateFoldersForIllustratorsJob(BaseJob):
     @staticmethod
     def _create_folders(
         app_context: AppContext,
-        list_aliases: List[TrelloListAlias],
+        list_aliases: List[BoardListAlias],
     ) -> List[Tuple[IllustratorFolderState, str]]:
         logger.info("Started counting:")
         if app_context.trello_client.deprecated:
