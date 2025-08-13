@@ -151,7 +151,7 @@ class ConfigManager(Singleton):
                 try:
                     return json.loads(fin.read())
                 except json.JSONDecodeError as e:
-                    logger.exception(f"Failed to decode JSON from '{config_path}'")
+                    logger.error(exc_info=e)
         except IOError:
             logger.warning(f"Config file at {config_path} not found")
 
