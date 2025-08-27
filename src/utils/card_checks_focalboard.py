@@ -2,7 +2,7 @@ import datetime
 from typing import Tuple
 
 from ..app_context import AppContext
-from ..consts import TrelloListAlias
+from ..consts import BoardListAlias
 from ..strings import load
 from ..trello.trello_objects import TrelloCard
 
@@ -25,7 +25,7 @@ def make_card_failure_reasons(card: TrelloCard, app_context: AppContext):
 
 def is_deadline_missed(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dict]:
     list_ids = app_context.focalboard_client.get_list_id_from_aliases(
-        [TrelloListAlias.IN_PROGRESS]
+        [BoardListAlias.DRAFT_N_PROGRESS_3]
     )
     is_missed = (
         card.lst.id in list_ids
@@ -39,7 +39,7 @@ def is_due_date_missing(card: TrelloCard, app_context: AppContext) -> Tuple[bool
     if card.due:
         return False, {}
     list_ids = app_context.focalboard_client.get_list_id_from_aliases(
-        [TrelloListAlias.IN_PROGRESS]
+        [BoardListAlias.DRAFT_N_PROGRESS_3]
     )
     return card.lst.id in list_ids, {}
 
@@ -49,14 +49,14 @@ def is_author_missing(card: TrelloCard, app_context: AppContext) -> Tuple[bool, 
         return False, {}
 
     list_aliases = (
-        TrelloListAlias.IN_PROGRESS,
-        TrelloListAlias.TO_EDITOR,
-        TrelloListAlias.EDITED_NEXT_WEEK,
-        TrelloListAlias.TO_SEO_EDITOR,
-        TrelloListAlias.EDITED_SOMETIMES,
-        TrelloListAlias.TO_CHIEF_EDITOR,
-        TrelloListAlias.PROOFREADING,
-        TrelloListAlias.DONE,
+        BoardListAlias.DRAFT_N_PROGRESS_3,
+        BoardListAlias.DRAFT_COMPLETED_4,
+        BoardListAlias.PENDING_EDITOR_5,
+        BoardListAlias.PENDING_SEO_EDITOR_6,
+        BoardListAlias.APPROVED_EDITOR_7,
+        BoardListAlias.PENDING_CHIEF_EDITOR_8,
+        BoardListAlias.PUBLISH_BACKLOG_9,
+        BoardListAlias.PUBLISH_IN_PROGRESS_10,
     )
     list_ids = app_context.focalboard_client.get_list_id_from_aliases(list_aliases)
     return card.lst.id in list_ids, {}
@@ -67,14 +67,14 @@ def is_tag_missing(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dic
         return False, {}
 
     list_aliases = (
-        TrelloListAlias.IN_PROGRESS,
-        TrelloListAlias.TO_EDITOR,
-        TrelloListAlias.EDITED_NEXT_WEEK,
-        TrelloListAlias.TO_SEO_EDITOR,
-        TrelloListAlias.EDITED_SOMETIMES,
-        TrelloListAlias.TO_CHIEF_EDITOR,
-        TrelloListAlias.PROOFREADING,
-        TrelloListAlias.DONE,
+        BoardListAlias.DRAFT_N_PROGRESS_3,
+        BoardListAlias.DRAFT_COMPLETED_4,
+        BoardListAlias.PENDING_EDITOR_5,
+        BoardListAlias.PENDING_SEO_EDITOR_6,
+        BoardListAlias.APPROVED_EDITOR_7,
+        BoardListAlias.PENDING_CHIEF_EDITOR_8,
+        BoardListAlias.PUBLISH_BACKLOG_9,
+        BoardListAlias.PUBLISH_IN_PROGRESS_10,
     )
     list_ids = app_context.focalboard_client.get_list_id_from_aliases(list_aliases)
     return card.lst.id in list_ids, {}
@@ -82,13 +82,13 @@ def is_tag_missing(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dic
 
 def is_doc_missing(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dict]:
     list_aliases = (
-        TrelloListAlias.TO_EDITOR,
-        TrelloListAlias.EDITED_NEXT_WEEK,
-        TrelloListAlias.TO_SEO_EDITOR,
-        TrelloListAlias.EDITED_SOMETIMES,
-        TrelloListAlias.TO_CHIEF_EDITOR,
-        TrelloListAlias.PROOFREADING,
-        TrelloListAlias.DONE,
+        BoardListAlias.DRAFT_COMPLETED_4,
+        BoardListAlias.PENDING_EDITOR_5,
+        BoardListAlias.PENDING_SEO_EDITOR_6,
+        BoardListAlias.APPROVED_EDITOR_7,
+        BoardListAlias.PENDING_CHIEF_EDITOR_8,
+        BoardListAlias.PUBLISH_BACKLOG_9,
+        BoardListAlias.PUBLISH_IN_PROGRESS_10,
     )
     list_ids = app_context.focalboard_client.get_list_id_from_aliases(list_aliases)
     if card.lst.id not in list_ids:
@@ -100,13 +100,13 @@ def is_doc_missing(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dic
 
 def has_no_doc_access(card: TrelloCard, app_context: AppContext) -> Tuple[bool, dict]:
     list_aliases = (
-        TrelloListAlias.TO_EDITOR,
-        TrelloListAlias.EDITED_NEXT_WEEK,
-        TrelloListAlias.TO_SEO_EDITOR,
-        TrelloListAlias.EDITED_SOMETIMES,
-        TrelloListAlias.TO_CHIEF_EDITOR,
-        TrelloListAlias.PROOFREADING,
-        TrelloListAlias.DONE,
+        BoardListAlias.DRAFT_COMPLETED_4,
+        BoardListAlias.PENDING_EDITOR_5,
+        BoardListAlias.PENDING_SEO_EDITOR_6,
+        BoardListAlias.APPROVED_EDITOR_7,
+        BoardListAlias.PENDING_CHIEF_EDITOR_8,
+        BoardListAlias.PUBLISH_BACKLOG_9,
+        BoardListAlias.PUBLISH_IN_PROGRESS_10,
     )
     list_ids = app_context.focalboard_client.get_list_id_from_aliases(list_aliases)
     if card.lst.id not in list_ids:
