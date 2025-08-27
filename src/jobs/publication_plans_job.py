@@ -3,7 +3,7 @@ import logging
 from typing import Callable, List
 
 from ..app_context import AppContext
-from ..consts import BoardCardColor, TrelloCardColor, TrelloListAlias
+from ..consts import BoardCardColor, BoardListAlias, TrelloCardColor
 from ..strings import load
 from ..tg.sender import pretty_send
 from ..trello.trello_client import TrelloClient
@@ -24,7 +24,10 @@ class PublicationPlansJob(BaseJob):
         paragraphs += PublicationPlansJob._retrieve_cards_for_paragraph(
             trello_client=app_context.trello_client,
             title=load("publication_plans_job__title_publish_this_week"),
-            list_aliases=(TrelloListAlias.PROOFREADING, TrelloListAlias.DONE),
+            list_aliases=(
+                BoardListAlias.PUBLISH_BACKLOG_9,
+                BoardListAlias.PUBLISH_IN_PROGRESS_10,
+            ),
             errors=errors,
             show_due=True,
             strict_archive_rules=True,
@@ -34,8 +37,8 @@ class PublicationPlansJob(BaseJob):
             trello_client=app_context.trello_client,
             title=load("common_report__section_title_editorial_board"),
             list_aliases=(
-                TrelloListAlias.EDITED_NEXT_WEEK,
-                TrelloListAlias.TO_SEO_EDITOR,
+                BoardListAlias.PENDING_EDITOR_5,
+                BoardListAlias.PENDING_SEO_EDITOR_6,
             ),
             errors=errors,
             show_due=False,
@@ -54,7 +57,7 @@ class PublicationPlansJob(BaseJob):
     def _retrieve_cards_for_paragraph(
         trello_client: TrelloClient,
         title: str,
-        list_aliases: List[TrelloListAlias],
+        list_aliases: List[BoardListAlias],
         errors: dict,
         show_due=True,
         need_illustrators=True,
@@ -96,8 +99,8 @@ class PublicationPlansJob(BaseJob):
                     card_fields.title is None
                     and card.lst.id
                     not in (
-                        trello_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK],
-                        trello_client.lists_config[TrelloListAlias.TO_SEO_EDITOR],
+                        trello_client.lists_config[BoardListAlias.PENDING_EDITOR_5],
+                        trello_client.lists_config[BoardListAlias.PENDING_SEO_EDITOR_6],
                     )
                 ),
                 is_bad_illustrators=(

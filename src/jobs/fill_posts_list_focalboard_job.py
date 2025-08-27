@@ -3,7 +3,7 @@ import logging
 from typing import Callable, List
 
 from ..app_context import AppContext
-from ..consts import BoardCardColor, TrelloCardColor, TrelloListAlias
+from ..consts import BoardCardColor, TrelloCardColor, BoardListAlias
 from ..focalboard.focalboard_client import FocalboardClient
 from ..sheets.sheets_objects import RegistryPost
 from ..strings import load
@@ -27,7 +27,12 @@ class FillPostsListFocalboardJob(BaseJob):
 
         registry_posts += FillPostsListFocalboardJob._retrieve_cards_for_registry(
             focalboard_client=app_context.focalboard_client,
-            list_aliases=(TrelloListAlias.PROOFREADING, TrelloListAlias.DONE),
+
+            list_aliases=(
+                BoardListAlias.PUBLISH_BACKLOG_9,
+                BoardListAlias.PUBLISH_IN_PROGRESS_10,
+            ),
+
             all_rubrics=all_rubrics,
             errors=errors,
         )
@@ -83,18 +88,16 @@ class FillPostsListFocalboardJob(BaseJob):
             is_main_post = load("common_trello_label__main_post") in label_names
             is_archive_post = load("common_trello_label__archive") in label_names
 
-            card_due = focalboard_client.get_card_due(card.id)
-            card.due = (
-                datetime.datetime.fromtimestamp(card_due / 1000) if card_due else None
+            card.due = focalboard_client.get_card_due(
+                card.id, focalboard_client.board_id
             )
-
             card_is_ok = check_trello_card(
                 card,
                 errors,
                 is_bad_title=(
                     card_fields.title is None
                     and card.lst.id
-                    != focalboard_client.lists_config[TrelloListAlias.EDITED_NEXT_WEEK]
+                    != focalboard_client.lists_config[BoardListAlias.PENDING_EDITOR_5]
                 ),
                 is_bad_google_doc=card_fields.google_doc is None,
                 is_bad_authors=len(card_fields.authors) == 0,

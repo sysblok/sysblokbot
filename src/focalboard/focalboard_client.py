@@ -1,13 +1,13 @@
-import ast
 import json
 import logging
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from urllib.parse import urljoin
 
 import requests
 
-from ..consts import TrelloCustomFieldTypeAlias, TrelloCustomFieldTypes, TrelloListAlias
+from ..consts import TrelloCustomFieldTypeAlias, TrelloCustomFieldTypes, BoardListAlias
+from ..db import db_client
 from ..strings import load
 from ..trello import trello_objects as objects
 from ..utils.singleton import Singleton
@@ -143,17 +143,27 @@ class FocalboardClient(Singleton):
             if prop["name"] == "Дедлайн"
         ][0]["id"]
 
-    def get_card_due(self, card_id: str):
+    def get_card_due(self, card_id: str, board_id: str) -> Optional[datetime]:
         _, data = self._make_request(f"api/v2/cards/{card_id}")
-        due_id = self._get_due_property()
-        due_value = None
+        due_id = self._get_due_property(board_id)
 
-        fields = data["properties"]
-        for type_id, value in fields.items():
-            if type_id == due_id:
-                due_value = value
-        due_value_dict = ast.literal_eval(due_value)
-        return due_value_dict.get("from", [])
+        raw = data["properties"].get(due_id)
+        if not raw:
+            return None
+
+        try:
+            payload = json.loads(raw)
+        except json.JSONDecodeError:
+            logger.error(f"Cannot parse due field for card {card_id}: {raw}")
+            return None
+
+        ts_ms = payload.get("to")
+        if not ts_ms:
+            ts_ms = payload.get("from")
+            if not ts_ms:
+                return None
+
+        return datetime.fromtimestamp(ts_ms / 1000)
 
     def _get_member_property(self, board_id):
         _, data = self._make_request("api/v2/teams/0/boards")
@@ -356,7 +366,7 @@ class FocalboardClient(Singleton):
         }
         try:
             lists = self.get_lists()
-            self.lists_config = self._fill_alias_id_map(lists, TrelloListAlias)
+            self.lists_config = self._fill_alias_id_map(lists, BoardListAlias)
             custom_field_types = self.get_board_custom_field_types()
             self.custom_fields_type_config = self._fill_id_type_map(
                 custom_field_types, TrelloCustomFieldTypes
@@ -384,3 +394,50 @@ class FocalboardClient(Singleton):
         )
         logger.debug(f"{response.url}")
         return response.status_code, response.json()
+
+    def get_boards_for_telegram_user(
+        self,
+        telegram_username: str,
+        db_client: db_client.DBClient,
+    ) -> List[objects.TrelloBoard]:
+        # 0) Normalize incoming username
+        telegram_norm = telegram_username.strip().lstrip("@").lower()
+
+        raw_focal = db_client.find_focalboard_username_in_team_by_telegram(
+            telegram_username
+        )
+        if raw_focal:
+            focal_username = raw_focal.strip().lstrip("@").lower()
+            logger.info(f"Normalized focalboard username from DB = {focal_username!r}")
+        else:
+            logger.warning(
+                f"No focalboard username found for telegram={telegram_norm!r}. "
+                f"Accessible boards can't be determined. Managers should check and fill the table."
+            )
+
+            return []
+
+        # 2) Fetch all boards
+        all_boards = self.get_boards_for_user()
+
+        # 3) Filter by membership
+        accessible = []
+        for board in all_boards:
+            try:
+                members = self.get_members(board.id)
+            except Exception as e:
+                logger.error(f"Error fetching members for board {board.id}", exc_info=e)
+
+            for m in members:
+                candidate = m.username.strip().lstrip("@").lower()
+                logger.debug(
+                    f"Comparing member.username {candidate!r} to focal_username {focal_username!r}"
+                )
+                if candidate == focal_username:
+                    logger.info(
+                        f"→ matched on board {board.id} (member {m.username!r})"
+                    )
+                    accessible.append(board)
+                    break
+
+        return accessible
