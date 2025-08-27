@@ -1,6 +1,7 @@
 import ast
 import json
 import logging
+import sqlite3
 from datetime import datetime
 from typing import List, Optional
 from urllib.parse import quote, urljoin
@@ -8,6 +9,7 @@ from urllib.parse import quote, urljoin
 import requests
 
 from ..consts import TrelloCustomFieldTypeAlias, TrelloCustomFieldTypes, BoardListAlias
+from ..db import db_client
 from ..strings import load
 from ..trello import trello_objects as objects
 from ..utils.singleton import Singleton
@@ -395,3 +397,49 @@ class FocalboardClient(Singleton):
         )
         logger.debug(f"{response.url}")
         return response.status_code, response.json()
+
+    def get_boards_for_telegram_user(
+        self,
+        telegram_username: str,
+        db_client: db_client.DBClient,
+    ) -> List[objects.TrelloBoard]:
+        # 0) Normalize incoming username
+        telegram_norm = telegram_username.strip().lstrip("@").lower()
+
+        raw_focal = db_client.find_focalboard_username_in_team_by_telegram(
+            telegram_username
+        )
+        if raw_focal:
+            focal_username = raw_focal.strip().lstrip("@").lower()
+            logger.debug(f"Normalized focalboard username from DB = {focal_username!r}")
+        else:
+            logger.warning(
+                f"No focalboard username found for telegram={telegram_norm!r}. "
+                f"Accessible boards can't be determined. Managers should check and fill the table."
+            )
+
+            return []
+
+        # 2) Fetch all boards
+        all_boards = self.get_boards_for_user()
+
+        # 3) Filter by membership
+        accessible = []
+        for board in all_boards:
+            try:
+                members = self.get_members(board.id)
+            except Exception as e:
+                logger.error(f"Error fetching members for board {board.id}", exc_info=e)
+            continue
+
+        for m in members:
+            candidate = m.username.strip().lstrip("@").lower()
+            logger.debug(
+                f"Comparing member.username {candidate!r} to focal_username {focal_username!r}"
+            )
+            if candidate == focal_username:
+                logger.debug(f"→ matched on board {board.id} (member {m.username!r})")
+                accessible.append(board)
+                break
+
+        return accessible

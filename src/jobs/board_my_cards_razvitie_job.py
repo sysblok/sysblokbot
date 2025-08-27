@@ -28,10 +28,13 @@ class BoardMyCardsRazvitieJob(BaseJob):
             )
         )
         # curren
-        focalboard_username = focalboard_username[1:]
+        telegram_username = send.update.message.chat.username
+
         board_id = [
             board.id
-            for board in app_context.focalboard_client.get_boards_for_user()
+            for board in app_context.focalboard_client.get_boards_for_telegram_user(
+                telegram_username
+            )
             if "Развитие" in board.name
         ][0]
         board_all_lists = app_context.focalboard_client.get_lists(board_id, sorted=True)
