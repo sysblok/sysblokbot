@@ -33,7 +33,7 @@ class BoardMyCardsRazvitieJob(BaseJob):
         board_id = [
             board.id
             for board in app_context.focalboard_client.get_boards_for_telegram_user(
-                telegram_username
+                telegram_username, db_client=app_context.db_client
             )
             if "Развитие" in board.name
         ][0]

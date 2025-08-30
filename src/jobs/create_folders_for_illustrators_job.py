@@ -33,8 +33,6 @@ class CreateFoldersForIllustratorsJob(BaseJob):
         result = CreateFoldersForIllustratorsJob._create_folders(
             app_context=app_context,
             list_aliases=(
-                BoardListAlias.DRAFT_N_PROGRESS_3,
-                BoardListAlias.DRAFT_COMPLETED_4,
                 BoardListAlias.PENDING_EDITOR_5,
                 BoardListAlias.PENDING_SEO_EDITOR_6,
                 BoardListAlias.APPROVED_EDITOR_7,
