@@ -22,21 +22,38 @@ class BoardMyCardsRazvitieJob(BaseJob):
         """Job returning my card on Razvitie board"""
         assert called_from_handler, "This job should be called from handler"
         # TODO sort out @ in the beginning of the username
+        # focalboard_username = (
+        #     app_context.db_client.find_focalboard_username_by_telegram_username(
+        #         f"@{send.update.message.chat.username}"
+        #     )
+        # )
+        # # curren
+        # telegram_username = send.update.message.chat.username
+        tg_username = send.update.message.chat.username
+
+        # ищем с @, потому что в таблице Telegram и Focalboard с собачкой
         focalboard_username = (
             app_context.db_client.find_focalboard_username_by_telegram_username(
-                f"@{send.update.message.chat.username}"
+                f"@{tg_username}"
             )
         )
-        # curren
-        telegram_username = send.update.message.chat.username
+
+        if not focalboard_username:
+            raise ValueError(
+                f"Focalboard username not found for Telegram user @{tg_username}"
+            )
+
+        # focalboard_username в таблице тоже с @, уберём его
+        focalboard_username = focalboard_username.lstrip("@")
 
         board_id = [
             board.id
-            for board in app_context.focalboard_client.get_boards_for_telegram_user(
-                telegram_username
+            for board in app_context.focalboard_client.get_boards_for_user(
+                focalboard_username
             )
             if "Развитие" in board.name
         ][0]
+
         board_all_lists = app_context.focalboard_client.get_lists(board_id, sorted=True)
         # filter board lists between 'Список задач' and 'Разделитель'
         board_list_names = list(map(lambda lst: lst.name, board_all_lists))
