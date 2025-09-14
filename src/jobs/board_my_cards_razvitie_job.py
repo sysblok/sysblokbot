@@ -38,6 +38,7 @@ class BoardMyCardsRazvitieJob(BaseJob):
             )
         )
 
+
         if not focalboard_username:
             raise ValueError(
                 f"Focalboard username not found for Telegram user @{tg_username}"
@@ -49,6 +50,7 @@ class BoardMyCardsRazvitieJob(BaseJob):
             board.id
             for board in app_context.focalboard_client.get_boards_for_user(
                 focalboard_username
+
             )
             if "Развитие" in board.name
         ][0]

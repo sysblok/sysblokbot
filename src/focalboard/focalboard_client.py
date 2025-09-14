@@ -1,10 +1,9 @@
-import ast
 import json
 import logging
 import sqlite3
 from datetime import datetime
 from typing import List, Optional
-from urllib.parse import quote, urljoin
+from urllib.parse import urljoin
 
 import requests
 
@@ -146,7 +145,6 @@ class FocalboardClient(Singleton):
         ][0]["id"]
 
     def get_card_due(self, card_id: str, board_id: str) -> Optional[datetime]:
-
         _, data = self._make_request(f"api/v2/cards/{card_id}")
         due_id = self._get_due_property(board_id)
 
@@ -411,7 +409,9 @@ class FocalboardClient(Singleton):
         )
         if raw_focal:
             focal_username = raw_focal.strip().lstrip("@").lower()
+
             logger.debug(f"Normalized focalboard username from DB = {focal_username!r}")
+
         else:
             logger.warning(
                 f"No focalboard username found for telegram={telegram_norm!r}. "
@@ -430,6 +430,7 @@ class FocalboardClient(Singleton):
                 members = self.get_members(board.id)
             except Exception as e:
                 logger.error(f"Error fetching members for board {board.id}", exc_info=e)
+
             continue
 
         for m in members:
@@ -441,5 +442,6 @@ class FocalboardClient(Singleton):
                 logger.debug(f"→ matched on board {board.id} (member {m.username!r})")
                 accessible.append(board)
                 break
+
 
         return accessible
