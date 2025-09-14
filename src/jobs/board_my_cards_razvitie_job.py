@@ -31,7 +31,7 @@ class BoardMyCardsRazvitieJob(BaseJob):
         # telegram_username = send.update.message.chat.username
         tg_username = send.update.message.chat.username
 
-        # ищем с @, потому что в таблице Telegram и Focalboard с собачкой
+        # look for @
         focalboard_username = (
             app_context.db_client.find_focalboard_username_by_telegram_username(
                 f"@{tg_username}"
@@ -43,7 +43,6 @@ class BoardMyCardsRazvitieJob(BaseJob):
                 f"Focalboard username not found for Telegram user @{tg_username}"
             )
 
-        # focalboard_username в таблице тоже с @, уберём его
         focalboard_username = focalboard_username.lstrip("@")
 
         board_id = [
