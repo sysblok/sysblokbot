@@ -38,7 +38,6 @@ class BoardMyCardsRazvitieJob(BaseJob):
             )
         )
 
-
         if not focalboard_username:
             raise ValueError(
                 f"Focalboard username not found for Telegram user @{tg_username}"
@@ -46,14 +45,23 @@ class BoardMyCardsRazvitieJob(BaseJob):
 
         focalboard_username = focalboard_username.lstrip("@")
 
-        board_id = [
-            board.id
-            for board in app_context.focalboard_client.get_boards_for_user(
-                focalboard_username
+        boards = app_context.focalboard_client.get_boards_for_telegram_user(
+            tg_username,
+            app_context.db_client,
+        )
+        board_id = next(
+            (board.id for board in boards if "Развитие" in board.name), None
+        )
 
+        print(f"Доски для пользователя @{tg_username}: {[b.name for b in boards]}")
+        board_id = next(
+            (board.id for board in boards if "Развитие" in board.name), None
+        )
+
+        if not board_id:
+            raise ValueError(
+                f"Не удалось найти доску 'Развитие' для пользователя @{tg_username}"
             )
-            if "Развитие" in board.name
-        ][0]
 
         board_all_lists = app_context.focalboard_client.get_lists(board_id, sorted=True)
         # filter board lists between 'Список задач' and 'Разделитель'
