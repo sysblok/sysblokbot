@@ -53,7 +53,6 @@ class BoardMyCardsRazvitieJob(BaseJob):
             (board.id for board in boards if "Развитие" in board.name), None
         )
 
-        print(f"Доски для пользователя @{tg_username}: {[b.name for b in boards]}")
         board_id = next(
             (board.id for board in boards if "Развитие" in board.name), None
         )
