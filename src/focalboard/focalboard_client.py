@@ -1,5 +1,6 @@
 import json
 import logging
+import sqlite3
 from datetime import datetime
 from typing import List, Optional
 from urllib.parse import urljoin
@@ -408,7 +409,9 @@ class FocalboardClient(Singleton):
         )
         if raw_focal:
             focal_username = raw_focal.strip().lstrip("@").lower()
-            logger.info(f"Normalized focalboard username from DB = {focal_username!r}")
+
+            logger.debug(f"Normalized focalboard username from DB = {focal_username!r}")
+
         else:
             logger.warning(
                 f"No focalboard username found for telegram={telegram_norm!r}. "
@@ -428,16 +431,17 @@ class FocalboardClient(Singleton):
             except Exception as e:
                 logger.error(f"Error fetching members for board {board.id}", exc_info=e)
 
-            for m in members:
-                candidate = m.username.strip().lstrip("@").lower()
-                logger.debug(
-                    f"Comparing member.username {candidate!r} to focal_username {focal_username!r}"
-                )
-                if candidate == focal_username:
-                    logger.info(
-                        f"→ matched on board {board.id} (member {m.username!r})"
-                    )
-                    accessible.append(board)
-                    break
+            continue
+
+        for m in members:
+            candidate = m.username.strip().lstrip("@").lower()
+            logger.debug(
+                f"Comparing member.username {candidate!r} to focal_username {focal_username!r}"
+            )
+            if candidate == focal_username:
+                logger.debug(f"→ matched on board {board.id} (member {m.username!r})")
+                accessible.append(board)
+                break
+
 
         return accessible
