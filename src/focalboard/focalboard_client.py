@@ -3,6 +3,7 @@ import logging
 from datetime import datetime
 from typing import List, Optional
 from urllib.parse import urljoin
+from cachetools import cached, TTLCache
 
 import requests
 
@@ -218,11 +219,6 @@ class FocalboardClient(Singleton):
         logger.debug(f"get_board_custom_field_types: {custom_field_types}")
         return custom_field_types
 
-    def get_username(self, user_id: str):
-        _, data = self._make_request(f"api/v2/users/{user_id}")
-        username = data["username"]
-        return username
-
     def get_custom_fields(self, card_id: str) -> objects.CardCustomFields:
         card_fields = objects.CardCustomFields(card_id)
         board_labels = self._get_labels()
@@ -284,10 +280,14 @@ class FocalboardClient(Singleton):
         _, data = self._make_request(f"api/v2/boards/{board_id}/members")
         members = []
         for member in data:
-            _, data = self._make_request(f"api/v2/users/{member['userId']}")
+            _, data = self._get_member(member["userId"])
             members.append(objects.TrelloMember.from_focalboard_dict(data))
         logger.debug(f"get_members: {members}")
         return members
+
+    @cached(cache=TTLCache(maxsize=1000, ttl=60 * 60 * 24 * 30))  # cache for 30d
+    def _get_member(self, user_id):
+        return self._make_request(f"api/v2/users/{user_id}")
 
     def get_cards(self, list_ids=None, board_id=None):
         if board_id is None:
