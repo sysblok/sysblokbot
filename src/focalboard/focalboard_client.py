@@ -1,6 +1,5 @@
 import json
 import logging
-import sqlite3
 from datetime import datetime
 from typing import List, Optional
 from urllib.parse import urljoin
@@ -428,20 +427,11 @@ class FocalboardClient(Singleton):
         for board in all_boards:
             try:
                 members = self.get_members(board.id)
+                if focal_username in [
+                    m.username.strip().lstrip("@").lower() for m in members
+                ]:
+                    accessible.append(board)
             except Exception as e:
                 logger.error(f"Error fetching members for board {board.id}", exc_info=e)
-
-            continue
-
-        for m in members:
-            candidate = m.username.strip().lstrip("@").lower()
-            logger.debug(
-                f"Comparing member.username {candidate!r} to focal_username {focal_username!r}"
-            )
-            if candidate == focal_username:
-                logger.debug(f"→ matched on board {board.id} (member {m.username!r})")
-                accessible.append(board)
-                break
-
 
         return accessible

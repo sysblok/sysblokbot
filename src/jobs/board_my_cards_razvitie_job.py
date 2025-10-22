@@ -53,10 +53,6 @@ class BoardMyCardsRazvitieJob(BaseJob):
             (board.id for board in boards if "Развитие" in board.name), None
         )
 
-        board_id = next(
-            (board.id for board in boards if "Развитие" in board.name), None
-        )
-
         if not board_id:
             raise ValueError(
                 f"Не удалось найти доску 'Развитие' для пользователя @{tg_username}"
