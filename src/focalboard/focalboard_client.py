@@ -403,7 +403,7 @@ class FocalboardClient(Singleton):
         # 0) Normalize incoming username
         telegram_norm = telegram_username.strip().lstrip("@").lower()
 
-        raw_focal = db_client.find_focalboard_username_in_team_by_telegram(
+        raw_focal = db_client.find_focalboard_username_by_telegram_username(
             telegram_username
         )
         if raw_focal:
