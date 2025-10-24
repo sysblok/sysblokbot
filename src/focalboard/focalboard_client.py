@@ -336,7 +336,9 @@ class FocalboardClient(Singleton):
                     card.lst = trello_list
                     break
             else:
-                logger.error(f"List name not found for {card}")
+                logger.error(
+                    f"List name not found for {card}: {card._fields_properties.get(list_prop, '')}"
+                )
             # TODO: move this to app state
             if len(card._fields_properties.get(member_prop, [])) > 0:
                 for member in members:
