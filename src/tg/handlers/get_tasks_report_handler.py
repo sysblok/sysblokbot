@@ -51,10 +51,7 @@ def _get_task_report_base(
     app_context = AppContext()
 
     if use_focalboard:
-        tg_user = update.effective_message.from_user.username
-        boards_list = app_context.focalboard_client.get_boards_for_telegram_user(
-            tg_user, db_client=app_context.db_client
-        )
+        boards_list = app_context.focalboard_client.get_boards_for_user()
     else:
         boards_list = app_context.trello_client.get_boards_for_user()
     boards_list = sorted(boards_list, key=lambda board: board.name)
