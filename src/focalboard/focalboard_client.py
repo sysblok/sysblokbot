@@ -400,11 +400,8 @@ class FocalboardClient(Singleton):
         telegram_username: str,
         db_client: db_client.DBClient,
     ) -> List[objects.TrelloBoard]:
-        # 0) Normalize incoming username
-        telegram_norm = telegram_username.strip().lstrip("@").lower()
-
         raw_focal = db_client.find_focalboard_username_by_telegram_username(
-            telegram_username
+            f"@{telegram_username}"
         )
         if raw_focal:
             focal_username = raw_focal.strip().lstrip("@").lower()
@@ -413,7 +410,7 @@ class FocalboardClient(Singleton):
 
         else:
             logger.warning(
-                f"No focalboard username found for telegram={telegram_norm!r}. "
+                f"No focalboard username found for telegram={telegram_username!r}. "
                 f"Accessible boards can't be determined. Managers should check and fill the table."
             )
 
