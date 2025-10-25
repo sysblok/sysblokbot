@@ -46,7 +46,6 @@ class PublicationPlansJob(BaseJob):
         paragraphs.append(load("publication_plans_job__outro"))
 
         if len(errors) > 0:
-            # Добавляем ошибки, но не заменяем весь отчет
             paragraphs += format_errors(errors)
 
         pretty_send(paragraphs, send)
@@ -89,11 +88,10 @@ class PublicationPlansJob(BaseJob):
 
             is_archive_card = load("common_trello_label__archive") in label_names
 
-            # Проверяем только критичные поля, title не блокирует вывод
             card_is_ok = check_trello_card(
                 card,
                 errors,
-                is_bad_title=False,  # Не проверяем title
+                is_bad_title=False,
                 is_bad_illustrators=(
                     len(card_fields.illustrators) == 0
                     and need_illustrators
@@ -105,7 +103,6 @@ class PublicationPlansJob(BaseJob):
             if not card_is_ok:
                 continue
 
-            # Используем card_fields.title если есть, иначе card.name
             display_name = card_fields.title or card.name
 
             date = (
