@@ -2,11 +2,12 @@ import datetime
 import logging
 from typing import Callable, List
 
+from ..focalboard.focalboard_client import FocalboardClient
+
 from ..app_context import AppContext
 from ..consts import BoardCardColor, BoardListAlias, TrelloCardColor
 from ..strings import load
 from ..tg.sender import pretty_send
-from ..trello.trello_client import TrelloClient
 from .base_job import BaseJob
 from .utils import check_trello_card, format_errors, format_possibly_plural
 
@@ -18,11 +19,11 @@ class PublicationPlansJob(BaseJob):
     def _execute(
         app_context: AppContext, send: Callable[[str], None], called_from_handler=False
     ):
-        paragraphs = [load("publication_plans_job__intro")]  # list of paragraph strings
+        paragraphs = [load("publication_plans_job__intro")]
         errors = {}
 
         paragraphs += PublicationPlansJob._retrieve_cards_for_paragraph(
-            trello_client=app_context.trello_client,
+            focalboard_client=app_context.focalboard_client,
             title=load("publication_plans_job__title_publish_this_week"),
             list_aliases=(
                 BoardListAlias.PUBLISH_BACKLOG_9,
@@ -30,45 +31,40 @@ class PublicationPlansJob(BaseJob):
             ),
             errors=errors,
             show_due=True,
-            strict_archive_rules=True,
+            need_illustrators=True,
         )
 
         paragraphs += PublicationPlansJob._retrieve_cards_for_paragraph(
-            trello_client=app_context.trello_client,
+            focalboard_client=app_context.focalboard_client,
             title=load("common_report__section_title_editorial_board"),
-            list_aliases=(
-                BoardListAlias.PENDING_EDITOR_5,
-                BoardListAlias.PENDING_SEO_EDITOR_6,
-            ),
+            list_aliases=(BoardListAlias.PENDING_EDITOR_5,),
             errors=errors,
             show_due=False,
-            need_illustrators=False,
-            strict_archive_rules=False,
+            need_illustrators=True,
         )
 
         paragraphs.append(load("publication_plans_job__outro"))
 
         if len(errors) > 0:
-            paragraphs = format_errors(errors)
+            paragraphs += format_errors(errors)
 
         pretty_send(paragraphs, send)
 
     @staticmethod
     def _retrieve_cards_for_paragraph(
-        trello_client: TrelloClient,
+        focalboard_client: FocalboardClient,
         title: str,
         list_aliases: List[BoardListAlias],
         errors: dict,
         show_due=True,
         need_illustrators=True,
-        strict_archive_rules=False,
     ) -> List[str]:
         """
         Returns a list of paragraphs that should always go in a single message.
         """
         logger.info(f'Started counting: "{title}"')
-        list_ids = trello_client.get_list_id_from_aliases(list_aliases)
-        cards = trello_client.get_cards(list_ids)
+        list_ids = focalboard_client.get_list_id_from_aliases(list_aliases)
+        cards = focalboard_client.get_cards(list_ids)
         if show_due:
             cards.sort(key=lambda card: card.due or datetime.datetime.min)
         parse_failure_counter = 0
@@ -82,7 +78,7 @@ class PublicationPlansJob(BaseJob):
                 parse_failure_counter += 1
                 continue
 
-            card_fields = trello_client.get_custom_fields(card.id)
+            card_fields = focalboard_client.get_custom_fields(card.id)
 
             label_names = [
                 label.name
@@ -95,24 +91,19 @@ class PublicationPlansJob(BaseJob):
             card_is_ok = check_trello_card(
                 card,
                 errors,
-                is_bad_title=(
-                    card_fields.title is None
-                    and card.lst.id
-                    not in (
-                        trello_client.lists_config[BoardListAlias.PENDING_EDITOR_5],
-                        trello_client.lists_config[BoardListAlias.PENDING_SEO_EDITOR_6],
-                    )
-                ),
+                is_bad_title=False,
                 is_bad_illustrators=(
                     len(card_fields.illustrators) == 0
                     and need_illustrators
                     and not is_archive_card
                 ),
-                is_bad_due_date=card.due is None and show_due,
+                is_bad_due_date=(card.due is None and show_due),
             )
 
             if not card_is_ok:
                 continue
+
+            display_name = card_fields.title or card.name
 
             date = (
                 load(
@@ -128,7 +119,7 @@ class PublicationPlansJob(BaseJob):
                     "publication_plans_job__card",
                     date=date,
                     url=card_fields.google_doc or card.url,
-                    name=card_fields.title or card.name,
+                    name=display_name,
                     authors=format_possibly_plural(
                         load("common_role__author"), card_fields.authors
                     ),

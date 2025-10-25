@@ -27,12 +27,10 @@ class FillPostsListFocalboardJob(BaseJob):
 
         registry_posts += FillPostsListFocalboardJob._retrieve_cards_for_registry(
             focalboard_client=app_context.focalboard_client,
-
             list_aliases=(
                 BoardListAlias.PUBLISH_BACKLOG_9,
                 BoardListAlias.PUBLISH_IN_PROGRESS_10,
             ),
-
             all_rubrics=all_rubrics,
             errors=errors,
         )
