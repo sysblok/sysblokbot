@@ -37,7 +37,10 @@ class PublicationPlansJob(BaseJob):
         paragraphs += PublicationPlansJob._retrieve_cards_for_paragraph(
             focalboard_client=app_context.focalboard_client,
             title=load("common_report__section_title_editorial_board"),
-            list_aliases=(BoardListAlias.PENDING_EDITOR_5,),
+            list_aliases=(
+                BoardListAlias.PENDING_EDITOR_5,
+                BoardListAlias.PENDING_SEO_EDITOR_6,
+            ),
             errors=errors,
             show_due=False,
             need_illustrators=True,
