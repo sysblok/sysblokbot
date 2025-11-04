@@ -183,12 +183,6 @@ class SysBlokBot:
             direct_message_only(handlers.get_rubrics),
             "получить рубрики из доски Редакция",
         )
-        self.add_manager_handler(
-            "get_publication_plans",
-            CommandCategories.SUMMARY,
-            self.manager_reply_handler("publication_plans_job"),
-            "получить сводку о публикуемыми на неделе постами",
-        )
 
         self.add_manager_handler(
             "get_articles_rubric",
