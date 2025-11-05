@@ -24,11 +24,60 @@ class FocalboardClient(Singleton):
         self._update_from_config()
         logger.info("FocalboardClient successfully initialized")
 
-    def get_boards_for_user(self, user_id=None):
-        _, data = self._make_request("api/v2/teams/0/boards")
-        boards = [objects.TrelloBoard.from_focalboard_dict(board) for board in data]
-        logger.debug(f"get_boards_for_user: {boards}")
-        return boards
+    def get_boards_for_user(self, telegram_username: str = None, db_client=None):
+
+        focal_username = None
+        if telegram_username and db_client:
+            raw_focal = db_client.find_focalboard_username_by_telegram_username(
+                f"@{telegram_username}"
+            )
+            if raw_focal:
+                focal_username = raw_focal.strip().lstrip("@").lower()
+                logger.debug(
+                    f"Normalized focalboard username from DB = {focal_username!r}"
+                )
+            else:
+                logger.warning(
+                    f"No focalboard username found for telegram={telegram_username!r}. "
+                    "Accessible boards can't be determined. Managers should fill the mapping table."
+                )
+                return []
+        else:
+            logger.debug(
+                "No telegram_username provided, returning all boards (unfiltered)."
+            )
+
+        try:
+            _, data = self._make_request("api/v2/teams/0/boards")
+            all_boards = [
+                objects.TrelloBoard.from_focalboard_dict(board) for board in data
+            ]
+        except Exception as e:
+            logger.error("Error fetching boards from Focalboard", exc_info=e)
+            return []
+
+        if not focal_username:
+            return all_boards
+
+        accessible = []
+        for board in all_boards:
+            try:
+                members = self.get_members(board.id)
+                member_usernames = [
+                    m.username.strip().lstrip("@").lower()
+                    for m in members
+                    if m.username
+                ]
+                if focal_username in member_usernames:
+                    accessible.append(board)
+            except Exception as e:
+                logger.error(f"Error fetching members for board {board.id}", exc_info=e)
+
+        logger.info(
+            f"Telegram user @{telegram_username} has access to {len(accessible)} boards: "
+            f"{[b.name for b in accessible]}"
+        )
+        return accessible
 
     def get_lists(self, board_id=None, sorted=False):
         if board_id is None:
