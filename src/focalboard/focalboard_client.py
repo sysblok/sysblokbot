@@ -3,10 +3,12 @@ import logging
 from datetime import datetime
 from typing import List, Optional
 from urllib.parse import urljoin
+from cachetools import cached, TTLCache
 
 import requests
 
 from ..consts import TrelloCustomFieldTypeAlias, TrelloCustomFieldTypes, BoardListAlias
+from ..db import db_client
 from ..strings import load
 from ..trello import trello_objects as objects
 from ..utils.singleton import Singleton
@@ -217,11 +219,6 @@ class FocalboardClient(Singleton):
         logger.debug(f"get_board_custom_field_types: {custom_field_types}")
         return custom_field_types
 
-    def get_username(self, user_id: str):
-        _, data = self._make_request(f"api/v2/users/{user_id}")
-        username = data["username"]
-        return username
-
     def get_custom_fields(self, card_id: str) -> objects.CardCustomFields:
         card_fields = objects.CardCustomFields(card_id)
         board_labels = self._get_labels()
@@ -283,10 +280,14 @@ class FocalboardClient(Singleton):
         _, data = self._make_request(f"api/v2/boards/{board_id}/members")
         members = []
         for member in data:
-            _, data = self._make_request(f"api/v2/users/{member['userId']}")
+            _, data = self._get_member(member["userId"])
             members.append(objects.TrelloMember.from_focalboard_dict(data))
         logger.debug(f"get_members: {members}")
         return members
+
+    @cached(cache=TTLCache(maxsize=1000, ttl=60 * 60 * 24 * 30))  # cache for 30d
+    def _get_member(self, user_id):
+        return self._make_request(f"api/v2/users/{user_id}")
 
     def get_cards(self, list_ids=None, board_id=None):
         if board_id is None:
@@ -335,7 +336,9 @@ class FocalboardClient(Singleton):
                     card.lst = trello_list
                     break
             else:
-                logger.error(f"List name not found for {card}")
+                logger.error(
+                    f"List name not found for {card}: {card._fields_properties.get(list_prop, '')}"
+                )
             # TODO: move this to app state
             if len(card._fields_properties.get(member_prop, [])) > 0:
                 for member in members:
@@ -393,3 +396,41 @@ class FocalboardClient(Singleton):
         )
         logger.debug(f"{response.url}")
         return response.status_code, response.json()
+
+    def get_boards_for_telegram_user(
+        self,
+        telegram_username: str,
+        db_client: db_client.DBClient,
+    ) -> List[objects.TrelloBoard]:
+        raw_focal = db_client.find_focalboard_username_by_telegram_username(
+            f"@{telegram_username}"
+        )
+        if raw_focal:
+            focal_username = raw_focal.strip().lstrip("@").lower()
+
+            logger.debug(f"Normalized focalboard username from DB = {focal_username!r}")
+
+        else:
+            logger.warning(
+                f"No focalboard username found for telegram={telegram_username!r}. "
+                f"Accessible boards can't be determined. Managers should check and fill the table."
+            )
+
+            return []
+
+        # 2) Fetch all boards
+        all_boards = self.get_boards_for_user()
+
+        # 3) Filter by membership
+        accessible = []
+        for board in all_boards:
+            try:
+                members = self.get_members(board.id)
+                if focal_username in [
+                    m.username.strip().lstrip("@").lower() for m in members
+                ]:
+                    accessible.append(board)
+            except Exception as e:
+                logger.error(f"Error fetching members for board {board.id}", exc_info=e)
+
+        return accessible
