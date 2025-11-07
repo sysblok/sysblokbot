@@ -26,7 +26,6 @@ class FocalboardClient(Singleton):
         logger.info("FocalboardClient successfully initialized")
 
     def get_boards_for_user(self, telegram_username: str = None, db_client=None):
-
         focal_username = None
         if telegram_username and db_client:
             raw_focal = db_client.find_focalboard_username_by_telegram_username(
