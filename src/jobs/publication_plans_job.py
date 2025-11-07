@@ -71,13 +71,11 @@ class PublicationPlansJob(BaseJob):
         message_lines = [
             "Не удалось сгенерировать сводку. Пожалуйста, заполни требуемые поля в карточках и запусти генерацию снова."
         ]
-
         for card_name, missing_fields in validation_errors.items():
             fields_text = ", ".join(missing_fields)
             message_lines.append(
                 f'– В карточке __"{card_name}"__ не заполнено: {fields_text}'
             )
-
         return "\n".join(message_lines)
 
     @staticmethod
@@ -154,7 +152,8 @@ class PublicationPlansJob(BaseJob):
                 missing_fields.append("дата")
 
             if missing_fields:
-                validation_errors[display_name] = missing_fields
+                validation_errors[f"[{display_name}]({card.url})"] = missing_fields
+
                 continue
 
             card_is_ok = check_trello_card(
@@ -181,7 +180,7 @@ class PublicationPlansJob(BaseJob):
                 load(
                     "publication_plans_job__card",
                     date=date,
-                    url=card_fields.google_doc or card.url,
+                    url=card.url,
                     name=display_name,
                     authors=format_possibly_plural(
                         load("common_role__author"), card_fields.authors
