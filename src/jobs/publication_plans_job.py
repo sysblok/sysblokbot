@@ -117,43 +117,44 @@ class PublicationPlansJob(BaseJob):
 
             missing_fields = []
             display_name = card_fields.title or card.name
+
             if not display_name or not display_name.strip():
                 missing_fields.append("название")
 
             if not card_fields.google_doc:
-                missing_fields.append("google doc")
+                missing_fields.append("ссылка на Google Doc")
 
             if (
                 not card_fields.authors
                 or len(card_fields.authors) == 0
                 or not any(author and author.strip() for author in card_fields.authors)
             ):
-                missing_fields.append("автор")
+                missing_fields.append("автор(-ы)")
 
             if (
                 not card_fields.editors
                 or len(card_fields.editors) == 0
                 or not any(editor and editor.strip() for editor in card_fields.editors)
             ):
-                missing_fields.append("редактор")
+                missing_fields.append("редактор(-ы)")
 
-            if need_illustrators and not is_archive_card:
-                if (
-                    not card_fields.illustrators
-                    or len(card_fields.illustrators) == 0
-                    or not any(
-                        illustrator and illustrator.strip()
-                        for illustrator in card_fields.illustrators
-                    )
-                ):
-                    missing_fields.append("иллюстратор")
+            if not is_archive_card and (
+                not card_fields.illustrators
+                or len(card_fields.illustrators) == 0
+                or not any(
+                    illustrator and illustrator.strip()
+                    for illustrator in card_fields.illustrators
+                )
+            ):
+                missing_fields.append("иллюстратор(-ы)")
 
-            if need_date and card.due is None:
+            if card.due is None:
                 missing_fields.append("дата")
 
             if missing_fields:
-                validation_errors[f"[{display_name}]({card.url})"] = missing_fields
-
+                validation_errors[f"[{display_name or card.name}]({card.url})"] = (
+                    missing_fields
+                )
                 continue
 
             card_is_ok = check_trello_card(
