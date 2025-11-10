@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from ...app_context import AppContext
@@ -12,16 +13,26 @@ def admin_only(func):
     Decorator allowing only users from admin_chat_ids to run the command.
     Checks the immediate sender: if forwarded by non-admin, it doesn't run handler.
     If admin sends command to the chat, it does run handler.
+    Works with both sync and async functions.
     """
 
-    def wrapper(update, tg_context, *args, **kwargs):
-        if is_sender_admin(update):
-            return func(update, tg_context, *args, **kwargs)
-        logger.warning(
-            f"Admin-only handler {func.__name__} invoked by {get_sender_id(update)}"
-        )
-
-    return wrapper
+    # Check if the wrapped function is async
+    if asyncio.iscoroutinefunction(func):
+        async def async_wrapper(update, tg_context, *args, **kwargs):
+            if is_sender_admin(update):
+                return await func(update, tg_context, *args, **kwargs)
+            logger.warning(
+                f"Admin-only handler {func.__name__} invoked by {get_sender_id(update)}"
+            )
+        return async_wrapper
+    else:
+        def wrapper(update, tg_context, *args, **kwargs):
+            if is_sender_admin(update):
+                return func(update, tg_context, *args, **kwargs)
+            logger.warning(
+                f"Admin-only handler {func.__name__} invoked by {get_sender_id(update)}"
+            )
+        return wrapper
 
 
 def manager_only(func):
@@ -29,32 +40,50 @@ def manager_only(func):
     Decorator allowing only users from manager_chat_ids OR admin_chat_ids to run the command.
     Checks the immediate sender: if forwarded by non-manager, it doesn't run handler.
     If manager sends command to the chat, it does run handler.
+    Works with both sync and async functions.
     """
-
-    def wrapper(update, tg_context, *args, **kwargs):
-        if is_sender_manager(update) or is_sender_admin(update):
-            return func(update, tg_context, *args, **kwargs)
-        logger.usage(
-            f"Manager-only handler {func.__name__} invoked by {get_sender_id(update)}"
-        )
-
-    return wrapper
+    if asyncio.iscoroutinefunction(func):
+        async def async_wrapper(update, tg_context, *args, **kwargs):
+            if is_sender_manager(update) or is_sender_admin(update):
+                return await func(update, tg_context, *args, **kwargs)
+            logger.usage(
+                f"Manager-only handler {func.__name__} invoked by {get_sender_id(update)}"
+            )
+        return async_wrapper
+    else:
+        def wrapper(update, tg_context, *args, **kwargs):
+            if is_sender_manager(update) or is_sender_admin(update):
+                return func(update, tg_context, *args, **kwargs)
+            logger.usage(
+                f"Manager-only handler {func.__name__} invoked by {get_sender_id(update)}"
+            )
+        return wrapper
 
 
 def direct_message_only(func):
     """
     Decorator disallowing users to call command in chats.
     Can be used along with other restriction decorators.
+    Works with both sync and async functions.
     """
 
-    def wrapper(update, tg_context, *args, **kwargs):
-        if not is_group_chat(update):
-            return func(update, tg_context, *args, **kwargs)
-        logger.warning(
-            f"DM-only handler {func.__name__} invoked by {get_sender_id(update)}"
-        )
+    if asyncio.iscoroutinefunction(func):
+        async def async_wrapper(update, tg_context, *args, **kwargs):
+            if not is_group_chat(update):
+                return await func(update, tg_context, *args, **kwargs)
+            logger.warning(
+                f"DM-only handler {func.__name__} invoked by {get_sender_id(update)}"
+            )
+        return async_wrapper
+    else:
+        def wrapper(update, tg_context, *args, **kwargs):
+            if not is_group_chat(update):
+                return func(update, tg_context, *args, **kwargs)
+            logger.warning(
+                f"DM-only handler {func.__name__} invoked by {get_sender_id(update)}"
+            )
 
-    return wrapper
+        return wrapper
 
 
 def is_sender_admin(update) -> bool:

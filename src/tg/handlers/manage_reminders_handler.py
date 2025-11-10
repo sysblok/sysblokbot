@@ -16,19 +16,19 @@ logger = logging.getLogger(__name__)
 
 @manager_only
 @direct_message_only
-def manage_reminders(update: telegram.Update, tg_context: telegram.ext.CallbackContext):
-    return _manage_reminders(update, tg_context, get_sender_id(update))
+async def manage_reminders(update: telegram.Update, tg_context: telegram.ext.CallbackContext):
+    return await _manage_reminders(update, tg_context, get_sender_id(update))
 
 
 @admin_only
 @direct_message_only
-def manage_all_reminders(
+async def manage_all_reminders(
     update: telegram.Update, tg_context: telegram.ext.CallbackContext
 ):
-    return _manage_reminders(update, tg_context, None)
+    return await _manage_reminders(update, tg_context, None)
 
 
-def _manage_reminders(update, tg_context, reminder_owner_id: int):
+async def _manage_reminders(update, tg_context, reminder_owner_id: int):
     # create buttons
     button_new = telegram.InlineKeyboardButton(
         load("manage_reminders_handler__create_btn"),
@@ -55,7 +55,7 @@ def _manage_reminders(update, tg_context, reminder_owner_id: int):
     }
     if reminders:
         reply(
-            _get_reminders_text(reminders),
+            await _get_reminders_text(reminders, tg_context),
             update,
             reply_markup=telegram.InlineKeyboardMarkup(
                 [[button_new], [button_edit], [button_delete]]
@@ -69,13 +69,28 @@ def _manage_reminders(update, tg_context, reminder_owner_id: int):
         )
 
 
-def _get_reminders_text(reminders: List[Tuple[Reminder, Chat]]) -> str:
-    reminders = "\n".join(
+async def _get_reminders_text(reminders: List[Tuple[Reminder, Chat]], context) -> str:
+    # Fetch all creator info upfront (async calls outside list comprehension)
+    creator_cache = {}
+    for reminder, _ in reminders:
+        try:
+            creator_info = await context.bot.get_chat(reminder.creator_chat_id)
+            if creator_info.username:
+                creator_cache[reminder.creator_chat_id] = f"@{creator_info.username}"
+            else:
+                creator_cache[reminder.creator_chat_id] = creator_info.full_name or f"ID: {reminder.creator_chat_id}"
+        except Exception as e:
+            print(f"DEBUG: Exception: {e}")
+            creator_cache[reminder.creator_chat_id] = f"ID: {reminder.creator_chat_id}"
+
+    # Original list comprehension structure
+    reminders_text = "\n".join(
         load(
             "manage_reminders_handler__reminder",
             index=i + 1,
             title=chat.title,
             name=reminder.name,
+            creator=creator_cache[reminder.creator_chat_id],
             weekday=consts.WEEKDAYS_SHORT[int(reminder.weekday)],
             time=reminder.time,
             is_suspended=(
@@ -86,4 +101,5 @@ def _get_reminders_text(reminders: List[Tuple[Reminder, Chat]]) -> str:
         )
         for i, (reminder, chat) in enumerate(reminders)
     )
-    return load("manage_reminders_handler__reminders", reminders=reminders)
+
+    return load("manage_reminders_handler__reminders", reminders=reminders_text)
