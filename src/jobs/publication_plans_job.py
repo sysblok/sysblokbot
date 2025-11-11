@@ -73,8 +73,11 @@ class PublicationPlansJob(BaseJob):
         ]
         for card_name, missing_fields in validation_errors.items():
             fields_text = ", ".join(missing_fields)
+            # message_lines.append(
+            #     f'– В карточке __"{card_name}"__ не заполнено: {fields_text}'
+            # )
             message_lines.append(
-                f'– В карточке __"{card_name}"__ не заполнено: {fields_text}'
+                f"– В карточке <b>{card_name}</b> не заполнено: {fields_text}"
             )
         return "\n".join(message_lines)
 
@@ -159,7 +162,10 @@ class PublicationPlansJob(BaseJob):
                 missing_fields.append("дата")
 
             if missing_fields:
-                validation_errors[f"[{error_display_name}]({card.url})"] = (
+                # validation_errors[f"[{error_display_name}]({card.url})"] = (
+                #     missing_fields
+                # )
+                validation_errors[f'<a href="{card.url}">{error_display_name}</a>'] = (
                     missing_fields
                 )
 
