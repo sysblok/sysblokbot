@@ -18,20 +18,24 @@ def admin_only(func):
 
     # Check if the wrapped function is async
     if asyncio.iscoroutinefunction(func):
+
         async def async_wrapper(update, tg_context, *args, **kwargs):
             if is_sender_admin(update):
                 return await func(update, tg_context, *args, **kwargs)
             logger.warning(
                 f"Admin-only handler {func.__name__} invoked by {get_sender_id(update)}"
             )
+
         return async_wrapper
     else:
+
         def wrapper(update, tg_context, *args, **kwargs):
             if is_sender_admin(update):
                 return func(update, tg_context, *args, **kwargs)
             logger.warning(
                 f"Admin-only handler {func.__name__} invoked by {get_sender_id(update)}"
             )
+
         return wrapper
 
 
@@ -43,20 +47,24 @@ def manager_only(func):
     Works with both sync and async functions.
     """
     if asyncio.iscoroutinefunction(func):
+
         async def async_wrapper(update, tg_context, *args, **kwargs):
             if is_sender_manager(update) or is_sender_admin(update):
                 return await func(update, tg_context, *args, **kwargs)
             logger.usage(
                 f"Manager-only handler {func.__name__} invoked by {get_sender_id(update)}"
             )
+
         return async_wrapper
     else:
+
         def wrapper(update, tg_context, *args, **kwargs):
             if is_sender_manager(update) or is_sender_admin(update):
                 return func(update, tg_context, *args, **kwargs)
             logger.usage(
                 f"Manager-only handler {func.__name__} invoked by {get_sender_id(update)}"
             )
+
         return wrapper
 
 
@@ -68,14 +76,17 @@ def direct_message_only(func):
     """
 
     if asyncio.iscoroutinefunction(func):
+
         async def async_wrapper(update, tg_context, *args, **kwargs):
             if not is_group_chat(update):
                 return await func(update, tg_context, *args, **kwargs)
             logger.warning(
                 f"DM-only handler {func.__name__} invoked by {get_sender_id(update)}"
             )
+
         return async_wrapper
     else:
+
         def wrapper(update, tg_context, *args, **kwargs):
             if not is_group_chat(update):
                 return func(update, tg_context, *args, **kwargs)

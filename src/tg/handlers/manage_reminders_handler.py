@@ -16,7 +16,9 @@ logger = logging.getLogger(__name__)
 
 @manager_only
 @direct_message_only
-async def manage_reminders(update: telegram.Update, tg_context: telegram.ext.CallbackContext):
+async def manage_reminders(
+    update: telegram.Update, tg_context: telegram.ext.CallbackContext
+):
     return await _manage_reminders(update, tg_context, get_sender_id(update))
 
 
@@ -78,7 +80,9 @@ async def _get_reminders_text(reminders: List[Tuple[Reminder, Chat]], context) -
             if creator_info.username:
                 creator_cache[reminder.creator_chat_id] = f"@{creator_info.username}"
             else:
-                creator_cache[reminder.creator_chat_id] = creator_info.full_name or f"ID: {reminder.creator_chat_id}"
+                creator_cache[reminder.creator_chat_id] = (
+                    creator_info.full_name or f"ID: {reminder.creator_chat_id}"
+                )
         except Exception as e:
             print(f"DEBUG: Exception: {e}")
             creator_cache[reminder.creator_chat_id] = f"ID: {reminder.creator_chat_id}"
