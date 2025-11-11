@@ -106,7 +106,7 @@ class PublicationPlansJob(BaseJob):
                 continue
 
             card_fields = focalboard_client.get_custom_fields(card.id)
-
+            display_name = card_fields.title or card.name
             label_names = [
                 label.name
                 for label in card.labels
@@ -116,10 +116,17 @@ class PublicationPlansJob(BaseJob):
             is_archive_card = load("common_trello_label__archive") in label_names
 
             missing_fields = []
-            display_name = card_fields.title or card.name
 
-            if not display_name or not display_name.strip():
+            if not card_fields.title or not card_fields.title.strip():
                 missing_fields.append("название")
+
+            error_display_name = (
+                card_fields.title.strip()
+                if card_fields.title and card_fields.title.strip()
+                else card.name
+                if card.name and card.name.strip()
+                else "Без названия"
+            )
 
             if not card_fields.google_doc:
                 missing_fields.append("ссылка на Google Doc")
@@ -152,9 +159,10 @@ class PublicationPlansJob(BaseJob):
                 missing_fields.append("дата")
 
             if missing_fields:
-                validation_errors[f"[{display_name or card.name}]({card.url})"] = (
+                validation_errors[f"[{error_display_name}]({card.url})"] = (
                     missing_fields
                 )
+
                 continue
 
             card_is_ok = check_trello_card(
