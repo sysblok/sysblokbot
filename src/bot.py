@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import pickle
@@ -476,7 +477,12 @@ class SysBlokBot:
                     logger.usage(f"Handler {handler_cmd} was called by {username}...")
                 except BaseException:
                     logger.usage(f"Handler {handler_cmd} was called...")
+
+                # Check if func is async and await if necessary
                 results = func(*args, **kwargs)
+                if asyncio.iscoroutine(results):
+                    results = await results
+
                 logger.usage(f"Handler {handler_cmd} finished")
                 return results
 
