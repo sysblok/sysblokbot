@@ -73,9 +73,7 @@ class PublicationPlansJob(BaseJob):
         ]
         for card_name, missing_fields in validation_errors.items():
             fields_text = ", ".join(missing_fields)
-            # message_lines.append(
-            #     f'– В карточке __"{card_name}"__ не заполнено: {fields_text}'
-            # )
+
             message_lines.append(
                 f"– В карточке <b>{card_name}</b> не заполнено: {fields_text}"
             )
