@@ -71,13 +71,12 @@ class PublicationPlansJob(BaseJob):
         message_lines = [
             "Не удалось сгенерировать сводку. Пожалуйста, заполни требуемые поля в карточках и запусти генерацию снова."
         ]
-
         for card_name, missing_fields in validation_errors.items():
             fields_text = ", ".join(missing_fields)
-            message_lines.append(
-                f'– В карточке __"{card_name}"__ не заполнено: {fields_text}'
-            )
 
+            message_lines.append(
+                f"– В карточке <b>{card_name}</b> не заполнено: {fields_text}"
+            )
         return "\n".join(message_lines)
 
     @staticmethod
@@ -108,7 +107,7 @@ class PublicationPlansJob(BaseJob):
                 continue
 
             card_fields = focalboard_client.get_custom_fields(card.id)
-
+            display_name = card_fields.title or card.name
             label_names = [
                 label.name
                 for label in card.labels
@@ -118,43 +117,56 @@ class PublicationPlansJob(BaseJob):
             is_archive_card = load("common_trello_label__archive") in label_names
 
             missing_fields = []
-            display_name = card_fields.title or card.name
-            if not display_name or not display_name.strip():
+
+            if not card_fields.title or not card_fields.title.strip():
                 missing_fields.append("название")
 
+            error_display_name = (
+                card_fields.title.strip()
+                if card_fields.title and card_fields.title.strip()
+                else card.name
+                if card.name and card.name.strip()
+                else "Без названия"
+            )
+
             if not card_fields.google_doc:
-                missing_fields.append("google doc")
+                missing_fields.append("ссылка на Google Doc")
 
             if (
                 not card_fields.authors
                 or len(card_fields.authors) == 0
                 or not any(author and author.strip() for author in card_fields.authors)
             ):
-                missing_fields.append("автор")
+                missing_fields.append("автор(-ы)")
 
             if (
                 not card_fields.editors
                 or len(card_fields.editors) == 0
                 or not any(editor and editor.strip() for editor in card_fields.editors)
             ):
-                missing_fields.append("редактор")
+                missing_fields.append("редактор(-ы)")
 
-            if need_illustrators and not is_archive_card:
-                if (
-                    not card_fields.illustrators
-                    or len(card_fields.illustrators) == 0
-                    or not any(
-                        illustrator and illustrator.strip()
-                        for illustrator in card_fields.illustrators
-                    )
-                ):
-                    missing_fields.append("иллюстратор")
+            if not is_archive_card and (
+                not card_fields.illustrators
+                or len(card_fields.illustrators) == 0
+                or not any(
+                    illustrator and illustrator.strip()
+                    for illustrator in card_fields.illustrators
+                )
+            ):
+                missing_fields.append("иллюстратор(-ы)")
 
-            if need_date and card.due is None:
+            if card.due is None:
                 missing_fields.append("дата")
 
             if missing_fields:
-                validation_errors[display_name] = missing_fields
+                # validation_errors[f"[{error_display_name}]({card.url})"] = (
+                #     missing_fields
+                # )
+                validation_errors[f'<a href="{card.url}">{error_display_name}</a>'] = (
+                    missing_fields
+                )
+
                 continue
 
             card_is_ok = check_trello_card(
@@ -181,7 +193,7 @@ class PublicationPlansJob(BaseJob):
                 load(
                     "publication_plans_job__card",
                     date=date,
-                    url=card_fields.google_doc or card.url,
+                    url=card.url,
                     name=display_name,
                     authors=format_possibly_plural(
                         load("common_role__author"), card_fields.authors
