@@ -94,7 +94,7 @@ jobs:
             https://api.telegram.org/bot${{env.TELEGRAM_TOKEN}}/sendMessage
     
       - name: Deploy package to digitalocean
-        uses: appleboy/ssh-action@v1.8.1
+        uses: appleboy/ssh-action@v1.2.3
         env:
           GITHUB_USERNAME: sysblok
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
