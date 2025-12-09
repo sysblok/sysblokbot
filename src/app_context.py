@@ -8,6 +8,7 @@ from .drive.drive_client import GoogleDriveClient
 from .facebook.facebook_client import FacebookClient
 from .focalboard.focalboard_client import FocalboardClient
 from .instagram.instagram_client import InstagramClient
+from .n8n.n8n_client import N8nClient
 from .roles.role_manager import RoleManager
 from .sheets.sheets_client import GoogleSheetsClient
 from .strings import StringsDBClient
@@ -64,6 +65,8 @@ class AppContext(Singleton):
         self.instagram_analytics = ApiInstagramAnalytics(self.instagram_client)
 
         self.tg_client = TgClient(tg_config=config_manager.get_telegram_config())
+
+        self.n8n_client = N8nClient(n8n_config=config_manager.get_n8n_config())
 
         # TODO: move that to db
         tg_config = config_manager.get_telegram_config()

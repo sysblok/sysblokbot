@@ -98,6 +98,9 @@ class ConfigManager(Singleton):
     def get_db_config(self):
         return self.get_latest_config().get(consts.DB_CONFIG, {})
 
+    def get_n8n_config(self):
+        return self.get_latest_config().get(consts.N8N_CONFIG, {})
+
     def get_job_send_to(self, job_name: str):
         return self.get_jobs_config().get(job_name, {}).get(consts.SEND_TO, [])
 

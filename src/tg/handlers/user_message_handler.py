@@ -246,6 +246,18 @@ def handle_user_message(
     command_id = tg_context.chat_data.get(consts.LAST_ACTIONABLE_COMMAND)
     # to understand what kind of data currently expected from user
     if not command_id:
+        # No active command - forward to n8n if message exists
+        if update.message and update.message.text:
+            try:
+                app_context = AppContext()
+                user_id = get_sender_id(update)
+                query = update.message.text.strip()
+                app_context.n8n_client.send_webhook(user_id, query)
+            except Exception as e:
+                logger.error(
+                    f"Failed to send message to n8n: {e}",
+                    exc_info=True,
+                )
         return
     command_data = tg_context.chat_data.get(command_id, {})
     tg_context.chat_data[command_id] = command_data
