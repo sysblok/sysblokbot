@@ -5,6 +5,7 @@ Trello, Spreadsheets or Telegram API.
 Jobs can be ran from scheduler or from anywhere else for a one-off action.
 """
 
+from .backfill_telegram_user_ids_job import BackfillTelegramUserIdsJob
 from .board_my_cards_razvitie_job import BoardMyCardsRazvitieJob
 from .config_updater_job import ConfigUpdaterJob
 from .create_folders_for_illustrators_job import CreateFoldersForIllustratorsJob
@@ -13,7 +14,6 @@ from .db_fetch_authors_sheet_job import DBFetchAuthorsSheetJob
 from .db_fetch_curators_sheet_job import DBFetchCuratorsSheetJob
 from .db_fetch_strings_sheet_job import DBFetchStringsSheetJob
 from .db_fetch_team_sheet_job import DBFetchTeamSheetJob
-from .editorial_board_visual_stats_job import EditorialBoardVisualStatsJob
 from .fb_analytics_report_job import FBAnalyticsReportJob
 from .fill_posts_list_focalboard_job import FillPostsListFocalboardJob
 from .fill_posts_list_job import FillPostsListJob

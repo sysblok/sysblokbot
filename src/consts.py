@@ -46,6 +46,7 @@ DRIVE_CONFIG = "drive"
 FACEBOOK_CONFIG = "facebook"
 DB_CONFIG = "db"
 STRINGS_DB_CONFIG = "strings"
+N8N_CONFIG = "n8n"
 JOBS_CONFIG_FILE_KEY = "jobs_config_key"
 
 # Jobs-related keys

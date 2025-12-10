@@ -412,6 +412,12 @@ class SysBlokBot:
             self.admin_reply_handler("db_fetch_all_team_members_job"),
             "db_fetch_all_team_members",
         )
+        self.add_admin_handler(
+            "backfill_telegram_user_ids",
+            CommandCategories.DATA_SYNC,
+            self.admin_reply_handler("backfill_telegram_user_ids_job"),
+            "backfill Telegram user IDs from team member usernames",
+        )
 
         # general purpose cmds
         self.add_admin_handler(

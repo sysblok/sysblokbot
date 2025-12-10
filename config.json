@@ -52,5 +52,9 @@
     },
     "strings": {
         "uri": "sqlite:///strings.sqlite"
+    },
+    "n8n": {
+        "webhook_url": "do_not_set_here_please_go_to_config_override",
+        "token": "do_not_set_here_please_go_to_config_override"
     }
 }

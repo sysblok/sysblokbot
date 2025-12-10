@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Optional, Tuple
 
 from telethon import TelegramClient
 from telethon.sessions import StringSession
@@ -47,3 +47,50 @@ class TgClient(Singleton):
 
     def get_main_chat_users(self) -> List[User]:
         return self._get_chat_users(self.sysblok_chats["main_chat"])
+
+    def resolve_telegram_username(self, username: str) -> Optional[Tuple[int, str]]:
+        """
+        Resolve Telegram username to user ID using telethon.
+
+        Args:
+            username: Telegram username (with or without @)
+
+        Returns:
+            Tuple of (user_id, username_without_@) or None if not found
+        """
+        # Normalize: remove @ for telethon API
+        normalized = username.lstrip("@")
+
+        try:
+            # Check if client is already connected
+            was_connected = self.api_client.is_connected()
+
+            if not was_connected:
+                # Connect if not already connected
+                self.api_client.loop.run_until_complete(self.api_client.connect())
+
+            try:
+                entity = self.api_client.loop.run_until_complete(
+                    self.api_client.get_entity(normalized)
+                )
+
+                # Only process User entities, skip channels, groups, bots, etc.
+                if entity and isinstance(entity, User):
+                    # Return username WITHOUT @ (as stored in DB)
+                    return (entity.id, entity.username if entity.username else None)
+                elif entity:
+                    # Entity is not a User (could be Channel, Chat, Bot, etc.)
+                    entity_type = type(entity).__name__
+                    logger.info(
+                        f"Username {username} resolved to {entity_type} (not a User) - skipping"
+                    )
+                    return None
+            finally:
+                # Only disconnect if we connected it
+                if not was_connected:
+                    self.api_client.disconnect()
+        except Exception as e:
+            logger.warning(f"Failed to resolve username {username}: {e}", exc_info=True)
+            return None
+
+        return None
