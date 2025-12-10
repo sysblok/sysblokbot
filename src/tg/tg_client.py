@@ -74,9 +74,17 @@ class TgClient(Singleton):
                     self.api_client.get_entity(normalized)
                 )
 
-                if entity and hasattr(entity, "id"):
+                # Only process User entities, skip channels, groups, bots, etc.
+                if entity and isinstance(entity, User):
                     # Return username WITHOUT @ (as stored in DB)
                     return (entity.id, entity.username if entity.username else None)
+                elif entity:
+                    # Entity is not a User (could be Channel, Chat, Bot, etc.)
+                    entity_type = type(entity).__name__
+                    logger.info(
+                        f"Username {username} resolved to {entity_type} (not a User) - skipping"
+                    )
+                    return None
             finally:
                 # Only disconnect if we connected it
                 if not was_connected:
