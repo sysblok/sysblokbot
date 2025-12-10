@@ -19,6 +19,7 @@ from .db_objects import (
     Rubric,
     TeamMember,
     TrelloAnalytics,
+    User,
 )
 
 logger = logging.getLogger(__name__)
@@ -243,6 +244,80 @@ class DBClient(Singleton):
                 f"get_member: Name {member_name} fits {len(members)} members"
             )
         return members[0] if members else None
+
+    def get_user_by_telegram_id(self, telegram_user_id: int) -> Optional[User]:
+        """Get User by Telegram user ID"""
+        session = self.Session()
+        return session.query(User).filter(User.telegram_user_id == telegram_user_id).first()
+
+    def get_user_by_telegram_username(self, telegram_username: str) -> Optional[User]:
+        """Get User by Telegram username (with or without @)"""
+        session = self.Session()
+        # Normalize: remove @ if present
+        normalized = telegram_username.lstrip("@")
+        return session.query(User).filter(User.telegram_username == normalized).first()
+
+    def get_user_by_team_member_id(self, team_member_id: str) -> Optional[User]:
+        """Get User by TeamMember ID"""
+        session = self.Session()
+        return session.query(User).filter(User.team_member_id == team_member_id).first()
+
+    def upsert_user_from_telegram(
+        self, 
+        telegram_user_id: int, 
+        telegram_username: str = None,
+        team_member_id: str = None
+    ) -> User:
+        """Create or update User from Telegram data"""
+        session = self.Session()
+        
+        # Try to find existing user by telegram_user_id
+        user = session.query(User).filter(User.telegram_user_id == telegram_user_id).first()
+        
+        if user:
+            # Update existing user
+            if telegram_username:
+                # Normalize: remove @ if present
+                normalized = telegram_username.lstrip("@")
+                user.telegram_username = normalized
+            if team_member_id:
+                user.team_member_id = team_member_id
+            user.updated_at = datetime.utcnow()
+        else:
+            # Create new user
+            user = User()
+            user.telegram_user_id = telegram_user_id
+            if telegram_username:
+                # Normalize: remove @ if present
+                normalized = telegram_username.lstrip("@")
+                user.telegram_username = normalized
+            user.team_member_id = team_member_id
+            session.add(user)
+        
+        session.commit()
+        return user
+
+    def link_user_to_team_member(self, user_id, team_member_id: str) -> Optional[User]:
+        """Link an existing User to a TeamMember"""
+        session = self.Session()
+        user = session.query(User).filter(User.id == user_id).first()
+        if user:
+            user.team_member_id = team_member_id
+            user.updated_at = datetime.utcnow()
+            session.commit()
+        return user
+
+    def get_team_members_without_user(self) -> List[TeamMember]:
+        """Get TeamMembers that don't have an associated User"""
+        session = self.Session()
+        # Get all team_member_ids that have users
+        user_team_ids = {
+            u.team_member_id 
+            for u in session.query(User).filter(User.team_member_id.isnot(None)).all()
+        }
+        # Get all team members not in that set
+        all_members = session.query(TeamMember).all()
+        return [m for m in all_members if m.id not in user_team_ids]
 
     def set_chat_name(self, chat_id: int, chat_name: str, set_curator: bool = False):
         # Update or set chat name. If chat is known to be curator's, set the flag.

@@ -16,7 +16,7 @@ from ...focalboard.focalboard_client import FocalboardClient
 from ...strings import load
 from ...tg.handlers import get_tasks_report_handler
 from ...trello.trello_client import TrelloClient
-from .utils import get_chat_id, get_chat_name, get_sender_id, reply
+from .utils import get_chat_id, get_chat_name, get_sender_id, get_sender_username, reply
 
 logger = logging.getLogger(__name__)
 
@@ -251,6 +251,33 @@ def handle_user_message(
             try:
                 app_context = AppContext()
                 user_id = get_sender_id(update)
+                username = get_sender_username(update) if update.message.from_user.username else None
+                
+                # Auto-create/update User record
+                team_member_id = None
+                if username:
+                    # Normalize username (remove @ if present)
+                    normalized_username = username.lstrip("@")
+                    # Find TeamMember with matching telegram username
+                    team_members = app_context.db_client.get_all_members()
+                    matching_member = next(
+                        (
+                            m for m in team_members 
+                            if m.telegram 
+                            and m.telegram.strip().lstrip("@").lower() == normalized_username.lower()
+                        ),
+                        None
+                    )
+                    if matching_member:
+                        team_member_id = matching_member.id
+                
+                # Upsert User record
+                app_context.db_client.upsert_user_from_telegram(
+                    telegram_user_id=user_id,
+                    telegram_username=username,
+                    team_member_id=team_member_id
+                )
+                
                 query = update.message.text.strip()
                 app_context.n8n_client.send_webhook(user_id, query)
             except Exception as e:
