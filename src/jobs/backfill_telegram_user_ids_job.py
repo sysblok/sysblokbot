@@ -80,8 +80,13 @@ class BackfillTelegramUserIdsJob(BaseJob):
             result = tg_client.resolve_telegram_username(telegram_username)
 
             if not result:
+                # Result is None if:
+                # 1. Username doesn't exist (actual failure)
+                # 2. Username resolves to a channel/group/bot (not a User)
+                # The resolve_telegram_username method logs which case it is
                 logger.warning(
-                    f"Could not resolve username {telegram_username} for {member.name}"
+                    f"Could not resolve username {telegram_username} for {member.name} "
+                    f"(check logs above for details - may be a channel/group, not a user)"
                 )
                 failed_count += 1
                 continue
