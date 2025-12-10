@@ -248,7 +248,11 @@ class DBClient(Singleton):
     def get_user_by_telegram_id(self, telegram_user_id: int) -> Optional[User]:
         """Get User by Telegram user ID"""
         session = self.Session()
-        return session.query(User).filter(User.telegram_user_id == telegram_user_id).first()
+        return (
+            session.query(User)
+            .filter(User.telegram_user_id == telegram_user_id)
+            .first()
+        )
 
     def get_user_by_telegram_username(self, telegram_username: str) -> Optional[User]:
         """Get User by Telegram username (with or without @)"""
@@ -263,17 +267,21 @@ class DBClient(Singleton):
         return session.query(User).filter(User.team_member_id == team_member_id).first()
 
     def upsert_user_from_telegram(
-        self, 
-        telegram_user_id: int, 
+        self,
+        telegram_user_id: int,
         telegram_username: str = None,
-        team_member_id: str = None
+        team_member_id: str = None,
     ) -> User:
         """Create or update User from Telegram data"""
         session = self.Session()
-        
+
         # Try to find existing user by telegram_user_id
-        user = session.query(User).filter(User.telegram_user_id == telegram_user_id).first()
-        
+        user = (
+            session.query(User)
+            .filter(User.telegram_user_id == telegram_user_id)
+            .first()
+        )
+
         if user:
             # Update existing user
             if telegram_username:
@@ -293,7 +301,7 @@ class DBClient(Singleton):
                 user.telegram_username = normalized
             user.team_member_id = team_member_id
             session.add(user)
-        
+
         session.commit()
         return user
 
@@ -312,7 +320,7 @@ class DBClient(Singleton):
         session = self.Session()
         # Get all team_member_ids that have users
         user_team_ids = {
-            u.team_member_id 
+            u.team_member_id
             for u in session.query(User).filter(User.team_member_id.isnot(None)).all()
         }
         # Get all team members not in that set

@@ -251,8 +251,12 @@ def handle_user_message(
             try:
                 app_context = AppContext()
                 user_id = get_sender_id(update)
-                username = get_sender_username(update) if update.message.from_user.username else None
-                
+                username = (
+                    get_sender_username(update)
+                    if update.message.from_user.username
+                    else None
+                )
+
                 # Auto-create/update User record
                 team_member_id = None
                 if username:
@@ -262,22 +266,24 @@ def handle_user_message(
                     team_members = app_context.db_client.get_all_members()
                     matching_member = next(
                         (
-                            m for m in team_members 
-                            if m.telegram 
-                            and m.telegram.strip().lstrip("@").lower() == normalized_username.lower()
+                            m
+                            for m in team_members
+                            if m.telegram
+                            and m.telegram.strip().lstrip("@").lower()
+                            == normalized_username.lower()
                         ),
-                        None
+                        None,
                     )
                     if matching_member:
                         team_member_id = matching_member.id
-                
+
                 # Upsert User record
                 app_context.db_client.upsert_user_from_telegram(
                     telegram_user_id=user_id,
                     telegram_username=username,
-                    team_member_id=team_member_id
+                    team_member_id=team_member_id,
                 )
-                
+
                 query = update.message.text.strip()
                 app_context.n8n_client.send_webhook(user_id, query)
             except Exception as e:

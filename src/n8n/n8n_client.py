@@ -60,7 +60,7 @@ class N8nClient(Singleton):
         headers = {
             "Content-Type": "application/json",
         }
-        
+
         # Add token as query parameter (as curl does)
         params = {}
         if self.token:
@@ -71,15 +71,17 @@ class N8nClient(Singleton):
                 f"Sending n8n webhook to: {self.webhook_url} "
                 f"(token present: {bool(self.token)})"
             )
-            
+
             response = requests.post(
-                self.webhook_url, json=payload, headers=headers, params=params, timeout=10
+                self.webhook_url,
+                json=payload,
+                headers=headers,
+                params=params,
+                timeout=10,
             )
-            
+
             # Log response details for debugging
-            logger.debug(
-                f"N8n webhook response: status={response.status_code}"
-            )
+            logger.debug(f"N8n webhook response: status={response.status_code}")
             response.raise_for_status()
             logger.debug(f"N8n webhook sent successfully for user {user_id}")
         except requests.exceptions.HTTPError as e:
@@ -93,8 +95,8 @@ class N8nClient(Singleton):
                 # Redact token from error message
                 error_msg = str(e)
                 # Replace token in URL (both ?token= and &token=)
-                error_msg = re.sub(r'[?&]token=[^&\s]+', r'?token=REDACTED', error_msg)
-                
+                error_msg = re.sub(r"[?&]token=[^&\s]+", r"?token=REDACTED", error_msg)
+
                 # Log response body for debugging
                 try:
                     response_body = e.response.text[:500]  # First 500 chars
@@ -110,7 +112,7 @@ class N8nClient(Singleton):
         except requests.exceptions.RequestException as e:
             # Redact token from error message
             error_msg = str(e)
-            error_msg = re.sub(r'[?&]token=[^&\s]+', r'?token=REDACTED', error_msg)
+            error_msg = re.sub(r"[?&]token=[^&\s]+", r"?token=REDACTED", error_msg)
             logger.error(
                 f"Failed to send n8n webhook for user {user_id}: {error_msg}",
                 exc_info=True,
@@ -120,4 +122,3 @@ class N8nClient(Singleton):
         """To be called after config automatic update"""
         self._n8n_config = new_n8n_config
         self._update_from_config()
-

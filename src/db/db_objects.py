@@ -14,11 +14,12 @@ Base = declarative_base()
 
 class GUID(TypeDecorator):
     """Platform-independent GUID type."""
+
     impl = CHAR
     cache_ok = True
 
     def load_dialect_impl(self, dialect):
-        if dialect.name == 'postgresql':
+        if dialect.name == "postgresql":
             return dialect.type_descriptor(UUID())
         else:
             return dialect.type_descriptor(CHAR(36))
@@ -26,7 +27,7 @@ class GUID(TypeDecorator):
     def process_bind_param(self, value, dialect):
         if value is None:
             return value
-        elif dialect.name == 'postgresql':
+        elif dialect.name == "postgresql":
             return str(value)
         else:
             if not isinstance(value, uuid.UUID):
@@ -291,9 +292,13 @@ class User(Base):
     id = Column(GUID(), primary_key=True, default=uuid.uuid4)
     team_member_id = Column(String, ForeignKey("team.id"), unique=True, nullable=True)
     telegram_user_id = Column(Integer, unique=True, nullable=True, index=True)
-    telegram_username = Column(String, nullable=True, index=True)  # Stored WITHOUT @, e.g., "username"
+    telegram_username = Column(
+        String, nullable=True, index=True
+    )  # Stored WITHOUT @, e.g., "username"
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(
+        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
     @property
     def telegram_username_with_at(self) -> Optional[str]:

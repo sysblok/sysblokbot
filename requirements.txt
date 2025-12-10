@@ -56,7 +56,7 @@ opentelemetry-proto==1.24.0
 opentelemetry-sdk==1.24.0
 opentelemetry-semantic-conventions==0.45b0
 ordered-set==3.1.1
-packaging==20.3
+packaging==25.0
 pathspec==0.10.3
 pep517==0.8.2
 Pillow==9.4.0
@@ -98,7 +98,7 @@ typed-ast==1.4.1
 typing_extensions==4.4.0
 uritemplate==3.0.1
 urllib3==1.23
-virtualenv==20.17.1
+virtualenv==20.35.4
 vk-api==11.9.1
 wcwidth==0.1.9
 webencodings==0.5.1

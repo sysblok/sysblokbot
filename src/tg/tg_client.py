@@ -51,32 +51,30 @@ class TgClient(Singleton):
     def resolve_telegram_username(self, username: str) -> Optional[Tuple[int, str]]:
         """
         Resolve Telegram username to user ID using telethon.
-        
+
         Args:
             username: Telegram username (with or without @)
-        
+
         Returns:
             Tuple of (user_id, username_without_@) or None if not found
         """
         # Normalize: remove @ for telethon API
         normalized = username.lstrip("@")
-        
+
         try:
             # Check if client is already connected
             was_connected = self.api_client.is_connected()
-            
+
             if not was_connected:
                 # Connect if not already connected
-                self.api_client.loop.run_until_complete(
-                    self.api_client.connect()
-                )
-            
+                self.api_client.loop.run_until_complete(self.api_client.connect())
+
             try:
                 entity = self.api_client.loop.run_until_complete(
                     self.api_client.get_entity(normalized)
                 )
-                
-                if entity and hasattr(entity, 'id'):
+
+                if entity and hasattr(entity, "id"):
                     # Return username WITHOUT @ (as stored in DB)
                     return (entity.id, entity.username if entity.username else None)
             finally:
@@ -86,5 +84,5 @@ class TgClient(Singleton):
         except Exception as e:
             logger.warning(f"Failed to resolve username {username}: {e}", exc_info=True)
             return None
-        
+
         return None
