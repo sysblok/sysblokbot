@@ -1,9 +1,45 @@
+import uuid
+from datetime import datetime
+from typing import Optional
+
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.types import TypeDecorator, CHAR
 
 from ..strings import load
 
 Base = declarative_base()
+
+
+class GUID(TypeDecorator):
+    """Platform-independent GUID type."""
+    impl = CHAR
+    cache_ok = True
+
+    def load_dialect_impl(self, dialect):
+        if dialect.name == 'postgresql':
+            return dialect.type_descriptor(UUID())
+        else:
+            return dialect.type_descriptor(CHAR(36))
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return value
+        elif dialect.name == 'postgresql':
+            return str(value)
+        else:
+            if not isinstance(value, uuid.UUID):
+                return str(uuid.UUID(value))
+            return str(value)
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return value
+        else:
+            if not isinstance(value, uuid.UUID):
+                return uuid.UUID(value)
+            return value
 
 
 class Author(Base):
@@ -247,3 +283,24 @@ def _get_field_or_throw(field):
     if field is None:
         raise ValueError
     return field
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    team_member_id = Column(String, ForeignKey("team.id"), unique=True, nullable=True)
+    telegram_user_id = Column(Integer, unique=True, nullable=True, index=True)
+    telegram_username = Column(String, nullable=True, index=True)  # Stored WITHOUT @, e.g., "username"
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    @property
+    def telegram_username_with_at(self) -> Optional[str]:
+        """Return username with @ prefix for display purposes"""
+        if self.telegram_username:
+            return f"@{self.telegram_username}"
+        return None
+
+    def __repr__(self):
+        return f"User {self.id} tg_id={self.telegram_user_id} tg_username={self.telegram_username} team_member={self.team_member_id}"
