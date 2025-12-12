@@ -2,6 +2,7 @@ appdirs==1.4.3
 astroid==2.3.3
 attrs==19.3.0
 beautifulsoup4==4.10.0
+behave==1.2.6
 black==22.12.0
 CacheControl==0.12.6
 cachetools==4.1.0
