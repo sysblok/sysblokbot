@@ -1,6 +1,6 @@
 import logging
 import time
-from typing import Callable
+from typing import Callable, Optional
 
 import requests
 from bs4 import BeautifulSoup
@@ -24,22 +24,11 @@ class SiteHealthCheckJob(BaseJob):
         **kwargs,
     ):
         if called_from_handler:
-            # TODO: refactor and move it to helper
-            url = args
-            schedules = app_context.config_manager.get_jobs_config(
-                __name__.split(".")[-1]
+            kwargs = SiteHealthCheckJob._get_kwargs_from_args(
+                app_context, args, send, kwargs
             )
-            if len(args) == 0:
-                names = [schedule.get(KWARGS, {}).get("name") for schedule in schedules]
-                pretty_send(
-                    [f"Usage: /check_site_health name\nAvailable names: {names}"], send
-                )
+            if kwargs is None:
                 return
-            assert len(args) == 1
-            name = args[0]
-            for schedule in schedules:
-                if schedule.get(KWARGS, {}).get("name") == name:
-                    kwargs = schedule[KWARGS]
         url = kwargs.get("index_url")
         logger.debug(f"Checking site health for {kwargs.get('name')}: {url}")
         for i in range(3):
@@ -47,7 +36,9 @@ class SiteHealthCheckJob(BaseJob):
                 page = requests.get(url)
                 break
             except Exception as e:
-                logger.error(f"Connection error for {url} (attempt {i+1}/3)", exc_info=e)
+                logger.error(
+                    f"Connection error for {url} (attempt {i+1}/3)", exc_info=e
+                )
                 if i == 2:
                     send(
                         load(
@@ -95,6 +86,27 @@ class SiteHealthCheckJob(BaseJob):
                     status_code=page.status_code,
                 )
             )
+
+    @staticmethod
+    def _get_kwargs_from_args(
+        app_context: AppContext,
+        args: tuple,
+        send: Callable[[str], None],
+        kwargs: dict,
+    ) -> Optional[dict]:
+        schedules = app_context.config_manager.get_jobs_config(__name__.split(".")[-1])
+        if len(args) == 0:
+            names = [schedule.get(KWARGS, {}).get("name") for schedule in schedules]
+            pretty_send(
+                [f"Usage: /check_site_health name\nAvailable names: {names}"], send
+            )
+            return None
+        assert len(args) == 1
+        name = args[0]
+        for schedule in schedules:
+            if schedule.get(KWARGS, {}).get("name") == name:
+                return schedule[KWARGS]
+        return kwargs
 
     @staticmethod
     def _usage_muted():
