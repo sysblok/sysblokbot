@@ -1,4 +1,5 @@
 import logging
+import time
 from typing import Callable
 
 import requests
@@ -41,17 +42,21 @@ class SiteHealthCheckJob(BaseJob):
                     kwargs = schedule[KWARGS]
         url = kwargs.get("index_url")
         logger.debug(f"Checking site health for {kwargs.get('name')}: {url}")
-        try:
-            page = requests.get(url)
-        except Exception as e:
-            send(
-                load(
-                    "site_health_check_job__connection_error",
-                    url=url,
-                )
-            )
-            logger.error(f"Connection error for {url}", exc_info=e)
-            return
+        for i in range(3):
+            try:
+                page = requests.get(url)
+                break
+            except Exception as e:
+                logger.error(f"Connection error for {url} (attempt {i+1}/3)", exc_info=e)
+                if i == 2:
+                    send(
+                        load(
+                            "site_health_check_job__connection_error",
+                            url=url,
+                        )
+                    )
+                    return
+                time.sleep(3)
 
         if page.status_code != 200:
             send(
