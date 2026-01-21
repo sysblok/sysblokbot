@@ -4,6 +4,7 @@ from typing import Callable, Optional
 
 import requests
 from bs4 import BeautifulSoup
+from tenacity import retry, stop_after_attempt
 
 from ..app_context import AppContext
 from ..consts import KWARGS
@@ -31,23 +32,20 @@ class SiteHealthCheckJob(BaseJob):
                 return
         url = kwargs.get("index_url")
         logger.debug(f"Checking site health for {kwargs.get('name')}: {url}")
-        for i in range(3):
-            try:
-                page = requests.get(url)
-                break
-            except Exception as e:
-                logger.error(
-                    f"Connection error for {url} (attempt {i+1}/3)", exc_info=e
+        url = kwargs.get("index_url")
+        logger.debug(f"Checking site health for {kwargs.get('name')}: {url}")
+
+        try:
+            page = SiteHealthCheckJob._fetch(url)
+        except Exception as e:
+            logger.error(f"Connection error for {url}", exc_info=e)
+            send(
+                load(
+                    "site_health_check_job__connection_error",
+                    url=url,
                 )
-                if i == 2:
-                    send(
-                        load(
-                            "site_health_check_job__connection_error",
-                            url=url,
-                        )
-                    )
-                    return
-                time.sleep(3)
+            )
+            return
 
         if page.status_code != 200:
             send(
@@ -111,3 +109,8 @@ class SiteHealthCheckJob(BaseJob):
     @staticmethod
     def _usage_muted():
         return True
+
+    @staticmethod
+    @retry(stop=stop_after_attempt(3))
+    def _fetch(url: str) -> requests.Response:
+        return requests.get(url, timeout=5)
