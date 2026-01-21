@@ -1,4 +1,3 @@
-anyio==4.12.1
 appdirs==1.4.3
 astroid==2.3.3
 attrs==19.3.0
@@ -20,7 +19,6 @@ deepdiff==4.3.2
 Deprecated==1.2.14
 distlib==0.4.0
 distro==1.4.0
-exceptiongroup==1.3.1
 filelock==3.16.1
 freezegun==0.3.15
 future==0.18.2
@@ -32,11 +30,8 @@ google-auth-oauthlib==0.4.1
 googleapis-common-protos==1.63.0
 grpcio==1.63.0
 gspread==3.4.2
-h11==0.16.0
 html5lib==1.0.1
-httpcore==1.0.9
 httplib2==0.18.1
-httpx==0.28.1
 identify==2.5.11
 idna==2.9
 importlib-metadata==7.0.0
