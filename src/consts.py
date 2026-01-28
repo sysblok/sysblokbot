@@ -286,3 +286,17 @@ class CommandCategories(Enum):
     REMINDERS = "help__08_reminders"
     HR = "help__09_hr"
     DEBUG = "help__10_debug"
+
+
+class AccessLevel(Enum):
+    ADMIN = "admin"
+    MANAGER = "manager"
+    USER = "user"
+    HIDDEN = "hidden"
+
+
+class JobType(Enum):
+    ADMIN_BROADCAST = "admin_broadcast"
+    ADMIN_REPLY = "admin_reply"
+    MANAGER_REPLY = "manager_reply"
+    USER_REPLY = "user_reply"
