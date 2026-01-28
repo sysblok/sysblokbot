@@ -1,8 +1,9 @@
 import logging
-from typing import Callable
+from typing import Callable, Optional
 
 import requests
 from bs4 import BeautifulSoup
+from tenacity import retry, stop_after_attempt
 
 from ..app_context import AppContext
 from ..consts import KWARGS
@@ -23,34 +24,26 @@ class SiteHealthCheckJob(BaseJob):
         **kwargs,
     ):
         if called_from_handler:
-            # TODO: refactor and move it to helper
-            url = args
-            schedules = app_context.config_manager.get_jobs_config(
-                __name__.split(".")[-1]
+            kwargs = SiteHealthCheckJob._get_kwargs_from_args(
+                app_context, args, send, kwargs
             )
-            if len(args) == 0:
-                names = [schedule.get(KWARGS, {}).get("name") for schedule in schedules]
-                pretty_send(
-                    [f"Usage: /check_site_health name\nAvailable names: {names}"], send
-                )
+            if kwargs is None:
                 return
-            assert len(args) == 1
-            name = args[0]
-            for schedule in schedules:
-                if schedule.get(KWARGS, {}).get("name") == name:
-                    kwargs = schedule[KWARGS]
         url = kwargs.get("index_url")
         logger.debug(f"Checking site health for {kwargs.get('name')}: {url}")
+        url = kwargs.get("index_url")
+        logger.debug(f"Checking site health for {kwargs.get('name')}: {url}")
+
         try:
-            page = requests.get(url)
+            page = SiteHealthCheckJob._fetch(url)
         except Exception as e:
+            logger.error(f"Connection error for {url}", exc_info=e)
             send(
                 load(
                     "site_health_check_job__connection_error",
                     url=url,
                 )
             )
-            logger.error(f"Connection error for {url}", exc_info=e)
             return
 
         if page.status_code != 200:
@@ -92,5 +85,31 @@ class SiteHealthCheckJob(BaseJob):
             )
 
     @staticmethod
+    def _get_kwargs_from_args(
+        app_context: AppContext,
+        args: tuple,
+        send: Callable[[str], None],
+        kwargs: dict,
+    ) -> Optional[dict]:
+        schedules = app_context.config_manager.get_jobs_config(__name__.split(".")[-1])
+        if len(args) == 0:
+            names = [schedule.get(KWARGS, {}).get("name") for schedule in schedules]
+            pretty_send(
+                [f"Usage: /check_site_health name\nAvailable names: {names}"], send
+            )
+            return None
+        assert len(args) == 1
+        name = args[0]
+        for schedule in schedules:
+            if schedule.get(KWARGS, {}).get("name") == name:
+                return schedule[KWARGS]
+        return kwargs
+
+    @staticmethod
     def _usage_muted():
         return True
+
+    @staticmethod
+    @retry(stop=stop_after_attempt(3))
+    def _fetch(url: str) -> requests.Response:
+        return requests.get(url, timeout=5)
