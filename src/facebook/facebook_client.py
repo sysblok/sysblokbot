@@ -70,6 +70,8 @@ class FacebookClient(Singleton):
     ) -> List[Tuple[datetime, int]]:
         """
         Get statistics on the total reach of new posts.
+        NOTE: 'page_posts_impressions_unique' is deprecated in v19.0.
+        Using 'page_impressions_unique' (Total Page Reach) as replacement.
         """
         batches = self._get_all_batches(
             connection_name="insights",
@@ -88,6 +90,8 @@ class FacebookClient(Singleton):
     ) -> List[Tuple[datetime, int]]:
         """
         Get statistics on the organic reach of new posts.
+        NOTE: 'page_posts_impressions_organic_unique' is deprecated in v19.0.
+        Using 'page_impressions_organic_unique' (Organic Page Reach) as replacement.
         """
         batches = self._get_all_batches(
             connection_name="insights",
@@ -124,6 +128,8 @@ class FacebookClient(Singleton):
     ) -> List[Tuple[datetime, int]]:
         """
         Get the number of new people who liked the page for the period.
+        NOTE: 'page_fan_adds_unique' is deprecated.
+        Using 'page_daily_follows_unique' (New Followers) as proxy.
         """
         batches = self._get_all_batches(
             connection_name="insights",
@@ -147,7 +153,7 @@ class FacebookClient(Singleton):
         }
         params.update(kwargs)
         page = self._make_graph_api_call(f"{self._page_id}/{connection_name}", params)
-        
+
         if "error" in page:
             logger.error(f"Error fetching {connection_name}: {page['error']}")
             return result
@@ -198,8 +204,10 @@ class FacebookClient(Singleton):
                 f"{self._page_id}/{connection_name}", args
             )
             if "error" in current_page:
-                 logger.error(f"Error in pagination for {connection_name}: {current_page['error']}")
-                 break
+                logger.error(
+                    f"Error in pagination for {connection_name}: {current_page['error']}"
+                )
+                break
 
             if "data" in current_page:
                 result += current_page["data"]
