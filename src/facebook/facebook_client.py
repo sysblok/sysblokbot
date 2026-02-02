@@ -90,8 +90,6 @@ class FacebookClient(Singleton):
     ) -> List[Tuple[datetime, int]]:
         """
         Get statistics on the organic reach of new posts.
-        NOTE: 'page_posts_impressions_organic_unique' is deprecated in v19.0.
-        Using 'page_impressions_organic_unique' (Organic Page Reach) as replacement.
         """
         batches = self._get_all_batches(
             connection_name="insights",
@@ -128,8 +126,6 @@ class FacebookClient(Singleton):
     ) -> List[Tuple[datetime, int]]:
         """
         Get the number of new people who liked the page for the period.
-        NOTE: 'page_fan_adds_unique' is deprecated.
-        Using 'page_daily_follows_unique' (New Followers) as proxy.
         """
         batches = self._get_all_batches(
             connection_name="insights",
