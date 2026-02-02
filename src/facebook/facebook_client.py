@@ -73,7 +73,7 @@ class FacebookClient(Singleton):
         """
         batches = self._get_all_batches(
             connection_name="insights",
-            metric="page_posts_impressions_unique",
+            metric="page_impressions_unique",
             period=period.value,
             since=since,
             until=until,
@@ -91,7 +91,7 @@ class FacebookClient(Singleton):
         """
         batches = self._get_all_batches(
             connection_name="insights",
-            metric="page_posts_impressions_organic_unique",
+            metric="page_impressions_organic_unique",
             period=period.value,
             since=since,
             until=until,
@@ -127,7 +127,7 @@ class FacebookClient(Singleton):
         """
         batches = self._get_all_batches(
             connection_name="insights",
-            metric="page_fan_adds_unique",
+            metric="page_daily_follows_unique",
             period=period.value,
             since=since,
             until=until,
@@ -147,7 +147,12 @@ class FacebookClient(Singleton):
         }
         params.update(kwargs)
         page = self._make_graph_api_call(f"{self._page_id}/{connection_name}", params)
-        result += page["data"]
+        
+        if "error" in page:
+            logger.error(f"Error fetching {connection_name}: {page['error']}")
+            return result
+
+        result += page.get("data", [])
         # process next
         result += self._iterate_over_pages(connection_name, since, until, page, True)
         # process previous
@@ -192,10 +197,14 @@ class FacebookClient(Singleton):
             current_page = self._make_graph_api_call(
                 f"{self._page_id}/{connection_name}", args
             )
+            if "error" in current_page:
+                 logger.error(f"Error in pagination for {connection_name}: {current_page['error']}")
+                 break
+
             if "data" in current_page:
                 result += current_page["data"]
             else:
-                logger.error(f"Error in pagination: {current_page}")
+                logger.warning(f"No data found in pagination response: {current_page}")
                 break
         return result
 
