@@ -1,5 +1,5 @@
+import asyncio
 import logging
-import time
 from typing import Callable
 
 from ..app_context import AppContext
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class BackfillTelegramUserIdsJob(BaseJob):
     @staticmethod
-    def _execute(
+    async def _execute(
         app_context: AppContext, send: Callable[[str], None], called_from_handler=False
     ):
         """
@@ -75,9 +75,9 @@ class BackfillTelegramUserIdsJob(BaseJob):
 
             # Try to resolve username to user_id
             # Add delay to avoid rate limiting (telethon has limits)
-            time.sleep(0.2)  # 200ms delay between requests
+            await asyncio.sleep(0.2)  # 200ms delay between requests
 
-            result = tg_client.resolve_telegram_username(telegram_username)
+            result = await tg_client.resolve_telegram_username(telegram_username)
 
             if not result:
                 # Result is None if:

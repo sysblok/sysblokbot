@@ -13,11 +13,11 @@ logger = logging.getLogger(__name__)
 
 class HRCheckChatConsistencyFrozenJob(BaseJob):
     @staticmethod
-    def _execute(
+    async def _execute(
         app_context: AppContext, send: Callable[[str], None], called_from_handler=False
     ):
         # get users that are in the main chat
-        chat_users = app_context.tg_client.get_main_chat_users()
+        chat_users = await app_context.tg_client.get_main_chat_users()
         # get Frozen users
         frozen_members = app_context.role_manager.get_members_for_role(
             Roles.FROZEN_MEMBER

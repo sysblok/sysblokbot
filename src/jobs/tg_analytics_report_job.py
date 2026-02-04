@@ -14,19 +14,30 @@ logger = logging.getLogger(__name__)
 
 class TgAnalyticsReportJob(BaseJob):
     @staticmethod
-    def _execute(
+    async def _execute(
         app_context: AppContext, send: Callable[[str], None], called_from_handler=False
     ):
-        app_context.tg_client.api_client.loop.run_until_complete(
-            app_context.tg_client.api_client.connect()
-        )
-        stats = app_context.tg_client.api_client.loop.run_until_complete(
-            app_context.tg_client.api_client.get_stats(app_context.tg_client.channel)
-        )
-        entity = app_context.tg_client.api_client.loop.run_until_complete(
-            app_context.tg_client.api_client.get_entity(app_context.tg_client.channel)
-        )
-        app_context.tg_client.api_client.disconnect()
+        # We use the raw api_client here, so we must manage connection manually
+        if not app_context.tg_client.api_client.is_connected():
+            await app_context.tg_client.api_client.connect()
+
+        try:
+            stats = await app_context.tg_client.api_client.get_stats(
+                app_context.tg_client.channel
+            )
+            entity = await app_context.tg_client.api_client.get_entity(
+                app_context.tg_client.channel
+            )
+        finally:
+            # Do not disconnect as other jobs might be using the client locally?
+            # But TgClient generally keeps it disconnected?
+            # Based on previous code, it disconnected. Let's keep it safe.
+            # Wait, TgClient.resolve_telegram_username connects and disconnects.
+            # So we should probably disconnect to avoid state accumulation if it's meant to be ephemeral.
+            # BUT if we are running the bot (TelegramSender), isn't the client connected?
+            # No, TelegramSender uses `bot` instance. TgClient uses `TelegramClient` (Userbot/MTProto).
+            # So they are separate.
+            await app_context.tg_client.api_client.disconnect()
         new_posts_count = len(stats.recent_message_interactions)
         followers_stats = TgAnalyticsReportJob._get_followers_stats(stats)
         message = load(

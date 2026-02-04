@@ -44,6 +44,6 @@ from .start_handler import start
 # Plain text message handler
 from .user_message_handler import (
     handle_callback_query,
-    handle_new_members,
     handle_user_message,
 )
+from .flow_handlers import handle_new_members
