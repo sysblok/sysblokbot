@@ -156,8 +156,6 @@ class SysBlokBot:
         def asyncify(func):
             async def wrapper(*args, **kwargs):
                 results = func(*args, **kwargs)
-                if asyncio.iscoroutine(results):
-                    return await results
                 return results
 
             return wrapper

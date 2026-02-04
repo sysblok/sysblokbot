@@ -806,16 +806,6 @@ class ManageRemindersEnterChatIdHandler(BaseUserMessageHandler):
         return None
 
     def handle(self) -> Optional[PlainTextUserAction]:
-        # If user clicked a button (like "Create New" again) instead of typing
-        if not self.user_input:
-            if self.button:
-                # If valid known button from previous step, maybe we should just ignore or re-ask
-                # For now, let's just ask to enter ID again to avoid crash
-                reply(load("manager_reminders_handler__enter_chat_id"), self.update)
-                return PlainTextUserAction.MANAGE_REMINDERS__ENTER_CHAT_ID
-            # If no input and no button (shouldn't happen?), return same state
-            return PlainTextUserAction.MANAGE_REMINDERS__ENTER_CHAT_ID
-
         try:
             chat_id = int(self.user_input)
             chat_title = DBClient().get_chat_name(chat_id)
@@ -914,15 +904,6 @@ class ManageRemindersEnterTimeHandler(BaseUserMessageHandler):
                 self.command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID]
             )
             DBClient().update_reminder(reminder_id, weekday=weekday_num, time=time)
-            weekday_name = self.command_data[consts.ManageRemindersData.WEEKDAY_NAME]
-            reply(
-                load(
-                    "manage_reminders_handler__success_time",
-                    weekday_name=weekday_name,
-                    time=time,
-                ),
-                self.update,
-            )
             return None
 
         button_yes = telegram.InlineKeyboardButton(
@@ -951,7 +932,7 @@ class ManageRemindersSuccessHandler(BaseUserMessageHandler):
         weekday_name = self.command_data[consts.ManageRemindersData.WEEKDAY_NAME]
         time = self.command_data[consts.ManageRemindersData.TIME]
 
-        if self.button == consts.ButtonValues.MANAGE_REMINDERS__POLL__YES:
+        if self.button == consts.ButtonValues.MANAGE_REMINDERS__TOGGLE_POLL__YES:
             if text is None:
                 reminder_id = int(
                     self.command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID]

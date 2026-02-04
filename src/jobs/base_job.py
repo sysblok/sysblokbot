@@ -28,46 +28,13 @@ class BaseJob:
 
         try:
             logging_func(f"Job {module} started...")
-            import inspect
-            import asyncio
-
-            # This returns either a result (sync) or coroutine (async)
-            res = cls._execute(
+            cls._execute(
                 app_context,
                 send,
                 called_from_handler,
                 *args if args else [],
                 **kwargs if kwargs else {},
             )
-
-            if inspect.isawaitable(res):
-                try:
-                    # Check if we are running in the main event loop (e.g. called from Handler)
-                    loop = asyncio.get_running_loop()
-                    if loop.is_running():
-                        # We are in an async context (Handler).
-                        # Return the coroutine so the caller (asyncify) can await it.
-                        return res
-                except RuntimeError:
-                    # No running loop. We are likely in a Scheduler thread.
-                    pass
-
-                # If we are here, we need to run the coroutine synchronously/threadsafe
-                # The coroutine likely uses TgClient which is bound to the Main Loop.
-                # So we must schedule it on the Main Loop and wait for result.
-
-                # Check if app_context has tg_client and valid loop
-                if hasattr(app_context, "tg_client") and hasattr(
-                    app_context.tg_client, "api_client"
-                ):
-                    main_loop = app_context.tg_client.api_client.loop
-                    if main_loop and main_loop.is_running():
-                        future = asyncio.run_coroutine_threadsafe(res, main_loop)
-                        return future.result()
-
-                # Fallback (e.g. testing or no loop running): run locally
-                return asyncio.run(res)
-
             logging_func(f"Job {module} finished")
         except Exception as e:
             # should not raise exception, so that schedule module won't go mad retrying

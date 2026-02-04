@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Callable, Optional, Literal
 
-from ..consts import CommandCategories
+from ...consts import CommandCategories
 from . import handlers
 
 
