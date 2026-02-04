@@ -12,11 +12,11 @@ logger = logging.getLogger(__name__)
 
 class HRCheckChatConsistencyJob(BaseJob):
     @staticmethod
-    async def _execute(
+    def _execute(
         app_context: AppContext, send: Callable[[str], None], called_from_handler=False
     ):
         # get users that are in the main chat
-        chat_users = await app_context.tg_client.get_main_chat_users()
+        chat_users = app_context.tg_client.get_main_chat_users()
         # get users that _should_ be in the main chat <==> roles include Active or Frozen
         active_members = app_context.role_manager.get_members_for_role(
             Roles.ACTIVE_MEMBER

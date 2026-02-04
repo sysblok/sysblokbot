@@ -456,7 +456,7 @@ class DBClient(Singleton):
     @staticmethod
     def _make_next_reminder_ts(weekday_num: int, time: str):
         hour, minute = map(int, time.split(":"))
-        today = DBClient._get_now_msk_naive()
+        today = datetime.today()
 
         next_reminder = today + timedelta(days=(weekday_num - today.weekday()))
         next_reminder = next_reminder.replace(

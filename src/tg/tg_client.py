@@ -38,17 +38,17 @@ class TgClient(Singleton):
         self.sysblok_chats = self._tg_config["sysblok_chats"]
         self.channel = self._tg_config["channel"]
 
-    async def _get_chat_users(self, chat_id: str) -> List[User]:
-        async with self.api_client:
-            users = await self.api_client.get_participants(chat_id)
+    def _get_chat_users(self, chat_id: str) -> List[User]:
+        with self.api_client:
+            users = self.api_client.loop.run_until_complete(
+                self.api_client.get_participants(chat_id)
+            )
         return users
 
-    async def get_main_chat_users(self) -> List[User]:
-        return await self._get_chat_users(self.sysblok_chats["main_chat"])
+    def get_main_chat_users(self) -> List[User]:
+        return self._get_chat_users(self.sysblok_chats["main_chat"])
 
-    async def resolve_telegram_username(
-        self, username: str
-    ) -> Optional[Tuple[int, str]]:
+    def resolve_telegram_username(self, username: str) -> Optional[Tuple[int, str]]:
         """
         Resolve Telegram username to user ID using telethon.
 
@@ -67,10 +67,12 @@ class TgClient(Singleton):
 
             if not was_connected:
                 # Connect if not already connected
-                await self.api_client.connect()
+                self.api_client.loop.run_until_complete(self.api_client.connect())
 
             try:
-                entity = await self.api_client.get_entity(normalized)
+                entity = self.api_client.loop.run_until_complete(
+                    self.api_client.get_entity(normalized)
+                )
 
                 # Only process User entities, skip channels, groups, bots, etc.
                 if entity and isinstance(entity, User):
@@ -86,7 +88,7 @@ class TgClient(Singleton):
             finally:
                 # Only disconnect if we connected it
                 if not was_connected:
-                    await self.api_client.disconnect()
+                    self.api_client.disconnect()
         except Exception as e:
             logger.warning(f"Failed to resolve username {username}: {e}", exc_info=True)
             return None
