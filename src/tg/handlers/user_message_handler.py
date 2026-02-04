@@ -12,13 +12,13 @@ from . import flow_handlers
 logger = logging.getLogger(__name__)
 
 
-def handle_callback_query(
+async def handle_callback_query(
     update: telegram.Update, tg_context: telegram.ext.CallbackContext
 ):
     """
     Handler for handling button callbacks. Redirects to handle_user_message
     """
-    update.callback_query.answer()
+    await update.callback_query.answer()
     handle_user_message(update, tg_context, ButtonValues(update.callback_query.data))
 
 
