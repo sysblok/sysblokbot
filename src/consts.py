@@ -272,17 +272,31 @@ WEEKDAY_BUTTONS = [
 
 class CommandCategories(Enum):
     """
-    Enum for /help command sections string aliases.
+    Enum for /help command sections strings.
     """
 
-    MOST_USED = "help__00_most_used"
-    DATA_SYNC = "help__01_synchronize"
-    CONFIG = "help__02_config"
+    MOST_USED = "help__01_most_used"
+    SUMMARY = "help__02_summary"
     BROADCAST = "help__03_broadcast"
-    LOGGING = "help__04_logging"
-    SUMMARY = "help__05_summary"
-    STATS = "help__06_stats"
-    REGISTRY = "help__07_registry"
+    STATS = "help__04_stats"
+    REGISTRY = "help__05_registry"
+    DATA_SYNC = "help__06_data_sync"
+    CONFIG = "help__07_config"
+    LOGGING = "help__07_logging"
     REMINDERS = "help__08_reminders"
     HR = "help__09_hr"
     DEBUG = "help__10_debug"
+
+
+class AccessLevel(Enum):
+    ADMIN = "admin"
+    MANAGER = "manager"
+    USER = "user"
+    HIDDEN = "hidden"
+
+
+class JobType(Enum):
+    ADMIN_BROADCAST = "admin_broadcast"
+    ADMIN_REPLY = "admin_reply"
+    MANAGER_REPLY = "manager_reply"
+    USER_REPLY = "user_reply"
