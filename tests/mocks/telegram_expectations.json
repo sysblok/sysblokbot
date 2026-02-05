@@ -1,0 +1,162 @@
+[
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/bot.*/getMe"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "ok": true,
+        "result": {
+          "id": 123456789,
+          "is_bot": true,
+          "first_name": "TestBot",
+          "username": "test_bot",
+          "can_join_groups": true,
+          "can_read_all_group_messages": false,
+          "supports_inline_queries": false
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/bot.*/getUpdates"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "ok": true,
+        "result": []
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/bot.*/sendMessage"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "ok": true,
+        "result": {
+          "message_id": 1,
+          "from": {
+            "id": 123456789,
+            "is_bot": true,
+            "first_name": "TestBot",
+            "username": "test_bot"
+          },
+          "chat": {
+            "id": 1,
+            "first_name": "Test",
+            "type": "private"
+          },
+          "date": 1234567890,
+          "text": "Message sent"
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/bot.*/sendMessage"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "ok": true,
+        "result": {
+          "message_id": 1,
+          "from": {
+            "id": 123456789,
+            "is_bot": true,
+            "first_name": "TestBot",
+            "username": "test_bot"
+          },
+          "chat": {
+            "id": 1,
+            "first_name": "Test",
+            "type": "private"
+          },
+          "date": 1234567890,
+          "text": "Message sent"
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/bot.*/sendPoll"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "ok": true,
+        "result": {
+          "message_id": 2,
+          "from": {
+            "id": 123456789,
+            "is_bot": true,
+            "first_name": "TestBot",
+            "username": "test_bot"
+          },
+          "chat": {
+            "id": 1,
+            "first_name": "Test",
+            "type": "private"
+          },
+          "date": 1234567890,
+          "poll": {
+            "id": "poll123",
+            "question": "Test poll",
+            "options": [],
+            "total_voter_count": 0,
+            "is_closed": false,
+            "is_anonymous": true,
+            "type": "regular",
+            "allows_multiple_answers": false
+          }
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/bot.*/deleteWebhook"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "ok": true,
+        "result": true,
+        "description": "Webhook was deleted"
+      }
+    }
+  }
+]
+
