@@ -5,7 +5,12 @@ from urllib.parse import quote, urljoin
 
 import requests
 
-from ..consts import TrelloCustomFieldTypeAlias, TrelloCustomFieldTypes, BoardListAlias
+from ..consts import (
+    TrelloCustomFieldTypeAlias,
+    TrelloCustomFieldTypes,
+    BoardListAlias,
+    IS_LOCAL,
+)
 from ..strings import load
 from ..utils.singleton import Singleton
 from . import trello_objects as objects
@@ -252,6 +257,15 @@ class TrelloClient(Singleton):
             "key": self.api_key,
             "token": self.token,
         }
+
+        # Skip API calls in local environment
+        if IS_LOCAL:
+            logger.info("IS_LOCAL=True, skipping Trello API calls during init")
+            self.lists_config = {}
+            self.custom_fields_type_config = {}
+            self.custom_fields_config = {}
+            return
+
         # TODO(alexeyqu): move to DB
         lists = self.get_lists()
         self.lists_config = self._fill_alias_id_map(lists, BoardListAlias)
