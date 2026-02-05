@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  mockserver:
+    image: mockserver/mockserver:latest
+    ports:
+      - "1080:1080"
+    volumes:
+      - ./tests/mocks:/config
+    environment:
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /config/telegram_expectations.json
+    networks:
+      - test-network
+
+  sysblokbot:
+    container_name: sysblokbot-test
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - mockserver
+    environment:
+      - ENVIRONMENT=local
+      - TELEGRAM_BASE_URL=http://mockserver:1080
+    volumes:
+      - ./config_override.json:/app/config_override.json
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge
+
