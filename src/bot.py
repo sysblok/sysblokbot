@@ -75,14 +75,22 @@ class SysBlokBot:
                     f,
                 )
 
-        self.application = (
+        # Build Telegram application with optional custom base URL for testing
+        builder = (
             ApplicationBuilder()
             .persistence(PicklePersistence(filepath="persistent_storage.pickle"))
             .token(tg_config["token"])
             # .post_shutdown(signal_handler)
             .concurrent_updates(True)
-            .build()
         )
+
+        # Allow overriding Telegram API base URL (for mocking in tests)
+        telegram_base_url = os.environ.get("TELEGRAM_BASE_URL")
+        if telegram_base_url:
+            logger.info(f"Using custom Telegram base URL: {telegram_base_url}")
+            builder = builder.base_url(telegram_base_url)
+
+        self.application = builder.build()
         self.telegram_sender = sender.TelegramSender(
             bot=self.application.bot, tg_config=tg_config
         )

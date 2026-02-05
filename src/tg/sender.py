@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+import os
 import re
 import time
 from typing import Callable, List
@@ -16,6 +17,9 @@ from ..consts import MESSAGE_DELAY_SEC
 from ..utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
+
+# Allow overriding Telegram API base URL (for mocking in tests)
+TELEGRAM_API_BASE = os.environ.get("TELEGRAM_BASE_URL", "https://api.telegram.org")
 
 
 class TelegramSender(Singleton):
@@ -79,7 +83,7 @@ class TelegramSender(Singleton):
             # Handle poll sending
             poll_options = kwargs["poll_options"]
             resp = requests.get(
-                url=f"https://api.telegram.org/bot{self._tg_config['token']}/sendPoll",
+                url=f"{TELEGRAM_API_BASE}/bot{self._tg_config['token']}/sendPoll",
                 params={
                     "chat_id": chat_id,
                     "question": poll_options["question"],
@@ -120,7 +124,7 @@ class TelegramSender(Singleton):
                     if "reply_markup" in kwargs:
                         payload["reply_markup"] = kwargs["reply_markup"].to_json()
                     resp = requests.get(
-                        url=f"https://api.telegram.org/bot{self._tg_config['token']}/sendMessage",
+                        url=f"{TELEGRAM_API_BASE}/bot{self._tg_config['token']}/sendMessage",
                         json=payload,
                     )
                     resp.raise_for_status()
