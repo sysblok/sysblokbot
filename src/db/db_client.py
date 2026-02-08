@@ -282,27 +282,32 @@ class DBClient(Singleton):
             .first()
         )
 
-        if user:
-            # Update existing user
-            if telegram_username:
-                # Normalize: remove @ if present
-                normalized = telegram_username.lstrip("@")
-                user.telegram_username = normalized
-            if team_member_id:
+        try:
+            if user:
+                # Update existing user
+                if telegram_username:
+                    # Normalize: remove @ if present
+                    normalized = telegram_username.lstrip("@")
+                    user.telegram_username = normalized
+                if team_member_id:
+                    user.team_member_id = team_member_id
+                user.updated_at = datetime.utcnow()
+            else:
+                # Create new user
+                user = User()
+                user.telegram_user_id = telegram_user_id
+                if telegram_username:
+                    # Normalize: remove @ if present
+                    normalized = telegram_username.lstrip("@")
+                    user.telegram_username = normalized
                 user.team_member_id = team_member_id
-            user.updated_at = datetime.utcnow()
-        else:
-            # Create new user
-            user = User()
-            user.telegram_user_id = telegram_user_id
-            if telegram_username:
-                # Normalize: remove @ if present
-                normalized = telegram_username.lstrip("@")
-                user.telegram_username = normalized
-            user.team_member_id = team_member_id
-            session.add(user)
+                session.add(user)
 
-        session.commit()
+            session.commit()
+        except Exception as e:
+            logger.warning("Failed to upsert user from telegram", exc_info=e)
+            session.rollback()
+            return None
         return user
 
     def link_user_to_team_member(self, user_id, team_member_id: str) -> Optional[User]:
