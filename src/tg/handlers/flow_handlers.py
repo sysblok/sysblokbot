@@ -80,7 +80,8 @@ def handle_stateless_message(update, tg_context):
             )
 
             query = update.message.text.strip()
-            app_context.n8n_client.send_webhook(user_id, query)
+            response = app_context.n8n_client.send_webhook(user_id, query)
+            reply(response["message"], update)
         except Exception as e:
             logger.error(
                 f"Failed to send message to n8n: {e}",
