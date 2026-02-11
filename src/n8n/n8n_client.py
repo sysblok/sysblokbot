@@ -23,7 +23,7 @@ class N8nClient(Singleton):
         self.token = self._n8n_config.get("token", "")
         self.users = self._n8n_config.get("users", {})
 
-    def send_webhook(self, user_id: int, query: str) -> None:
+    def send_webhook(self, user_id: int, query: str) -> dict:
         """
         Send a webhook request to n8n with user and request information.
 
@@ -84,6 +84,8 @@ class N8nClient(Singleton):
             logger.debug(f"N8n webhook response: status={response.status_code}")
             response.raise_for_status()
             logger.debug(f"N8n webhook sent successfully for user {user_id}")
+
+            return response.json()
         except requests.exceptions.HTTPError as e:
             # 404 means webhook endpoint doesn't exist (expected during setup)
             if e.response.status_code == 404:
