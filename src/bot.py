@@ -22,11 +22,12 @@ from .consts import (
     COMMIT_URL,
     USAGE_LOG_LEVEL,
     CommandCategories,
+    JobType,
+    AccessLevel,
 )
-from .jobs.utils import get_job_runnable
-from .tg import handlers, sender
+from .tg import handlers, sender, handler_strategies
 from .tg.handler_registry import HANDLER_REGISTRY
-from .tg.handlers.utils import admin_only, direct_message_only, manager_only
+from .tg.handlers.utils import direct_message_only
 
 logging.addLevelName(USAGE_LOG_LEVEL, "NOTICE")
 
@@ -105,43 +106,55 @@ class SysBlokBot:
 
     def init_handlers(self):
         """
-        Initializes Telegram handlers based on the configuration in `HANDLER_REGISTRY`.
+        Initializes all bot handlers from the central HANDLER_REGISTRY.
         Iterates over the registry, resolves handlers (direct or job-based),
         applies wrappers (e.g. direct_only), and registers them with the application.
         """
+        # Strategy mapping
+        strategies = {
+            JobType.ADMIN_BROADCAST: handler_strategies.AdminBroadcastFactory(),
+            JobType.ADMIN_REPLY: handler_strategies.AdminReplyFactory(),
+            JobType.MANAGER_REPLY: handler_strategies.ManagerReplyFactory(),
+            JobType.USER_REPLY: handler_strategies.UserReplyFactory(),
+        }
+
         # Register handlers from registry
         for config in HANDLER_REGISTRY:
             # Resolve handler
             handler = config.handler_func
+
             if config.job_name:
-                if config.job_type == "admin_broadcast":
-                    handler = self.admin_broadcast_handler(config.job_name)
-                elif config.job_type == "admin_reply":
-                    handler = self.admin_reply_handler(config.job_name)
-                elif config.job_type == "manager_reply":
-                    handler = self.manager_reply_handler(config.job_name)
-                elif config.job_type == "user_reply":
-                    handler = self.user_handler(config.job_name)
+                strategy = strategies.get(config.job_type)
+                if strategy:
+                    handler = strategy.create(
+                        config.job_name,
+                        self.app_context,
+                        self.telegram_sender,
+                        self.config_manager,
+                    )
+                else:
+                    logger.error(
+                        f"Unknown job type {config.job_type} for job {config.job_name}"
+                    )
+                    continue
 
             # Apply modifiers
             if config.direct_only:
                 handler = direct_message_only(handler)
 
             # Register
-            if config.access_level == "admin":
+            if config.access_level == AccessLevel.ADMIN:
                 self.add_admin_handler(
                     config.command, config.category, handler, config.description
                 )
-            elif config.access_level == "manager":
+            elif config.access_level == AccessLevel.MANAGER:
                 self.add_manager_handler(
                     config.command, config.category, handler, config.description
                 )
-            elif config.access_level == "user":
+            elif config.access_level == AccessLevel.USER:
                 self.add_user_handler(
                     config.command, config.category, handler, config.description
                 )
-            else:  # hidden
-                self.add_handler(config.command, handler)
 
         # Special case: Help handler (requires dynamic self.handlers_info)
         self.add_admin_handler(
@@ -251,56 +264,3 @@ class SysBlokBot:
         """Adds handler. It will be listed in /help for everybody"""
         self.add_handler(handler_cmd, handler_func)
         self.handlers_info[handler_category]["user"][f"/{handler_cmd}"] = description
-
-    # Methods, creating handlers from jobs with proper invocation restrictions
-    def admin_broadcast_handler(self, job_name: str) -> Callable:
-        """
-        Handler that invokes the job as configured in settings, if called by admin.
-        Can possibly send message to multiple chat ids, if configured in settings.
-        """
-        return admin_only(self._create_broadcast_handler(job_name))
-
-    def admin_reply_handler(self, job_name: str) -> Callable:
-        """
-        Handler that invokes the job as configured in settings, if called by admin.
-        Replies to the admin that invoked it.
-        """
-        return admin_only(self._create_reply_handler(job_name))
-
-    def manager_reply_handler(self, job_name: str) -> Callable:
-        """
-        Handler that replies if manager invokes it (DM or chat).
-        """
-        return manager_only(
-            self._create_reply_handler(
-                job_name,
-            )
-        )
-
-    def user_handler(self, job_name: str) -> Callable:
-        """
-        Handler that replies to any user.
-        """
-        return self._create_reply_handler(job_name)
-
-    def _create_reply_handler(self, job_name: str) -> Callable:
-        """
-        Creates a handler that replies to a message of given user.
-        """
-        return lambda update, tg_context: get_job_runnable(job_name)(
-            app_context=self.app_context,
-            send=self.telegram_sender.create_reply_send(update),
-            called_from_handler=True,
-            args=update.message.text.split()[1:],
-        )
-
-    def _create_broadcast_handler(self, job_name: str) -> Callable:
-        """
-        Creates a handler that sends message to list of chat ids.
-        """
-        chat_ids = self.config_manager.get_job_send_to(job_name)
-        return lambda update, tg_context: get_job_runnable(job_name)(
-            app_context=self.app_context,
-            send=self.telegram_sender.create_chat_ids_send(chat_ids),
-            called_from_handler=True,
-        )
