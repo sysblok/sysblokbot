@@ -30,6 +30,10 @@ APP_SOURCE = os.environ.get("APP_SOURCE", AppSource.DEFAULT.value)
 TELEGRAM_ERROR_CHAT_ID = os.environ.get("TELEGRAM_ERROR_CHAT_ID", -1)
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN", "")
 
+# Environment mode: "local" skips external API calls for testing
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "production")
+IS_LOCAL = ENVIRONMENT == "local"
+
 ROOT_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 CONFIG_PATH = os.path.join(ROOT_DIR, "config.json")
 CONFIG_OVERRIDE_PATH = os.path.join(ROOT_DIR, "config_override.json")
