@@ -19,9 +19,6 @@ from .fill_posts_list_focalboard_job import FillPostsListFocalboardJob
 from .fill_posts_list_job import FillPostsListJob
 from .hr_acquisition_job import HRAcquisitionJob
 from .hr_acquisition_pt_job import HRAcquisitionPTJob
-from .hr_check_chat_consistency_frozen_job import HRCheckChatConsistencyFrozenJob
-from .hr_check_chat_consistency_job import HRCheckChatConsistencyJob
-from .hr_get_members_without_telegram_job import HRGetMembersWithoutTelegramJob
 from .hr_status_job import HRStatusJob
 from .ig_analytics_report_job import IGAnalyticsReportJob
 from .publication_plans_job import PublicationPlansJob
