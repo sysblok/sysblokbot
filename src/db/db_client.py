@@ -1,8 +1,6 @@
-import json
 import logging
-import re
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -125,14 +123,6 @@ class DBClient(Singleton):
             return 0
         return len(rubrics)
 
-    def fill_team_roles(self, member_roles: Dict[str, List[str]]):
-        # Set roles for users
-        session = self.Session()
-        for member_id, roles in member_roles.items():
-            update = {TeamMember.roles: json.dumps(roles)}
-            session.query(TeamMember).filter(TeamMember.id == member_id).update(update)
-        session.commit()
-
     def find_focalboard_username_by_telegram_username(self, telegram_username: str):
         # TODO: make batch queries
         session = self.Session()
@@ -216,34 +206,6 @@ class DBClient(Singleton):
     def get_all_members(self) -> List[TeamMember]:
         session = self.Session()
         return session.query(TeamMember).all()
-
-    def get_members_for_role(self, role_name: str) -> List[TeamMember]:
-        if not re.match(r"[a-z_]+", role_name):
-            logger.warning(f"get_members_for_role: weird role_name: {role_name}")
-            return []
-        session = self.Session()
-        members = (
-            session.query(TeamMember)
-            .filter(TeamMember.roles.like(f"%{role_name}%"))
-            .all()
-        )
-        return members
-
-    def get_member_by_name(self, member_name: str) -> Optional[TeamMember]:
-        if not re.match(r"[А-Яа-я ]+", member_name):
-            logger.warning(f"get_member_by_name: weird member_name: {member_name}")
-            return None
-        session = self.Session()
-        members = (
-            session.query(TeamMember)
-            .filter(TeamMember.name.like(f"%{member_name}%"))
-            .all()
-        )
-        if len(members) > 1:
-            logger.warning(
-                f"get_member: Name {member_name} fits {len(members)} members"
-            )
-        return members[0] if members else None
 
     def get_user_by_telegram_id(self, telegram_user_id: int) -> Optional[User]:
         """Get User by Telegram user ID"""
