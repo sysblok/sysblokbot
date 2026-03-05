@@ -3,7 +3,7 @@ from typing import Callable, Optional
 
 import requests
 from bs4 import BeautifulSoup
-from tenacity import retry, stop_after_attempt
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 from ..app_context import AppContext
 from ..consts import KWARGS
@@ -12,6 +12,16 @@ from ..tg.sender import pretty_send
 from .base_job import BaseJob
 
 logger = logging.getLogger(__name__)
+
+
+class BadStatusCodeError(Exception):
+    def __init__(self, status_code: int):
+        self.status_code = status_code
+
+
+class BadBodyError(Exception):
+    def __init__(self, html: str):
+        self.html = html
 
 
 class SiteHealthCheckJob(BaseJob):
@@ -31,11 +41,31 @@ class SiteHealthCheckJob(BaseJob):
                 return
         url = kwargs.get("index_url")
         logger.debug(f"Checking site health for {kwargs.get('name')}: {url}")
-        url = kwargs.get("index_url")
-        logger.debug(f"Checking site health for {kwargs.get('name')}: {url}")
+        body_substring = kwargs.get("body_substring")
 
         try:
-            page = SiteHealthCheckJob._fetch(url)
+            page = SiteHealthCheckJob._fetch(url, body_substring)
+        except BadStatusCodeError as e:
+            send(
+                load(
+                    "site_health_check_job__wrong_status_code",
+                    status_code=e.status_code,
+                    url=url,
+                )
+            )
+            logger.error(f"Bad status code for {url}: {e.status_code}")
+            return
+        except BadBodyError as e:
+            send(
+                load(
+                    "site_health_check_job__wrong_body",
+                    substring=body_substring,
+                    url=url,
+                )
+            )
+            logger.error(f"Bad body contents for {url}")
+            logger.warning(f"Html:\n\n{e.html}")
+            return
         except Exception as e:
             logger.error(f"Connection error for {url}", exc_info=e)
             send(
@@ -46,32 +76,7 @@ class SiteHealthCheckJob(BaseJob):
             )
             return
 
-        if page.status_code != 200:
-            send(
-                load(
-                    "site_health_check_job__wrong_status_code",
-                    status_code=page.status_code,
-                    url=url,
-                )
-            )
-            logger.error(f"Bad status code for {url}: {page.status_code}")
-            return
         logger.info(f"Status code: {page.status_code}")
-
-        soup = BeautifulSoup(page.content, "html.parser")
-        body_substring = kwargs.get("body_substring")
-        body_contents = soup.find("body").get_text()
-        if body_substring not in body_contents:
-            send(
-                load(
-                    "site_health_check_job__wrong_body",
-                    substring=body_substring,
-                    url=url,
-                )
-            )
-            logger.error(f"Bad body contents for {url}")
-            logger.warning(f"Html:\n\n{body_contents}")
-            return
         logger.debug("Site content looks healthy")
         if called_from_handler:
             send(
@@ -110,6 +115,17 @@ class SiteHealthCheckJob(BaseJob):
         return True
 
     @staticmethod
-    @retry(stop=stop_after_attempt(3))
-    def _fetch(url: str) -> requests.Response:
-        return requests.get(url, timeout=5)
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(10), reraise=True)
+    def _fetch(url: str, body_substring: str = None) -> requests.Response:
+        page = requests.get(url, timeout=15)
+
+        if page.status_code != 200:
+            raise BadStatusCodeError(page.status_code)
+
+        if body_substring:
+            soup = BeautifulSoup(page.content, "html.parser")
+            body_contents = soup.find("body").get_text()
+            if body_substring not in body_contents:
+                raise BadBodyError(body_contents)
+
+        return page
