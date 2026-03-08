@@ -9,7 +9,6 @@ from .facebook.facebook_client import FacebookClient
 from .focalboard.focalboard_client import FocalboardClient
 from .instagram.instagram_client import InstagramClient
 from .n8n.n8n_client import N8nClient
-from .roles.role_manager import RoleManager
 from .sheets.sheets_client import GoogleSheetsClient
 from .strings import StringsDBClient
 from .tg.tg_client import TgClient
@@ -42,12 +41,10 @@ class AppContext(Singleton):
             drive_config=config_manager.get_drive_config()
         )
         self.db_client = DBClient(db_config=config_manager.get_db_config())
-        self.role_manager = RoleManager(self.db_client)
 
         if not skip_db_update:
             self.strings_db_client.fetch_strings_sheet(self.sheets_client)
             self.db_client.fetch_all(self.sheets_client)
-            self.role_manager.calculate_db_roles()
 
         self.trello_client = TrelloClient(
             trello_config=config_manager.get_trello_config()

@@ -388,10 +388,26 @@ class FocalboardClient(Singleton):
                     f"List name not found for {card}: {card._fields_properties.get(list_prop, '')}"
                 )
             # TODO: move this to app state
-            if len(card._fields_properties.get(member_prop, [])) > 0:
-                for member in members:
-                    if member.id in card._fields_properties.get(member_prop, []):
-                        card.members.append(member)
+            member_ids = card._fields_properties.get(member_prop, [])
+            if len(member_ids) > 0:
+                for member_id in member_ids:
+                    # check if member is in board members
+                    matched_member = next(
+                        (m for m in members if m.id == member_id), None
+                    )
+                    if matched_member:
+                        card.members.append(matched_member)
+                    else:
+                        # fallback: User left board but is still assigned to card. Fetch them explicitly.
+                        try:
+                            _, m_data = self._get_member(member_id)
+                            m_obj = objects.TrelloMember.from_focalboard_dict(m_data)
+                            card.members.append(m_obj)
+                        except Exception as e:
+                            logger.error(
+                                f"Failed to fetch user {member_id} for {card}: {e}"
+                            )
+
                 if len(card.members) == 0:
                     logger.error(f"Member username not found for {card}")
             cards.append(card)
