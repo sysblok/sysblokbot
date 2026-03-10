@@ -26,22 +26,6 @@ class HandlerConfig:
 HANDLER_REGISTRY = [
     # Business logic cmds
     HandlerConfig(
-        command="send_trello_board_state",
-        category=CommandCategories.BROADCAST,
-        access_level="admin",
-        job_name="trello_board_state_job",
-        job_type="admin_broadcast",
-        description="рассылка сводки о состоянии доски",
-    ),
-    HandlerConfig(
-        command="get_trello_board_state",
-        category=CommandCategories.SUMMARY,
-        access_level="manager",
-        job_name="trello_board_state_job",
-        job_type="manager_reply",
-        description="получить сводку о состоянии доски",
-    ),
-    HandlerConfig(
         command="get_publication_plans",
         category=CommandCategories.SUMMARY,
         access_level="manager",
@@ -287,14 +271,6 @@ HANDLER_REGISTRY = [
         job_name="send_reminders_job",
         job_type="admin_reply",
         description="отослать напоминания вне расписания",
-    ),
-    HandlerConfig(
-        command="send_trello_curator_notification",
-        category=CommandCategories.BROADCAST,
-        access_level="admin",
-        job_name="trello_board_state_notifications_job",
-        job_type="admin_reply",
-        description="разослать кураторам состояние их карточек вне расписания",
     ),
     HandlerConfig(
         command="manage_all_reminders",
