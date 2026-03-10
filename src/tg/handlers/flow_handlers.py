@@ -927,13 +927,19 @@ class ManageRemindersEnterTimeHandler(BaseUserMessageHandler):
 class ManageRemindersSuccessHandler(BaseUserMessageHandler):
     def handle(self) -> Optional[PlainTextUserAction]:
         text = self.command_data.get(consts.ManageRemindersData.REMINDER_TEXT)
-        group_chat_id = self.command_data.get(consts.ManageRemindersData.GROUP_CHAT_ID)
         name = self.command_data.get(consts.ManageRemindersData.REMINDER_NAME)
+
+        # Guard against empty session data / stale states
+        if text is None or name is None:
+            reply(load("manage_reminders_handler__poll_error"), self.update)
+            return None
+
+        group_chat_id = self.command_data.get(consts.ManageRemindersData.GROUP_CHAT_ID)
         weekday_num = self.command_data[consts.ManageRemindersData.WEEKDAY_NUM]
         weekday_name = self.command_data[consts.ManageRemindersData.WEEKDAY_NAME]
         time = self.command_data[consts.ManageRemindersData.TIME]
 
-        if self.button == consts.ButtonValues.MANAGE_REMINDERS__TOGGLE_POLL__YES:
+        if self.button == consts.ButtonValues.MANAGE_REMINDERS__POLL__YES:
             if text is None:
                 reminder_id = int(
                     self.command_data[consts.ManageRemindersData.CHOSEN_REMINDER_ID]
