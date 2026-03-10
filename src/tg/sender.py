@@ -89,6 +89,13 @@ class TelegramSender(Singleton):
             )
             resp.raise_for_status()
             return True
+
+        if not message_text:
+            logger.warning(
+                f"Attempted to send empty message to chat {chat_id}. Skipping."
+            )
+            return False
+
         if ".png" in message_text:
             for pict in re.findall(r"\S*\.png", message_text):
                 self.bot.send_photo(
