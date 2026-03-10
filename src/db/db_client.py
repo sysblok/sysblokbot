@@ -147,19 +147,6 @@ class DBClient(Singleton):
             return None
         return author.telegram
 
-    def get_curator_by_trello_id(self, trello_id: str) -> Curator:
-        session = self.Session()
-        author = session.query(Author).filter(Author.trello == trello_id).first()
-        if author is None or not author.telegram:
-            return None
-        curator = (
-            session.query(Curator)
-            .filter(Curator.telegram == author.telegram)
-            .filter(Curator.team == "Авторы")
-            .first()
-        )
-        return curator
-
     def get_curator_by_telegram(self, telegram: str) -> Curator:
         session = self.Session()
         if not telegram.startswith("@"):
@@ -170,34 +157,8 @@ class DBClient(Singleton):
         session = self.Session()
         return session.query(Curator).filter(Curator.role == role).first()
 
-    def find_curators_by_author_trello(self, trello_id: str) -> List[Curator]:
-        # TODO: make batch queries
-        session = self.Session()
-        curators = (
-            session.query(Curator)
-            .join(Author)
-            .filter(Author.trello == trello_id)
-            .filter(Curator.team == "Авторы")
-            .all()
-        )
-        if not curators:
-            logger.warning(f"Curators not found for author {trello_id}")
-        return curators
-
     def get_rubrics(self) -> List:
         return self.Session().query(Rubric).all()
-
-    def find_curators_by_trello_label(self, trello_label: str) -> List[Curator]:
-        # TODO: make batch queries
-        session = self.Session()
-        curators = (
-            session.query(Curator)
-            .filter(Curator.trello_labels.contains(trello_label))
-            .all()
-        )
-        if not curators:
-            logger.warning(f"Curators not found for label {trello_label}")
-        return curators
 
     def get_all_chats(self) -> List[Chat]:
         session = self.Session()
