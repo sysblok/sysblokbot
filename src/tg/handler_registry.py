@@ -194,13 +194,6 @@ HANDLER_REGISTRY = [
         job_type="manager_reply",
         description="получить статистику по табличке (например, оцифровка открыток)",
     ),
-    HandlerConfig(
-        command="enroll_curator",
-        category=CommandCategories.HR,
-        access_level="manager",
-        handler_func=handlers.enroll_curator,
-        description="",  # hidden from help
-    ),
     # Admin-only technical cmds
     HandlerConfig(
         command="update_config",
