@@ -22,7 +22,6 @@ class FocalboardClient(Singleton):
             return
 
         self._focalboard_config = focalboard_config
-        self._users_cache = {}
         self._update_from_config()
         logger.info("FocalboardClient successfully initialized")
 
@@ -328,33 +327,32 @@ class FocalboardClient(Singleton):
         )
         logger.debug(f"set_card_custom_field: {code}")
 
-    def _prefetch_all_users(self):
-        if not self._users_cache:
-            try:
-                code, data = self._make_request("api/v2/users")
-                if code == 200 and isinstance(data, list):
-                    for u in data:
-                        if "id" in u:
-                            self._users_cache[u["id"]] = u
-                    logger.info(
-                        f"Successfully pre-fetched {len(self._users_cache)} users into cache."
-                    )
-                else:
-                    logger.warning(f"Failed to prefetch users: {code}")
-            except Exception as e:
-                logger.error("Could not bulk fetch focalboard users", exc_info=e)
+    @cached(cache=TTLCache(maxsize=1, ttl=60 * 60 * 24))  # cache full dict for 24h
+    def _get_all_users_dict(self):
+        try:
+            code, data = self._make_request("api/v2/users")
+            if code == 200 and isinstance(data, list):
+                users_dict = {u["id"]: u for u in data if "id" in u}
+                logger.info(f"Successfully fetched {len(users_dict)} users into cache.")
+                return users_dict
+            else:
+                logger.warning(f"Failed to fetch users: {code}")
+                return {}
+        except Exception as e:
+            logger.error("Could not bulk fetch focalboard users", exc_info=e)
+            return {}
 
     def get_members(self, board_id) -> List[objects.TrelloMember]:
-        self._prefetch_all_users()
+        users_cache = self._get_all_users_dict()
         _, data = self._make_request(f"api/v2/boards/{board_id}/members")
         members = []
         for member in data:
             user_id = member["userId"]
-            if user_id in self._users_cache:
-                user_data = self._users_cache[user_id]
+            if user_id in users_cache:
+                user_data = users_cache[user_id]
             else:
                 _, user_data = self._get_member(user_id)
-                self._users_cache[user_id] = user_data
+                users_cache[user_id] = user_data
             members.append(objects.TrelloMember.from_focalboard_dict(user_data))
         logger.debug(f"get_members: {members}")
         return members
@@ -430,11 +428,10 @@ class FocalboardClient(Singleton):
                         card.members.append(matched_member)
                     else:
                         # fallback: User left board but is still assigned to card. Fetch them explicitly.
-                        if hasattr(self, "_users_cache") and member_id in getattr(
-                            self, "_users_cache", {}
-                        ):
+                        users_cache = self._get_all_users_dict()
+                        if member_id in users_cache:
                             m_obj = objects.TrelloMember.from_focalboard_dict(
-                                self._users_cache[member_id]
+                                users_cache[member_id]
                             )
                             card.members.append(m_obj)
                         else:
@@ -444,8 +441,7 @@ class FocalboardClient(Singleton):
                                     m_data
                                 )
                                 card.members.append(m_obj)
-                                if hasattr(self, "_users_cache"):
-                                    self._users_cache[member_id] = m_data
+                                users_cache[member_id] = m_data
                             except Exception as e:
                                 logger.error(
                                     f"Failed to fetch user {member_id} for {card}: {e}"
