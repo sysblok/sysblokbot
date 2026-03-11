@@ -28,6 +28,4 @@ from .sheet_report_job import SheetReportJob
 from .shrug_job import ShrugJob
 from .site_health_check_job import SiteHealthCheckJob
 from .tg_analytics_report_job import TgAnalyticsReportJob
-from .trello_board_state_job import TrelloBoardStateJob
-from .trello_board_state_notifications_job import TrelloBoardStateNotificationsJob
 from .trello_get_articles_rubric_job import TrelloGetArticlesRubricJob

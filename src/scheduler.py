@@ -154,9 +154,6 @@ class JobScheduler(Singleton):
                 f"{job_func_name} {job.job_func.keywords.get(KWARGS, {}).get('name')}"
             )
 
-        if job_func_name == "TrelloBoardStateNotificationsJob":
-            recipients = "curators"
-
         return load(
             "jobs__job_description",
             job_name=job_func_name,
