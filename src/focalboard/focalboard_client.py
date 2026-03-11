@@ -421,9 +421,35 @@ class FocalboardClient(Singleton):
             if isinstance(raw_members, str):
                 raw_members = [raw_members]
             if len(raw_members) > 0:
-                for member in members:
-                    if member.id in raw_members:
-                        card.members.append(member)
+                for member_id in raw_members:
+                    # check if member is in board members
+                    matched_member = next(
+                        (m for m in members if m.id == member_id), None
+                    )
+                    if matched_member:
+                        card.members.append(matched_member)
+                    else:
+                        # fallback: User left board but is still assigned to card. Fetch them explicitly.
+                        if hasattr(self, "_users_cache") and member_id in getattr(
+                            self, "_users_cache", {}
+                        ):
+                            m_obj = objects.TrelloMember.from_focalboard_dict(
+                                self._users_cache[member_id]
+                            )
+                            card.members.append(m_obj)
+                        else:
+                            try:
+                                _, m_data = self._get_member(member_id)
+                                m_obj = objects.TrelloMember.from_focalboard_dict(
+                                    m_data
+                                )
+                                card.members.append(m_obj)
+                                if hasattr(self, "_users_cache"):
+                                    self._users_cache[member_id] = m_data
+                            except Exception as e:
+                                logger.error(
+                                    f"Failed to fetch user {member_id} for {card}: {e}"
+                                )
                 if len(card.members) == 0:
                     logger.error(f"Member username not found for {card}")
             cards.append(card)
