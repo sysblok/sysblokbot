@@ -44,17 +44,24 @@ class BoardMyCardsRazvitieJob(BaseJob):
                 f"Focalboard username not found for Telegram user @{tg_username}"
             )
 
-        focalboard_username = focalboard_username.lstrip("@")
+        focalboard_username = focalboard_username.strip().lstrip("@").lower()
 
-        boards = app_context.focalboard_client.get_boards_for_telegram_user(
-            tg_username,
-            app_context.db_client,
-        )
-        board_id = next(
-            (board.id for board in boards if "Развитие" in board.name), None
-        )
+        # Fetch all boards unfiltered (1 API call)
+        all_boards = app_context.focalboard_client.get_boards_for_user()
+        board = next((b for b in all_boards if "Развитие" in b.name), None)
 
-        if not board_id:
+        if not board:
+            raise ValueError("Доска 'Развитие' не найдена на сервере.")
+
+        board_id = board.id
+
+        # Check if the user is a member of this specific board
+        board_members = app_context.focalboard_client.get_members(board_id)
+        board_member_usernames = [
+            m.username.strip().lstrip("@").lower() for m in board_members if m.username
+        ]
+
+        if focalboard_username not in board_member_usernames:
             raise ValueError(
                 f"Не удалось найти доску 'Развитие' для пользователя @{tg_username}"
             )
