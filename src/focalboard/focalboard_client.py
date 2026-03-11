@@ -22,6 +22,7 @@ class FocalboardClient(Singleton):
             return
 
         self._focalboard_config = focalboard_config
+        self._users_cache = {}
         self._update_from_config()
         logger.info("FocalboardClient successfully initialized")
 
@@ -286,6 +287,9 @@ class FocalboardClient(Singleton):
             if type_id == board_label_id:
                 card_labels_ids = value
 
+        if isinstance(card_labels_ids, str):
+            card_labels_ids = [card_labels_ids]
+
         for card_label_id in card_labels_ids:
             for board_label in board_labels:
                 if card_label_id == board_label.id:
@@ -324,12 +328,34 @@ class FocalboardClient(Singleton):
         )
         logger.debug(f"set_card_custom_field: {code}")
 
+    def _prefetch_all_users(self):
+        if not self._users_cache:
+            try:
+                code, data = self._make_request("api/v2/users")
+                if code == 200 and isinstance(data, list):
+                    for u in data:
+                        if "id" in u:
+                            self._users_cache[u["id"]] = u
+                    logger.info(
+                        f"Successfully pre-fetched {len(self._users_cache)} users into cache."
+                    )
+                else:
+                    logger.warning(f"Failed to prefetch users: {code}")
+            except Exception as e:
+                logger.error("Could not bulk fetch focalboard users", exc_info=e)
+
     def get_members(self, board_id) -> List[objects.TrelloMember]:
+        self._prefetch_all_users()
         _, data = self._make_request(f"api/v2/boards/{board_id}/members")
         members = []
         for member in data:
-            _, data = self._get_member(member["userId"])
-            members.append(objects.TrelloMember.from_focalboard_dict(data))
+            user_id = member["userId"]
+            if user_id in self._users_cache:
+                user_data = self._users_cache[user_id]
+            else:
+                _, user_data = self._get_member(user_id)
+                self._users_cache[user_id] = user_data
+            members.append(objects.TrelloMember.from_focalboard_dict(user_data))
         logger.debug(f"get_members: {members}")
         return members
 
@@ -366,7 +392,10 @@ class FocalboardClient(Singleton):
             card = objects.TrelloCard.from_focalboard_dict(card_dict)
             card.url = urljoin(self.url, f"{board_id}/{view_id}/{card.id}")
             card.labels = []
-            for label_id in card._fields_properties.get(label_prop, []):
+            raw_labels = card._fields_properties.get(label_prop, [])
+            if isinstance(raw_labels, str):
+                raw_labels = [raw_labels]
+            for label_id in raw_labels:
                 for label in labels:
                     if label.id == label_id:
                         card.labels.append(label)
@@ -388,9 +417,12 @@ class FocalboardClient(Singleton):
                     f"List name not found for {card}: {card._fields_properties.get(list_prop, '')}"
                 )
             # TODO: move this to app state
-            if len(card._fields_properties.get(member_prop, [])) > 0:
+            raw_members = card._fields_properties.get(member_prop, [])
+            if isinstance(raw_members, str):
+                raw_members = [raw_members]
+            if len(raw_members) > 0:
                 for member in members:
-                    if member.id in card._fields_properties.get(member_prop, []):
+                    if member.id in raw_members:
                         card.members.append(member)
                 if len(card.members) == 0:
                     logger.error(f"Member username not found for {card}")

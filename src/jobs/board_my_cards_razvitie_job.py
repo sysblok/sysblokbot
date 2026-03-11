@@ -21,6 +21,7 @@ class BoardMyCardsRazvitieJob(BaseJob):
     ):
         """Job returning my card on Razvitie board"""
         assert called_from_handler, "This job should be called from handler"
+        send(load("common__job_started"))
         # TODO sort out @ in the beginning of the username
         # focalboard_username = (
         #     app_context.db_client.find_focalboard_username_by_telegram_username(
