@@ -14,7 +14,6 @@ from .access_config_handler import (
 
 # Debug handlers (also developer, but only needed for debug)
 from .clean_chat_data_handler import clean_chat_data
-from .enroll_curator_handler import enroll_curator
 
 # Error handler
 from .error_handler import error
