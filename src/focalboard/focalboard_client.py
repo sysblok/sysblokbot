@@ -286,6 +286,9 @@ class FocalboardClient(Singleton):
             if type_id == board_label_id:
                 card_labels_ids = value
 
+        if isinstance(card_labels_ids, str):
+            card_labels_ids = [card_labels_ids]
+
         for card_label_id in card_labels_ids:
             for board_label in board_labels:
                 if card_label_id == board_label.id:
@@ -366,7 +369,10 @@ class FocalboardClient(Singleton):
             card = objects.TrelloCard.from_focalboard_dict(card_dict)
             card.url = urljoin(self.url, f"{board_id}/{view_id}/{card.id}")
             card.labels = []
-            for label_id in card._fields_properties.get(label_prop, []):
+            raw_labels = card._fields_properties.get(label_prop, [])
+            if isinstance(raw_labels, str):
+                raw_labels = [raw_labels]
+            for label_id in raw_labels:
                 for label in labels:
                     if label.id == label_id:
                         card.labels.append(label)
@@ -388,9 +394,11 @@ class FocalboardClient(Singleton):
                     f"List name not found for {card}: {card._fields_properties.get(list_prop, '')}"
                 )
             # TODO: move this to app state
-            member_ids = card._fields_properties.get(member_prop, [])
-            if len(member_ids) > 0:
-                for member_id in member_ids:
+            raw_members = card._fields_properties.get(member_prop, [])
+            if isinstance(raw_members, str):
+                raw_members = [raw_members]
+            if len(raw_members) > 0:
+                for member_id in raw_members:
                     # check if member is in board members
                     matched_member = next(
                         (m for m in members if m.id == member_id), None
