@@ -9,7 +9,7 @@ from .base_job import BaseJob
 
 logger = logging.getLogger(__name__)
 
-RAZVITIE_BOARD_NAME = "Развитие"
+RAZVITIE_BOARD_NAME = "СБъ. Развитие"
 TASKS_START_LIST_NAME = "Список задач"
 TASKS_END_LIST_NAME = "Разделитель"
 
@@ -45,7 +45,7 @@ class BoardMyCardsRazvitieJob(BaseJob):
             app_context.db_client,
         )
         board_id = next(
-            (board.id for board in boards if RAZVITIE_BOARD_NAME in board.name), None
+            (board.id for board in boards if RAZVITIE_BOARD_NAME == board.name), None
         )
 
         if not board_id:

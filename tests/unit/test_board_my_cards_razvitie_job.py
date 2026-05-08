@@ -82,7 +82,7 @@ def test_execute_uses_planka_and_filters_manager_cards():
     planka_client = FakePlankaClient(
         boards=[
             _make_board("board_other", "Другая"),
-            _make_board("board_1", "Развитие"),
+            _make_board("board_1", "СБъ. Развитие"),
         ],
         lists=lists,
         cards_by_list={
@@ -126,7 +126,7 @@ def test_execute_raises_when_status_list_sentinel_is_missing():
     app_context = SimpleNamespace(
         db_client=FakeDBClient("manager"),
         planka_client=FakePlankaClient(
-            boards=[_make_board("board_1", "Развитие")],
+            boards=[_make_board("board_1", "СБъ. Развитие")],
             lists=[
                 _make_list("list_start", "Список задач"),
                 _make_list("list_planned", "Запланировано"),
