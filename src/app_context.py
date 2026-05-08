@@ -9,6 +9,7 @@ from .facebook.facebook_client import FacebookClient
 from .focalboard.focalboard_client import FocalboardClient
 from .instagram.instagram_client import InstagramClient
 from .n8n.n8n_client import N8nClient
+from .planka.planka_client import PlankaClient
 from .sheets.sheets_client import GoogleSheetsClient
 from .strings import StringsDBClient
 from .tg.tg_client import TgClient
@@ -51,6 +52,9 @@ class AppContext(Singleton):
         )
         self.focalboard_client = FocalboardClient(
             focalboard_config=config_manager.get_focalboard_config()
+        )
+        self.planka_client = PlankaClient(
+            planka_config=config_manager.get_planka_config()
         )
         self.facebook_client = FacebookClient(
             facebook_config=config_manager.get_facebook_config()

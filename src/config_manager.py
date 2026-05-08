@@ -63,6 +63,9 @@ class ConfigManager(Singleton):
     def get_focalboard_config(self):
         return self.get_latest_config().get(consts.FOCALBOARD_CONFIG, {})
 
+    def get_planka_config(self):
+        return self.get_latest_config().get(consts.PLANKA_CONFIG, {})
+
     def get_telegram_config(self):
         return self.get_latest_config().get(consts.TELEGRAM_CONFIG, {})
 
