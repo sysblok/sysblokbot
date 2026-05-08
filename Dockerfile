@@ -17,14 +17,16 @@ ENV UPTRACE_DSN=$UPTRACE_DSN
 
 ENV MUSL_LOCALE_DEPS cmake make musl-dev gcc gettext-dev libintl
 ENV MUSL_LOCPATH /usr/share/i18n/locales/musl
+# Last musl-locales commit before upstream switched to -std=c23, which Alpine 3.13 GCC does not support.
+ARG MUSL_LOCALES_VERSION=e3c3bef8df744ae9c09382a11e10831168d82311
 
 RUN apk add --no-cache \
     $MUSL_LOCALE_DEPS \
-    && wget https://gitlab.com/rilian-la-te/musl-locales/-/archive/master/musl-locales-master.zip \
-    && unzip musl-locales-master.zip \
-      && cd musl-locales-master \
-      && cmake -DLOCALE_PROFILE=OFF -D CMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
-      && cd .. && rm -r musl-locales-master
+    && wget -O musl-locales.zip https://gitlab.com/rilian-la-te/musl-locales/-/archive/${MUSL_LOCALES_VERSION}/musl-locales-${MUSL_LOCALES_VERSION}.zip \
+    && unzip musl-locales.zip \
+      && cd musl-locales-${MUSL_LOCALES_VERSION} \
+      && cmake -DLOCALE_PROFILE=OFF -DCMAKE_INSTALL_PREFIX:PATH=/usr . && make && make install \
+      && cd .. && rm -rf musl-locales-${MUSL_LOCALES_VERSION} musl-locales.zip
 
 RUN pip install .
 
