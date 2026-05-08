@@ -1,0 +1,195 @@
+{
+  "item": {
+    "id": "board_razvitie",
+    "projectId": "project_1",
+    "position": 65536,
+    "name": "Развитие",
+    "defaultView": "kanban",
+    "defaultCardType": "project",
+    "limitCardTypesToDefaultOne": false,
+    "alwaysDisplayCardCreator": false,
+    "expandTaskListsByDefault": false,
+    "createdAt": "2026-05-01T00:00:00.000Z",
+    "updatedAt": "2026-05-01T00:00:00.000Z"
+  },
+  "included": {
+    "users": [
+      {
+        "id": "user_manager",
+        "role": "boardUser",
+        "name": "Manager User",
+        "username": "manager",
+        "avatar": null,
+        "phone": null,
+        "organization": null,
+        "isDeactivated": false,
+        "createdAt": "2026-05-01T00:00:00.000Z",
+        "updatedAt": "2026-05-01T00:00:00.000Z"
+      },
+      {
+        "id": "user_other",
+        "role": "boardUser",
+        "name": "Other User",
+        "username": "other",
+        "avatar": null,
+        "phone": null,
+        "organization": null,
+        "isDeactivated": false,
+        "createdAt": "2026-05-01T00:00:00.000Z",
+        "updatedAt": "2026-05-01T00:00:00.000Z"
+      }
+    ],
+    "boardMemberships": [
+      {
+        "id": "board_membership_manager",
+        "projectId": "project_1",
+        "boardId": "board_razvitie",
+        "userId": "user_manager",
+        "role": "editor",
+        "canComment": null,
+        "createdAt": "2026-05-01T00:00:00.000Z",
+        "updatedAt": "2026-05-01T00:00:00.000Z"
+      },
+      {
+        "id": "board_membership_other",
+        "projectId": "project_1",
+        "boardId": "board_razvitie",
+        "userId": "user_other",
+        "role": "viewer",
+        "canComment": true,
+        "createdAt": "2026-05-01T00:00:00.000Z",
+        "updatedAt": "2026-05-01T00:00:00.000Z"
+      }
+    ],
+    "labels": [
+      {
+        "id": "label_feature",
+        "boardId": "board_razvitie",
+        "position": 65536,
+        "name": "Feature",
+        "color": "berry-red",
+        "createdAt": "2026-05-01T00:00:00.000Z",
+        "updatedAt": "2026-05-01T00:00:00.000Z"
+      }
+    ],
+    "lists": [
+      {
+        "id": "list_second",
+        "boardId": "board_razvitie",
+        "type": "active",
+        "position": 131072,
+        "name": "Second",
+        "color": null,
+        "createdAt": "2026-05-01T00:00:00.000Z",
+        "updatedAt": "2026-05-01T00:00:00.000Z"
+      },
+      {
+        "id": "list_first",
+        "boardId": "board_razvitie",
+        "type": "active",
+        "position": 65536,
+        "name": "First",
+        "color": null,
+        "createdAt": "2026-05-01T00:00:00.000Z",
+        "updatedAt": "2026-05-01T00:00:00.000Z"
+      },
+      {
+        "id": "list_archive",
+        "boardId": "board_razvitie",
+        "type": "archive",
+        "position": 196608,
+        "name": "Archive",
+        "color": null,
+        "createdAt": "2026-05-01T00:00:00.000Z",
+        "updatedAt": "2026-05-01T00:00:00.000Z"
+      }
+    ],
+    "cards": [
+      {
+        "id": "card_planka",
+        "boardId": "board_razvitie",
+        "listId": "list_first",
+        "creatorUserId": "user_manager",
+        "prevListId": null,
+        "coverAttachmentId": null,
+        "type": "project",
+        "position": 65536,
+        "name": "Implement Planka",
+        "description": null,
+        "dueDate": "2026-05-09T10:15:00.000Z",
+        "isDueCompleted": false,
+        "stopwatch": null,
+        "commentsTotal": 0,
+        "isClosed": false,
+        "listChangedAt": "2026-05-01T00:00:00.000Z",
+        "createdAt": "2026-05-01T00:00:00.000Z",
+        "updatedAt": "2026-05-01T00:00:00.000Z"
+      },
+      {
+        "id": "card_tests",
+        "boardId": "board_razvitie",
+        "listId": "list_second",
+        "creatorUserId": "user_other",
+        "prevListId": null,
+        "coverAttachmentId": null,
+        "type": "project",
+        "position": 131072,
+        "name": "Write tests",
+        "description": null,
+        "dueDate": null,
+        "isDueCompleted": false,
+        "stopwatch": null,
+        "commentsTotal": 0,
+        "isClosed": false,
+        "listChangedAt": "2026-05-01T00:00:00.000Z",
+        "createdAt": "2026-05-01T00:00:00.000Z",
+        "updatedAt": "2026-05-01T00:00:00.000Z"
+      },
+      {
+        "id": "card_closed",
+        "boardId": "board_razvitie",
+        "listId": "list_first",
+        "creatorUserId": "user_manager",
+        "prevListId": null,
+        "coverAttachmentId": null,
+        "type": "project",
+        "position": 196608,
+        "name": "Closed card",
+        "description": null,
+        "dueDate": null,
+        "isDueCompleted": false,
+        "stopwatch": null,
+        "commentsTotal": 0,
+        "isClosed": true,
+        "listChangedAt": "2026-05-01T00:00:00.000Z",
+        "createdAt": "2026-05-01T00:00:00.000Z",
+        "updatedAt": "2026-05-01T00:00:00.000Z"
+      }
+    ],
+    "cardMemberships": [
+      {
+        "id": "card_membership_planka",
+        "cardId": "card_planka",
+        "userId": "user_manager",
+        "createdAt": "2026-05-01T00:00:00.000Z",
+        "updatedAt": "2026-05-01T00:00:00.000Z"
+      },
+      {
+        "id": "card_membership_tests",
+        "cardId": "card_tests",
+        "userId": "user_other",
+        "createdAt": "2026-05-01T00:00:00.000Z",
+        "updatedAt": "2026-05-01T00:00:00.000Z"
+      }
+    ],
+    "cardLabels": [
+      {
+        "id": "card_label_planka",
+        "cardId": "card_planka",
+        "labelId": "label_feature",
+        "createdAt": "2026-05-01T00:00:00.000Z",
+        "updatedAt": "2026-05-01T00:00:00.000Z"
+      }
+    ]
+  }
+}

@@ -41,6 +41,7 @@ MSK_TIMEZONE = timezone(timedelta(hours=3))
 TELEGRAM_CONFIG = "telegram"
 TRELLO_CONFIG = "trello"
 FOCALBOARD_CONFIG = "focalboard"
+PLANKA_CONFIG = "planka"
 SHEETS_CONFIG = "sheets"
 DRIVE_CONFIG = "drive"
 FACEBOOK_CONFIG = "facebook"
