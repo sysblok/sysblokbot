@@ -1,0 +1,40 @@
+{
+  "items": [
+    {
+      "id": "project_1",
+      "name": "Editorial",
+      "description": null,
+      "isHidden": false
+    }
+  ],
+  "included": {
+    "boards": [
+      {
+        "id": "board_razvitie",
+        "projectId": "project_1",
+        "position": 65536,
+        "name": "Развитие",
+        "defaultView": "kanban",
+        "defaultCardType": "project",
+        "limitCardTypesToDefaultOne": false,
+        "alwaysDisplayCardCreator": false,
+        "expandTaskListsByDefault": false,
+        "createdAt": "2026-05-01T00:00:00.000Z",
+        "updatedAt": "2026-05-01T00:00:00.000Z"
+      },
+      {
+        "id": "board_private",
+        "projectId": "project_1",
+        "position": 131072,
+        "name": "Private board",
+        "defaultView": "kanban",
+        "defaultCardType": "project",
+        "limitCardTypesToDefaultOne": false,
+        "alwaysDisplayCardCreator": false,
+        "expandTaskListsByDefault": false,
+        "createdAt": "2026-05-01T00:00:00.000Z",
+        "updatedAt": "2026-05-01T00:00:00.000Z"
+      }
+    ]
+  }
+}

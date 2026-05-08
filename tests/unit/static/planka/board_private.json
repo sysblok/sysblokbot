@@ -1,0 +1,41 @@
+{
+  "item": {
+    "id": "board_private",
+    "projectId": "project_1",
+    "position": 131072,
+    "name": "Private board"
+  },
+  "included": {
+    "users": [
+      {
+        "id": "user_other",
+        "role": "boardUser",
+        "name": "Other User",
+        "username": "other",
+        "avatar": null,
+        "phone": null,
+        "organization": null,
+        "isDeactivated": false,
+        "createdAt": "2026-05-01T00:00:00.000Z",
+        "updatedAt": "2026-05-01T00:00:00.000Z"
+      }
+    ],
+    "boardMemberships": [
+      {
+        "id": "board_membership_other_private",
+        "projectId": "project_1",
+        "boardId": "board_private",
+        "userId": "user_other",
+        "role": "viewer",
+        "canComment": true,
+        "createdAt": "2026-05-01T00:00:00.000Z",
+        "updatedAt": "2026-05-01T00:00:00.000Z"
+      }
+    ],
+    "labels": [],
+    "lists": [],
+    "cards": [],
+    "cardMemberships": [],
+    "cardLabels": []
+  }
+}
