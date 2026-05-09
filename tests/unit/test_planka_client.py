@@ -105,6 +105,21 @@ def test_sorted_lists_include_active_lists_only(mock_planka):
     ]
 
 
+def test_get_list(mock_planka):
+    trello_list = mock_planka.get_list("board_razvitie", "list_first")
+
+    assert trello_list.to_dict() == {
+        "id": "list_first",
+        "name": "First",
+        "idBoard": "board_razvitie",
+    }
+
+
+def test_get_list_raises_for_unknown_list(mock_planka):
+    with pytest.raises(ValueError, match="List unknown not found"):
+        mock_planka.get_list("board_razvitie", "unknown")
+
+
 def test_cards_accept_single_list_id_string(mock_planka):
     cards = mock_planka.get_cards("list_first")
 

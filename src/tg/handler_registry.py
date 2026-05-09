@@ -117,6 +117,14 @@ HANDLER_REGISTRY = [
         description="получить список задач из Focalboard",
     ),
     HandlerConfig(
+        command="get_tasks_report_planka",
+        category=CommandCategories.MOST_USED,
+        access_level="manager",
+        handler_func=handlers.get_tasks_report_planka,
+        direct_only=True,
+        description="получить список задач из Planka",
+    ),
+    HandlerConfig(
         command="get_rubrics",
         category=CommandCategories.MOST_USED,
         access_level="manager",

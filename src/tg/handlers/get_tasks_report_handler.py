@@ -3,6 +3,7 @@ import logging
 from typing import Iterable, List
 
 import telegram
+import telegram.ext
 
 from ... import consts
 from ...app_context import AppContext
@@ -34,6 +35,15 @@ def get_tasks_report_focalboard(
 
 
 @manager_only
+def get_tasks_report_planka(
+    update: telegram.Update, tg_context: telegram.ext.CallbackContext
+):
+    _get_task_report_base(update, tg_context, advanced=False, use_planka=True)
+
+    return
+
+
+@manager_only
 def get_tasks_report_advanced(
     update: telegram.Update, tg_context: telegram.ext.CallbackContext
 ):
@@ -47,10 +57,18 @@ def _get_task_report_base(
     tg_context: telegram.ext.CallbackContext,
     advanced: bool,
     use_focalboard: bool = False,
+    use_planka: bool = False,
 ):
     app_context = AppContext()
 
-    if use_focalboard:
+    if use_planka:
+        telegram_username = update.effective_user.username
+
+        boards_list = app_context.planka_client.get_boards_for_telegram_user(
+            telegram_username,
+            app_context.db_client,
+        )
+    elif use_focalboard:
         telegram_username = update.effective_user.username
 
         boards_list = app_context.focalboard_client.get_boards_for_user(
@@ -69,6 +87,7 @@ def _get_task_report_base(
         lst.to_dict() for lst in boards_list
     ]
     tg_context.chat_data[consts.GetTasksReportData.USE_FOCALBOARD] = use_focalboard
+    tg_context.chat_data[consts.GetTasksReportData.USE_PLANKA] = use_planka
     tg_context.chat_data[TASK_NAME] = {
         consts.NEXT_ACTION: consts.PlainTextUserAction.GET_TASKS_REPORT__ENTER_BOARD_NUMBER.value
     }
@@ -87,17 +106,22 @@ def generate_report_messages(
     introduction: str,
     add_labels: bool,
     use_focalboard: bool,
+    use_planka: bool = False,
 ) -> List[str]:
     app_context = AppContext()
     paragraphs = []  # list of paragraph strings
 
-    if use_focalboard:
+    if use_planka:
+        trello_list = app_context.planka_client.get_list(board_id, list_id)
+    elif use_focalboard:
         trello_list = app_context.focalboard_client.get_list(board_id, list_id)
     else:
         trello_list = app_context.trello_client.get_list(list_id)
     paragraphs.append(load("common__bold_wrapper", arg=trello_list.name))
 
-    if use_focalboard:
+    if use_planka:
+        list_cards = app_context.planka_client.get_cards(list_id, board_id)
+    elif use_focalboard:
         list_cards = app_context.focalboard_client.get_cards([list_id], board_id)
     else:
         list_cards = app_context.trello_client.get_cards([list_id], board_id)
