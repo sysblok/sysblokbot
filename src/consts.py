@@ -200,6 +200,7 @@ class GetTasksReportData:
     INTRO_TEXT = "introduction"
     INCLUDE_LABELS = "include_labels"
     USE_FOCALBOARD = "use_focalboard"
+    USE_PLANKA = "use_planka"
 
 
 class ManageRemindersData:

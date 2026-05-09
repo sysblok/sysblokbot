@@ -27,6 +27,7 @@ from .get_tasks_report_handler import (
     get_tasks_report,
     get_tasks_report_advanced,
     get_tasks_report_focalboard,
+    get_tasks_report_planka,
 )
 from .help_handler import help
 from .list_chats_handler import list_chats
