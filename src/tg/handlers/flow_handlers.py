@@ -1,6 +1,7 @@
 import calendar
 import logging
 import telegram
+import telegram.ext
 from datetime import datetime
 from abc import ABC, abstractmethod
 from typing import Optional
@@ -16,6 +17,7 @@ from ...consts import (
 from ...db.db_client import DBClient
 from ...db.db_objects import Reminder
 from ...focalboard.focalboard_client import FocalboardClient
+from ...planka.planka_client import PlankaClient
 from ...strings import load
 from ...tg.handlers import get_tasks_report_handler
 from ...trello.trello_client import TrelloClient
@@ -304,8 +306,14 @@ def _handle_task_report_helper(command_data, add_labels, update):
     list_id = command_data[consts.GetTasksReportData.LIST_ID]
     introduction = command_data[consts.GetTasksReportData.INTRO_TEXT]
     use_focalboard = command_data[consts.GetTasksReportData.USE_FOCALBOARD]
+    use_planka = command_data.get(consts.GetTasksReportData.USE_PLANKA, False)
     messages = get_tasks_report_handler.generate_report_messages(
-        board_id, list_id, introduction, add_labels, use_focalboard=use_focalboard
+        board_id,
+        list_id,
+        introduction,
+        add_labels,
+        use_focalboard=use_focalboard,
+        use_planka=use_planka,
     )
     for message in messages:
         reply(message, update)
@@ -371,15 +379,22 @@ class GetTasksReportEnterBoardNumberHandler(BaseUserMessageHandler):
     def handle(self) -> Optional[PlainTextUserAction]:
         trello_client = TrelloClient()
         focalboard_client = FocalboardClient()
+        planka_client = PlankaClient()
         try:
             board_list = self.tg_context.chat_data[consts.GetTasksReportData.LISTS]
-            use_focalboard = self.tg_context.chat_data[
-                consts.GetTasksReportData.USE_FOCALBOARD
-            ]
+            use_focalboard = self.tg_context.chat_data.get(
+                consts.GetTasksReportData.USE_FOCALBOARD, False
+            )
+            use_planka = self.tg_context.chat_data.get(
+                consts.GetTasksReportData.USE_PLANKA, False
+            )
             list_idx = int(self.user_input) - 1
             assert 0 <= list_idx < len(board_list)
             board_id = board_list[list_idx]["id"]
-            if use_focalboard:
+            if use_planka:
+                trello_lists = planka_client.get_lists(board_id, sorted=True)
+                trello_lists = trello_lists[::-1]
+            elif use_focalboard:
                 trello_lists = focalboard_client.get_lists(board_id, sorted=True)
                 trello_lists = trello_lists[::-1]
             else:
@@ -398,6 +413,7 @@ class GetTasksReportEnterBoardNumberHandler(BaseUserMessageHandler):
 
         self.command_data[consts.GetTasksReportData.BOARD_ID] = board_id
         self.command_data[consts.GetTasksReportData.USE_FOCALBOARD] = use_focalboard
+        self.command_data[consts.GetTasksReportData.USE_PLANKA] = use_planka
         self.command_data[consts.GetTasksReportData.LISTS] = [
             lst.to_dict() for lst in trello_lists
         ]

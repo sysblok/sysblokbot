@@ -87,6 +87,15 @@ class PlankaClient(Singleton):
         logger.debug(f"get_lists: {lists}")
         return lists
 
+    def get_list(self, board_id, list_id):
+        lists = self.get_lists(board_id)
+        suitable_lists = [lst for lst in lists if lst.id == list_id]
+        if not suitable_lists:
+            raise ValueError(f"List {list_id} not found on board {board_id}")
+        lst = suitable_lists[0]
+        logger.debug(f"get_list: {lst}")
+        return lst
+
     def get_members(self, board_id) -> List[objects.TrelloMember]:
         data = self._get_board_data(board_id)
         included = data.get("included", {})
