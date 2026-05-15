@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 MAX_RETRIES = 5
+CONFIG_PLACEHOLDER = "do_not_set_here_please_go_to_config_override"
 
 
 class GoogleSheetsClient(Singleton):
@@ -32,6 +33,9 @@ class GoogleSheetsClient(Singleton):
         self.curators_sheet_key = self._sheets_config["curators_sheet_key"]
         self.hr_sheet_key = self._sheets_config["hr_sheet_key"]
         self.hr_pt_sheet_key = self._sheets_config["hr_pt_sheet_key"]
+        self.team_identity_sheet_key = self._sheets_config.get(
+            "team_identity_sheet_key"
+        )
         self.post_registry_sheet_key = self._sheets_config["post_registry_sheet_key"]
         self.rubrics_registry_sheet_key = self._sheets_config[
             "rubrics_registry_sheet_key"
@@ -67,7 +71,31 @@ class GoogleSheetsClient(Singleton):
         return self._fetch_table(self.hr_pt_sheet_key, "Анкеты")
 
     def fetch_hr_team(self) -> Table:
+        if self._has_configured_team_identity_sheet():
+            return self._fetch_table(self.team_identity_sheet_key, "team")
         return self._fetch_table(self.hr_sheet_key, "Команда (с заморозкой)")
+
+    def fetch_telegram_ids(self) -> Table:
+        return self._fetch_table(self._require_team_identity_sheet_key(), "telegram")
+
+    def update_telegram_ids(self, username_id_pairs):
+        sheet = self._open_by_key(self._require_team_identity_sheet_key())
+        data = sheet.get_sheet_by_name("telegram").get_data_range()
+        table = Table(data)
+        new_usernames = []
+        try:
+            for pair in username_id_pairs:
+                username = str(pair.get("Username", "")).strip().lstrip("@").lower()
+                telegram_id = pair.get("ID")
+                if not username or telegram_id in (None, ""):
+                    logger.warning(f"Skipping invalid Telegram ID row: {pair}")
+                    continue
+                table.add_one({"Username": username, "ID": telegram_id})
+                new_usernames.append(username)
+            table.commit()
+        except Exception as e:
+            logger.error("Failed to update Telegram IDs", exc_info=e)
+        return new_usernames
 
     def fetch_posts_registry(self) -> Table:
         return self._fetch_table(self.post_registry_sheet_key)
@@ -103,6 +131,16 @@ class GoogleSheetsClient(Singleton):
     def _fetch_table(self, sheet_key: str, sheet_name: Optional[str] = None) -> Table:
         worksheet = self.fetch_sheet(sheet_key, sheet_name)
         return Table(worksheet.get_data_range())
+
+    def _has_configured_team_identity_sheet(self) -> bool:
+        return bool(self.team_identity_sheet_key) and (
+            self.team_identity_sheet_key != CONFIG_PLACEHOLDER
+        )
+
+    def _require_team_identity_sheet_key(self) -> str:
+        if not self._has_configured_team_identity_sheet():
+            raise ValueError("team_identity_sheet_key is not configured")
+        return self.team_identity_sheet_key
 
     def _open_by_key(self, sheet_key: str):
         try:
