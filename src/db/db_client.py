@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import List, Optional, Tuple
 
-from sqlalchemy import create_engine, desc
+from sqlalchemy import create_engine, desc, inspect, text
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from .. import consts
@@ -46,6 +46,25 @@ class DBClient(Singleton):
         session_factory = sessionmaker(bind=self.engine)
         self.Session = scoped_session(session_factory)
         Base.metadata.create_all(self.engine)
+        self._ensure_team_telegram_id_column()
+
+    def _ensure_team_telegram_id_column(self):
+        inspector = inspect(self.engine)
+        if "team" not in inspector.get_table_names():
+            return
+
+        column_names = {column["name"] for column in inspector.get_columns("team")}
+        if "telegram_id" in column_names:
+            return
+
+        with self.engine.begin() as connection:
+            connection.execute(text("ALTER TABLE team ADD COLUMN telegram_id INTEGER"))
+            connection.execute(
+                text(
+                    "CREATE INDEX IF NOT EXISTS "
+                    "ix_team_telegram_id ON team (telegram_id)"
+                )
+            )
 
     def fetch_all(self, sheets_client: GoogleSheetsClient):
         self.fetch_authors_sheet(sheets_client)

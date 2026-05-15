@@ -11,6 +11,9 @@
         "api_key_path": "stub",
         "authors_sheet_key": "authors_sheet_key",
         "curators_sheet_key": "curators_sheet_key",
+        "hr_sheet_key": "hr_sheet_key",
+        "hr_pt_sheet_key": "hr_pt_sheet_key",
+        "team_identity_sheet_key": "do_not_set_here_please_go_to_config_override",
         "post_registry_sheet_key": "post_registry_sheet_key",
         "rubrics_registry_sheet_key": "rubrics_registry_sheet_key",
         "strings_sheet_key": "strings_sheet_key"

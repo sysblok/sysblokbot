@@ -148,7 +148,9 @@ class TeamMember(Base):
     telegram = Column(String)
     trello = Column(String)
     focalboard = Column(String)
-    roles = Column(String)
+    # Nullable while Telegram IDs are being bootstrapped from existing form/team data.
+    # Once new-member intake reliably captures IDs, make this non-null.
+    telegram_id = Column(Integer, nullable=True, index=True)
 
     def __repr__(self):
         return f"Team member {self.name} tg={self.telegram}"
@@ -164,6 +166,9 @@ class TeamMember(Base):
         member.telegram = _get_str_data_item(data, "telegram")
         member.trello = _get_str_data_item(data, "trello")
         member.focalboard = _get_str_data_item(data, "focalboard")
+        member.telegram_id = (
+            int(data["telegram_id"]) if data.get("telegram_id") else None
+        )
         return member
 
     def to_dict(self):
@@ -176,7 +181,7 @@ class TeamMember(Base):
             "telegram": self.telegram,
             "trello": self.trello,
             "focalboard": self.focalboard,
-            "roles": self.roles,
+            "telegram_id": self.telegram_id,
         }
 
     @classmethod
@@ -190,6 +195,8 @@ class TeamMember(Base):
         member.telegram = item.get_field_value(load("sheets__team__telegram"))
         member.trello = item.get_field_value(load("sheets__team__trello"))
         member.focalboard = item.get_field_value(load("sheets__focalboard"))
+        telegram_id = item.get_field_value(load("sheets__team__telegram_id"))
+        member.telegram_id = int(telegram_id) if telegram_id else None
         return member
 
 
