@@ -48,12 +48,21 @@ class HRAcquisitionJob(BaseJob):
         return new_items
 
     @staticmethod
+    def _normalize_telegram(username: str) -> str:
+        return username.strip().lstrip("@").lower()
+
+    @staticmethod
     def _process_raw_forms(
         forms_raw: Table, forms_processed: Table
     ) -> List[HRPersonProcessed]:
         people = [HRPersonRaw(item) for item in forms_raw]
         existing_people = [person for person in people if person.status]
         new_people = [person for person in people if not person.status]
+        existing_telegrams = {
+            HRAcquisitionJob._normalize_telegram(p.telegram)
+            for p in existing_people
+            if p.telegram
+        }
         new_items = []
 
         for person in new_people:
@@ -61,12 +70,16 @@ class HRAcquisitionJob(BaseJob):
             if not person.telegram and not person.other_contacts:
                 person.status = load("sheets__hr__raw__status_rejection")
                 continue
-            if person.telegram and (
-                person.telegram in {person.telegram for person in existing_people}
-                or person.telegram in {person.telegram for person in new_items}
-            ):
-                person.status = load("sheets__hr__raw__status_double")
-                continue
+            if person.telegram:
+                normalized = HRAcquisitionJob._normalize_telegram(person.telegram)
+                new_telegrams = {
+                    HRAcquisitionJob._normalize_telegram(p.telegram)
+                    for p in new_items
+                    if p.telegram
+                }
+                if normalized in existing_telegrams or normalized in new_telegrams:
+                    person.status = load("sheets__hr__raw__status_double")
+                    continue
 
             # move good ones to another sheet
             person.status = load("sheets__hr__raw__status_processed")
