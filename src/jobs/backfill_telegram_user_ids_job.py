@@ -31,10 +31,15 @@ class BackfillTelegramUserIdsJob(BaseJob):
         members_with_telegram = [
             m
             for m in team_members
-            if m.telegram and m.telegram.strip() and m.telegram != "#N/A"
+            if m.telegram
+            and m.telegram.strip()
+            and m.telegram != "#N/A"
+            and not m.telegram_id
         ]
 
-        send(f"Found {len(members_with_telegram)} team members with Telegram usernames")
+        send(
+            f"Found {len(members_with_telegram)} team members with unresolved Telegram usernames"
+        )
 
         resolved_count = 0
         created_count = 0
