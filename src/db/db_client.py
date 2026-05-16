@@ -117,11 +117,37 @@ class DBClient(Singleton):
                 member = TeamMember.from_sheetfu_item(item)
                 session.add(member)
             session.commit()
+            self._link_users_to_team_members(session)
         except Exception as e:
             logger.warning("Failed to update team table from sheet", exc_info=e)
             session.rollback()
             return 0
         return len(team)
+
+    def _link_users_to_team_members(self, session):
+        users_by_tg_id = {
+            u.telegram_user_id: u
+            for u in session.query(User).all()
+            if u.telegram_user_id
+        }
+        users_by_username = {
+            u.telegram_username.lower(): u
+            for u in session.query(User).all()
+            if u.telegram_username
+        }
+        for member in session.query(TeamMember).all():
+            user = None
+            if member.telegram_id:
+                user = users_by_tg_id.get(member.telegram_id)
+            if user is None and member.telegram:
+                normalized = member.telegram.strip().lstrip("@").lower()
+                user = users_by_username.get(normalized)
+            if user:
+                if member.telegram_id is None:
+                    member.telegram_id = user.telegram_user_id
+                if user.team_member_id != member.id:
+                    user.team_member_id = member.id
+        session.commit()
 
     def fetch_rubrics_sheet(self, sheets_client: GoogleSheetsClient):
         session = self.Session()
