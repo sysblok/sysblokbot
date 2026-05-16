@@ -1,16 +1,30 @@
+import logging
 import os
 from typing import Dict, List
+from unittest.mock import MagicMock
 
 import pytest
 from utils.json_loader import JsonLoader
 
 from src.config_manager import ConfigManager
+from src.consts import USAGE_LOG_LEVEL
 from src.db.db_client import DBClient
 from src.drive.drive_client import GoogleDriveClient
 from src.sheets.sheets_client import GoogleSheetsClient
 from src.strings import StringsDBClient
 from src.tg.sender import TelegramSender
 from src.trello.trello_client import TrelloClient
+
+# logger.usage is added to the Logger class in bot.py at runtime; tests never
+# import bot, so we register it here to avoid AttributeError in job logging.
+logging.addLevelName(USAGE_LOG_LEVEL, "NOTICE")
+
+
+def _usage(self, message, *args, **kws):
+    self._log(USAGE_LOG_LEVEL, message, args, **kws)
+
+
+logging.Logger.usage = _usage
 
 ROOT_TEST_DIR = os.path.abspath(os.path.dirname(__file__))
 STATIC_TEST_DIR = os.path.join(ROOT_TEST_DIR, "static")
@@ -67,20 +81,7 @@ def mock_trello(monkeypatch, mock_config_manager):
 @pytest.fixture
 def mock_sheets_client(monkeypatch, mock_config_manager):
     def _authorize(self):
-        pass
-
-    # def _parse_gs_res(_, title_key_map: Dict, sheet_key: str, sheet_name: str = '') -> List[Dict]:
-
-    #     load_json = JsonLoader(SHEETS_TEST_DIR).load_json
-
-    #     if sheet_key == 'authors_sheet_key':
-    #         return load_json('authors.json')
-    #     elif sheet_key == 'curators_sheet_key':
-    #         return load_json('curators.json')
-    #     elif sheet_key == 'rubrics_registry_sheet_key':
-    #         return load_json('rubrics.json')
-    #     elif sheet_key == 'strings_sheet_key':
-    #         return load_json('strings.json')
+        self.client = MagicMock()
 
     monkeypatch.setattr(GoogleSheetsClient, "_authorize", _authorize)
     # monkeypatch.setattr(GoogleSheetsClient, '_parse_gs_res', _parse_gs_res)
