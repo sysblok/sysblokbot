@@ -5,7 +5,8 @@
     "trello": {
         "api_key": "stub",
         "token": "stub",
-        "board_id": "board_id"
+        "board_id": "board_id",
+        "deprecated": false
     },
     "sheets": {
         "api_key_path": "stub",
