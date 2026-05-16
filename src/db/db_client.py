@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import List, Optional, Tuple
 
-from sqlalchemy import create_engine, desc
+from sqlalchemy import create_engine, desc, inspect, text
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from .. import consts
@@ -46,6 +46,25 @@ class DBClient(Singleton):
         session_factory = sessionmaker(bind=self.engine)
         self.Session = scoped_session(session_factory)
         Base.metadata.create_all(self.engine)
+        self._ensure_team_telegram_id_column()
+
+    def _ensure_team_telegram_id_column(self):
+        inspector = inspect(self.engine)
+        if "team" not in inspector.get_table_names():
+            return
+
+        column_names = {column["name"] for column in inspector.get_columns("team")}
+        if "telegram_id" in column_names:
+            return
+
+        with self.engine.begin() as connection:
+            connection.execute(text("ALTER TABLE team ADD COLUMN telegram_id INTEGER"))
+            connection.execute(
+                text(
+                    "CREATE INDEX IF NOT EXISTS "
+                    "ix_team_telegram_id ON team (telegram_id)"
+                )
+            )
 
     def fetch_all(self, sheets_client: GoogleSheetsClient):
         self.fetch_authors_sheet(sheets_client)
@@ -98,11 +117,37 @@ class DBClient(Singleton):
                 member = TeamMember.from_sheetfu_item(item)
                 session.add(member)
             session.commit()
+            self._link_users_to_team_members(session)
         except Exception as e:
             logger.warning("Failed to update team table from sheet", exc_info=e)
             session.rollback()
             return 0
         return len(team)
+
+    def _link_users_to_team_members(self, session):
+        users_by_tg_id = {
+            u.telegram_user_id: u
+            for u in session.query(User).all()
+            if u.telegram_user_id
+        }
+        users_by_username = {
+            u.telegram_username.lower(): u
+            for u in session.query(User).all()
+            if u.telegram_username
+        }
+        for member in session.query(TeamMember).all():
+            user = None
+            if member.telegram_id:
+                user = users_by_tg_id.get(member.telegram_id)
+            if user is None and member.telegram:
+                normalized = member.telegram.strip().lstrip("@").lower()
+                user = users_by_username.get(normalized)
+            if user:
+                if member.telegram_id is None:
+                    member.telegram_id = user.telegram_user_id
+                if user.team_member_id != member.id:
+                    user.team_member_id = member.id
+        session.commit()
 
     def fetch_rubrics_sheet(self, sheets_client: GoogleSheetsClient):
         session = self.Session()
@@ -123,16 +168,37 @@ class DBClient(Singleton):
             return 0
         return len(rubrics)
 
-    def find_focalboard_username_by_telegram_username(self, telegram_username: str):
-        # TODO: make batch queries
-        session = self.Session()
-        author = (
-            session.query(Author).filter((Author.telegram == telegram_username)).first()
+    def find_telegram_id_by_focalboard_username(
+        self, focalboard_username: str
+    ) -> Optional[int]:
+        normalized = focalboard_username.strip().lstrip("@").lower()
+        members = self.Session().query(TeamMember).all()
+        member = next(
+            (
+                m
+                for m in members
+                if m.focalboard
+                and m.focalboard.strip().lstrip("@").lower() == normalized
+            ),
+            None,
         )
-        if author is None:
+        return member.telegram_id if member else None
+
+    def find_focalboard_username_by_telegram_username(self, telegram_username: str):
+        normalized = telegram_username.strip().lstrip("@").lower()
+        members = self.Session().query(TeamMember).all()
+        member = next(
+            (
+                m
+                for m in members
+                if m.telegram and m.telegram.strip().lstrip("@").lower() == normalized
+            ),
+            None,
+        )
+        if member is None:
             logger.warning(f"Focalboard id not found for telegram {telegram_username}")
             return None
-        return author.focalboard
+        return member.focalboard
 
     def find_author_telegram_by_trello(self, trello_id: str):
         # TODO: make batch queries
