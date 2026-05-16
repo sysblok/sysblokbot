@@ -148,6 +148,7 @@ class DBClient(Singleton):
                 if user.team_member_id != member.id:
                     user.team_member_id = member.id
         session.commit()
+        session.expunge_all()
 
     def fetch_rubrics_sheet(self, sheets_client: GoogleSheetsClient):
         session = self.Session()
