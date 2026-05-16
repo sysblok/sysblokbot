@@ -103,7 +103,7 @@ def is_sender_admin(update) -> bool:
 
 
 def is_sender_manager(update) -> bool:
-    telegram_login = get_chat_name(update)
+    telegram_login = get_sender_username(update)
     curator = AppContext().db_client.get_curator_by_telegram(telegram_login)
     return curator is not None
 
