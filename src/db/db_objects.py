@@ -195,8 +195,7 @@ class TeamMember(Base):
         member.telegram = item.get_field_value(load("sheets__team__telegram"))
         member.trello = item.get_field_value(load("sheets__team__trello"))
         member.focalboard = item.get_field_value(load("sheets__focalboard"))
-        telegram_id = item.get_field_value(load("sheets__team__telegram_id"))
-        member.telegram_id = int(telegram_id) if telegram_id else None
+        member.telegram_id = None  # populated post-sync by _link_users_to_team_members
         return member
 
 
