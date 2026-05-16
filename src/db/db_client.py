@@ -168,6 +168,22 @@ class DBClient(Singleton):
             return 0
         return len(rubrics)
 
+    def find_telegram_id_by_focalboard_username(
+        self, focalboard_username: str
+    ) -> Optional[int]:
+        normalized = focalboard_username.strip().lstrip("@").lower()
+        members = self.Session().query(TeamMember).all()
+        member = next(
+            (
+                m
+                for m in members
+                if m.focalboard
+                and m.focalboard.strip().lstrip("@").lower() == normalized
+            ),
+            None,
+        )
+        return member.telegram_id if member else None
+
     def find_focalboard_username_by_telegram_username(self, telegram_username: str):
         # TODO: make batch queries
         session = self.Session()
