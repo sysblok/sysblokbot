@@ -348,7 +348,11 @@ class PlankaClient(Singleton):
         try:
             label.id = data["id"]
             label.name = html.escape(data.get("name") or "")
-            label.color = TrelloCardColor.UNKNOWN
+            label.color = (
+                TrelloCardColor.BLACK
+                if data.get("color") == "grey-stone"
+                else TrelloCardColor.UNKNOWN
+            )
         except Exception as e:
             label._ok = False
             logger.error(f"Bad Planka label json {data}", exc_info=e)
