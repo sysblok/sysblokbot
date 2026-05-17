@@ -5,7 +5,6 @@ from urllib.parse import urlparse
 
 from ..app_context import AppContext
 from ..consts import (
-    BoardCardColor,
     TrelloCardColor,
     TrelloCustomFieldTypeAlias,
     BoardListAlias,
@@ -64,15 +63,9 @@ class CreateFoldersForIllustratorsJob(BaseJob):
         app_context: AppContext,
         list_aliases: List[BoardListAlias],
     ) -> List[Tuple[IllustratorFolderState, str]]:
-        logger.info("Started counting:")
-        if app_context.trello_client.deprecated:
-            list_ids = app_context.focalboard_client.get_list_id_from_aliases(
-                list_aliases
-            )
-            cards = app_context.focalboard_client.get_cards(list_ids)
-        else:
-            list_ids = app_context.trello_client.get_list_id_from_aliases(list_aliases)
-            cards = app_context.trello_client.get_cards(list_ids)
+        logger.info("Started creating illustrator folders")
+        list_ids = app_context.planka_client.get_list_id_from_aliases(list_aliases)
+        cards = app_context.planka_client.get_cards(list_ids)
 
         parse_failure_counter = 0
         result = []
@@ -81,15 +74,11 @@ class CreateFoldersForIllustratorsJob(BaseJob):
                 parse_failure_counter += 1
                 continue
 
-            if app_context.trello_client.deprecated:
-                card_fields = app_context.focalboard_client.get_custom_fields(card.id)
-            else:
-                card_fields = app_context.trello_client.get_custom_fields(card.id)
-
+            card_fields = app_context.planka_client.get_custom_fields(card.id)
             label_names = [
                 label.name
                 for label in card.labels
-                if label.color not in [TrelloCardColor.BLACK, BoardCardColor.BLACK]
+                if label.color != TrelloCardColor.BLACK
             ]
             is_archive_card = load("common_trello_label__archive") in label_names
 
@@ -98,9 +87,7 @@ class CreateFoldersForIllustratorsJob(BaseJob):
 
             folder_state = IllustratorFolderState.INCORRECT_URL
             if card_fields.cover:
-                # filled cover field
                 if urlparse(card_fields.cover).scheme:
-                    # existing folder path is correct
                     cover = load(
                         "create_folders_for_illustrators_job__cover",
                         url=card_fields.cover,
@@ -113,7 +100,6 @@ class CreateFoldersForIllustratorsJob(BaseJob):
                     )
                     folder_state = IllustratorFolderState.INCORRECT_URL
             else:
-                # create folder for cover
                 card_fields.cover = app_context.drive_client.create_folder_for_card(
                     card
                 )
@@ -125,22 +111,14 @@ class CreateFoldersForIllustratorsJob(BaseJob):
                     folder_state = IllustratorFolderState.INCORRECT_URL
                     logger.error(f"The folder for card {card.url} was not created")
                 else:
-                    # save path to folder into trello card
                     logger.info(
                         f"Trying to put {card_fields.cover} as cover field for {card.url}"
                     )
-                    if app_context.trello_client.deprecated:
-                        app_context.focalboard_client.set_card_custom_field(
-                            card,
-                            TrelloCustomFieldTypeAlias.COVER,
-                            card_fields.cover,
-                        )
-                    else:
-                        app_context.trello_client.set_card_custom_field(
-                            card.id,
-                            TrelloCustomFieldTypeAlias.COVER,
-                            card_fields.cover,
-                        )
+                    app_context.planka_client.set_card_custom_field(
+                        card,
+                        TrelloCustomFieldTypeAlias.COVER,
+                        card_fields.cover,
+                    )
                     cover = load(
                         "create_folders_for_illustrators_job__cover",
                         url=card_fields.cover,
