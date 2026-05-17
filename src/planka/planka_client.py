@@ -8,8 +8,9 @@ from urllib.parse import urljoin
 import requests
 from cachetools import TTLCache
 
-from ..consts import TrelloCardColor
+from ..consts import TrelloCardColor, TrelloCustomFieldTypeAlias
 from ..db import db_client
+from ..strings import load
 from ..trello import trello_objects as objects
 from ..trello.trello_objects import TIME_FORMAT
 from ..utils.singleton import Singleton
@@ -160,6 +161,103 @@ class PlankaClient(Singleton):
         logger.debug(f"get_cards: {cards}")
         return cards
 
+    def get_list_id_from_aliases(self, list_aliases) -> list:
+        lists = self.get_lists()
+        result = []
+        for alias in list_aliases:
+            alias_name = load(alias.value)
+            matching = [lst for lst in lists if lst.name.startswith(alias_name)]
+            if matching:
+                result.append(matching[0].id)
+            else:
+                logger.error(
+                    f"List not found for alias {alias}: expected name starting with '{alias_name}'"
+                )
+        return result
+
+    def get_custom_fields(self, card_id: str) -> objects.CardCustomFields:
+        data = self._get_board_data(self.board_id)
+        included = data.get("included", {})
+
+        name_to_id = {
+            cf["name"]: cf["id"]
+            for cf in included.get("customFields", [])
+            if "name" in cf and "id" in cf
+        }
+        card_items = {
+            item["customFieldId"]: item.get("value")
+            for item in included.get("customFieldItems", [])
+            if item.get("cardId") == card_id and "customFieldId" in item
+        }
+
+        def _get(alias):
+            return card_items.get(name_to_id.get(load(alias.value)))
+
+        card_fields = objects.CardCustomFields(card_id)
+        card_fields.title = _get(TrelloCustomFieldTypeAlias.TITLE)
+
+        author_val = _get(TrelloCustomFieldTypeAlias.AUTHOR)
+        card_fields.authors = (
+            [a.strip() for a in author_val.split(",")] if author_val else []
+        )
+
+        editor_val = _get(TrelloCustomFieldTypeAlias.EDITOR)
+        card_fields.editors = (
+            [e.strip() for e in editor_val.split(",")] if editor_val else []
+        )
+
+        illustrator_val = _get(TrelloCustomFieldTypeAlias.ILLUSTRATOR)
+        card_fields.illustrators = (
+            [i.strip() for i in illustrator_val.split(",")] if illustrator_val else []
+        )
+
+        card_fields.cover = _get(TrelloCustomFieldTypeAlias.COVER)
+        card_fields.google_doc = _get(TrelloCustomFieldTypeAlias.GOOGLE_DOC)
+        return card_fields
+
+    def set_card_custom_field(self, card, field_alias, value: str):
+        data = self._get_board_data(self.board_id)
+        included = data.get("included", {})
+
+        field_name = load(field_alias.value)
+        custom_field = next(
+            (
+                cf
+                for cf in included.get("customFields", [])
+                if cf.get("name") == field_name
+            ),
+            None,
+        )
+        if not custom_field:
+            logger.error(
+                f"Custom field '{field_name}' not found on board {self.board_id}"
+            )
+            return
+
+        custom_field_id = custom_field["id"]
+        existing_item = next(
+            (
+                item
+                for item in included.get("customFieldItems", [])
+                if item.get("cardId") == card.id
+                and item.get("customFieldId") == custom_field_id
+            ),
+            None,
+        )
+
+        if existing_item:
+            self._make_patch_request(
+                f"custom-field-items/{existing_item['id']}",
+                payload={"value": value},
+            )
+        else:
+            self._make_post_request(
+                f"cards/{card.id}/custom-field-items",
+                payload={"customFieldId": custom_field_id, "value": value},
+            )
+
+        self._board_cache.pop(self.board_id, None)
+
     def update_config(self, new_planka_config):
         """To be called after config automatic update."""
         self._planka_config = new_planka_config or {}
@@ -182,6 +280,24 @@ class PlankaClient(Singleton):
         response = requests.get(
             urljoin(self.api_url, uri.lstrip("/")),
             params=payload or {},
+            headers=self.headers,
+        )
+        logger.debug(f"{response.url}")
+        return response.status_code, response.json()
+
+    def _make_post_request(self, uri, payload=None):
+        response = requests.post(
+            urljoin(self.api_url, uri.lstrip("/")),
+            json=payload or {},
+            headers=self.headers,
+        )
+        logger.debug(f"{response.url}")
+        return response.status_code, response.json()
+
+    def _make_patch_request(self, uri, payload=None):
+        response = requests.patch(
+            urljoin(self.api_url, uri.lstrip("/")),
+            json=payload or {},
             headers=self.headers,
         )
         logger.debug(f"{response.url}")
