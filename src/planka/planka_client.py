@@ -185,8 +185,8 @@ class PlankaClient(Singleton):
             if "name" in cf and "id" in cf
         }
         card_items = {
-            item["customFieldId"]: item.get("value")
-            for item in included.get("customFieldItems", [])
+            item["customFieldId"]: item.get("content")
+            for item in included.get("customFieldValues", [])
             if item.get("cardId") == card_id and "customFieldId" in item
         }
 
@@ -235,27 +235,34 @@ class PlankaClient(Singleton):
             return
 
         custom_field_id = custom_field["id"]
-        existing_item = next(
-            (
-                item
-                for item in included.get("customFieldItems", [])
-                if item.get("cardId") == card.id
-                and item.get("customFieldId") == custom_field_id
-            ),
-            None,
+
+        # customFieldGroupId comes from the field definition; fall back to
+        # scanning existing values for any card that already has this field.
+        group_id = custom_field.get("customFieldGroupId")
+        if not group_id:
+            existing = next(
+                (
+                    item
+                    for item in included.get("customFieldValues", [])
+                    if item.get("customFieldId") == custom_field_id
+                ),
+                None,
+            )
+            if existing:
+                group_id = existing.get("customFieldGroupId")
+        if not group_id:
+            logger.error(
+                f"Cannot determine customFieldGroupId for field '{field_name}' "
+                f"on board {self.board_id}"
+            )
+            return
+
+        # Single PATCH — Planka creates or updates in one call.
+        uri = (
+            f"cards/{card.id}/custom-field-values"
+            f"/customFieldGroupId:{group_id}:customFieldId:{custom_field_id}"
         )
-
-        if existing_item:
-            self._make_patch_request(
-                f"custom-field-items/{existing_item['id']}",
-                payload={"value": value},
-            )
-        else:
-            self._make_post_request(
-                f"cards/{card.id}/custom-field-items",
-                payload={"customFieldId": custom_field_id, "value": value},
-            )
-
+        self._make_patch_request(uri, payload={"content": value})
         self._board_cache.pop(self.board_id, None)
 
     def update_config(self, new_planka_config):
@@ -280,15 +287,6 @@ class PlankaClient(Singleton):
         response = requests.get(
             urljoin(self.api_url, uri.lstrip("/")),
             params=payload or {},
-            headers=self.headers,
-        )
-        logger.debug(f"{response.url}")
-        return response.status_code, response.json()
-
-    def _make_post_request(self, uri, payload=None):
-        response = requests.post(
-            urljoin(self.api_url, uri.lstrip("/")),
-            json=payload or {},
             headers=self.headers,
         )
         logger.debug(f"{response.url}")
