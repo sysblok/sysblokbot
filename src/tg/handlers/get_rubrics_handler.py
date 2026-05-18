@@ -29,7 +29,7 @@ def get_rubrics(update: Update, tg_context: CallbackContext) -> None:
 
     excluded_rubrics = {load(key) for key in EXCLUDED_LOAD_KEYS}
     try:
-        labels = app_context.focalboard_client._get_labels()
+        labels = app_context.planka_client.get_labels()
         filtered = [
             lbl.name
             for lbl in labels

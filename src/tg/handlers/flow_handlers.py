@@ -115,8 +115,8 @@ class BaseUserMessageHandler(ABC):
 def _generate_rubric_summary(update, rubric_name: str) -> None:
     try:
         app_context = AppContext()
-        fc = app_context.focalboard_client
-        labels = fc._get_labels()
+        pc = app_context.planka_client
+        labels = pc.get_labels()
         rubric_label = next(
             (
                 lbl
@@ -138,9 +138,8 @@ def _generate_rubric_summary(update, rubric_name: str) -> None:
             )
             return
 
-        # Get all lists
         try:
-            lists = fc.get_lists(board_id=fc.board_id, sorted=False)
+            lists = pc.get_lists()
         except Exception as e:
             logger.error(
                 f"_generate_rubric_summary: не удалось получить lists: {e}",
@@ -161,7 +160,6 @@ def _generate_rubric_summary(update, rubric_name: str) -> None:
         for column_name, alias, *meta_flag in SECTIONS:
             need_meta = bool(meta_flag and meta_flag[0])
             heading = load(alias.value)
-            # Find column
             target_list = next(
                 (lst for lst in lists if lst.name.strip().startswith(column_name)), None
             )
@@ -172,7 +170,7 @@ def _generate_rubric_summary(update, rubric_name: str) -> None:
                 continue
 
             try:
-                cards = fc.get_cards(list_ids=[target_list.id], board_id=fc.board_id)
+                cards = pc.get_cards(list_ids=[target_list.id])
             except Exception:
                 had_errors = True
                 message_parts.append(f"<b>{heading}</b> (0)")
@@ -200,7 +198,7 @@ def _generate_rubric_summary(update, rubric_name: str) -> None:
                             card.due.strftime("%d.%m.%Y") if card.due else "без срока"
                         )
                         try:
-                            fields = fc.get_custom_fields(card.id)
+                            fields = pc.get_custom_fields(card.id)
                             authors = (
                                 ", ".join(fields.authors)
                                 if fields.authors

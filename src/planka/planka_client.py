@@ -161,6 +161,17 @@ class PlankaClient(Singleton):
         logger.debug(f"get_cards: {cards}")
         return cards
 
+    def get_labels(self, board_id=None) -> List[objects.TrelloCardLabel]:
+        board_id = board_id or self.board_id
+        data = self._get_board_data(board_id)
+        labels = [
+            self._label_from_planka_dict(label)
+            for label in data.get("included", {}).get("labels", [])
+            if "id" in label
+        ]
+        logger.debug(f"get_labels: {labels}")
+        return labels
+
     def get_list_id_from_aliases(self, list_aliases) -> list:
         lists = self.get_lists()
         result = []
