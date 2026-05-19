@@ -101,7 +101,9 @@ class PublicationPlansJob(BaseJob):
             ]
 
             is_archive_card = load("common_trello_label__archive") in label_names
-            is_telegram_card = any("Телеграм" in name for name in label_names)
+            is_telegram_card = any(
+                "телеграм" in label.name.lower() for label in card.labels
+            )
 
             missing_fields = []
 
