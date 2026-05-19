@@ -101,11 +101,9 @@ class PublicationPlansJob(BaseJob):
             ]
 
             is_archive_card = load("common_trello_label__archive") in label_names
+            is_telegram_card = any("Телеграм" in name for name in label_names)
 
             missing_fields = []
-
-            if not card_fields.title or not card_fields.title.strip():
-                missing_fields.append("название")
 
             error_display_name = (
                 card_fields.title.strip()
@@ -118,7 +116,7 @@ class PublicationPlansJob(BaseJob):
             if not card_fields.google_doc:
                 missing_fields.append("ссылка на Google Doc")
 
-            if (
+            if not is_telegram_card and (
                 not card_fields.authors
                 or len(card_fields.authors) == 0
                 or not any(author and author.strip() for author in card_fields.authors)
