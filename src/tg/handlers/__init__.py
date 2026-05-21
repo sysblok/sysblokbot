@@ -23,12 +23,7 @@ from .get_managers_handler import get_managers
 
 # Admin (developer) handlers
 from .get_rubrics_handler import get_rubrics
-from .get_tasks_report_handler import (
-    get_tasks_report,
-    get_tasks_report_advanced,
-    get_tasks_report_focalboard,
-    get_tasks_report_planka,
-)
+from .get_tasks_report_handler import get_tasks_report_planka
 from .help_handler import help
 from .list_chats_handler import list_chats
 from .list_job_handler import list_jobs

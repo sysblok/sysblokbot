@@ -109,14 +109,6 @@ HANDLER_REGISTRY = [
         description="создать папки для иллюстраторов",
     ),
     HandlerConfig(
-        command="get_tasks_report_focalboard",
-        category=CommandCategories.MOST_USED,
-        access_level="manager",
-        handler_func=handlers.get_tasks_report_focalboard,
-        direct_only=True,
-        description="получить список задач из Focalboard",
-    ),
-    HandlerConfig(
         command="get_tasks_report_planka",
         category=CommandCategories.MOST_USED,
         access_level="manager",
