@@ -8,6 +8,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from .. import consts
 from ..sheets.sheets_client import GoogleSheetsClient
 from ..utils.singleton import Singleton
+from ..utils.telegram import normalize_telegram_username
 from .db_objects import (
     Author,
     Base,
@@ -201,17 +202,21 @@ class DBClient(Singleton):
         return member.focalboard
 
     def find_author_telegram_by_trello(self, trello_id: str):
-        # TODO: make batch queries
-        session = self.Session()
-        author = (
-            session.query(Author)
-            .filter((Author.trello == trello_id) | (Author.focalboard == trello_id))
-            .first()
+        normalized = normalize_telegram_username(trello_id)
+        members = self.Session().query(TeamMember).all()
+        member = next(
+            (
+                m
+                for m in members
+                if normalize_telegram_username(m.trello) == normalized
+                or normalize_telegram_username(m.focalboard) == normalized
+            ),
+            None,
         )
-        if author is None:
-            logger.warning(f"Telegram id not found for author {trello_id}")
+        if member is None:
+            logger.warning(f"Telegram id not found for team member {trello_id}")
             return None
-        return author.telegram
+        return member.telegram
 
     def get_curator_by_telegram(self, telegram: str) -> Curator:
         session = self.Session()
