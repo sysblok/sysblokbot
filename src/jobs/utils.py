@@ -50,7 +50,7 @@ def retrieve_curator_names_by_author(
     """
     Tries to find a curator for trello member. Returns nothing if user is curator.
     Returns: "John Smith (@jsmith_tg)" where possible, otherwise "John Smith".
-    If trello member or curator could not be found in Authors sheet, returns None
+    If trello member or curator could not be found in the team data, returns None
     """
     trello_id = "@" + trello_member.username
     try:
@@ -69,7 +69,7 @@ def retrieve_curator_names_by_author(
 
 def retrieve_curator_names_by_categories(labels: List[str], db_client: DBClient):
     """
-    To be used when there is no known authors.
+    To be used when there are no known card members.
     Category is a trello label (e.g. NLP)
     """
     curators = set()

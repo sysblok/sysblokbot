@@ -35,10 +35,6 @@ from src.strings import load
         # #     jobs.fill_posts_list_job.FillPostsListJob,
         # # ),
         # (
-        #     jobs.db_fetch_authors_sheet_job.DBFetchAuthorsSheetJob,
-        #     ['Fetched 2']
-        # ),
-        # (
         #     jobs.db_fetch_curators_sheet_job.DBFetchCuratorsSheetJob,
         #     ['Fetched 1']
         # ),

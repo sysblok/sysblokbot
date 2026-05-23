@@ -316,12 +316,6 @@ HANDLER_REGISTRY = [
         job_type="admin_reply",
     ),
     HandlerConfig(
-        command="db_fetch_authors_sheet",
-        access_level="hidden",
-        job_name="db_fetch_authors_sheet_job",
-        job_type="admin_reply",
-    ),
-    HandlerConfig(
         command="db_fetch_curators_sheet",
         access_level="hidden",
         job_name="db_fetch_curators_sheet_job",

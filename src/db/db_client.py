@@ -10,7 +10,6 @@ from ..sheets.sheets_client import GoogleSheetsClient
 from ..utils.singleton import Singleton
 from ..utils.telegram import normalize_telegram_username
 from .db_objects import (
-    Author,
     Base,
     Chat,
     Curator,
@@ -68,27 +67,9 @@ class DBClient(Singleton):
             )
 
     def fetch_all(self, sheets_client: GoogleSheetsClient):
-        self.fetch_authors_sheet(sheets_client)
         self.fetch_curators_sheet(sheets_client)
         self.fetch_team_sheet(sheets_client)
         self.fetch_rubrics_sheet(sheets_client)
-
-    def fetch_authors_sheet(self, sheets_client: GoogleSheetsClient):
-        session = self.Session()
-        try:
-            # clean this table
-            session.query(Author).delete()
-            # re-download it
-            authors = sheets_client.fetch_authors()
-            for item in authors:
-                author = Author.from_sheetfu_item(item)
-                session.add(author)
-            session.commit()
-        except Exception as e:
-            logger.warning("Failed to update authors table from sheet", exc_info=e)
-            session.rollback()
-            return 0
-        return len(authors)
 
     def fetch_curators_sheet(self, sheets_client: GoogleSheetsClient):
         session = self.Session()

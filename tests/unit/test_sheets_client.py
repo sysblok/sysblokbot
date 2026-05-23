@@ -24,7 +24,6 @@ def _make_sheets_client(monkeypatch, sheets_config):
 def _base_sheets_config(team_identity_sheet_key=None):
     config = {
         "api_key_path": "stub",
-        "authors_sheet_key": "authors_sheet_key",
         "curators_sheet_key": "curators_sheet_key",
         "hr_sheet_key": "hr_sheet_key",
         "hr_pt_sheet_key": "hr_pt_sheet_key",
@@ -113,12 +112,6 @@ def test_fetch_telegram_ids_reads_telegram_tab(monkeypatch):
 
     assert client.fetch_telegram_ids() == "telegram table"
     assert calls == [("team_identity_sheet_key", "telegram")]
-
-
-@pytest.mark.skip(reason="TODO")
-def test_fetch_authors(mock_sheets_client):
-    authors = [author.to_dict() for author in mock_sheets_client.fetch_authors()]
-    json_loader.assert_equal(authors, "authors.json")
 
 
 @pytest.mark.skip(reason="TODO")
