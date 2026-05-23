@@ -7,6 +7,7 @@ from ..app_context import AppContext
 from ..sheets.sheets_objects import HRPersonProcessed, HRPersonRaw
 from ..strings import load
 from ..tg.sender import pretty_send
+from ..utils.telegram import normalize_telegram_username
 from .base_job import BaseJob
 
 logger = logging.getLogger(__name__)
@@ -48,10 +49,6 @@ class HRAcquisitionJob(BaseJob):
         return new_items
 
     @staticmethod
-    def _normalize_telegram(username: str) -> str:
-        return username.strip().lstrip("@").lower()
-
-    @staticmethod
     def _process_raw_forms(
         forms_raw: Table, forms_processed: Table
     ) -> List[HRPersonProcessed]:
@@ -59,7 +56,7 @@ class HRAcquisitionJob(BaseJob):
         existing_people = [person for person in people if person.status]
         new_people = [person for person in people if not person.status]
         existing_telegrams = {
-            HRAcquisitionJob._normalize_telegram(p.telegram)
+            normalize_telegram_username(p.telegram)
             for p in existing_people
             if p.telegram
         }
@@ -71,9 +68,9 @@ class HRAcquisitionJob(BaseJob):
                 person.status = load("sheets__hr__raw__status_rejection")
                 continue
             if person.telegram:
-                normalized = HRAcquisitionJob._normalize_telegram(person.telegram)
+                normalized = normalize_telegram_username(person.telegram)
                 new_telegrams = {
-                    HRAcquisitionJob._normalize_telegram(p.telegram)
+                    normalize_telegram_username(p.telegram)
                     for p in new_items
                     if p.telegram
                 }
