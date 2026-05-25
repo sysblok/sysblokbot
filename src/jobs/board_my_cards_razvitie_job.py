@@ -72,7 +72,7 @@ class BoardMyCardsRazvitieJob(BaseJob):
             ]
             if my_cards:
                 list_report = BoardMyCardsRazvitieJob._create_paragraphs_from_cards(
-                    my_cards, f"📜 <b>{board_list.name}</b>", True, app_context
+                    my_cards, f"📜 <b>{board_list.name}</b>", True
                 )
                 paragraphs += list_report
                 paragraphs.append("")  # hotfix for separating lists
@@ -86,13 +86,12 @@ class BoardMyCardsRazvitieJob(BaseJob):
         cards: Iterable[TrelloCard],
         introduction: str,
         need_label: bool,
-        app_context: AppContext,
     ):
         paragraphs = []
         if introduction:
             paragraphs.append(introduction)
 
-        paragraphs += _make_cards_text(cards, need_label, app_context)
+        paragraphs += _make_cards_text(cards, need_label)
         return paragraphs
 
     @staticmethod
