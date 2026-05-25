@@ -51,24 +51,6 @@ HANDLER_REGISTRY = [
         description="получить мои карточки из доски Развитие",
     ),
     HandlerConfig(
-        command="fill_posts_list",
-        category=CommandCategories.DEBUG,
-        access_level="manager",
-        job_name="fill_posts_list_job",
-        job_type="manager_reply",
-        direct_only=True,
-        description="заполнить реестр постов (пока не работает)",
-    ),
-    HandlerConfig(
-        command="fill_posts_list_focalboard",
-        category=CommandCategories.DEBUG,
-        access_level="manager",
-        job_name="fill_posts_list_focalboard_job",
-        job_type="manager_reply",
-        direct_only=True,
-        description="заполнить реестр постов из Focalboard (пока не работает)",
-    ),
-    HandlerConfig(
         command="hr_acquisition",
         category=CommandCategories.HR,
         access_level="admin",
@@ -107,14 +89,6 @@ HANDLER_REGISTRY = [
         job_name="create_folders_for_illustrators_job",
         job_type="manager_reply",
         description="создать папки для иллюстраторов",
-    ),
-    HandlerConfig(
-        command="get_tasks_report_focalboard",
-        category=CommandCategories.MOST_USED,
-        access_level="manager",
-        handler_func=handlers.get_tasks_report_focalboard,
-        direct_only=True,
-        description="получить список задач из Focalboard",
     ),
     HandlerConfig(
         command="get_tasks_report_planka",
@@ -266,13 +240,6 @@ HANDLER_REGISTRY = [
         description="добавить менеджера в список",
     ),
     HandlerConfig(
-        command="change_board",
-        category=CommandCategories.CONFIG,
-        access_level="admin",
-        handler_func=handlers.change_board,
-        description="изменить Trello board_id",
-    ),
-    HandlerConfig(
         command="send_reminders",
         category=CommandCategories.BROADCAST,
         access_level="admin",
@@ -321,12 +288,6 @@ HANDLER_REGISTRY = [
         command="sample_handler",
         access_level="hidden",
         job_name="sample_job",
-        job_type="admin_reply",
-    ),
-    HandlerConfig(
-        command="db_fetch_authors_sheet",
-        access_level="hidden",
-        job_name="db_fetch_authors_sheet_job",
         job_type="admin_reply",
     ),
     HandlerConfig(

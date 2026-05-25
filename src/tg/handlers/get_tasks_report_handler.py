@@ -10,7 +10,7 @@ from ...app_context import AppContext
 from ...jobs.utils import retrieve_username
 from ...strings import load
 from ...tg.sender import paragraphs_to_messages
-from ...trello.trello_objects import TrelloCard
+from ...planka.board_objects import TrelloCard
 from .utils import manager_only, reply
 
 TASK_NAME = "get_tasks_report"
@@ -19,35 +19,10 @@ logger = logging.getLogger(__name__)
 
 
 @manager_only
-def get_tasks_report(update: telegram.Update, tg_context: telegram.ext.CallbackContext):
-    _get_task_report_base(update, tg_context, advanced=False)
-
-    return
-
-
-@manager_only
-def get_tasks_report_focalboard(
-    update: telegram.Update, tg_context: telegram.ext.CallbackContext
-):
-    _get_task_report_base(update, tg_context, advanced=False, use_focalboard=True)
-
-    return
-
-
-@manager_only
 def get_tasks_report_planka(
     update: telegram.Update, tg_context: telegram.ext.CallbackContext
 ):
-    _get_task_report_base(update, tg_context, advanced=False, use_planka=True)
-
-    return
-
-
-@manager_only
-def get_tasks_report_advanced(
-    update: telegram.Update, tg_context: telegram.ext.CallbackContext
-):
-    _get_task_report_base(update, tg_context, advanced=True)
+    _get_task_report_base(update, tg_context, advanced=False)
 
     return
 
@@ -56,27 +31,14 @@ def _get_task_report_base(
     update: telegram.Update,
     tg_context: telegram.ext.CallbackContext,
     advanced: bool,
-    use_focalboard: bool = False,
-    use_planka: bool = False,
 ):
     app_context = AppContext()
 
-    if use_planka:
-        telegram_username = update.effective_user.username
-
-        boards_list = app_context.planka_client.get_boards_for_telegram_user(
-            telegram_username,
-            app_context.db_client,
-        )
-    elif use_focalboard:
-        telegram_username = update.effective_user.username
-
-        boards_list = app_context.focalboard_client.get_boards_for_user(
-            telegram_username=telegram_username,
-            db_client=app_context.db_client,
-        )
-    else:
-        boards_list = app_context.trello_client.get_boards_for_user()
+    telegram_username = update.effective_user.username
+    boards_list = app_context.planka_client.get_boards_for_telegram_user(
+        telegram_username,
+        app_context.db_client,
+    )
     boards_list = sorted(boards_list, key=lambda board: board.name)
     boards_list_formatted = "\n".join(
         [f"{i + 1}) {brd.name}" for i, brd in enumerate(boards_list)]
@@ -86,8 +48,7 @@ def _get_task_report_base(
     tg_context.chat_data[consts.GetTasksReportData.LISTS] = [
         lst.to_dict() for lst in boards_list
     ]
-    tg_context.chat_data[consts.GetTasksReportData.USE_FOCALBOARD] = use_focalboard
-    tg_context.chat_data[consts.GetTasksReportData.USE_PLANKA] = use_planka
+    tg_context.chat_data[consts.GetTasksReportData.USE_PLANKA] = True
     tg_context.chat_data[TASK_NAME] = {
         consts.NEXT_ACTION: consts.PlainTextUserAction.GET_TASKS_REPORT__ENTER_BOARD_NUMBER.value
     }
@@ -105,29 +66,16 @@ def generate_report_messages(
     list_id: str,
     introduction: str,
     add_labels: bool,
-    use_focalboard: bool,
-    use_planka: bool = False,
 ) -> List[str]:
     app_context = AppContext()
-    paragraphs = []  # list of paragraph strings
+    paragraphs = []
 
-    if use_planka:
-        trello_list = app_context.planka_client.get_list(board_id, list_id)
-    elif use_focalboard:
-        trello_list = app_context.focalboard_client.get_list(board_id, list_id)
-    else:
-        trello_list = app_context.trello_client.get_list(list_id)
+    trello_list = app_context.planka_client.get_list(board_id, list_id)
     paragraphs.append(load("common__bold_wrapper", arg=trello_list.name))
 
-    if use_planka:
-        list_cards = app_context.planka_client.get_cards(list_id, board_id)
-    elif use_focalboard:
-        list_cards = app_context.focalboard_client.get_cards([list_id], board_id)
-    else:
-        list_cards = app_context.trello_client.get_cards([list_id], board_id)
-    print(list_cards)
+    list_cards = app_context.planka_client.get_cards(list_id, board_id)
     paragraphs += _create_paragraphs_from_cards(
-        list_cards, introduction, add_labels, app_context
+        list_cards, introduction, add_labels, app_context.db_client
     )
     return paragraphs_to_messages(paragraphs)
 
@@ -136,7 +84,7 @@ def _create_paragraphs_from_cards(
     cards: Iterable[TrelloCard],
     introduction: str,
     need_label: bool,
-    app_context: AppContext,
+    db_client,
 ):
     paragraphs = []
     if introduction:
@@ -145,20 +93,17 @@ def _create_paragraphs_from_cards(
     members = _get_members(cards)
     for member in members:
         lines = []
-        member_name = _make_member_text(member, app_context.db_client)
+        member_name = _make_member_text(member, db_client)
         lines.append(member_name)
         member_cards = _get_member_cards(member, cards)
-        cards_text = _make_cards_text(member_cards, need_label, app_context)
+        cards_text = _make_cards_text(member_cards, need_label)
         lines += cards_text
         paragraphs.append("\n".join(lines))
 
-    # cards without members at the end
     cards_without_members = _get_cards_without_members(cards)
     if cards_without_members:
         lines = [load("get_tasks_report_handler__misc")]
-        cards_without_members_text = _make_cards_text(
-            cards_without_members, need_label, app_context
-        )
+        cards_without_members_text = _make_cards_text(cards_without_members, need_label)
         lines += cards_without_members_text
         paragraphs.append("\n".join(lines))
     return paragraphs
@@ -220,9 +165,7 @@ def _make_deadline_text(card: TrelloCard) -> str:
     )
 
 
-def _make_cards_text(
-    cards: Iterable[TrelloCard], need_label: bool, app_context: AppContext
-) -> List[str]:
+def _make_cards_text(cards: Iterable[TrelloCard], need_label: bool) -> List[str]:
     # generates the text of the cards, cards come already sorted by date
     return [_format_card(card, need_label) for card in cards]
 

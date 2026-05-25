@@ -29,7 +29,6 @@ class GoogleSheetsClient(Singleton):
 
     def _update_from_config(self):
         """Update attributes according to current self._sheets_config"""
-        self.authors_sheet_key = self._sheets_config["authors_sheet_key"]
         self.curators_sheet_key = self._sheets_config["curators_sheet_key"]
         self.hr_sheet_key = self._sheets_config["hr_sheet_key"]
         self.hr_pt_sheet_key = self._sheets_config["hr_pt_sheet_key"]
@@ -45,9 +44,6 @@ class GoogleSheetsClient(Singleton):
 
     def _authorize(self):
         self.client = SpreadsheetApp(self._sheets_config["api_key_path"])
-
-    def fetch_authors(self) -> Table:
-        return self._fetch_table(self.authors_sheet_key, "Кураторы и контакты")
 
     def fetch_curators(self) -> Table:
         return self._fetch_table(self.curators_sheet_key)

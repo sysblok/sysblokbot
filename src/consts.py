@@ -39,8 +39,6 @@ MSK_TIMEZONE = timezone(timedelta(hours=3))
 
 # Upper level config keys
 TELEGRAM_CONFIG = "telegram"
-TRELLO_CONFIG = "trello"
-FOCALBOARD_CONFIG = "focalboard"
 PLANKA_CONFIG = "planka"
 SHEETS_CONFIG = "sheets"
 DRIVE_CONFIG = "drive"
@@ -58,9 +56,6 @@ KWARGS = "kwargs"
 
 # Telegram keys
 TELEGRAM_MANAGER_IDS = "manager_chat_ids"
-
-# Trello keys
-TRELLO_BOARD_ID = "board_id"
 
 # Vk consts
 VK_POST_LINK = "https://vk.com/{group_alias}?w=wall-{group_id}_{post_id}"
@@ -166,7 +161,6 @@ class PlainTextUserAction(Enum):
     """
 
     # /get_tasks_report items
-    GET_TASKS_REPORT__ENTER_BOARD_URL = "get_tasks_report__board_url"
     GET_TASKS_REPORT__ENTER_BOARD_NUMBER = "get_tasks_report__board_number"
     GET_TASKS_REPORT__ENTER_LIST_NUMBER = "get_tasks_report__list_number"
     GET_TASKS_REPORT__ENTER_INTRO = "get_tasks_report__introduction"

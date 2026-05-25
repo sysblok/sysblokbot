@@ -147,24 +147,6 @@ def add_manager(update, tg_context):
         return
 
 
-@admin_only
-def change_board(update, tg_context):
-    try:
-        tokens = update.message.text.strip().split(maxsplit=2)
-        assert len(tokens) == 2
-        board_id = json.loads(tokens[1])
-        _set_config(
-            update,
-            f"{consts.TRELLO_CONFIG}.{consts.TRELLO_BOARD_ID}",
-            board_id,
-            ConfigManager(),
-        )
-    except Exception as e:
-        reply(load("access_config_handler__change_board_usage_example"), update)
-        logger.warning("Failed to change boards", exc_info=e)
-        return
-
-
 def _set_config(update, config_path: str, new_value, config_manager: ConfigManager):
     current_config = config_manager.get_latest_config()
     for config_item in config_path.split("."):

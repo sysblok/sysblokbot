@@ -11,8 +11,8 @@ from cachetools import TTLCache
 from ..consts import TrelloCardColor, TrelloCustomFieldTypeAlias
 from ..db import db_client
 from ..strings import load
-from ..trello import trello_objects as objects
-from ..trello.trello_objects import TIME_FORMAT
+from . import board_objects as objects
+from .board_objects import TIME_FORMAT
 from ..utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)

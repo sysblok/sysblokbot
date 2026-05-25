@@ -10,7 +10,6 @@
     },
     "sheets": {
         "api_key_path": "stub",
-        "authors_sheet_key": "authors_sheet_key",
         "curators_sheet_key": "curators_sheet_key",
         "hr_sheet_key": "hr_sheet_key",
         "hr_pt_sheet_key": "hr_pt_sheet_key",

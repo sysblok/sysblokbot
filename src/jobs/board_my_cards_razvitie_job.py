@@ -4,7 +4,7 @@ from typing import Callable, Iterable, List
 from ..app_context import AppContext
 from ..strings import load
 from ..tg.handlers.get_tasks_report_handler import _make_cards_text
-from ..trello.trello_objects import TrelloCard
+from ..planka.board_objects import TrelloCard
 from .base_job import BaseJob
 
 logger = logging.getLogger(__name__)
@@ -72,7 +72,7 @@ class BoardMyCardsRazvitieJob(BaseJob):
             ]
             if my_cards:
                 list_report = BoardMyCardsRazvitieJob._create_paragraphs_from_cards(
-                    my_cards, f"📜 <b>{board_list.name}</b>", True, app_context
+                    my_cards, f"📜 <b>{board_list.name}</b>", True
                 )
                 paragraphs += list_report
                 paragraphs.append("")  # hotfix for separating lists
@@ -86,13 +86,12 @@ class BoardMyCardsRazvitieJob(BaseJob):
         cards: Iterable[TrelloCard],
         introduction: str,
         need_label: bool,
-        app_context: AppContext,
     ):
         paragraphs = []
         if introduction:
             paragraphs.append(introduction)
 
-        paragraphs += _make_cards_text(cards, need_label, app_context)
+        paragraphs += _make_cards_text(cards, need_label)
         return paragraphs
 
     @staticmethod

@@ -25,7 +25,6 @@
     },
     "sheets": {
         "api_key_path": "do_not_set_here_please_go_to_config_override",
-        "authors_sheet_key": "do_not_set_here_please_go_to_config_override",
         "curators_sheet_key": "do_not_set_here_please_go_to_config_override",
         "hr_sheet_key": "do_not_set_here_please_go_to_config_override",
         "hr_pt_sheet_key": "do_not_set_here_please_go_to_config_override",

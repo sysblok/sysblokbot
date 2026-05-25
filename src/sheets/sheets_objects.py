@@ -6,7 +6,7 @@ from sheetfu.modules.table import Item, Table
 
 from ..consts import BoardCardColor, TrelloCardColor
 from ..strings import load
-from ..trello.trello_objects import CardCustomFields, TrelloCard
+from ..planka.board_objects import CardCustomFields, TrelloCard
 from .utils import convert_excel_datetime_to_string
 
 logger = logging.getLogger(__name__)

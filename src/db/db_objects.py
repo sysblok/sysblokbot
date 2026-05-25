@@ -43,58 +43,10 @@ class GUID(TypeDecorator):
             return value
 
 
-class Author(Base):
-    __tablename__ = "authors"
-
-    name = Column(String, primary_key=True)
-    curator = Column(String)
-    status = Column(String)
-    telegram = Column(String)
-    trello = Column(String)
-    focalboard = Column(String)
-
-    def __repr__(self):
-        return f"Author {self.name} tg={self.telegram} trello={self.trello} f={self.focalboard}"
-
-    @classmethod
-    def from_dict(cls, data):
-        author = cls()
-        author.name = _get_str_data_item(data, "name")
-        author.curator = _get_str_data_item(data, "curator")
-        author.status = _get_str_data_item(data, "status")
-        author.telegram = _get_str_data_item(data, "telegram")
-        author.trello = _get_str_data_item(data, "trello")
-        author.focalboard = _get_str_data_item(data, "focalboard")
-        return author
-
-    def to_dict(self):
-        return {
-            "name": self.name,
-            "curator": self.curator,
-            "status": self.status,
-            "telegram": self.telegram,
-            "trello": self.trello,
-            "focalboard": self.focalboard,
-        }
-
-    @classmethod
-    def from_sheetfu_item(cls, item):
-        author = cls()
-        author.name = item.get_field_value(load("sheets__what_is_your_name"))
-        author.curator = item.get_field_value(load("sheets__curator_as_author"))
-        author.status = item.get_field_value(load("sheets__status"))
-        author.telegram = item.get_field_value(load("sheets__telegram"))
-        author.trello = item.get_field_value(load("sheets__trello"))
-        author.focalboard = item.get_field_value(load("sheets__focalboard"))
-        return author
-
-
 class Curator(Base):
     __tablename__ = "curators"
 
-    role = Column(
-        String, ForeignKey("authors.curator"), primary_key=True
-    )  # e.g. "Куратор NLP 1"
+    role = Column(String, primary_key=True)  # e.g. "Куратор NLP 1"
     name = Column(String, primary_key=True)
     telegram = Column(String)
     team = Column(String)  # e.g. "Авторы"
