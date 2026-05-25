@@ -8,7 +8,7 @@ from ..consts import BoardCardColor, TrelloCardColor, TrelloCardFieldErrorAlias
 from ..db.db_client import DBClient
 from ..drive.drive_client import GoogleDriveClient
 from ..strings import load
-from ..trello.trello_objects import TrelloMember
+from ..planka.board_objects import TrelloMember
 
 logger = logging.getLogger(__name__)
 

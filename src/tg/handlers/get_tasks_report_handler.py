@@ -10,7 +10,7 @@ from ...app_context import AppContext
 from ...jobs.utils import retrieve_username
 from ...strings import load
 from ...tg.sender import paragraphs_to_messages
-from ...trello.trello_objects import TrelloCard
+from ...planka.board_objects import TrelloCard
 from .utils import manager_only, reply
 
 TASK_NAME = "get_tasks_report"

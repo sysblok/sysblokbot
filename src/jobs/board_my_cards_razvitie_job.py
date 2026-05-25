@@ -4,7 +4,7 @@ from typing import Callable, Iterable, List
 from ..app_context import AppContext
 from ..strings import load
 from ..tg.handlers.get_tasks_report_handler import _make_cards_text
-from ..trello.trello_objects import TrelloCard
+from ..planka.board_objects import TrelloCard
 from .base_job import BaseJob
 
 logger = logging.getLogger(__name__)

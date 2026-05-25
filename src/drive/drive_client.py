@@ -11,7 +11,7 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload
 from oauth2client.service_account import ServiceAccountCredentials
 
-from ..trello.trello_objects import TrelloCard
+from ..planka.board_objects import TrelloCard
 from ..utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
