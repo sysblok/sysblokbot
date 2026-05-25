@@ -17,6 +17,9 @@ class TrelloBoard:
     def __repr__(self):
         return f"Board<id={self.id}, name={self.name}, url={self.url}>"
 
+    def to_dict(self):
+        return {"id": self.id, "name": self.name, "url": self.url}
+
 
 class TrelloList:
     def __init__(self):
@@ -33,6 +36,9 @@ class TrelloList:
 
     def __repr__(self):
         return f"List<id={self.id}, name={self.name}>"
+
+    def to_dict(self):
+        return {"id": self.id, "name": self.name, "board_id": self.board_id}
 
 
 class TrelloCardLabel:
