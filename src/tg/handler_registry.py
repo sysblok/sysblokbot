@@ -240,13 +240,6 @@ HANDLER_REGISTRY = [
         description="добавить менеджера в список",
     ),
     HandlerConfig(
-        command="change_board",
-        category=CommandCategories.CONFIG,
-        access_level="admin",
-        handler_func=handlers.change_board,
-        description="изменить Trello board_id",
-    ),
-    HandlerConfig(
         command="send_reminders",
         category=CommandCategories.BROADCAST,
         access_level="admin",
