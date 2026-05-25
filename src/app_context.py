@@ -6,14 +6,12 @@ from .config_manager import ConfigManager
 from .db.db_client import DBClient
 from .drive.drive_client import GoogleDriveClient
 from .facebook.facebook_client import FacebookClient
-from .focalboard.focalboard_client import FocalboardClient
 from .instagram.instagram_client import InstagramClient
 from .n8n.n8n_client import N8nClient
 from .planka.planka_client import PlankaClient
 from .sheets.sheets_client import GoogleSheetsClient
 from .strings import StringsDBClient
 from .tg.tg_client import TgClient
-from .trello.trello_client import TrelloClient
 from .utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
@@ -47,12 +45,6 @@ class AppContext(Singleton):
             self.strings_db_client.fetch_strings_sheet(self.sheets_client)
             self.db_client.fetch_all(self.sheets_client)
 
-        self.trello_client = TrelloClient(
-            trello_config=config_manager.get_trello_config()
-        )
-        self.focalboard_client = FocalboardClient(
-            focalboard_config=config_manager.get_focalboard_config()
-        )
         self.planka_client = PlankaClient(
             planka_config=config_manager.get_planka_config()
         )

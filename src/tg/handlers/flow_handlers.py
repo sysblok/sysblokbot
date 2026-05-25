@@ -309,7 +309,6 @@ def _handle_task_report_helper(command_data, add_labels, update):
     )
     for message in messages:
         reply(message, update)
-    # finished with last action for /trello_client_get_lists
     return None
 
 
