@@ -2,10 +2,9 @@ from typing import Callable, List
 
 from ..app_context import AppContext
 from ..consts import BoardListAlias
+from ..planka.planka_client import PlankaClient
 from ..strings import load
 from ..tg.sender import pretty_send
-from ..trello.trello_client import TrelloClient
-from ..trello.trello_objects import TrelloCard
 from . import utils
 from .base_job import BaseJob
 
@@ -44,8 +43,7 @@ class TrelloGetArticlesRubricJob(BaseJob):
                 BoardListAlias.PUBLISH_DONE_11,
             ]:
                 paragraphs += TrelloGetArticlesRubricJob._get_rubric_paragraphs(
-                    app_context=app_context,
-                    trello_client=app_context.trello_client,
+                    planka_client=app_context.planka_client,
                     rubric_title=load(alias.value),
                     rubric_alias=alias,
                     rubric_name=rubric_name,
@@ -54,11 +52,8 @@ class TrelloGetArticlesRubricJob(BaseJob):
         pretty_send(paragraphs, send)
 
     @staticmethod
-    def _format_card(card: TrelloCard, app_context: AppContext) -> str:
-        if not app_context.trello_client.deprecated:
-            card_fields = app_context.trello_client.get_custom_fields(card.id)
-        else:
-            card_fields = app_context.focalboard_client.get_custom_fields(card.id)
+    def _format_card(card, planka_client: PlankaClient) -> str:
+        card_fields = planka_client.get_custom_fields(card.id)
         return load(
             "rubric_report_job__card",
             date=card.due.strftime("%d.%m").lower() if card.due else "",
@@ -70,24 +65,18 @@ class TrelloGetArticlesRubricJob(BaseJob):
         )
 
     def _get_rubric_paragraphs(
-        app_context: AppContext,
-        trello_client: TrelloClient,
+        planka_client: PlankaClient,
         rubric_title: str,
         rubric_alias: str,
         rubric_name: str,
     ) -> List[str]:
-        if not trello_client.deprecated:
-            list_ids = trello_client.get_list_id_from_aliases([rubric_alias])
-            cards = trello_client.get_cards(list_ids)
-        else:
-            list_ids = app_context.focalboard_client.get_list_id_from_aliases(
-                [rubric_alias]
-            )
-            cards = app_context.focalboard_client.get_cards(list_ids)
-        cards_filtered = []
-        for card in cards:
-            if rubric_name in [label.name for label in card.labels]:
-                cards_filtered.append(card)
+        list_ids = planka_client.get_list_id_from_aliases([rubric_alias])
+        cards = planka_client.get_cards(list_ids)
+        cards_filtered = [
+            card
+            for card in cards
+            if rubric_name in [label.name for label in card.labels]
+        ]
 
         paragraphs = [
             load(
@@ -97,6 +86,7 @@ class TrelloGetArticlesRubricJob(BaseJob):
             )
         ]
         for card in cards_filtered:
-            formatted_card = TrelloGetArticlesRubricJob._format_card(card, app_context)
-            paragraphs.append(formatted_card)
+            paragraphs.append(
+                TrelloGetArticlesRubricJob._format_card(card, planka_client)
+            )
         return paragraphs
