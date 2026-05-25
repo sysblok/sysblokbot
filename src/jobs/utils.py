@@ -1,14 +1,11 @@
 import datetime
 import inspect
 import logging
-from collections import defaultdict
 from typing import List
 
 from .. import jobs
-from ..app_context import AppContext
 from ..consts import BoardCardColor, TrelloCardColor, TrelloCardFieldErrorAlias
 from ..db.db_client import DBClient
-from ..db.db_objects import Curator
 from ..drive.drive_client import GoogleDriveClient
 from ..strings import load
 from ..trello.trello_objects import TrelloMember
@@ -42,59 +39,6 @@ def retrieve_usernames(
     Process an iterable of trello members to list of formatted strings.
     """
     return [retrieve_username(member, db_client) for member in trello_members]
-
-
-def retrieve_curator_names_by_author(
-    trello_member: TrelloMember, db_client: DBClient
-) -> List[str]:
-    """
-    Tries to find a curator for trello member. Returns nothing if user is curator.
-    Returns: "John Smith (@jsmith_tg)" where possible, otherwise "John Smith".
-    If trello member or curator could not be found in the team data, returns None
-    """
-    trello_id = "@" + trello_member.username
-    try:
-        curator = db_client.get_curator_by_trello_id(trello_id)
-        if curator:
-            curators = [curator]
-        else:
-            curators = db_client.find_curators_by_author_trello(trello_id)
-    except Exception as e:
-        logger.error("Could not retrieve curators by author", exc_info=e)
-        return
-    if not curators:
-        return []
-    return [_make_curator_string(curator) for curator in curators]
-
-
-def retrieve_curator_names_by_categories(labels: List[str], db_client: DBClient):
-    """
-    To be used when there are no known card members.
-    Category is a trello label (e.g. NLP)
-    """
-    curators = set()
-    try:
-        for label in labels:
-            curators = curators.union(
-                set(db_client.find_curators_by_trello_label(label.name))
-            )
-    except Exception as e:
-        logger.error("Could not retrieve curators by category", exc_info=e)
-        return
-    if not curators:
-        return []
-    return [_make_curator_string(curator) for curator in curators]
-
-
-def _make_curator_string(curator: Curator):
-    """
-    Returns: (pretty_curator_string, tg_login_or_None)
-    """
-    if curator.name:
-        if curator.telegram:
-            return f"{curator.name} ({curator.telegram})", curator.telegram
-        return curator.name, None
-    return curator.telegram, curator.telegram
 
 
 def get_job_runnable(job_id: str):
@@ -271,33 +215,3 @@ def check_trello_card(
         errors[card] = this_card_bad_fields
         return False
     return True
-
-
-def get_cards_by_curator(app_context: AppContext, focalboard=False):
-    if focalboard:
-        cards = app_context.focalboard_client.get_cards()
-    else:
-        cards = app_context.trello_client.get_cards()
-    curator_cards = defaultdict(list)
-    for card in cards:
-        curators = get_curators_by_card(card, app_context.db_client)
-        if not curators:
-            # TODO: get main curator from spreadsheet
-            curators = [("Илья Булгаков (@bulgak0v)", "@bulgak0v")]
-        for curator in curators:
-            curator_cards[curator].append(card)
-
-    return curator_cards
-
-
-def get_curators_by_card(card, db_client):
-    curators = set()
-    for member in card.members:
-        curator_names = retrieve_curator_names_by_author(member, db_client)
-        curators.update(curator_names)
-    if curators:
-        return curators
-
-    # e.g. if no members in a card, should tag curators based on label
-    curators_by_label = retrieve_curator_names_by_categories(card.labels, db_client)
-    return curators_by_label
