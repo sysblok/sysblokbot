@@ -99,14 +99,6 @@ HANDLER_REGISTRY = [
         description="получить список задач из Planka",
     ),
     HandlerConfig(
-        command="get_rubrics",
-        category=CommandCategories.MOST_USED,
-        access_level="manager",
-        handler_func=handlers.get_rubrics,
-        direct_only=True,
-        description="получить рубрики из доски Редакция",
-    ),
-    HandlerConfig(
         command="get_chat_id",
         category=CommandCategories.MOST_USED,
         access_level="manager",
