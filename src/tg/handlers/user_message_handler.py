@@ -23,7 +23,6 @@ def handle_callback_query(
 
 
 ACTION_HANDLERS = {
-    PlainTextUserAction.GET_RUBRICS__CHOOSE_RUBRIC: flow_handlers.GetRubricsChooseRubricHandler,
     PlainTextUserAction.GET_TASKS_REPORT__ENTER_BOARD_NUMBER: flow_handlers.GetTasksReportEnterBoardNumberHandler,
     PlainTextUserAction.GET_TASKS_REPORT__ENTER_LIST_NUMBER: flow_handlers.GetTasksReportEnterListNumberHandler,
     PlainTextUserAction.GET_TASKS_REPORT__ENTER_INTRO: flow_handlers.GetTasksReportEnterIntroHandler,

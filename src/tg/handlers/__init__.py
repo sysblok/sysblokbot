@@ -21,7 +21,6 @@ from .get_chat_id_handler import get_chat_id_handler as get_chat_id
 from .get_managers_handler import get_managers
 
 # Admin (developer) handlers
-from .get_rubrics_handler import get_rubrics
 from .get_tasks_report_handler import get_tasks_report_planka
 from .help_handler import help
 from .list_chats_handler import list_chats

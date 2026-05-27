@@ -10,9 +10,7 @@ from ... import consts
 from ...app_context import AppContext
 from ...consts import (
     ButtonValues,
-    GetTasksReportData,
     PlainTextUserAction,
-    BoardListAlias,
 )
 from ...db.db_client import DBClient
 from ...db.db_objects import Reminder
@@ -22,19 +20,6 @@ from ...tg.handlers import get_tasks_report_handler
 from .utils import get_sender_id, reply, get_sender_username, get_chat_id, get_chat_name
 
 logger = logging.getLogger(__name__)
-
-SECTIONS = [
-    ("Идеи для статей", BoardListAlias.TOPIC_SUGGESTION_1),
-    ("Готовая тема", BoardListAlias.TOPIC_READY_2),
-    ("Уже пишу", BoardListAlias.DRAFT_N_PROGRESS_3, True),
-    ("Передано на редактуру", BoardListAlias.DRAFT_COMPLETED_4),
-    ("На редактуре", BoardListAlias.PENDING_EDITOR_5),
-    ("Проверка качества SEO", BoardListAlias.PENDING_SEO_EDITOR_6),
-    ("Отредактировано", BoardListAlias.APPROVED_EDITOR_7),
-    ("Отобрано на финальную проверку", BoardListAlias.PENDING_CHIEF_EDITOR_8),
-    ("Отобрано для публикации", BoardListAlias.PUBLISH_BACKLOG_9),
-    ("Готово для вёрстки", BoardListAlias.PUBLISH_IN_PROGRESS_10),
-]
 
 
 def handle_stateless_message(update, tg_context):
@@ -108,117 +93,6 @@ class BaseUserMessageHandler(ABC):
     @abstractmethod
     def handle(self) -> Optional[PlainTextUserAction]:
         raise NotImplementedError
-
-
-def _generate_rubric_summary(update, rubric_name: str) -> None:
-    try:
-        app_context = AppContext()
-        pc = app_context.planka_client
-        labels = pc.get_labels()
-        rubric_label = next(
-            (
-                lbl
-                for lbl in labels
-                if lbl.name.strip().lower() == rubric_name.strip().lower()
-            ),
-            None,
-        )
-        if not rubric_label:
-            logger.warning(
-                f"_generate_rubric_summary: Рубрика не найдена: {rubric_name}"
-            )
-            reply(
-                load(
-                    "rubric_not_found",
-                    rubric_name=rubric_name,
-                ),
-                update,
-            )
-            return
-
-        try:
-            lists = pc.get_lists()
-        except Exception as e:
-            logger.error(
-                f"_generate_rubric_summary: не удалось получить lists: {e}",
-                exc_info=True,
-            )
-            reply(load("failed_get_board_lists"), update)
-            return
-
-        message_parts = [
-            load(
-                "rubric_report_job__intro",
-                rubric=rubric_name,
-            )
-        ]
-
-        had_errors = False
-
-        for column_name, alias, *meta_flag in SECTIONS:
-            need_meta = bool(meta_flag and meta_flag[0])
-            heading = load(alias.value)
-            target_list = next(
-                (lst for lst in lists if lst.name.strip().startswith(column_name)), None
-            )
-
-            if not target_list:
-                message_parts.append(f"<b>{heading}</b> (0)")
-                message_parts.append("")
-                continue
-
-            try:
-                cards = pc.get_cards(list_ids=[target_list.id])
-            except Exception:
-                had_errors = True
-                message_parts.append(f"<b>{heading}</b> (0)")
-                message_parts.append("")
-                continue
-
-            filtered = [
-                card
-                for card in cards
-                if any(lbl.id == rubric_label.id for lbl in card.labels)
-            ]
-
-            filtered.sort(key=lambda c: c.due or datetime.max)
-
-            count = len(filtered)
-            message_parts.append(f"<b>{heading}</b> ({count})")
-
-            if not filtered:
-                message_parts.append("(пусто)")
-            else:
-                for card in filtered:
-                    link = f'<a href="{card.url}">{card.name}</a>'
-                    if need_meta:
-                        due_str = (
-                            card.due.strftime("%d.%m.%Y") if card.due else "без срока"
-                        )
-                        try:
-                            fields = pc.get_custom_fields(card.id)
-                            authors = (
-                                ", ".join(fields.authors)
-                                if fields.authors
-                                else "неизвестно"
-                            )
-                        except Exception:
-                            authors = "неизвестно"
-                            message_parts.append(f"- {link}")
-                            message_parts.append(f"  • Дедлайн: {due_str}")
-                            message_parts.append(f"  • Автор: {authors}")
-                    else:
-                        message_parts.append(f"- {link}")
-
-            message_parts.append("")
-
-        if had_errors:
-            message_parts.append(load("partial_data_error "))
-
-        reply("\n".join(message_parts), update, parse_mode="HTML")
-
-    except Exception:
-        reply(load("failed_try_later"), update)
 
 
 def _show_reminder_edit_options(
@@ -310,32 +184,6 @@ def _handle_task_report_helper(command_data, add_labels, update):
     for message in messages:
         reply(message, update)
     return None
-
-
-class GetRubricsChooseRubricHandler(BaseUserMessageHandler):
-    def handle(self) -> Optional[PlainTextUserAction]:
-        try:
-            idx = int(self.user_input) - 1
-            rubrics = self.command_data.get(
-                GetTasksReportData.LISTS
-            ) or self.tg_context.chat_data.get("available_rubrics", [])
-            if not (0 <= idx < len(rubrics)):
-                raise ValueError
-        except Exception:
-            reply(
-                load(
-                    "invalid_rubric_number",
-                    max=len(rubrics),
-                ),
-                self.update,
-            )
-            return PlainTextUserAction.GET_RUBRICS__CHOOSE_RUBRIC
-
-        selected = rubrics[idx]
-        _generate_rubric_summary(self.update, selected)
-
-        self.tg_context.chat_data.pop(consts.LAST_ACTIONABLE_COMMAND, None)
-        return None
 
 
 class GetTasksReportEnterBoardNumberHandler(BaseUserMessageHandler):
