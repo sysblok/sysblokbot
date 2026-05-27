@@ -107,14 +107,6 @@ HANDLER_REGISTRY = [
         description="получить рубрики из доски Редакция",
     ),
     HandlerConfig(
-        command="get_articles_rubric",
-        category=CommandCategories.DEBUG,
-        access_level="manager",
-        job_name="trello_get_articles_rubric_job",
-        job_type="manager_reply",
-        description="получить карточки по названию рубрики в трелло",
-    ),
-    HandlerConfig(
         command="get_chat_id",
         category=CommandCategories.MOST_USED,
         access_level="manager",
