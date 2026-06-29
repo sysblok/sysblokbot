@@ -78,7 +78,6 @@ jobs:
             https://api.telegram.org/bot${{env.TELEGRAM_TEST_TOKEN}}/sendMessage
 
       - name: Trigger sysblok-infra deploy
-        if: ${{ secrets.INFRA_DISPATCH_TOKEN != '' }}
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.INFRA_DISPATCH_TOKEN }}
