@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 def handle_stateless_message(update, tg_context):
     """
     Handles messages that don't have an active command state (stateless).
-    Forwards message to n8n and upserts user.
+    Upserts the user record from Telegram identity.
     """
     if update.message and update.message.text:
         try:
@@ -37,12 +37,9 @@ def handle_stateless_message(update, tg_context):
                 else None
             )
 
-            # Auto-create/update User record
             team_member_id = None
             if username:
-                # Normalize username (remove @ if present)
                 normalized_username = username.lstrip("@")
-                # Find TeamMember with matching telegram username
                 team_members = app_context.db_client.get_all_members()
                 matching_member = next(
                     (
@@ -57,19 +54,14 @@ def handle_stateless_message(update, tg_context):
                 if matching_member:
                     team_member_id = matching_member.id
 
-            # Upsert User record
             app_context.db_client.upsert_user_from_telegram(
                 telegram_user_id=user_id,
                 telegram_username=username,
                 team_member_id=team_member_id,
             )
-
-            query = update.message.text.strip()
-            response = app_context.n8n_client.send_webhook(user_id, query)
-            reply(response["message"], update)
         except Exception as e:
             logger.error(
-                f"Failed to send message to n8n: {e}",
+                f"Failed to upsert user from Telegram: {e}",
                 exc_info=True,
             )
 
