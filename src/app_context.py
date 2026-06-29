@@ -7,7 +7,6 @@ from .db.db_client import DBClient
 from .drive.drive_client import GoogleDriveClient
 from .facebook.facebook_client import FacebookClient
 from .instagram.instagram_client import InstagramClient
-from .n8n.n8n_client import N8nClient
 from .planka.planka_client import PlankaClient
 from .sheets.sheets_client import GoogleSheetsClient
 from .strings import StringsDBClient
@@ -59,12 +58,9 @@ class AppContext(Singleton):
 
         self.tg_client = TgClient(tg_config=config_manager.get_telegram_config())
 
-        self.n8n_client = N8nClient(n8n_config=config_manager.get_n8n_config())
-
         # TODO: move that to db
         tg_config = config_manager.get_telegram_config()
         self.set_access_rights(tg_config)
 
     def set_access_rights(self, tg_config: dict):
         self.admin_chat_ids = set(tg_config["admin_chat_ids"])
-        self.manager_chat_ids = set(tg_config["manager_chat_ids"])

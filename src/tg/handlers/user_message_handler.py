@@ -57,7 +57,6 @@ def handle_user_message(
     command_id = tg_context.chat_data.get(consts.LAST_ACTIONABLE_COMMAND)
     # to understand what kind of data currently expected from user
     if not command_id:
-        # No active command - forward to n8n if message exists
         flow_handlers.handle_stateless_message(update, tg_context)
         return
     command_data = tg_context.chat_data.get(command_id, {})

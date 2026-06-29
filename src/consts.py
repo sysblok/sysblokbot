@@ -45,7 +45,6 @@ DRIVE_CONFIG = "drive"
 FACEBOOK_CONFIG = "facebook"
 DB_CONFIG = "db"
 STRINGS_DB_CONFIG = "strings"
-N8N_CONFIG = "n8n"
 JOBS_CONFIG_FILE_KEY = "jobs_config_key"
 
 # Jobs-related keys
@@ -55,8 +54,6 @@ SEND_TO = "send_to"
 KWARGS = "kwargs"
 
 # Telegram keys
-TELEGRAM_MANAGER_IDS = "manager_chat_ids"
-
 # Vk consts
 VK_POST_LINK = "https://vk.com/{group_alias}?w=wall-{group_id}_{post_id}"
 
