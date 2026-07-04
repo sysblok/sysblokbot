@@ -32,6 +32,16 @@ class ApiFacebookAnalytics(BaseAnalytics):
             return 0
         return result[0][1]
 
+    def get_weekly_paid_views(self, end_week: datetime):
+        result = self._fb_client.get_paid_views(
+            ApiFacebookAnalytics._get_end_week_day_start(end_week),
+            ApiFacebookAnalytics._get_end_week_day_end(end_week),
+            period=ReportPeriod.WEEK,
+        )
+        if not result:
+            return 0
+        return result[0][1]
+
     def get_weekly_new_follower_count(self, end_week: datetime):
         result = self._fb_client.get_new_follower_count(
             ApiFacebookAnalytics._get_end_week_day_start(end_week),

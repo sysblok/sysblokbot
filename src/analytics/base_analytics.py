@@ -20,6 +20,12 @@ class BaseAnalytics:
         """
         raise NotImplementedError("")
 
+    def get_weekly_paid_views(self, end_week: datetime):
+        """
+        Get weekly statistics on paid (ads) views of new posts
+        """
+        raise NotImplementedError("")
+
     def get_weekly_new_follower_count(self, end_week: datetime):
         """
         Get the number of new followers for the week
