@@ -4,7 +4,7 @@ import pytest
 
 import src.jobs.board_my_cards_razvitie_job as job_module
 from src.jobs.board_my_cards_razvitie_job import BoardMyCardsRazvitieJob
-from src.trello.trello_objects import TrelloBoard, TrelloCard, TrelloList, TrelloMember
+from src.planka.board_objects import TrelloBoard, TrelloCard, TrelloList, TrelloMember
 
 
 class FakeDBClient:
@@ -57,7 +57,7 @@ class FakeSend:
 
 @pytest.fixture(autouse=True)
 def patch_text_helpers(monkeypatch):
-    def fake_make_cards_text(cards, need_label, app_context):
+    def fake_make_cards_text(cards, need_label):
         return [f"card:{card.name}" for card in cards]
 
     def fake_load(string_id, **kwargs):

@@ -44,7 +44,6 @@ from src.strings import load
 def test_job(
     monkeypatch,
     mock_strings_db_client,
-    mock_trello,
     mock_sheets_client,
     mock_config_manager,
     mock_sender,
@@ -66,7 +65,6 @@ def test_job(
 @pytest.mark.parametrize("job, output_parts", ((jobs.sample_job.SampleJob, ["Error"]),))
 def test_job_failed(
     monkeypatch,
-    mock_trello,
     mock_sheets_client,
     mock_config_manager,
     mock_sender,
