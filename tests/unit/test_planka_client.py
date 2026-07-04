@@ -1,9 +1,11 @@
 import os
+from datetime import datetime
 
 import pytest
 from conftest import STATIC_TEST_DIR
 from utils.json_loader import JsonLoader
 
+from src.consts import TrelloCardColor
 from src.planka.planka_client import PlankaClient
 
 PLANKA_TEST_DIR = os.path.join(STATIC_TEST_DIR, "planka")
@@ -100,8 +102,8 @@ def test_sorted_lists_include_active_lists_only(mock_planka):
     lists = mock_planka.get_lists(sorted=True)
 
     assert [item.to_dict() for item in lists] == [
-        {"id": "list_first", "name": "First", "idBoard": "board_razvitie"},
-        {"id": "list_second", "name": "Second", "idBoard": "board_razvitie"},
+        {"id": "list_first", "name": "First", "board_id": "board_razvitie"},
+        {"id": "list_second", "name": "Second", "board_id": "board_razvitie"},
     ]
 
 
@@ -111,7 +113,7 @@ def test_get_list(mock_planka):
     assert trello_list.to_dict() == {
         "id": "list_first",
         "name": "First",
-        "idBoard": "board_razvitie",
+        "board_id": "board_razvitie",
     }
 
 
@@ -123,33 +125,20 @@ def test_get_list_raises_for_unknown_list(mock_planka):
 def test_cards_accept_single_list_id_string(mock_planka):
     cards = mock_planka.get_cards("list_first")
 
-    assert [card.to_dict() for card in cards] == [
-        {
-            "id": "card_planka",
-            "name": "Implement Planka",
-            "labels": [
-                {
-                    "id": "label_feature",
-                    "name": "Feature",
-                    "color": "unknown",
-                }
-            ],
-            "url": "https://planka.example.com/cards/card_planka",
-            "due": "2026-05-09T10:15:00.000000Z",
-            "list": {
-                "id": "list_first",
-                "name": "First",
-                "idBoard": "board_razvitie",
-            },
-            "members": [
-                {
-                    "id": "user_manager",
-                    "username": "manager",
-                    "fullName": "Manager User",
-                }
-            ],
-        }
+    assert len(cards) == 1
+    card = cards[0]
+    assert card.id == "card_planka"
+    assert card.name == "Implement Planka"
+    assert card.url == "https://planka.example.com/cards/card_planka"
+    assert card.due == datetime(2026, 5, 9, 10, 15, 0)
+    assert card.lst.id == "list_first"
+
+    assert [(label.id, label.name, label.color) for label in card.labels] == [
+        ("label_feature", "Feature", TrelloCardColor.UNKNOWN)
     ]
+    assert [
+        (member.id, member.username, member.full_name) for member in card.members
+    ] == [("user_manager", "manager", "Manager User")]
 
 
 def test_cards_accept_list_id_iterable(mock_planka):

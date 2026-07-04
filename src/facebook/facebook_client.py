@@ -70,12 +70,12 @@ class FacebookClient(Singleton):
     ) -> List[Tuple[datetime, int]]:
         """
         Get statistics on the total reach of new posts.
-        NOTE: 'page_posts_impressions_unique' is deprecated in v19.0.
-        Using 'page_impressions_unique' (Total Page Reach) as replacement.
+        NOTE: 'page_impressions_unique' was deprecated by Meta (June 2026).
+        Using 'page_total_media_view_unique' as the replacement unique-reach metric.
         """
         batches = self._get_all_batches(
             connection_name="insights",
-            metric="page_impressions_unique",
+            metric="page_total_media_view_unique",
             period=period.value,
             since=since,
             until=until,
@@ -89,19 +89,53 @@ class FacebookClient(Singleton):
         self, since: datetime, until: datetime, period: ReportPeriod
     ) -> List[Tuple[datetime, int]]:
         """
-        Get statistics on the organic reach of new posts.
+        Get statistics on organic (non-paid) views of page content.
+        NOTE: 'page_impressions_organic_unique' was deprecated by Meta (June 2026)
+        with no unique-reach replacement. Using 'page_media_view' broken down by
+        'is_from_ads', filtered to the organic (is_from_ads == "0") rows. This is
+        a view count, not a unique-people count, so it isn't directly comparable
+        to historical organic-reach values.
         """
         batches = self._get_all_batches(
             connection_name="insights",
-            metric="page_impressions_organic_unique",
+            metric="page_media_view",
             period=period.value,
+            breakdown="is_from_ads",
             since=since,
             until=until,
         )
-        organic_reach = self._get_values_from_batches(
-            batches=batches, since=since, until=until
+        organic_views = self._get_values_from_batches(
+            batches=batches,
+            since=since,
+            until=until,
+            breakdown_filter={"is_from_ads": "0"},
         )
-        return organic_reach
+        return organic_views
+
+    def get_paid_views(
+        self, since: datetime, until: datetime, period: ReportPeriod
+    ) -> List[Tuple[datetime, int]]:
+        """
+        Get statistics on paid (ads) views of page content.
+        Uses 'page_media_view' broken down by 'is_from_ads', filtered to the
+        paid (is_from_ads == "1") rows. See get_organic_reach for context on
+        why this is a view count rather than a unique-people count.
+        """
+        batches = self._get_all_batches(
+            connection_name="insights",
+            metric="page_media_view",
+            period=period.value,
+            breakdown="is_from_ads",
+            since=since,
+            until=until,
+        )
+        paid_views = self._get_values_from_batches(
+            batches=batches,
+            since=since,
+            until=until,
+            breakdown_filter={"is_from_ads": "1"},
+        )
+        return paid_views
 
     def get_new_follower_count(
         self, since: datetime, until: datetime, period: ReportPeriod
@@ -214,11 +248,19 @@ class FacebookClient(Singleton):
 
     @staticmethod
     def _get_values_from_batches(
-        batches: List[dict], since: datetime, until: datetime
+        batches: List[dict],
+        since: datetime,
+        until: datetime,
+        breakdown_filter: dict = None,
     ) -> List[Tuple[datetime, int]]:
         value_by_date = []
         for batch in batches:
             for value_info in batch["values"]:
+                if breakdown_filter and any(
+                    value_info.get(key) != value
+                    for key, value in breakdown_filter.items()
+                ):
+                    continue
                 end_time = dateparser.isoparse(value_info["end_time"])
                 if end_time < since or end_time > until:
                     continue

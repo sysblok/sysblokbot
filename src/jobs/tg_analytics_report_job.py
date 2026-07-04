@@ -1,7 +1,9 @@
 import json
 import logging
 from datetime import datetime, timezone
-from typing import Callable, Tuple
+from typing import Callable, List, Tuple
+
+from telethon.tl.types import MessageInteractionCounters
 
 from src.app_context import AppContext
 from src.jobs.base_job import BaseJob
@@ -26,8 +28,20 @@ class TgAnalyticsReportJob(BaseJob):
         entity = app_context.tg_client.api_client.loop.run_until_complete(
             app_context.tg_client.api_client.get_entity(app_context.tg_client.channel)
         )
+        messages = app_context.tg_client.api_client.loop.run_until_complete(
+            app_context.tg_client.api_client.get_messages(
+                app_context.tg_client.channel,
+                ids=[
+                    message_stats.msg_id
+                    for message_stats in stats.recent_message_interactions
+                ],
+            )
+        )
         app_context.tg_client.api_client.disconnect()
-        new_posts_count = len(stats.recent_message_interactions)
+        post_interactions = TgAnalyticsReportJob._deduplicate_albums(
+            stats.recent_message_interactions, messages
+        )
+        new_posts_count = len(post_interactions)
         followers_stats = TgAnalyticsReportJob._get_followers_stats(stats)
         message = load(
             "tg_analytics_report_job__text",
@@ -47,10 +61,7 @@ class TgAnalyticsReportJob(BaseJob):
                 2,
             ),
             recent_message_views=sum(
-                [
-                    message_stats.views
-                    for message_stats in stats.recent_message_interactions
-                ]
+                [message_stats.views for message_stats in post_interactions]
             ),
             views_per_post=int(stats.views_per_post.current),
             views_per_post_delta=TgAnalyticsReportJob._format_delta(
@@ -62,6 +73,26 @@ class TgAnalyticsReportJob(BaseJob):
             ),
         )
         pretty_send([message], send)
+
+    @staticmethod
+    def _deduplicate_albums(
+        message_interactions: List[MessageInteractionCounters], messages: List
+    ) -> List[MessageInteractionCounters]:
+        """Collapse album (grouped_id) messages into one entry: Telegram's stats API
+        reports each photo of a gallery post as a separate message with the same
+        view count, which otherwise inflates post count and total views N-fold."""
+        grouped_id_by_msg_id = {
+            msg.id: msg.grouped_id for msg in messages if msg is not None
+        }
+        best_by_group = {}
+        for message_stats in message_interactions:
+            group_key = (
+                grouped_id_by_msg_id.get(message_stats.msg_id) or message_stats.msg_id
+            )
+            current_best = best_by_group.get(group_key)
+            if current_best is None or message_stats.views > current_best.views:
+                best_by_group[group_key] = message_stats
+        return list(best_by_group.values())
 
     @staticmethod
     def _get_followers_stats(stats) -> Tuple[int, int]:

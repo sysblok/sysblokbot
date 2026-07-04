@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 
 import src.tg.handlers.get_tasks_report_handler as handler
-from src.trello.trello_objects import TrelloBoard, TrelloCard, TrelloList, TrelloMember
+from src.planka.board_objects import TrelloBoard, TrelloCard, TrelloList, TrelloMember
 
 
 class FakePlankaClient:
@@ -47,11 +47,10 @@ def test_get_task_report_base_sets_planka_backend(monkeypatch):
     update = SimpleNamespace(effective_user=SimpleNamespace(username="tg_user"))
     tg_context = SimpleNamespace(chat_data={})
 
-    handler._get_task_report_base(update, tg_context, advanced=False, use_planka=True)
+    handler._get_task_report_base(update, tg_context, advanced=False)
 
     assert planka_client.board_calls == [("tg_user", app_context.db_client)]
     assert tg_context.chat_data["use_planka"] is True
-    assert tg_context.chat_data["use_focalboard"] is False
     assert tg_context.chat_data["lists"] == [
         {"id": "board_1", "name": "Развитие", "url": None}
     ]
@@ -79,8 +78,6 @@ def test_generate_report_messages_uses_planka_client(monkeypatch):
         "list_1",
         "Intro",
         add_labels=False,
-        use_focalboard=False,
-        use_planka=True,
     )
 
     assert planka_client.list_calls == [("board_1", "list_1")]

@@ -49,6 +49,9 @@ class FBAnalyticsReportJob(BaseJob):
                 organic_reach=app_context.facebook_analytics.get_weekly_organic_reach_of_new_posts(
                     end_week_day
                 ),
+                paid_views=app_context.facebook_analytics.get_weekly_paid_views(
+                    end_week_day
+                ),
             )
         ]
         pretty_send(paragraphs, send)
