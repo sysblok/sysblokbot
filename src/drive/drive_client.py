@@ -43,8 +43,14 @@ class GoogleDriveClient(Singleton):
             self._drive_config["api_key_path"], scopes=SCOPES
         )
         # https://developers.google.com/drive/api/v3/quickstart/python
+        # Central discovery endpoint (www.googleapis.com/discovery/...) is
+        # blocked for some hosting IPs; use the per-API discovery endpoint.
         self.service = build(
-            "drive", "v3", credentials=self._credentials, cache_discovery=False
+            "drive",
+            "v3",
+            credentials=self._credentials,
+            cache_discovery=False,
+            discoveryServiceUrl="https://{api}.googleapis.com/$discovery/rest?version={apiVersion}",
         )
 
     def create_folder_for_card(self, trello_card: TrelloCard) -> str:

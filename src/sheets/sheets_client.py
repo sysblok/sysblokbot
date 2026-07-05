@@ -1,12 +1,28 @@
 import logging
 from typing import Optional
 
+import sheetfu.service
+from googleapiclient.discovery import build as _google_build
 from sheetfu import SpreadsheetApp, Table
 from sheetfu.model import Sheet
 
 from ..utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
+
+
+# sheetfu hardcodes the deprecated central discovery endpoint
+# (www.googleapis.com/discovery/...), which Google now blocks for some
+# hosting IPs. Point it at the per-API discovery endpoint instead.
+def _build_with_per_api_discovery(*args, **kwargs):
+    kwargs.setdefault(
+        "discoveryServiceUrl",
+        "https://{api}.googleapis.com/$discovery/rest?version={apiVersion}",
+    )
+    return _google_build(*args, **kwargs)
+
+
+sheetfu.service.build = _build_with_per_api_discovery
 
 
 MAX_RETRIES = 5
