@@ -7,7 +7,7 @@ dependencies = [
     "cachetools==4.1.0",
     "cryptography==3.1.1",
     "deepdiff==4.3.2",
-    "google-api-python-client==1.9.1",
+    "google-api-python-client==2.198.0",
     "grpcio==1.63.0",
     "nest-asyncio==1.6.0",
     "oauth2client==4.1.3",

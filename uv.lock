@@ -212,19 +212,18 @@ wheels = [
 
 [[package]]
 name = "google-api-python-client"
-version = "1.9.1"
+version = "2.198.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "google-api-core" },
     { name = "google-auth" },
     { name = "google-auth-httplib2" },
     { name = "httplib2" },
-    { name = "six" },
     { name = "uritemplate" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d4/fd/407ae3220c6ccc5ebf931c28d97d362df366dba85742b72adf96036132f2/google-api-python-client-1.9.1.tar.gz", hash = "sha256:a230710c4a3709e00db6a8633865940d2a00d00da4d998ce91f1d0f18471d859", size = 142882, upload-time = "2020-06-02T18:49:32.934Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6b/53/0cd38e3a29d72ce45e27feba2ce1cd8049d69af9c48cb14fb164f1be9133/google_api_python_client-2.198.0.tar.gz", hash = "sha256:dfe3e16fb241af6e9c460a33f65085b3450e05cea09364f6b5d8997fb7e43e2a", size = 15060142, upload-time = "2026-06-25T14:32:42.953Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/35/83/e9bd0b8b9dc09935be182961a13da9a11c89451426efa4e40e3eb0aa5e80/google_api_python_client-1.9.1-py3-none-any.whl", hash = "sha256:0dc4389dfe4f94e54c14f69a04ea734641844c8a40dc1f3594a2ea70eb45564a", size = 59821, upload-time = "2020-06-02T18:49:31.492Z" },
+    { url = "https://files.pythonhosted.org/packages/d5/92/0fc9e7a09eb240c31b879bd8d2e43f81ed1f86c4798b79ead4a083921ab3/google_api_python_client-2.198.0-py3-none-any.whl", hash = "sha256:fabac935474e817da5e662ff61bf7139439d6f92b32d332a7318a2d45931e03e", size = 15644203, upload-time = "2026-06-25T14:32:39.963Z" },
 ]
 
 [[package]]
@@ -857,7 +856,7 @@ requires-dist = [
     { name = "cachetools", specifier = "==4.1.0" },
     { name = "cryptography", specifier = "==3.1.1" },
     { name = "deepdiff", specifier = "==4.3.2" },
-    { name = "google-api-python-client", specifier = "==1.9.1" },
+    { name = "google-api-python-client", specifier = "==2.198.0" },
     { name = "grpcio", specifier = "==1.63.0" },
     { name = "nest-asyncio", specifier = "==1.6.0" },
     { name = "oauth2client", specifier = "==4.1.3" },
