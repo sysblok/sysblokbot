@@ -14,11 +14,11 @@ Bot for SysBlok ("Системный Блокъ") editorial processes automatiza
   - Run `export INFRA_HOST=<SYSBLOK_INFRA_HOST>`, putting in the actual URL
   - Run `sh get_keys.sh`. This will download `config_override.json` and `config_gs.json` to your folder.
 - Replace `YOUR_CHAT_ID`, `YOUR_USERNAME` and `BOT_TOKEN` with appropriate values
-- `pip install -e .`
-- `pip install -r requirements.txt`
-- `pre-commit install`
+- Install [uv](https://docs.astral.sh/uv/getting-started/installation/) if you don't have it yet
+- `uv sync`
+- `uv run pre-commit install`
 - If access to Telegram servers is restricted by your internet provider: install and run any VPN service
-- `python3 app.py`
+- `uv run app.py`
 
 ## How to develop
 - Fork the repo.

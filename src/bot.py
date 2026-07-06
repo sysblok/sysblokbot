@@ -1,8 +1,10 @@
 import asyncio
+import functools
 import logging
 import os
 import pickle
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from typing import Callable
 
 from telegram.ext import (
@@ -37,6 +39,24 @@ def usage(self, message, *args, **kws):
 
 logging.Logger.usage = usage
 logger = logging.getLogger(__name__)
+
+# Handler code (Google Sheets/Drive/Planka/Telegram-sending clients) is
+# synchronous and blocking. python-telegram-bot's Application runs on a
+# single asyncio event loop thread, so calling that code directly there
+# means one slow/stuck call (e.g. a network hiccup) freezes command
+# dispatch for every chat, not just the one being handled. Running sync
+# handlers on a worker thread keeps the event loop free to keep polling
+# and dispatching other updates while a handler is blocked on I/O.
+_HANDLER_EXECUTOR = ThreadPoolExecutor(max_workers=16, thread_name_prefix="handler")
+
+
+async def _run_handler(func: Callable, *args, **kwargs):
+    if asyncio.iscoroutinefunction(func):
+        return await func(*args, **kwargs)
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(
+        _HANDLER_EXECUTOR, functools.partial(func, *args, **kwargs)
+    )
 
 
 class SysBlokBot:
@@ -155,8 +175,7 @@ class SysBlokBot:
 
         def asyncify(func):
             async def wrapper(*args, **kwargs):
-                results = func(*args, **kwargs)
-                return results
+                return await _run_handler(func, *args, **kwargs)
 
             return wrapper
 
@@ -197,10 +216,7 @@ class SysBlokBot:
                 except BaseException:
                     logger.usage(f"Handler {handler_cmd} was called...")
 
-                # Check if func is async and await if necessary
-                results = func(*args, **kwargs)
-                if asyncio.iscoroutine(results):
-                    results = await results
+                results = await _run_handler(func, *args, **kwargs)
 
                 logger.usage(f"Handler {handler_cmd} finished")
                 return results

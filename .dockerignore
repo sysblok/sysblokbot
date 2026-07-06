@@ -2,5 +2,9 @@
 .vscode
 tests/
 env
+venv
+.venv
+.pytest_cache
+.ruff_cache
 config_override.json
 config_gs.json
