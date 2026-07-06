@@ -47,6 +47,24 @@ class TgClient(Singleton):
         self.sysblok_chats = self._tg_config["sysblok_chats"]
         self.channel = self._tg_config["channel"]
 
+    def _run_coro(self, coro, timeout: float):
+        """
+        Bridges a coroutine onto self.api_client.loop.
+
+        If that loop is already running (the normal case: called from a
+        handler/scheduler thread while PTB is polling on its own loop in the
+        main thread), schedules it via the thread-safe run_coroutine_threadsafe
+        and blocks the calling thread for the result. If the loop isn't
+        running yet (e.g. called during startup, before run_polling() has
+        started it), we're on the same thread that owns the loop and nothing
+        else is driving it, so run it directly instead of scheduling work onto
+        a loop nobody is pumping - that would deadlock.
+        """
+        if self.api_client.loop.is_running():
+            future = asyncio.run_coroutine_threadsafe(coro, self.api_client.loop)
+            return future.result(timeout=timeout)
+        return self.api_client.loop.run_until_complete(coro)
+
     def resolve_telegram_username(self, username: str) -> Optional[Tuple[int, str]]:
         """
         Resolve Telegram username to user ID using telethon.
@@ -57,11 +75,11 @@ class TgClient(Singleton):
         Returns:
             Tuple of (user_id, username_without_@) or None if not found
         """
-        future = asyncio.run_coroutine_threadsafe(
-            self._resolve_telegram_username_async(username), self.api_client.loop
-        )
         try:
-            return future.result(timeout=RESOLVE_USERNAME_BRIDGE_TIMEOUT_SEC)
+            return self._run_coro(
+                self._resolve_telegram_username_async(username),
+                timeout=RESOLVE_USERNAME_BRIDGE_TIMEOUT_SEC,
+            )
         except Exception as e:
             logger.warning(f"Failed to resolve username {username}: {e}", exc_info=True)
             return None
@@ -117,10 +135,10 @@ class TgClient(Singleton):
         Returns:
             Tuple of (stats, entity, messages)
         """
-        future = asyncio.run_coroutine_threadsafe(
-            self._get_channel_stats_async(channel), self.api_client.loop
+        return self._run_coro(
+            self._get_channel_stats_async(channel),
+            timeout=CHANNEL_STATS_BRIDGE_TIMEOUT_SEC,
         )
-        return future.result(timeout=CHANNEL_STATS_BRIDGE_TIMEOUT_SEC)
 
     async def _get_channel_stats_async(self, channel: str) -> Tuple:
         await asyncio.wait_for(self.api_client.connect(), timeout=CONNECT_TIMEOUT_SEC)

@@ -84,10 +84,18 @@ class TelegramSender(Singleton):
         """
         Sends a message to a single chat_id.
         """
-        future = asyncio.run_coroutine_threadsafe(
-            self._send_to_chat_id_async(message_text, chat_id, **kwargs), self._loop
-        )
-        return future.result(timeout=SEND_BRIDGE_TIMEOUT_SEC)
+        coro = self._send_to_chat_id_async(message_text, chat_id, **kwargs)
+        if self._loop.is_running():
+            # Normal case: called from a handler/scheduler thread while PTB is
+            # polling on its own loop in the main thread.
+            future = asyncio.run_coroutine_threadsafe(coro, self._loop)
+            return future.result(timeout=SEND_BRIDGE_TIMEOUT_SEC)
+        # Called before run_polling() has started the loop (e.g. the startup
+        # message in app.py, or the AppContext-init-failure error log in
+        # bot.py). We're on the same (main) thread that owns this loop and
+        # nothing else is driving it yet, so run it directly rather than
+        # scheduling work onto a loop nobody is pumping -- that would deadlock.
+        return self._loop.run_until_complete(coro)
 
     async def _send_to_chat_id_async(
         self, message_text: str, chat_id: int, **kwargs
