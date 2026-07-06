@@ -103,8 +103,13 @@ class SysBlokBot:
             .concurrent_updates(True)
             .build()
         )
+        # Captured before run_polling() ever runs, on the main thread, so this
+        # is the exact loop object run_polling() and Telethon's client (see
+        # TgClient) end up driving too - see the asyncio migration plan for why
+        # that matters.
+        self.loop = asyncio.get_event_loop()
         self.telegram_sender = sender.TelegramSender(
-            bot=self.application.bot, tg_config=tg_config
+            bot=self.application.bot, tg_config=tg_config, loop=self.loop
         )
         try:
             self.app_context = AppContext(config_manager, skip_db_update)
