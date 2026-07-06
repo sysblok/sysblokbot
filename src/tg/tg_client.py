@@ -60,6 +60,24 @@ class TgClient(Singleton):
         else is driving it, so run it directly instead of scheduling work onto
         a loop nobody is pumping - that would deadlock.
         """
+        try:
+            running_loop = asyncio.get_running_loop()
+        except RuntimeError:
+            running_loop = None
+
+        if running_loop is self.api_client.loop:
+            # Called synchronously from code already executing on this exact
+            # loop's thread - blocking here would deadlock the same way a
+            # foreign-thread call would if nothing pumped the loop, except
+            # here it's this very callback that would need to. Unlike sender.py
+            # this method's return value is actually consumed by callers, so
+            # there's no safe fire-and-forget fallback - fail loudly instead of
+            # silently returning a result callers can't use.
+            raise RuntimeError(
+                "TgClient method called reentrantly from its own event loop's "
+                "thread - this would deadlock if we waited for a result."
+            )
+
         if self.api_client.loop.is_running():
             future = asyncio.run_coroutine_threadsafe(coro, self.api_client.loop)
             return future.result(timeout=timeout)

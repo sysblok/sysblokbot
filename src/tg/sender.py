@@ -85,6 +85,23 @@ class TelegramSender(Singleton):
         Sends a message to a single chat_id.
         """
         coro = self._send_to_chat_id_async(message_text, chat_id, **kwargs)
+        try:
+            running_loop = asyncio.get_running_loop()
+        except RuntimeError:
+            running_loop = None
+
+        if running_loop is self._loop:
+            # We're being called synchronously from code that's itself
+            # executing on this exact loop's thread right now (e.g. logging
+            # triggered from an async handler wrapper running directly on
+            # PTB's loop, not routed through the handler executor). Blocking
+            # here would deadlock: the loop can't advance to run our
+            # coroutine while this very callback -- the only thing that could
+            # keep the loop moving -- is stuck waiting on it. Schedule it to
+            # run once we yield back instead of waiting for a result.
+            self._loop.create_task(coro)
+            return None
+
         if self._loop.is_running():
             # Normal case: called from a handler/scheduler thread while PTB is
             # polling on its own loop in the main thread.
