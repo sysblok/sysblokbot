@@ -43,6 +43,15 @@ class TgClient(Singleton):
             StringSession(self._tg_config["api_session"]),
             self._tg_config["api_id"],
             self._tg_config["api_hash"],
+            # We connect/disconnect explicitly around each short-lived
+            # operation below rather than holding one persistent connection,
+            # so we don't need (or want) Telethon's own background
+            # auto-reconnect: it spawns its own reconnect task on connection
+            # errors, independent of our connect()/disconnect() calls, and can
+            # race with an explicit disconnect() happening around the same
+            # time (Telethon's own source acknowledges this is unresolved -
+            # see the TODO in MTProtoSender._start_reconnect).
+            auto_reconnect=False,
         )
         self.sysblok_chats = self._tg_config["sysblok_chats"]
         self.channel = self._tg_config["channel"]
