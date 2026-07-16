@@ -177,6 +177,11 @@ class TelegramSender(Singleton):
                 return True
             except telegram.error.TelegramError as e:
                 logger.error(f"Could not send a message to {chat_id}", exc_info=e)
+                # Captured now: the "except ... as e" binding is cleared by Python
+                # when its except block exits, and the inner except below rebinds
+                # its own "e" -- reading e.message after the loop would otherwise
+                # raise UnboundLocalError once the inner except has fired.
+                original_error_message = e.message
                 chat_name = AppContext().db_client.get_chat_name(chat_id)
                 for error_logs_recipient in self.error_logs_recipients:
                     try:
@@ -194,16 +199,16 @@ class TelegramSender(Singleton):
                             connect_timeout=SEND_CONNECT_TIMEOUT_SEC,
                             **kwargs,
                         )
-                    except telegram.error.TelegramError as e:
+                    except telegram.error.TelegramError as redirect_error:
                         logger.error(
                             "Could not redirect unsended message "
                             f"to error_logs_recipients {error_logs_recipient}",
-                            exc_info=e,
+                            exc_info=redirect_error,
                         )
 
                 # HTML parse error isn't a separate class in Telegram
                 # So we need to dig into the exception message
-                if "Can't parse entities" in e.message:
+                if "Can't parse entities" in original_error_message:
                     try:
                         # Try sending the plain-text version
                         await self.bot.send_message(
