@@ -19,25 +19,9 @@ class TgAnalyticsReportJob(BaseJob):
     def _execute(
         app_context: AppContext, send: Callable[[str], None], called_from_handler=False
     ):
-        app_context.tg_client.api_client.loop.run_until_complete(
-            app_context.tg_client.api_client.connect()
+        stats, entity, messages = app_context.tg_client.get_channel_stats(
+            app_context.tg_client.channel
         )
-        stats = app_context.tg_client.api_client.loop.run_until_complete(
-            app_context.tg_client.api_client.get_stats(app_context.tg_client.channel)
-        )
-        entity = app_context.tg_client.api_client.loop.run_until_complete(
-            app_context.tg_client.api_client.get_entity(app_context.tg_client.channel)
-        )
-        messages = app_context.tg_client.api_client.loop.run_until_complete(
-            app_context.tg_client.api_client.get_messages(
-                app_context.tg_client.channel,
-                ids=[
-                    message_stats.msg_id
-                    for message_stats in stats.recent_message_interactions
-                ],
-            )
-        )
-        app_context.tg_client.api_client.disconnect()
         post_interactions = TgAnalyticsReportJob._deduplicate_albums(
             stats.recent_message_interactions, messages
         )

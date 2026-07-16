@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 from typing import List
@@ -87,7 +88,9 @@ def mock_sender(monkeypatch, mock_config_manager, mock_telegram_bot):
     monkeypatch.setattr(TelegramSender, "send_to_chat_id", send_to_chat_id)
 
     return TelegramSender(
-        bot=mock_telegram_bot, tg_config=mock_config_manager.get_telegram_config()
+        bot=mock_telegram_bot,
+        tg_config=mock_config_manager.get_telegram_config(),
+        loop=asyncio.new_event_loop(),
     )
 
 

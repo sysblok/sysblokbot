@@ -1,14 +1,11 @@
 """Sends messages"""
 
 import asyncio
-import json
 import logging
 import re
 import time
-from typing import Callable, List
+from typing import Callable, List, Optional
 
-import nest_asyncio
-import requests
 import telegram
 
 from ..app_context import AppContext
@@ -17,21 +14,33 @@ from ..utils.singleton import Singleton
 
 logger = logging.getLogger(__name__)
 
+SEND_READ_TIMEOUT_SEC = 10
+SEND_WRITE_TIMEOUT_SEC = 10
+SEND_CONNECT_TIMEOUT_SEC = 10
+
+# Outer bridge timeout for the whole send (possibly several paragraphs/photos
+# plus MESSAGE_DELAY_SEC delays between them, plus a possible error-fallback
+# round-trip), kept generously above what a legitimate worst case should take.
+SEND_BRIDGE_TIMEOUT_SEC = 60
+
 
 class TelegramSender(Singleton):
     def __init__(
         self,
         bot: telegram.Bot = None,
         tg_config: dict = None,
+        loop: Optional[asyncio.AbstractEventLoop] = None,
     ):
         if self.was_initialized():
             return
-        if bot is None or tg_config is None:
+        if bot is None or tg_config is None or loop is None:
             raise ValueError(
-                "On first TelegramSender initialization bot and tg_config must be not None"
+                "On first TelegramSender initialization bot, tg_config and loop "
+                "must be not None"
             )
 
         self.bot = bot
+        self._loop = loop
         self._tg_config = tg_config
         self._update_from_config()
         logger.info("TelegramSender successfully initialized")
@@ -75,19 +84,51 @@ class TelegramSender(Singleton):
         """
         Sends a message to a single chat_id.
         """
+        coro = self._send_to_chat_id_async(message_text, chat_id, **kwargs)
+        try:
+            running_loop = asyncio.get_running_loop()
+        except RuntimeError:
+            running_loop = None
+
+        if running_loop is self._loop:
+            # We're being called synchronously from code that's itself
+            # executing on this exact loop's thread right now (e.g. logging
+            # triggered from an async handler wrapper running directly on
+            # PTB's loop, not routed through the handler executor). Blocking
+            # here would deadlock: the loop can't advance to run our
+            # coroutine while this very callback -- the only thing that could
+            # keep the loop moving -- is stuck waiting on it. Schedule it to
+            # run once we yield back instead of waiting for a result.
+            self._loop.create_task(coro)
+            return None
+
+        if self._loop.is_running():
+            # Normal case: called from a handler/scheduler thread while PTB is
+            # polling on its own loop in the main thread.
+            future = asyncio.run_coroutine_threadsafe(coro, self._loop)
+            return future.result(timeout=SEND_BRIDGE_TIMEOUT_SEC)
+        # Called before run_polling() has started the loop (e.g. the startup
+        # message in app.py, or the AppContext-init-failure error log in
+        # bot.py). We're on the same (main) thread that owns this loop and
+        # nothing else is driving it yet, so run it directly rather than
+        # scheduling work onto a loop nobody is pumping -- that would deadlock.
+        return self._loop.run_until_complete(coro)
+
+    async def _send_to_chat_id_async(
+        self, message_text: str, chat_id: int, **kwargs
+    ) -> bool:
         if "poll_options" in kwargs:
             # Handle poll sending
             poll_options = kwargs["poll_options"]
-            resp = requests.get(
-                url=f"https://api.telegram.org/bot{self._tg_config['token']}/sendPoll",
-                params={
-                    "chat_id": chat_id,
-                    "question": poll_options["question"],
-                    "options": json.dumps(poll_options["options"]),
-                    "is_anonymous": poll_options["is_anonymous"],
-                },
+            await self.bot.send_poll(
+                chat_id=chat_id,
+                question=poll_options["question"],
+                options=poll_options["options"],
+                is_anonymous=poll_options["is_anonymous"],
+                read_timeout=SEND_READ_TIMEOUT_SEC,
+                write_timeout=SEND_WRITE_TIMEOUT_SEC,
+                connect_timeout=SEND_CONNECT_TIMEOUT_SEC,
             )
-            resp.raise_for_status()
             return True
 
         if not message_text:
@@ -98,59 +139,60 @@ class TelegramSender(Singleton):
 
         if ".png" in message_text:
             for pict in re.findall(r"\S*\.png", message_text):
-                self.bot.send_photo(
-                    photo=open(pict, "rb"),
-                    chat_id=chat_id,
-                    disable_notification=self.is_silent,
-                    **kwargs,
-                )
+                with open(pict, "rb") as photo:
+                    await self.bot.send_photo(
+                        photo=photo,
+                        chat_id=chat_id,
+                        disable_notification=self.is_silent,
+                        read_timeout=SEND_READ_TIMEOUT_SEC,
+                        write_timeout=SEND_WRITE_TIMEOUT_SEC,
+                        connect_timeout=SEND_CONNECT_TIMEOUT_SEC,
+                        **kwargs,
+                    )
             message_text = re.sub(r"\S*\.png", "", message_text)
         if message_text != "":
             try:
-                loop = asyncio.get_event_loop()
-                nest_asyncio.apply(loop)
                 messages = paragraphs_to_messages([message_text.strip()])
                 for i, message in enumerate(messages):
                     if i > 0:
-                        time.sleep(MESSAGE_DELAY_SEC)
+                        await asyncio.sleep(MESSAGE_DELAY_SEC)
                     if message.startswith("<code>") and "</code>" not in message:
                         message = message + "</code>"
                     elif message.endswith("</code>") and "<code>" not in message:
                         message = "<code>" + message
-                    payload = {
-                        "text": message,
-                        "chat_id": chat_id,
-                        "silent": self.is_silent,
-                        "no_webpage": self.disable_web_page_preview,
-                        "parse_mode": "html",
-                    }
+                    send_kwargs = {}
                     if "reply_markup" in kwargs:
-                        payload["reply_markup"] = kwargs["reply_markup"].to_json()
-                    resp = requests.get(
-                        url=f"https://api.telegram.org/bot{self._tg_config['token']}/sendMessage",
-                        json=payload,
+                        send_kwargs["reply_markup"] = kwargs["reply_markup"]
+                    await self.bot.send_message(
+                        text=message,
+                        chat_id=chat_id,
+                        disable_notification=self.is_silent,
+                        disable_web_page_preview=self.disable_web_page_preview,
+                        parse_mode=telegram.constants.ParseMode.HTML,
+                        read_timeout=SEND_READ_TIMEOUT_SEC,
+                        write_timeout=SEND_WRITE_TIMEOUT_SEC,
+                        connect_timeout=SEND_CONNECT_TIMEOUT_SEC,
+                        **send_kwargs,
                     )
-                    resp.raise_for_status()
                 return True
             except telegram.error.TelegramError as e:
                 logger.error(f"Could not send a message to {chat_id}", exc_info=e)
-                loop = asyncio.get_event_loop()
-                nest_asyncio.apply(loop)
                 chat_name = AppContext().db_client.get_chat_name(chat_id)
                 for error_logs_recipient in self.error_logs_recipients:
                     try:
                         # Try redirect unsended message to error_logs_recipients
-                        loop.run_until_complete(
-                            self.bot.send_message(
-                                text=f"Unsended message to {chat_name} {chat_id}\n{message}"[
-                                    : telegram.constants.MessageLimit.MAX_TEXT_LENGTH
-                                ],
-                                chat_id=error_logs_recipient,
-                                disable_notification=self.is_silent,
-                                disable_web_page_preview=self.disable_web_page_preview,
-                                parse_mode=telegram.constants.ParseMode.HTML,
-                                **kwargs,
-                            )
+                        await self.bot.send_message(
+                            text=f"Unsended message to {chat_name} {chat_id}\n{message}"[
+                                : telegram.constants.MessageLimit.MAX_TEXT_LENGTH
+                            ],
+                            chat_id=error_logs_recipient,
+                            disable_notification=self.is_silent,
+                            disable_web_page_preview=self.disable_web_page_preview,
+                            parse_mode=telegram.constants.ParseMode.HTML,
+                            read_timeout=SEND_READ_TIMEOUT_SEC,
+                            write_timeout=SEND_WRITE_TIMEOUT_SEC,
+                            connect_timeout=SEND_CONNECT_TIMEOUT_SEC,
+                            **kwargs,
                         )
                     except telegram.error.TelegramError as e:
                         logger.error(
@@ -164,16 +206,17 @@ class TelegramSender(Singleton):
                 if "Can't parse entities" in e.message:
                     try:
                         # Try sending the plain-text version
-                        loop.run_until_complete(
-                            self.bot.send_message(
-                                text=f"Unsended message to {chat_name} {chat_id}\n{message}"[
-                                    : telegram.constants.MessageLimit.MAX_TEXT_LENGTH
-                                ],
-                                chat_id=error_logs_recipient,
-                                disable_notification=self.is_silent,
-                                disable_web_page_preview=self.disable_web_page_preview,
-                                **kwargs,
-                            )
+                        await self.bot.send_message(
+                            text=f"Unsended message to {chat_name} {chat_id}\n{message}"[
+                                : telegram.constants.MessageLimit.MAX_TEXT_LENGTH
+                            ],
+                            chat_id=error_logs_recipient,
+                            disable_notification=self.is_silent,
+                            disable_web_page_preview=self.disable_web_page_preview,
+                            read_timeout=SEND_READ_TIMEOUT_SEC,
+                            write_timeout=SEND_WRITE_TIMEOUT_SEC,
+                            connect_timeout=SEND_CONNECT_TIMEOUT_SEC,
+                            **kwargs,
                         )
                         return True
                     except telegram.error.TelegramError as e:
