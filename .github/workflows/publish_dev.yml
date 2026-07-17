@@ -83,4 +83,4 @@ jobs:
           token: ${{ secrets.INFRA_DISPATCH_TOKEN }}
           repository: sysblok/sysblok-infra
           event-type: deploy
-          client-payload: '{"service": "sysblokbot"}'
+          client-payload: '{"service": "sysblokbot-testing"}'
