@@ -43,7 +43,15 @@ class ErrorBroadcastHandler(StreamHandler, Singleton):
                         exc_info=e,
                     )
                 )
-        if record.levelno >= ERROR and not self.is_muted:
+        # skip_broadcast lets TelegramSender's own send-failure logs opt out:
+        # broadcasting a Telegram-delivery failure over Telegram is circular
+        # and, under flood control, snowballs into a self-sustaining error
+        # storm (each failed broadcast attempt logs another ERROR).
+        if (
+            record.levelno >= ERROR
+            and not self.is_muted
+            and not getattr(record, "skip_broadcast", False)
+        ):
             error_message = f"{record.levelname} - {record.module} - {record.message}"
             if record.exc_text:
                 error_message += f" - {record.exc_text}"

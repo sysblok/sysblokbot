@@ -176,7 +176,15 @@ class TelegramSender(Singleton):
                     )
                 return True
             except telegram.error.TelegramError as e:
-                logger.error(f"Could not send a message to {chat_id}", exc_info=e)
+                # skip_broadcast: this failure is already surfaced explicitly
+                # below (redirected to error_logs_recipients with the message
+                # content); broadcasting it again via ErrorBroadcastHandler
+                # would re-enter this same send path.
+                logger.error(
+                    f"Could not send a message to {chat_id}",
+                    exc_info=e,
+                    extra={"skip_broadcast": True},
+                )
                 # Captured now: the "except ... as e" binding is cleared by Python
                 # when its except block exits, and the inner except below rebinds
                 # its own "e" -- reading e.message after the loop would otherwise
@@ -200,10 +208,15 @@ class TelegramSender(Singleton):
                             **kwargs,
                         )
                     except telegram.error.TelegramError as redirect_error:
+                        # skip_broadcast: broadcasting this would try to
+                        # re-notify the very error_logs_recipients that just
+                        # failed, which is how a single flood-control hit
+                        # turns into a runaway retry storm.
                         logger.error(
                             "Could not redirect unsended message "
                             f"to error_logs_recipients {error_logs_recipient}",
                             exc_info=redirect_error,
+                            extra={"skip_broadcast": True},
                         )
 
                 # HTML parse error isn't a separate class in Telegram
@@ -225,9 +238,12 @@ class TelegramSender(Singleton):
                         )
                         return True
                     except telegram.error.TelegramError as e:
+                        # skip_broadcast: same rationale as above -- this is a
+                        # failure of the error-notification path itself.
                         logger.error(
                             f"Could not send a plain-text message to {chat_id}",
                             exc_info=e,
+                            extra={"skip_broadcast": True},
                         )
             return False
 
