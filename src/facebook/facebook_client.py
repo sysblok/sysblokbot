@@ -12,7 +12,7 @@ from .facebook_objects import FacebookPage
 
 logger = logging.getLogger(__name__)
 BASE_URL = "https://graph.facebook.com"
-API_VERSION = "v19.0"
+API_VERSION = "v25.0"
 
 
 class FacebookClient(Singleton):

@@ -12,7 +12,7 @@ from .instagram_objects import InstagramMedia, InstagramPage
 logger = logging.getLogger(__name__)
 
 BASE_URL = "https://graph.facebook.com"
-API_VERSION = "v19.0"
+API_VERSION = "v25.0"
 
 
 class InstagramClient(Singleton):
@@ -145,22 +145,29 @@ class InstagramClient(Singleton):
         for post in posts:
             insights = self._get_post_insights(post.id)
             saves_insights = [
-                insight
-                for insight in insights["data"]
-                if insight.get("name", None) == "saved"
-            ][0]
-            saves += saves_insights["values"][0]["value"]
+                insight for insight in insights if insight.get("name", None) == "saved"
+            ]
+            if not saves_insights:
+                continue
+            saves += saves_insights[0]["values"][0]["value"]
         return saves
 
-    def _get_post_insights(self, post_id: str) -> dict:
+    def _get_post_insights(self, post_id: str) -> List[dict]:
         """
-        Get all insights for the post.
+        Get insights for a single post.
         https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights
+        NOTE: 'impressions' and 'engagement' are no longer available here
+        ('impressions' returns an error for media created on or after
+        2 July 2024, on every API version, since 21 April 2025), so only the
+        metrics the report actually needs are requested.
         """
-        return self._get_all_batches(
-            connection_name="insights",
-            metric="engagement,impressions,reach,saved",
-        )
+        response = self._make_graph_api_call(f"{post_id}/insights", {"metric": "saved"})
+        if "error" in response:
+            logger.warning(
+                f"Error fetching insights for post {post_id}: {response['error']}"
+            )
+            return []
+        return response.get("data", [])
 
     def _get_all_batches(
         self,
@@ -177,7 +184,12 @@ class InstagramClient(Singleton):
             params["until"] = int(datetime.timestamp(until))
         params.update(kwargs)
         page = self._make_graph_api_call(f"{self._page_id}/{connection_name}", params)
-        result += page["data"]
+
+        if "error" in page:
+            logger.error(f"Error fetching {connection_name}: {page['error']}")
+            return result
+
+        result += page.get("data", [])
         # process next
         result += self._iterate_over_pages(connection_name, since, until, page, True)
         # process previous
